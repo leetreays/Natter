@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const NatterApp());
@@ -6,12 +7,10 @@ class NatterBrand {
   static const blue = Color(0xFF3DA6F3);
   static const green = Color(0xFFA4D35A);
   static const yellow = Color(0xFFFBC02D);
-  static const pink = Color(0xFFFF6FB1);
+  static const pink = Color(0xFFFF5DA2);
 
-  static const dark = Color(0xFF071029);
-  static const card = Color(0xFF0E1B3B);
-
-  static const radius = 22.0;
+  static const navy = Color(0xFF06112E);
+  static const radius = 24.0;
 }
 
 class NatterApp extends StatelessWidget {
@@ -25,7 +24,7 @@ class NatterApp extends StatelessWidget {
       title: 'Natter',
       debugShowCheckedModeBanner: false,
       theme: base.copyWith(
-        scaffoldBackgroundColor: NatterBrand.dark,
+        scaffoldBackgroundColor: NatterBrand.navy,
         colorScheme: base.colorScheme.copyWith(
           primary: NatterBrand.blue,
           secondary: NatterBrand.green,
@@ -36,68 +35,113 @@ class NatterApp extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: NatterBrand.green,
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(NatterBrand.radius),
-            ),
-            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: Colors.black.withOpacity(0.85),
+          contentTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          behavior: SnackBarBehavior.floating,
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white.withOpacity(0.10),
+          fillColor: Colors.white.withOpacity(0.14),
           hintStyle: const TextStyle(color: Colors.white70),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(NatterBrand.radius),
             borderSide: BorderSide.none,
           ),
         ),
-        dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
-        snackBarTheme: SnackBarThemeData(
-          backgroundColor: Colors.black.withOpacity(0.85),
-          contentTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: NatterBrand.blue,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-          behavior: SnackBarBehavior.floating,
         ),
         chipTheme: base.chipTheme.copyWith(
-          backgroundColor: Colors.white.withOpacity(0.10),
-          selectedColor: NatterBrand.yellow.withOpacity(0.25),
-          labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          backgroundColor: Colors.white.withOpacity(0.14),
+          selectedColor: NatterBrand.yellow.withOpacity(0.30),
+          labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
         ),
+        dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
       ),
       home: const HomeScreen(),
     );
   }
 }
 
-class GradientScaffold extends StatelessWidget {
+/// Bright bubbly background with gradient + confetti dots.
+class BubblyBackground extends StatelessWidget {
   final Widget child;
+  const BubblyBackground({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF2B7FFF), // pop blue
+                Color(0xFF133A8A), // bright deep blue
+                Color(0xFF06112E), // navy
+              ],
+            ),
+          ),
+        ),
+        // Confetti dots
+        Positioned.fill(child: CustomPaint(painter: _ConfettiPainter())),
+        child,
+      ],
+    );
+  }
+}
+
+class _ConfettiPainter extends CustomPainter {
+  const _ConfettiPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rnd = Random(7); // deterministic
+    final paints = [
+      Paint()..color = NatterBrand.yellow.withOpacity(0.22),
+      Paint()..color = NatterBrand.green.withOpacity(0.18),
+      Paint()..color = NatterBrand.pink.withOpacity(0.16),
+      Paint()..color = Colors.white.withOpacity(0.10),
+    ];
+
+    for (int i = 0; i < 70; i++) {
+      final p = paints[rnd.nextInt(paints.length)];
+      final dx = rnd.nextDouble() * size.width;
+      final dy = rnd.nextDouble() * size.height;
+      final r = 3 + rnd.nextDouble() * 10;
+      canvas.drawCircle(Offset(dx, dy), r, p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class BrandScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
-  const GradientScaffold({super.key, required this.child, this.appBar});
+  final Widget child;
+
+  const BrandScaffold({super.key, this.appBar, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0B1C4A),
-              Color(0xFF071029),
-              Color(0xFF132B6E),
-            ],
-          ),
-        ),
+      body: BubblyBackground(
         child: SafeArea(child: child),
       ),
     );
@@ -112,12 +156,40 @@ class BrandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withOpacity(0.16),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
+          )
+        ],
       ),
       padding: const EdgeInsets.all(18),
       child: child,
+    );
+  }
+}
+
+class BrandedAppBarTitle extends StatelessWidget {
+  final String title;
+  const BrandedAppBarTitle({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        SizedBox(
+          height: 22,
+          width: 22,
+          child: Image.asset('assets/natter-logo.png', fit: BoxFit.contain),
+        ),
+        const SizedBox(width: 10),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+      ],
     );
   }
 }
@@ -127,7 +199,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GradientScaffold(
+    return BrandScaffold(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Center(
@@ -137,27 +209,24 @@ class HomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 110,
-                  child: Image.asset(
-                    'assets/natter-logo.png',
-                    fit: BoxFit.contain,
-                  ),
+                  height: 120,
+                  child: Image.asset('assets/natter-logo.png', fit: BoxFit.contain),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 const Text(
                   'Playful, safe messaging for kids.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.white, fontSize: 18, height: 1.3),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 const BrandCard(
                   child: Text(
                     'Text-only chats • Kinder words • Parent controls',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.3),
+                    style: TextStyle(color: Colors.white, fontSize: 16, height: 1.3),
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -205,7 +274,7 @@ class _RiteScreenState extends State<RiteScreen> {
       return;
     }
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    await Future.delayed(const Duration(milliseconds: 650));
     if (!mounted) return;
 
     Navigator.pushReplacement(
@@ -216,9 +285,9 @@ class _RiteScreenState extends State<RiteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GradientScaffold(
+    return BrandScaffold(
       appBar: AppBar(
-        title: const Text('Your first step'),
+        title: const BrandedAppBarTitle(title: 'Your first step'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -242,17 +311,14 @@ class _RiteScreenState extends State<RiteScreen> {
                   TextField(
                     controller: _controller,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
                     decoration: const InputDecoration(hintText: 'Enter your name'),
                     onSubmitted: (_) => _continue(),
                   ),
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _continue,
-                      child: const Text('Continue'),
-                    ),
+                    child: ElevatedButton(onPressed: _continue, child: const Text('Continue')),
                   ),
                 ],
               ),
@@ -289,8 +355,8 @@ class _PromiseScreenState extends State<PromiseScreen> {
     final remaining = 3 - selected.length;
     final canContinue = selected.length >= 3;
 
-    return GradientScaffold(
-      appBar: AppBar(title: const Text('Your promises')),
+    return BrandScaffold(
+      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Center(
@@ -314,7 +380,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                       const Text(
                         'Pick 3 promises for your Natter life:',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
                       ),
                     ],
                   ),
@@ -343,7 +409,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                 const Spacer(),
                 Text(
                   canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -375,43 +441,62 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chats = const [
-      {'name': 'Sam', 'last': 'See you after school!'},
-      {'name': 'Mia', 'last': 'Want to play later?'},
-      {'name': 'Dad', 'last': 'Dinner at 6 😊'},
+      {'name': 'Sam', 'last': 'See you after school!', 'unread': true},
+      {'name': 'Mia', 'last': 'Want to play later?', 'unread': false},
+      {'name': 'Dad', 'last': 'Dinner at 6 😊', 'unread': true},
     ];
 
-    return GradientScaffold(
+    return BrandScaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
+        title: const BrandedAppBarTitle(title: 'Chats'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentScreen()));
             },
-            child: const Text('Parent', style: TextStyle(color: Colors.white)),
+            child: const Text('Parent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
       child: ListView.separated(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         itemCount: chats.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final c = chats[i];
+          final unread = c['unread'] as bool;
+
           return BrandCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                radius: 22,
+                backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                child: Text(
+                  c['name']!.substring(0, 1),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                ),
+              ),
               title: Text(
                 c['name']!,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
               ),
               subtitle: Text(
                 c['last']!,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.white),
               ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.white),
+              trailing: unread
+                  ? Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: NatterBrand.green,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    )
+                  : const Icon(Icons.chevron_right, color: Colors.white),
               onTap: () {
                 Navigator.push(
                   context,
@@ -436,7 +521,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final controller = TextEditingController();
-  final List<String> messages = [];
+  final List<_Msg> messages = [
+    _Msg(fromMe: false, text: 'Hey! 👋'),
+    _Msg(fromMe: false, text: 'Wanna chat?'),
+  ];
   String? feedback;
 
   bool _blocked(String text) {
@@ -444,7 +532,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return lower.contains('badword') || lower.contains('swear');
   }
 
-  void _send() {
+  void _send() async {
     final text = controller.text.trim();
     if (text.isEmpty) return;
 
@@ -456,9 +544,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
     setState(() {
       feedback = null;
-      messages.insert(0, text);
+      messages.insert(0, _Msg(fromMe: true, text: text));
     });
     controller.clear();
+
+    // playful demo auto-reply
+    await Future.delayed(const Duration(milliseconds: 700));
+    if (!mounted) return;
+    setState(() {
+      messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
+    });
   }
 
   @override
@@ -469,8 +564,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GradientScaffold(
-      appBar: AppBar(title: Text(widget.contactName)),
+    return BrandScaffold(
+      appBar: AppBar(title: BrandedAppBarTitle(title: widget.contactName)),
       child: Column(
         children: [
           if (feedback != null)
@@ -479,33 +574,22 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.65),
-                border: Border.all(color: NatterBrand.yellow),
-                borderRadius: BorderRadius.circular(14),
+                color: Colors.black.withOpacity(0.55),
+                border: Border.all(color: NatterBrand.yellow, width: 2),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 feedback!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
               ),
             ),
           Expanded(
             child: ListView.builder(
               reverse: true,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.all(14),
               itemCount: messages.length,
-              itemBuilder: (_, i) => Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: NatterBrand.blue.withOpacity(0.92),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Text(messages[i], style: const TextStyle(color: Colors.white, fontSize: 16)),
-                ),
-              ),
+              itemBuilder: (_, i) => _Bubble(msg: messages[i]),
             ),
           ),
           Padding(
@@ -515,7 +599,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
                     decoration: const InputDecoration(hintText: 'Type a message'),
                     onSubmitted: (_) => _send(),
                   ),
@@ -523,7 +607,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: _send,
-                  style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green),
+                  style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green, foregroundColor: Colors.black),
                   child: const Text('Send'),
                 ),
               ],
@@ -535,22 +619,57 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
+class _Msg {
+  final bool fromMe;
+  final String text;
+  _Msg({required this.fromMe, required this.text});
+}
+
+class _Bubble extends StatelessWidget {
+  final _Msg msg;
+  const _Bubble({required this.msg});
+
+  @override
+  Widget build(BuildContext context) {
+    final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
+    final color = msg.fromMe ? NatterBrand.blue.withOpacity(0.95) : Colors.white.withOpacity(0.20);
+
+    return Align(
+      alignment: align,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+        constraints: const BoxConstraints(maxWidth: 520),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: Colors.white.withOpacity(0.12)),
+        ),
+        child: Text(
+          msg.text,
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
 class ParentScreen extends StatelessWidget {
   const ParentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GradientScaffold(
-      appBar: AppBar(title: const Text('Parent Controls')),
+    return BrandScaffold(
+      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Parent Controls')),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            BrandCard(
-              child: const Text(
+            const BrandCard(
+              child: Text(
                 'This is a placeholder.\nNext we’ll add:\n• Approve contacts\n• Chat hours\n• Alerts (without reading messages)',
-                style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.35),
+                style: TextStyle(color: Colors.white, fontSize: 16, height: 1.35, fontWeight: FontWeight.w600),
               ),
             ),
             const SizedBox(height: 16),
