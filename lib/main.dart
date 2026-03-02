@@ -71,11 +71,16 @@ class NatterApp extends StatelessWidget {
           ),
         ),
         chipTheme: base.chipTheme.copyWith(
-          backgroundColor: Colors.white.withOpacity(0.14),
-          selectedColor: NatterBrand.yellow.withOpacity(0.30),
-          labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-        ),
+  backgroundColor: Colors.white,
+  selectedColor: NatterBrand.yellow,
+  labelStyle: const TextStyle(
+    color: NatterBrand.navy,
+    fontWeight: FontWeight.w800,
+  ),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(999),
+  ),
+),
         dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
       ),
       home: const HomeScreen(),
@@ -163,7 +168,7 @@ class BrandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.16),
+        color: Colors.white.withOpacity(0.25),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
         border: Border.all(color: Colors.white.withOpacity(0.18)),
         boxShadow: [
@@ -382,10 +387,10 @@ class _PromiseScreenState extends State<PromiseScreen> {
                         'Okay, ${widget.name} 😊',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                        ),
+  color: NatterBrand.navy,
+  fontSize: 22,
+  fontWeight: FontWeight.w900,
+),
                       ),
                       const SizedBox(height: 8),
                       const Text(
