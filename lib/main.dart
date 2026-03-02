@@ -136,20 +136,11 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo (falls back to text if asset missing)
                 SizedBox(
                   height: 110,
                   child: Image.asset(
                     'assets/natter-logo.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Text(
-                      'Natter',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 54,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -159,15 +150,11 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(color: Colors.white, fontSize: 18, height: 1.3),
                 ),
                 const SizedBox(height: 20),
-                BrandCard(
-                  child: Column(
-                    children: const [
-                      Text(
-                        'Text-only chats • Kinder words • Parent controls',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.3),
-                      ),
-                    ],
+                const BrandCard(
+                  child: Text(
+                    'Text-only chats • Kinder words • Parent controls',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.3),
                   ),
                 ),
                 const SizedBox(height: 22),
