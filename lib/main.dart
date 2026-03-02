@@ -12,7 +12,13 @@ class NatterBrand {
   static const navy = Color(0xFF06112E);
   static const radius = 24.0;
 }
+class ChatPreview {
+  final String name;
+  final String last;
+  final bool unread;
 
+  const ChatPreview({required this.name, required this.last, required this.unread});
+}
 class NatterApp extends StatelessWidget {
   const NatterApp({super.key});
 
@@ -511,109 +517,76 @@ class ChatsScreen extends StatelessWidget {
   }
 }
 
-class ChatScreen extends StatefulWidget {
-  final String contactName;
-  const ChatScreen({super.key, required this.contactName});
-
-  @override
-  State<ChatScreen> createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
-  final controller = TextEditingController();
-  final List<_Msg> messages = [
-    _Msg(fromMe: false, text: 'Hey! 👋'),
-    _Msg(fromMe: false, text: 'Wanna chat?'),
-  ];
-  String? feedback;
-
-  bool _blocked(String text) {
-    final lower = text.toLowerCase();
-    return lower.contains('badword') || lower.contains('swear');
-  }
-
-  void _send() async {
-    final text = controller.text.trim();
-    if (text.isEmpty) return;
-
-    if (_blocked(text)) {
-      setState(() => feedback = "Oops—those words aren’t allowed on Natter.");
-      controller.clear();
-      return;
-    }
-
-    setState(() {
-      feedback = null;
-      messages.insert(0, _Msg(fromMe: true, text: text));
-    });
-    controller.clear();
-
-    // playful demo auto-reply
-    await Future.delayed(const Duration(milliseconds: 700));
-    if (!mounted) return;
-    setState(() {
-      messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
-    });
-  }
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
+class ChatsScreen extends StatelessWidget {
+  const ChatsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const chats = <ChatPreview>[
+      ChatPreview(name: 'Sam', last: 'See you after school!', unread: true),
+      ChatPreview(name: 'Mia', last: 'Want to play later?', unread: false),
+      ChatPreview(name: 'Dad', last: 'Dinner at 6 😊', unread: true),
+    ];
+
     return BrandScaffold(
-      appBar: AppBar(title: BrandedAppBarTitle(title: widget.contactName)),
-      child: Column(
-        children: [
-          if (feedback != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
-                border: Border.all(color: NatterBrand.yellow, width: 2),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                feedback!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-              ),
-            ),
-          Expanded(
-            child: ListView.builder(
-              reverse: true,
-              padding: const EdgeInsets.all(14),
-              itemCount: messages.length,
-              itemBuilder: (_, i) => _Bubble(msg: messages[i]),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                    decoration: const InputDecoration(hintText: 'Type a message'),
-                    onSubmitted: (_) => _send(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _send,
-                  style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green, foregroundColor: Colors.black),
-                  child: const Text('Send'),
-                ),
-              ],
-            ),
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Chats'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentScreen()));
+            },
+            child: const Text('Parent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
           ),
         ],
+      ),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(14),
+        itemCount: chats.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, i) {
+          final c = chats[i];
+
+          return BrandCard(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                radius: 22,
+                backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                child: Text(
+                  c.name.substring(0, 1),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                ),
+              ),
+              title: Text(
+                c.name,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+              ),
+              subtitle: Text(
+                c.last,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.white),
+              ),
+              trailing: c.unread
+                  ? Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: NatterBrand.green,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    )
+                  : const Icon(Icons.chevron_right, color: Colors.white),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ChatScreen(contactName: c.name)),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }
