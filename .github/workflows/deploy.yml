@@ -31,6 +31,12 @@ jobs:
         run: flutter pub get
 
       - name: Build web
+      - name: List assets (debug)
+        run: |
+          pwd
+          ls -la
+          ls -la assets || true
+          ls -la lib || true
         run: flutter build web --release --base-href "/Natter/"
 
       - name: Upload artifact
