@@ -411,97 +411,74 @@ class PromiseScreen extends StatefulWidget {
   State<PromiseScreen> createState() => _PromiseScreenState();
 }
 
-class _PromiseScreenState extends State<PromiseScreen> {
-  final options = const [
-    'Be kind',
-    'No secrets from adults',
-    'If it feels weird, stop',
-    'Ask before adding friends',
-    'Keep it text-only',
-    'Take breaks',
-  ];
+name: Deploy Flutter Web to GitHub Pages
 
-  final Set<String> selected = {};
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-  @override
-  Widget build(BuildContext context) {
-    final remaining = 3 - selected.length;
-    final canContinue = selected.length >= 3;
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-    return BrandScaffold(
-      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Column(
-              children: [
-                BrandCard(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Okay, ${widget.name} 😊',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: NatterBrand.navy,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Pick 3 promises for your Natter life:',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: options.map((t) {
-                    final isOn = selected.contains(t);
-                    return ChoiceChip(
-                      label: Text(t),
-                      selected: isOn,
-                      onSelected: (_) {
-                        setState(() {
-                          if (isOn) {
-                            selected.remove(t);
-                          } else {
-                            if (selected.length < 3) selected.add(t);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
-                ),
-                const Spacer(),
-                Text(
-                  canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: canContinue
-                        ? () => Navigator.pushReplacement(context, calmRoute(const ChatsScreen()))
-                        : null,
-                    child: const Text('I promise 🤝'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Debug paths
+        run: |
+          echo "PWD:"
+          pwd
+          echo ""
+          echo "Repo root files:"
+          ls -la
+          echo ""
+          echo "pubspec.yaml location(s):"
+          find . -maxdepth 3 -name pubspec.yaml -print
+          echo ""
+          echo "Logo location(s):"
+          find . -maxdepth 4 -path "*assets/natter-logo-v2.png" -print
+          echo ""
+          echo "assets folder listing (if present):"
+          ls -la assets || true
+
+      - name: Build web
+        run: flutter build web --release --base-href "/Natter/"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
