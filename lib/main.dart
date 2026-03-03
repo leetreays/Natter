@@ -3,6 +3,33 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const NatterApp());
 
+/// Calm fade + tiny slide transition for peaceful navigation.
+Route<T> calmRoute<T>(Widget page) {
+  return PageRouteBuilder<T>(
+    pageBuilder: (_, __, ___) => page,
+    transitionDuration: const Duration(milliseconds: 420),
+    reverseTransitionDuration: const Duration(milliseconds: 320),
+    transitionsBuilder: (_, animation, __, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.02),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 class NatterBrand {
   static const blue = Color(0xFF3DA6F3);
   static const green = Color(0xFFA4D35A);
@@ -11,6 +38,9 @@ class NatterBrand {
 
   static const navy = Color(0xFF06112E);
   static const radius = 24.0;
+
+  // Update here if you rename again
+  static const logoPath = 'assets/natter-logo-v2.png';
 }
 
 class ChatPreview {
@@ -18,7 +48,11 @@ class ChatPreview {
   final String last;
   final bool unread;
 
-  const ChatPreview({required this.name, required this.last, required this.unread});
+  const ChatPreview({
+    required this.name,
+    required this.last,
+    required this.unread,
+  });
 }
 
 class NatterApp extends StatelessWidget {
@@ -71,16 +105,16 @@ class NatterApp extends StatelessWidget {
           ),
         ),
         chipTheme: base.chipTheme.copyWith(
-  backgroundColor: Colors.white,
-  selectedColor: NatterBrand.yellow,
-  labelStyle: const TextStyle(
-    color: NatterBrand.navy,
-    fontWeight: FontWeight.w800,
-  ),
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(999),
-  ),
-),
+          backgroundColor: Colors.white,
+          selectedColor: NatterBrand.yellow,
+          labelStyle: const TextStyle(
+            color: NatterBrand.navy,
+            fontWeight: FontWeight.w800,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
         dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
       ),
       home: const HomeScreen(),
@@ -103,9 +137,9 @@ class BubblyBackground extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF2B7FFF), // pop blue
-                Color(0xFF133A8A), // bright deep blue
-                Color(0xFF06112E), // navy
+                Color(0xFF2B7FFF),
+                Color(0xFF133A8A),
+                Color(0xFF06112E),
               ],
             ),
           ),
@@ -185,6 +219,42 @@ class BrandCard extends StatelessWidget {
   }
 }
 
+/// Reusable logo widget with visible fallback + debug print.
+/// This makes it impossible for the logo to "silently disappear".
+class NatterLogo extends StatelessWidget {
+  final double height;
+  const NatterLogo({super.key, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Image.asset(
+        NatterBrand.logoPath,
+        fit: BoxFit.contain,
+        gaplessPlayback: true,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('❌ Failed to load logo: ${NatterBrand.logoPath}');
+          debugPrint(error.toString());
+          return Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.35),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: NatterBrand.yellow, width: 2),
+            ),
+            child: const Text(
+              'Logo missing',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class BrandedAppBarTitle extends StatelessWidget {
   final String title;
   const BrandedAppBarTitle({super.key, required this.title});
@@ -194,11 +264,7 @@ class BrandedAppBarTitle extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          height: 22,
-          width: 22,
-          child: Image.asset('assets/natter-logo-v2.png', fit: BoxFit.contain),
-        ),
+        const NatterLogo(height: 22),
         const SizedBox(width: 10),
         Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
       ],
@@ -220,10 +286,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
-                  height: 120,
-                  child: Image.asset('assets/natter-logo-v2.png', fit: BoxFit.contain),
-                ),
+                const NatterLogo(height: 120),
                 const SizedBox(height: 12),
                 const Text(
                   'Playful, safe messaging for kids.',
@@ -243,10 +306,7 @@ class HomeScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const RiteScreen()),
-                      );
+                      Navigator.push(context, calmRoute(const RiteScreen()));
                     },
                     child: const Text('Begin ✨'),
                   ),
@@ -289,10 +349,7 @@ class _RiteScreenState extends State<RiteScreen> {
     await Future.delayed(const Duration(milliseconds: 650));
     if (!mounted) return;
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => PromiseScreen(name: name)),
-    );
+    Navigator.pushReplacement(context, calmRoute(PromiseScreen(name: name)));
   }
 
   @override
@@ -387,10 +444,10 @@ class _PromiseScreenState extends State<PromiseScreen> {
                         'Okay, ${widget.name} 😊',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-  color: NatterBrand.navy,
-  fontSize: 22,
-  fontWeight: FontWeight.w900,
-),
+                          color: NatterBrand.navy,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -432,12 +489,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: canContinue
-                        ? () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => const ChatsScreen()),
-                            );
-                          }
+                        ? () => Navigator.pushReplacement(context, calmRoute(const ChatsScreen()))
                         : null,
                     child: const Text('I promise 🤝'),
                   ),
@@ -467,9 +519,7 @@ class ChatsScreen extends StatelessWidget {
         title: const BrandedAppBarTitle(title: 'Chats'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentScreen()));
-            },
+            onPressed: () => Navigator.push(context, calmRoute(const ParentScreen())),
             child: const Text('Parent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
           ),
         ],
@@ -511,12 +561,7 @@ class ChatsScreen extends StatelessWidget {
                       ),
                     )
                   : const Icon(Icons.chevron_right, color: Colors.white),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => ChatScreen(contactName: c.name)),
-                );
-              },
+              onTap: () => Navigator.push(context, calmRoute(ChatScreen(contactName: c.name))),
             ),
           );
         },
