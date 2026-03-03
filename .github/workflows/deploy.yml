@@ -26,16 +26,29 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: List assets (debug)
+      - name: Debug paths
         run: |
+          echo "PWD:"
           pwd
+          echo ""
+          echo "Repo root files:"
           ls -la
+          echo ""
+          echo "pubspec.yaml location(s):"
+          find . -maxdepth 3 -name pubspec.yaml -print
+          echo ""
+          echo "Logo location(s):"
+          find . -maxdepth 4 -path "*assets/natter-logo-v2.png" -print
+          echo ""
+          echo "assets folder listing (if present):"
           ls -la assets || true
-          ls -la lib || true
+
+      - name: Build web
         run: flutter build web --release --base-href "/Natter/"
 
       - name: Upload artifact
