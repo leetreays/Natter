@@ -563,18 +563,34 @@ class _PromiseScreenState extends State<PromiseScreen>
                           ),
                         ),
                         const SizedBox(height: 16),
-                        ...selected.map(
-                          (p) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(
-                              "• $p",
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
+                        const SizedBox(height: 10),
+
+Column(
+  mainAxisSize: MainAxisSize.min,
+  crossAxisAlignment: CrossAxisAlignment.center,
+  children: selected.map((p) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+        ),
+        child: Text(
+          p,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }).toList(),
+),
                         const SizedBox(height: 28),
                         const Text(
                           "You are now a Natter Member.",
