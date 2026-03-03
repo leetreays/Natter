@@ -197,7 +197,7 @@ class BrandedAppBarTitle extends StatelessWidget {
         SizedBox(
           height: 22,
           width: 22,
-          child: Image.asset('assets/natter-logo.png', fit: BoxFit.contain),
+          child: Image.asset('assets/natter-logo-v2.png', fit: BoxFit.contain),
         ),
         const SizedBox(width: 10),
         Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
@@ -222,7 +222,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 SizedBox(
                   height: 120,
-                  child: Image.asset('assets/natter-logo.png', fit: BoxFit.contain),
+                  child: Image.asset('assets/natter-logo-v2.png', fit: BoxFit.contain),
                 ),
                 const SizedBox(height: 12),
                 const Text(
