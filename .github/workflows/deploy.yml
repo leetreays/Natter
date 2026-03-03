@@ -30,7 +30,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build web
       - name: List assets (debug)
         run: |
           pwd
