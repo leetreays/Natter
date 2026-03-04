@@ -39,6 +39,7 @@ class NatterBrand {
   static const navy = Color(0xFF06112E);
   static const radius = 24.0;
 
+  // Update here if you rename again
   static const logoPath = 'assets/natter-logo-v2.png';
 }
 
@@ -201,14 +202,14 @@ class BrandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.20),
+        color: Colors.white.withOpacity(0.25),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
         border: Border.all(color: Colors.white.withOpacity(0.18)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 18,
-            offset: const Offset(0, 12),
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
           )
         ],
       ),
@@ -219,6 +220,7 @@ class BrandCard extends StatelessWidget {
 }
 
 /// Reusable logo widget with visible fallback + debug print.
+/// This makes it impossible for the logo to "silently disappear".
 class NatterLogo extends StatelessWidget {
   final double height;
   const NatterLogo({super.key, required this.height});
@@ -387,10 +389,7 @@ class _RiteScreenState extends State<RiteScreen> {
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _continue,
-                      child: const Text('Continue'),
-                    ),
+                    child: ElevatedButton(onPressed: _continue, child: const Text('Continue')),
                   ),
                 ],
               ),
@@ -510,7 +509,10 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 650));
+    fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
     fadeAnim = CurvedAnimation(parent: fadeController, curve: Curves.easeInOut);
   }
 
@@ -525,165 +527,129 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
     await fadeController.forward();
   }
 
-  void _closeOverlay() {
-    setState(() => showGraduation = false);
-    fadeController.reset();
-  }
-
   @override
   Widget build(BuildContext context) {
     final remaining = 3 - selected.length;
     final canContinue = selected.length >= 3;
 
-    return Scaffold(
-      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
-      body: BubblyBackground(
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 720),
-                    child: Column(
-                      children: [
-                        BrandCard(
-                          child: Column(
-                            children: [
-                              Text(
-                                'Okay, ${widget.name} 😊',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Pick 3 promises for your Natter life:',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-
-                        Expanded(
-                          child: Center(
-                            child: SingleChildScrollView(
-                              child: Wrap(
-                                alignment: WrapAlignment.center,
-                                spacing: 12,
-                                runSpacing: 12,
-                                children: options.map((t) {
-                                  final isOn = selected.contains(t);
-                                  return ChoiceChip(
-                                    label: Text(t),
-                                    selected: isOn,
-                                    onSelected: (_) {
-                                      setState(() {
-                                        if (isOn) {
-                                          selected.remove(t);
-                                        } else {
-                                          if (selected.length < 3) selected.add(t);
-                                        }
-                                      });
-                                    },
-                                  );
-                                }).toList(),
-                              ),
+    return Stack(
+      children: [
+        BrandScaffold(
+          appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Column(
+                  children: [
+                    BrandCard(
+                      child: Column(
+                        children: [
+                          Text(
+                            'Okay, ${widget.name} 😊',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: NatterBrand.navy,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
-                        ),
-
-                        const SizedBox(height: 14),
-                        Text(
-                          canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Pick 3 promises for your Natter life:',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: canContinue ? _graduate : null,
-                            child: const Text('Seal My Promises ✨'),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: options.map((t) {
+                        final isOn = selected.contains(t);
+                        return ChoiceChip(
+                          label: Text(t),
+                          selected: isOn,
+                          onSelected: (_) {
+                            setState(() {
+                              if (isOn) {
+                                selected.remove(t);
+                              } else {
+                                if (selected.length < 3) selected.add(t);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const Spacer(),
+                    Text(
+                      canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: canContinue ? _graduate : null,
+                        child: const Text('Seal My Promises ✨'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        if (showGraduation)
+          FadeTransition(
+            opacity: fadeAnim,
+            child: Container(
+              color: Colors.black.withOpacity(0.65),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: CeremonialGraduation(
+                    name: widget.name,
+                    promises: selected.toList(),
+                    onEnter: () => Navigator.pushReplacement(context, calmRoute(const ChatsScreen())),
+                    onClose: () {
+                      fadeController.reverse().then((_) {
+                        if (!mounted) return;
+                        setState(() => showGraduation = false);
+                      });
+                    },
                   ),
                 ),
               ),
-
-              // ✅ Overlay that ALWAYS renders (no Positioned.fill inside scroll content)
-              if (showGraduation)
-                Positioned.fill(
-                  child: FadeTransition(
-                    opacity: fadeAnim,
-                    child: Material(
-                      color: Colors.black.withOpacity(0.70),
-                      child: SafeArea(
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxWidth: 760),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(18),
-                                  child: CeremonialGraduation(
-                                    name: widget.name,
-                                    promises: selected.toList(),
-                                    onEnter: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        calmRoute(const ChatsScreen()),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 6,
-                              right: 6,
-                              child: IconButton(
-                                tooltip: 'Close',
-                                icon: const Icon(Icons.close_rounded, color: Colors.white),
-                                onPressed: _closeOverlay,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+            ),
           ),
-        ),
-      ),
+      ],
     );
   }
 }
 
-/// ✅ This version uses fixed-size glow/twinkles so it never disappears on web.
 class CeremonialGraduation extends StatefulWidget {
   final String name;
   final List<String> promises;
   final VoidCallback onEnter;
+  final VoidCallback onClose;
 
   const CeremonialGraduation({
     super.key,
     required this.name,
     required this.promises,
     required this.onEnter,
+    required this.onClose,
   });
 
   @override
@@ -702,7 +668,7 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   void initState() {
     super.initState();
 
-    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
     _fade = CurvedAnimation(parent: _reveal, curve: Curves.easeInOut);
     _badgeDrop = CurvedAnimation(parent: _reveal, curve: Curves.easeOutBack);
 
@@ -724,212 +690,183 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   Widget build(BuildContext context) {
     final badge = badgeForPromises(widget.promises.toSet());
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Glow + twinkles behind (FIXED SIZE)
-        SizedBox(
-          width: 560,
-          height: 560,
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_fade, _breathAnim]),
-            builder: (_, __) {
-              final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
-              return CustomPaint(
-                painter: _GlowTwinklePainter(
-                  badgeColor: badge.color,
-                  strength: intensity.clamp(0.0, 1.0),
-                ),
-              );
-            },
-          ),
-        ),
-
-        // Foreground ceremony card
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Container(
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.34), // was ~0.20 via BrandCard
-    borderRadius: BorderRadius.circular(NatterBrand.radius),
-    border: Border.all(color: Colors.white.withOpacity(0.28)),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.22),
-        blurRadius: 20,
-        offset: const Offset(0, 14),
-      ),
-    ],
-  ),
-  padding: const EdgeInsets.all(18),
-  child: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      // ... keep the existing ceremony children exactly as-is
-    ],
-  ),
-),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    'Welcome to Natter',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.3,
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          IgnorePointer(
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_fade, _breathAnim]),
+              builder: (_, __) {
+                final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
+                return Container(
+                  width: 560,
+                  height: 560,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        badge.color.withOpacity(0.18 * intensity),
+                        NatterBrand.pink.withOpacity(0.10 * intensity),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.42, 0.78],
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    widget.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    'These are your promises:',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: widget.promises.map((p) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: Colors.white.withOpacity(0.22)),
-                          ),
-                          child: Text(
-                            p,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                AnimatedBuilder(
-                  animation: _badgeDrop,
-                  builder: (_, __) {
-                    final t = _badgeDrop.value;
-                    return Transform.translate(
-                      offset: Offset(0, (1 - t) * -16),
-                      child: Opacity(
-                        opacity: _fade.value,
-                        child: BadgeCard(name: widget.name, badge: badge),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    "You're officially in. 🌿",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: NatterBrand.green.withOpacity(0.95),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: widget.onEnter,
-                      child: const Text('Enter Natter ✨'),
-                    ),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
 
-/// Paints a soft radial glow + subtle twinkles (fixed canvas size).
-class _GlowTwinklePainter extends CustomPainter {
-  final Color badgeColor;
-  final double strength;
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              onPressed: widget.onClose,
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+              tooltip: 'Close',
+            ),
+          ),
 
-  _GlowTwinklePainter({required this.badgeColor, required this.strength});
+          // ✅ OPTION A INTEGRATED HERE:
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.34),
+                borderRadius: BorderRadius.circular(NatterBrand.radius),
+                border: Border.all(color: Colors.white.withOpacity(0.28)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.22),
+                    blurRadius: 20,
+                    offset: const Offset(0, 14),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      'Welcome to Natter',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.90),
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = strength.clamp(0.0, 1.0);
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      widget.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
 
-    // Glow
-    final center = Offset(size.width / 2, size.height / 2);
-    final glowPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          badgeColor.withOpacity(0.20 * s),
-          NatterBrand.pink.withOpacity(0.10 * s),
-          Colors.transparent,
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      'These are the promises you chose:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.92),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: widget.promises.map((p) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.14),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: Colors.white.withOpacity(0.30)),
+                            ),
+                            child: Text(
+                              p,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  AnimatedBuilder(
+                    animation: _badgeDrop,
+                    builder: (_, __) {
+                      final t = _badgeDrop.value;
+                      return Transform.translate(
+                        offset: Offset(0, (1 - t) * -18),
+                        child: Opacity(
+                          opacity: _fade.value,
+                          child: BadgeCard(name: widget.name, badge: badge),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      "You're officially in. 🌿",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: NatterBrand.green.withOpacity(0.95),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 26),
+
+                  FadeTransition(
+                    opacity: _fade,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: widget.onEnter,
+                        child: const Text('Enter Natter ✨'),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
-        stops: const [0.0, 0.45, 0.80],
-      ).createShader(Rect.fromCircle(center: center, radius: size.shortestSide * 0.5));
-
-    canvas.drawCircle(center, size.shortestSide * 0.5, glowPaint);
-
-    // Twinkles
-    final rnd = Random(12);
-    final twinklePaint = Paint()..color = Colors.white.withOpacity(0.14 * s);
-
-    for (int i = 0; i < 30; i++) {
-      final dx = rnd.nextDouble() * size.width;
-      final dy = rnd.nextDouble() * size.height;
-      final r = (1.0 + rnd.nextDouble() * 2.2) * (0.6 + 0.4 * s);
-      canvas.drawCircle(Offset(dx, dy), r, twinklePaint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _GlowTwinklePainter oldDelegate) {
-    return oldDelegate.strength != strength || oldDelegate.badgeColor != badgeColor;
+      ),
+    );
   }
 }
 
@@ -1039,9 +976,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     await Future.delayed(const Duration(milliseconds: 700));
     if (!mounted) return;
-    setState(() {
-      messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
-    });
+    setState(() => messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄')));
   }
 
   @override
