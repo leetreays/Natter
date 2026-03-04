@@ -201,14 +201,14 @@ class BrandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25),
+        color: Colors.white.withOpacity(0.20),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
         border: Border.all(color: Colors.white.withOpacity(0.18)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 18,
+            offset: const Offset(0, 12),
           )
         ],
       ),
@@ -510,10 +510,7 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
+    fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 650));
     fadeAnim = CurvedAnimation(parent: fadeController, curve: Curves.easeInOut);
   }
 
@@ -524,9 +521,13 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
   }
 
   Future<void> _graduate() async {
-    if (!mounted) return;
     setState(() => showGraduation = true);
     await fadeController.forward();
+  }
+
+  void _closeOverlay() {
+    setState(() => showGraduation = false);
+    fadeController.reset();
   }
 
   @override
@@ -570,7 +571,6 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                         ),
                         const SizedBox(height: 18),
 
-                        // CENTERED chips area
                         Expanded(
                           child: Center(
                             child: SingleChildScrollView(
@@ -622,7 +622,7 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                 ),
               ),
 
-              // GRADUATION OVERLAY (always visible, scroll-safe)
+              // ✅ Overlay that ALWAYS renders (no Positioned.fill inside scroll content)
               if (showGraduation)
                 Positioned.fill(
                   child: FadeTransition(
@@ -635,7 +635,7 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                             Center(
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(maxWidth: 760),
-                                child: SingleChildScrollView(
+                                child: Padding(
                                   padding: const EdgeInsets.all(18),
                                   child: CeremonialGraduation(
                                     name: widget.name,
@@ -650,18 +650,13 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                                 ),
                               ),
                             ),
-
-                            // Escape hatch
                             Positioned(
                               top: 6,
                               right: 6,
                               child: IconButton(
                                 tooltip: 'Close',
                                 icon: const Icon(Icons.close_rounded, color: Colors.white),
-                                onPressed: () {
-                                  setState(() => showGraduation = false);
-                                  fadeController.reset();
-                                },
+                                onPressed: _closeOverlay,
                               ),
                             ),
                           ],
@@ -678,6 +673,7 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
   }
 }
 
+/// ✅ This version uses fixed-size glow/twinkles so it never disappears on web.
 class CeremonialGraduation extends StatefulWidget {
   final String name;
   final List<String> promises;
@@ -706,7 +702,7 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   void initState() {
     super.initState();
 
-    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
     _fade = CurvedAnimation(parent: _reveal, curve: Curves.easeInOut);
     _badgeDrop = CurvedAnimation(parent: _reveal, curve: Curves.easeOutBack);
 
@@ -731,158 +727,143 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
     return Stack(
       alignment: Alignment.center,
       children: [
-        IgnorePointer(
+        // Glow + twinkles behind (FIXED SIZE)
+        SizedBox(
+          width: 560,
+          height: 560,
           child: AnimatedBuilder(
             animation: Listenable.merge([_fade, _breathAnim]),
             builder: (_, __) {
               final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
-              return Container(
-                width: 560,
-                height: 560,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      badge.color.withOpacity(0.18 * intensity),
-                      NatterBrand.pink.withOpacity(0.10 * intensity),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.42, 0.78],
-                  ),
+              return CustomPaint(
+                painter: _GlowTwinklePainter(
+                  badgeColor: badge.color,
+                  strength: intensity.clamp(0.0, 1.0),
                 ),
               );
             },
           ),
         ),
-        IgnorePointer(
-          child: Positioned.fill(
-            child: CustomPaint(
-              painter: _TwinklePainter(
-                strengthListenable: Listenable.merge([_fade, _breathAnim]),
-                strength: () => _fade.value * (0.7 + 0.3 * _breathAnim.value),
-              ),
-            ),
-          ),
-        ),
 
-        // Ceremony card so it never "disappears"
-        BrandCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  'Welcome to Natter',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.4,
+        // Foreground ceremony card
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: BrandCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    'Welcome to Natter',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  widget.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                const SizedBox(height: 10),
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    widget.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  'These are the promises you chose:',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w700,
+                const SizedBox(height: 12),
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    'These are your promises:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
 
-              FadeTransition(
-                opacity: _fade,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: widget.promises.map((p) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white.withOpacity(0.22)),
-                        ),
-                        child: Text(
-                          p,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                FadeTransition(
+                  opacity: _fade,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: widget.promises.map((p) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: Colors.white.withOpacity(0.22)),
+                          ),
+                          child: Text(
+                            p,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                AnimatedBuilder(
+                  animation: _badgeDrop,
+                  builder: (_, __) {
+                    final t = _badgeDrop.value;
+                    return Transform.translate(
+                      offset: Offset(0, (1 - t) * -16),
+                      child: Opacity(
+                        opacity: _fade.value,
+                        child: BadgeCard(name: widget.name, badge: badge),
                       ),
                     );
-                  }).toList(),
+                  },
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-              AnimatedBuilder(
-                animation: _badgeDrop,
-                builder: (_, __) {
-                  final t = _badgeDrop.value;
-                  return Transform.translate(
-                    offset: Offset(0, (1 - t) * -18),
-                    child: Opacity(
-                      opacity: _fade.value,
-                      child: BadgeCard(name: widget.name, badge: badge),
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    "You're officially in. 🌿",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: NatterBrand.green.withOpacity(0.95),
                     ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 18),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  "You're officially in. 🌿",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: NatterBrand.green.withOpacity(0.95),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-              FadeTransition(
-                opacity: _fade,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: widget.onEnter,
-                    child: const Text('Enter Natter ✨'),
+                FadeTransition(
+                  opacity: _fade,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: widget.onEnter,
+                      child: const Text('Enter Natter ✨'),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -890,28 +871,47 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   }
 }
 
-class _TwinklePainter extends CustomPainter {
-  final Listenable strengthListenable;
-  final double Function() strength;
+/// Paints a soft radial glow + subtle twinkles (fixed canvas size).
+class _GlowTwinklePainter extends CustomPainter {
+  final Color badgeColor;
+  final double strength;
 
-  _TwinklePainter({required this.strengthListenable, required this.strength}) : super(repaint: strengthListenable);
+  _GlowTwinklePainter({required this.badgeColor, required this.strength});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final s = strength().clamp(0.0, 1.0);
-    final rnd = Random(12); // deterministic
-    final paint = Paint()..color = Colors.white.withOpacity(0.14 * s);
+    final s = strength.clamp(0.0, 1.0);
 
-    for (int i = 0; i < 28; i++) {
+    // Glow
+    final center = Offset(size.width / 2, size.height / 2);
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          badgeColor.withOpacity(0.20 * s),
+          NatterBrand.pink.withOpacity(0.10 * s),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.45, 0.80],
+      ).createShader(Rect.fromCircle(center: center, radius: size.shortestSide * 0.5));
+
+    canvas.drawCircle(center, size.shortestSide * 0.5, glowPaint);
+
+    // Twinkles
+    final rnd = Random(12);
+    final twinklePaint = Paint()..color = Colors.white.withOpacity(0.14 * s);
+
+    for (int i = 0; i < 30; i++) {
       final dx = rnd.nextDouble() * size.width;
       final dy = rnd.nextDouble() * size.height;
-      final r = (1.0 + rnd.nextDouble() * 2.4) * (0.7 + 0.3 * s);
-      canvas.drawCircle(Offset(dx, dy), r, paint);
+      final r = (1.0 + rnd.nextDouble() * 2.2) * (0.6 + 0.4 * s);
+      canvas.drawCircle(Offset(dx, dy), r, twinklePaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _TwinklePainter oldDelegate) => true;
+  bool shouldRepaint(covariant _GlowTwinklePainter oldDelegate) {
+    return oldDelegate.strength != strength || oldDelegate.badgeColor != badgeColor;
+  }
 }
 
 class ChatsScreen extends StatelessWidget {
