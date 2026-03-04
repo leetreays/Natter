@@ -225,7 +225,6 @@ class BrandCard extends StatelessWidget {
 }
 
 /// Reusable logo widget with visible fallback.
-/// If the asset path is wrong, you’ll see a clear “Logo missing” pill.
 class NatterLogo extends StatelessWidget {
   final double height;
   const NatterLogo({super.key, required this.height});
@@ -415,7 +414,6 @@ class NatterBadge {
 }
 
 NatterBadge badgeForPromises(Set<String> promises) {
-  // v1 logic: always award “Promise Keeper” for completing the rite.
   return const NatterBadge(
     title: 'Promise Keeper',
     icon: Icons.shield_rounded,
@@ -572,7 +570,6 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                     ),
                     const SizedBox(height: 16),
 
-                    // Centered promises in a calm container
                     Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 640),
@@ -624,7 +621,7 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
           ),
         ),
 
-        // Graduation overlay (less transparent than before so it’s easier to see)
+        // Graduation overlay (FIXED: guaranteed height so the ceremony can paint)
         if (showGraduation)
           FadeTransition(
             opacity: fadeAnim,
@@ -639,15 +636,27 @@ class _PromiseScreenState extends State<PromiseScreen> with TickerProviderStateM
                       constraints: const BoxConstraints(maxWidth: 740),
                       child: Padding(
                         padding: const EdgeInsets.all(18),
-                        child: BrandCard(
-                          padding: const EdgeInsets.all(18),
-                          child: CeremonialGraduation(
-                            name: widget.name,
-                            promises: selected.toList(),
-                            onEnter: () {
-                              Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
-                            },
-                          ),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final screenH = MediaQuery.of(context).size.height;
+                            final desired = screenH * 0.80;
+                            final h = desired.clamp(520.0, 700.0);
+
+                            return BrandCard(
+                              padding: const EdgeInsets.all(18),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: h,
+                                child: CeremonialGraduation(
+                                  name: widget.name,
+                                  promises: selected.toList(),
+                                  onEnter: () {
+                                    Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -726,168 +735,160 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   Widget build(BuildContext context) {
     final badge = badgeForPromises(widget.promises.toSet());
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Soft magical glow (breathing)
-        IgnorePointer(
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_fade, _breathAnim]),
-            builder: (_, __) {
-              final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
-              return Container(
-                width: 520,
-                height: 520,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      badge.color.withOpacity(0.20 * intensity),
-                      NatterBrand.pink.withOpacity(0.12 * intensity),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.45, 0.80],
+    // IMPORTANT: expand to fill the SizedBox height from the overlay.
+    return SizedBox.expand(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          IgnorePointer(
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_fade, _breathAnim]),
+              builder: (_, __) {
+                final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
+                return Container(
+                  width: 520,
+                  height: 520,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        badge.color.withOpacity(0.20 * intensity),
+                        NatterBrand.pink.withOpacity(0.12 * intensity),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.45, 0.80],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-
-        IgnorePointer(
-          child: Positioned.fill(
-            child: CustomPaint(
-              painter: _TwinklePainter(
-                strengthListenable: Listenable.merge([_fade, _breathAnim]),
-                strength: () => _fade.value * (0.7 + 0.3 * _breathAnim.value),
+          IgnorePointer(
+            child: Positioned.fill(
+              child: CustomPaint(
+                painter: _TwinklePainter(
+                  strengthListenable: Listenable.merge([_fade, _breathAnim]),
+                  strength: () => _fade.value * (0.7 + 0.3 * _breathAnim.value),
+                ),
               ),
             ),
           ),
-        ),
-
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 620),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  'Welcome to Natter',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.88),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  widget.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  'These are the promises you chose:',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.88),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: widget.promises.map((p) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white.withOpacity(0.24)),
-                        ),
-                        child: Text(
-                          p,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      'Welcome to Natter',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.88),
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.4,
                       ),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              AnimatedBuilder(
-                animation: _badgeDrop,
-                builder: (_, __) {
-                  final t = _badgeDrop.value;
-                  return Transform.translate(
-                    offset: Offset(0, (1 - t) * -18),
-                    child: Opacity(
-                      opacity: _fade.value,
-                      child: BadgeCard(name: widget.name, badge: badge),
                     ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              FadeTransition(
-                opacity: _fade,
-                child: Text(
-                  "You're officially in. 🌿",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    color: NatterBrand.green.withOpacity(0.95),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 22),
-
-              FadeTransition(
-                opacity: _fade,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: widget.onEnter,
-                    child: const Text('Enter Natter ✨'),
+                  const SizedBox(height: 10),
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      widget.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      'These are the promises you chose:',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.88),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: widget.promises.map((p) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: Colors.white.withOpacity(0.24)),
+                            ),
+                            child: Text(
+                              p,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  AnimatedBuilder(
+                    animation: _badgeDrop,
+                    builder: (_, __) {
+                      final t = _badgeDrop.value;
+                      return Transform.translate(
+                        offset: Offset(0, (1 - t) * -18),
+                        child: Opacity(
+                          opacity: _fade.value,
+                          child: BadgeCard(name: widget.name, badge: badge),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  FadeTransition(
+                    opacity: _fade,
+                    child: Text(
+                      "You're officially in. 🌿",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: NatterBrand.green.withOpacity(0.95),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  FadeTransition(
+                    opacity: _fade,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: widget.onEnter,
+                        child: const Text('Enter Natter ✨'),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1001,7 +1002,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _blocked(String text) {
     final lower = text.toLowerCase();
-    // Demo filter: we’ll expand later.
     return lower.contains('badword') || lower.contains('swear');
   }
 
@@ -1205,7 +1205,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-
                 _ParentTile(
                   icon: Icons.people_alt_rounded,
                   title: 'Approved Contacts',
@@ -1219,12 +1218,11 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-
                 _ParentTile(
                   icon: Icons.bedtime_rounded,
                   title: 'Chat Hours',
                   subtitle: ParentStore.quietHoursEnabled
-                      ? 'Quiet hours: ${_fmt(ParentStore.quietStart, context)} → ${_fmt(ParentStore.quietEnd, context)}'
+                      ? 'Quiet hours: ${ParentStore.quietStart.format(context)} → ${ParentStore.quietEnd.format(context)}'
                       : 'Quiet hours off',
                   color: NatterBrand.blue,
                   onTap: () async {
@@ -1234,7 +1232,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-
                 _ParentTile(
                   icon: Icons.notifications_active_rounded,
                   title: 'Alerts',
@@ -1247,7 +1244,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-
                 _ParentTile(
                   icon: Icons.verified_rounded,
                   title: 'Badges',
@@ -1273,10 +1269,6 @@ class _ParentHomeScreenState extends State<ParentHomeScreen> {
     if (ParentStore.alertNewContactRequests) on.add('New contact requests');
     if (on.isEmpty) return 'All alerts off';
     return on.join(' • ');
-  }
-
-  String _fmt(TimeOfDay t, BuildContext context) {
-    return t.format(context);
   }
 }
 
@@ -1409,7 +1401,6 @@ class _ApproveContactsScreenState extends State<ApproveContactsScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 if (ParentStore.pendingRequests.isNotEmpty) ...[
                   const Text('Pending requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
                   const SizedBox(height: 8),
@@ -1445,7 +1436,10 @@ class _ApproveContactsScreenState extends State<ApproveContactsScreen> {
                                   }
                                 });
                               },
-                              style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green, foregroundColor: Colors.black),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: NatterBrand.green,
+                                foregroundColor: Colors.black,
+                              ),
                               child: const Text('Approve'),
                             ),
                           ],
@@ -1455,10 +1449,8 @@ class _ApproveContactsScreenState extends State<ApproveContactsScreen> {
                   }),
                   const SizedBox(height: 8),
                 ],
-
                 const Text('Approved', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 8),
-
                 Expanded(
                   child: ListView.separated(
                     itemCount: ParentStore.approvedContacts.length,
@@ -1489,7 +1481,6 @@ class _ApproveContactsScreenState extends State<ApproveContactsScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: _addContact,
@@ -1547,7 +1538,8 @@ class _ChatHoursScreenState extends State<ChatHoursScreen> {
                   child: SwitchListTile(
                     value: ParentStore.quietHoursEnabled,
                     onChanged: (v) => setState(() => ParentStore.quietHoursEnabled = v),
-                    title: const Text('Enable quiet hours', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                    title: const Text('Enable quiet hours',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
                     subtitle: Text(
                       'During quiet hours, the child app should discourage chatting (v2).',
                       style: TextStyle(color: Colors.white.withOpacity(0.82), fontWeight: FontWeight.w700),
@@ -1556,13 +1548,14 @@ class _ChatHoursScreenState extends State<ChatHoursScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
                 BrandCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('Quiet hours window',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                      const Text(
+                        'Quiet hours window',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                      ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
@@ -1625,7 +1618,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   child: SwitchListTile(
                     value: ParentStore.alertBadWordAttempts,
                     onChanged: (v) => setState(() => ParentStore.alertBadWordAttempts = v),
-                    title: const Text('Bad-word attempts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                    title: const Text('Bad-word attempts',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
                     subtitle: Text(
                       'Notify the parent when a blocked message is attempted (no message content).',
                       style: TextStyle(color: Colors.white.withOpacity(0.82), fontWeight: FontWeight.w700),
@@ -1638,7 +1632,8 @@ class _AlertsScreenState extends State<AlertsScreen> {
                   child: SwitchListTile(
                     value: ParentStore.alertNewContactRequests,
                     onChanged: (v) => setState(() => ParentStore.alertNewContactRequests = v),
-                    title: const Text('New contact requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                    title: const Text('New contact requests',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
                     subtitle: Text(
                       'Notify the parent when the child tries to add a new contact (v2).',
                       style: TextStyle(color: Colors.white.withOpacity(0.82), fontWeight: FontWeight.w700),
