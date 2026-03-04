@@ -748,8 +748,27 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
         // Foreground ceremony card
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
-          child: BrandCard(
-            child: Column(
+          child: Container(
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.34), // was ~0.20 via BrandCard
+    borderRadius: BorderRadius.circular(NatterBrand.radius),
+    border: Border.all(color: Colors.white.withOpacity(0.28)),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.22),
+        blurRadius: 20,
+        offset: const Offset(0, 14),
+      ),
+    ],
+  ),
+  padding: const EdgeInsets.all(18),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      // ... keep the existing ceremony children exactly as-is
+    ],
+  ),
+),
               mainAxisSize: MainAxisSize.min,
               children: [
                 FadeTransition(
