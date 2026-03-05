@@ -610,6 +610,14 @@ class PromiseScreen extends StatefulWidget {
   State<PromiseScreen> createState() => _PromiseScreenState();
 }
 
+class PromiseScreen extends StatefulWidget {
+  final String name;
+  const PromiseScreen({super.key, required this.name});
+
+  @override
+  State<PromiseScreen> createState() => _PromiseScreenState();
+}
+
 class _PromiseScreenState extends State<PromiseScreen> {
   final options = const [
     'Be kind',
@@ -622,27 +630,26 @@ class _PromiseScreenState extends State<PromiseScreen> {
 
   final Set<String> selected = {};
 
-  Future<void> _sealAndShowCeremony() async {
-    final state = AppStateScope.of(context);
+  void _seal() {
     final promises = selected.toList();
 
-    state.recordRite(name: widget.name, promises: promises);
+    // record for Parent screen (if you’re using AppStateScope)
+    try {
+      final state = AppStateScope.of(context);
+      state.recordRite(name: widget.name, promises: promises);
+    } catch (_) {
+      // If AppStateScope isn’t present, ignore (still works).
+    }
 
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.72),
-      builder: (_) {
-        return _CeremonyDialog(
+    // ✅ THE FIX: go to a real page, not an overlay/dialog
+    Navigator.push(
+      context,
+      calmRoute(
+        CeremonyScreen(
           name: widget.name,
           promises: promises,
-          onClose: () => Navigator.of(context).pop(),
-          onEnter: () {
-            Navigator.of(context).pop(); // close dialog
-            Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
-          },
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -682,6 +689,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
                 Expanded(
                   child: Center(
                     child: SingleChildScrollView(
@@ -709,6 +717,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 10),
                 Text(
                   canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
@@ -722,7 +731,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: canContinue ? _sealAndShowCeremony : null,
+                    onPressed: canContinue ? _seal : null,
                     child: const Text('Seal My Promises ✨'),
                   ),
                 ),
@@ -734,7 +743,191 @@ class _PromiseScreenState extends State<PromiseScreen> {
     );
   }
 }
+class PromiseScreen extends StatefulWidget {
+  final String name;
+  const PromiseScreen({super.key, required this.name});
 
+  @override
+  State<PromiseScreen> createState() => _PromiseScreenState();
+}
+
+class _PromiseScreenState extends State<PromiseScreen> {
+  final options = const [
+    'Be kind',
+    'No secrets from adults',
+    'If it feels weird, stop',
+    'Ask before adding friends',
+    'Keep it text-only',
+    'Take breaks',
+  ];
+
+  final Set<String> selected = {};
+
+  void _seal() {
+    final promises = selected.toList();
+
+    // record for Parent screen (if you’re using AppStateScope)
+    try {
+      final state = AppStateScope.of(context);
+      state.recordRite(name: widget.name, promises: promises);
+    } catch (_) {
+      // If AppStateScope isn’t present, ignore (still works).
+    }
+
+    // ✅ THE FIX: go to a real page, not an overlay/dialog
+    Navigator.push(
+      context,
+      calmRoute(
+        CeremonyScreen(
+          name: widget.name,
+          promises: promises,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = 3 - selected.length;
+    final canContinue = selected.length >= 3;
+
+    return BrandScaffold(
+      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 760),
+            child: Column(
+              children: [
+                BrandCard(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Okay, ${widget.name} 😊',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: NatterBrand.navy,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Pick 3 promises for your Natter life:',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: options.map((t) {
+                          final isOn = selected.contains(t);
+                          return ChoiceChip(
+                            label: Text(t),
+                            selected: isOn,
+                            onSelected: (_) {
+                              setState(() {
+                                if (isOn) {
+                                  selected.remove(t);
+                                } else {
+                                  if (selected.length < 3) selected.add(t);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+                Text(
+                  canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: canContinue ? _seal : null,
+                    child: const Text('Seal My Promises ✨'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+class CeremonyScreen extends StatelessWidget {
+  final String name;
+  final List<String> promises;
+
+  const CeremonyScreen({
+    super.key,
+    required this.name,
+    required this.promises,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = badgeForPromises(promises.toSet());
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Sealed'),
+        leading: IconButton(
+          icon: const Icon(Icons.close_rounded),
+          onPressed: () => Navigator.pop(context), // back to promises
+        ),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 760),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.70),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: Colors.white.withOpacity(0.18)),
+              ),
+              child: CeremonialGraduation(
+                name: name,
+                promises: promises,
+                badge: badge,
+                onEnter: () {
+                  Navigator.pushReplacement(
+                    context,
+                    calmRoute(const ChatsScreen()),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 class _CeremonyDialog extends StatelessWidget {
   final String name;
   final List<String> promises;
