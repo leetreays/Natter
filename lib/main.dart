@@ -78,7 +78,6 @@ class AppState extends ChangeNotifier {
   String? lastName;
   NatterBadge? lastBadge;
 
-  // --- helpers ---
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
     int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
     final tm = toMin(t);
@@ -157,8 +156,11 @@ class AppState extends ChangeNotifier {
 }
 
 class AppStateScope extends InheritedNotifier<AppState> {
-  const AppStateScope({super.key, required AppState notifier, required Widget child})
-      : super(notifier: notifier, child: child);
+  const AppStateScope({
+    super.key,
+    required AppState notifier,
+    required Widget child,
+  }) : super(notifier: notifier, child: child);
 
   static AppState of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppStateScope>();
@@ -196,14 +198,17 @@ class NatterApp extends StatelessWidget {
           snackBarTheme: SnackBarThemeData(
             backgroundColor: Colors.black.withOpacity(0.85),
             contentTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             behavior: SnackBarBehavior.floating,
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
             fillColor: Colors.white.withOpacity(0.14),
             hintStyle: const TextStyle(color: Colors.white70),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(NatterBrand.radius),
               borderSide: BorderSide.none,
@@ -214,8 +219,13 @@ class NatterApp extends StatelessWidget {
               backgroundColor: NatterBrand.blue,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           chipTheme: base.chipTheme.copyWith(
@@ -229,7 +239,8 @@ class NatterApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
           ),
-          dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
+          dividerTheme:
+              const DividerThemeData(color: Colors.white12, thickness: 1),
         ),
         home: const HomeScreen(),
       ),
@@ -400,27 +411,36 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Enlarged logo (per your request)
+                // Enlarged logo
                 const NatterLogo(height: 170),
                 const SizedBox(height: 12),
                 const Text(
                   'Playful, safe messaging for kids.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 18, height: 1.3),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    height: 1.3,
+                  ),
                 ),
                 const SizedBox(height: 18),
                 const BrandCard(
                   child: Text(
                     'Text-only chats • Kinder words • Parent controls',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 16, height: 1.3),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      height: 1.3,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.push(context, calmRoute(const RiteScreen())),
+                    onPressed: () =>
+                        Navigator.push(context, calmRoute(const RiteScreen())),
                     child: const Text('Begin ✨'),
                   ),
                 ),
@@ -487,7 +507,11 @@ class _RiteScreenState extends State<RiteScreen> {
                   const Text(
                     'Before you enter Natter…\nWhat should we call you?',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 22, height: 1.25),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      height: 1.25,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   TextField(
@@ -525,7 +549,11 @@ class NatterBadge {
   final IconData icon;
   final Color color;
 
-  const NatterBadge({required this.title, required this.icon, required this.color});
+  const NatterBadge({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
 }
 
 NatterBadge badgeForPromises(Set<String> promises) {
@@ -601,15 +629,7 @@ class BadgeCard extends StatelessWidget {
   }
 }
 
-/// Promise screen + seal -> dialog ceremony (avoids grey-box overlay bugs).
-class PromiseScreen extends StatefulWidget {
-  final String name;
-  const PromiseScreen({super.key, required this.name});
-
-  @override
-  State<PromiseScreen> createState() => _PromiseScreenState();
-}
-
+/// ✅ SINGLE Promise screen (no duplicates) + permanent ceremony fix (real page route)
 class PromiseScreen extends StatefulWidget {
   final String name;
   const PromiseScreen({super.key, required this.name});
@@ -633,15 +653,11 @@ class _PromiseScreenState extends State<PromiseScreen> {
   void _seal() {
     final promises = selected.toList();
 
-    // record for Parent screen (if you’re using AppStateScope)
-    try {
-      final state = AppStateScope.of(context);
-      state.recordRite(name: widget.name, promises: promises);
-    } catch (_) {
-      // If AppStateScope isn’t present, ignore (still works).
-    }
+    // record for Parent screen
+    final state = AppStateScope.of(context);
+    state.recordRite(name: widget.name, promises: promises);
 
-    // ✅ THE FIX: go to a real page, not an overlay/dialog
+    // ✅ THE FIX: ceremony is a real page (not overlay/dialog)
     Navigator.push(
       context,
       calmRoute(
@@ -720,7 +736,9 @@ class _PromiseScreenState extends State<PromiseScreen> {
 
                 const SizedBox(height: 10),
                 Text(
-                  canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
+                  canContinue
+                      ? 'Nice. That’s your promise set.'
+                      : 'Choose $remaining more',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -743,139 +761,8 @@ class _PromiseScreenState extends State<PromiseScreen> {
     );
   }
 }
-class PromiseScreen extends StatefulWidget {
-  final String name;
-  const PromiseScreen({super.key, required this.name});
 
-  @override
-  State<PromiseScreen> createState() => _PromiseScreenState();
-}
-
-class _PromiseScreenState extends State<PromiseScreen> {
-  final options = const [
-    'Be kind',
-    'No secrets from adults',
-    'If it feels weird, stop',
-    'Ask before adding friends',
-    'Keep it text-only',
-    'Take breaks',
-  ];
-
-  final Set<String> selected = {};
-
-  void _seal() {
-    final promises = selected.toList();
-
-    // record for Parent screen (if you’re using AppStateScope)
-    try {
-      final state = AppStateScope.of(context);
-      state.recordRite(name: widget.name, promises: promises);
-    } catch (_) {
-      // If AppStateScope isn’t present, ignore (still works).
-    }
-
-    // ✅ THE FIX: go to a real page, not an overlay/dialog
-    Navigator.push(
-      context,
-      calmRoute(
-        CeremonyScreen(
-          name: widget.name,
-          promises: promises,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final remaining = 3 - selected.length;
-    final canContinue = selected.length >= 3;
-
-    return BrandScaffold(
-      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Column(
-              children: [
-                BrandCard(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Okay, ${widget.name} 😊',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: NatterBrand.navy,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Pick 3 promises for your Natter life:',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                Expanded(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: options.map((t) {
-                          final isOn = selected.contains(t);
-                          return ChoiceChip(
-                            label: Text(t),
-                            selected: isOn,
-                            onSelected: (_) {
-                              setState(() {
-                                if (isOn) {
-                                  selected.remove(t);
-                                } else {
-                                  if (selected.length < 3) selected.add(t);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-                Text(
-                  canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: canContinue ? _seal : null,
-                    child: const Text('Seal My Promises ✨'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+/// ✅ Ceremony is its own page (stable on web)
 class CeremonyScreen extends StatelessWidget {
   final String name;
   final List<String> promises;
@@ -906,7 +793,7 @@ class CeremonyScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.70),
+                color: Colors.black.withOpacity(0.78),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: Colors.white.withOpacity(0.18)),
               ),
@@ -924,60 +811,6 @@ class CeremonyScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-class _CeremonyDialog extends StatelessWidget {
-  final String name;
-  final List<String> promises;
-  final VoidCallback onEnter;
-  final VoidCallback onClose;
-
-  const _CeremonyDialog({
-    required this.name,
-    required this.promises,
-    required this.onEnter,
-    required this.onClose,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final badge = badgeForPromises(promises.toSet());
-
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(18),
-      child: Stack(
-        children: [
-          // Ceremony card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.68),
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
-            ),
-            child: CeremonialGraduation(
-              name: name,
-              promises: promises,
-              badge: badge,
-              onEnter: onEnter,
-            ),
-          ),
-
-          // X close
-          Positioned(
-            right: 8,
-            top: 8,
-            child: IconButton(
-              onPressed: onClose,
-              icon: const Icon(Icons.close_rounded, color: Colors.white),
-              tooltip: 'Close',
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1001,7 +834,8 @@ class CeremonialGraduation extends StatefulWidget {
   State<CeremonialGraduation> createState() => _CeremonialGraduationState();
 }
 
-class _CeremonialGraduationState extends State<CeremonialGraduation> with TickerProviderStateMixin {
+class _CeremonialGraduationState extends State<CeremonialGraduation>
+    with TickerProviderStateMixin {
   late final AnimationController _reveal;
   late final Animation<double> _fade;
   late final Animation<double> _badgeDrop;
@@ -1013,12 +847,17 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
   void initState() {
     super.initState();
 
-    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+    _reveal = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
     _fade = CurvedAnimation(parent: _reveal, curve: Curves.easeInOut);
     _badgeDrop = CurvedAnimation(parent: _reveal, curve: Curves.easeOutBack);
 
-    _breath = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
-      ..repeat(reverse: true);
+    _breath = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
     _breathAnim = CurvedAnimation(parent: _breath, curve: Curves.easeInOut);
 
     _reveal.forward();
@@ -1045,7 +884,8 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
             child: AnimatedBuilder(
               animation: Listenable.merge([_fade, _breathAnim]),
               builder: (_, __) {
-                final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
+                final intensity =
+                    (0.70 + 0.30 * _breathAnim.value) * _fade.value;
                 return Container(
                   width: 560,
                   height: 560,
@@ -1132,11 +972,16 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 18,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: Colors.white.withOpacity(0.22)),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.22),
+                            ),
                           ),
                           child: Text(
                             p,
@@ -1209,7 +1054,10 @@ class _TwinklePainter extends CustomPainter {
   final Listenable strengthListenable;
   final double Function() strength;
 
-  _TwinklePainter({required this.strengthListenable, required this.strength}) : super(repaint: strengthListenable);
+  _TwinklePainter({
+    required this.strengthListenable,
+    required this.strength,
+  }) : super(repaint: strengthListenable);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1230,6 +1078,18 @@ class _TwinklePainter extends CustomPainter {
 }
 
 /// ===== Chats / Chat =====
+
+class ChatPreview {
+  final String name;
+  final String last;
+  final bool unread;
+
+  const ChatPreview({
+    required this.name,
+    required this.last,
+    required this.unread,
+  });
+}
 
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
@@ -1253,21 +1113,33 @@ class ChatsScreen extends StatelessWidget {
         title: const BrandedAppBarTitle(title: 'Chats'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.push(context, calmRoute(const ParentHomeScreen())),
+            onPressed: () =>
+                Navigator.push(context, calmRoute(const ParentHomeScreen())),
             child: Row(
               children: [
-                const Text('Parent', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                const Text(
+                  'Parent',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 if (parentBadgeCount > 0) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: NatterBrand.yellow,
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: Text(
                       parentBadgeCount.toString(),
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 12),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -1291,10 +1163,19 @@ class ChatsScreen extends StatelessWidget {
                 backgroundColor: NatterBrand.yellow.withOpacity(0.35),
                 child: Text(
                   c.name.substring(0, 1),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
-              title: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+              title: Text(
+                c.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
               subtitle: Text(
                 c.last,
                 maxLines: 1,
@@ -1305,24 +1186,22 @@ class ChatsScreen extends StatelessWidget {
                   ? Container(
                       width: 12,
                       height: 12,
-                      decoration: BoxDecoration(color: NatterBrand.green, borderRadius: BorderRadius.circular(99)),
+                      decoration: BoxDecoration(
+                        color: NatterBrand.green,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
                     )
                   : const Icon(Icons.chevron_right, color: Colors.white),
-              onTap: () => Navigator.push(context, calmRoute(ChatScreen(contactName: c.name))),
+              onTap: () => Navigator.push(
+                context,
+                calmRoute(ChatScreen(contactName: c.name)),
+              ),
             ),
           );
         },
       ),
     );
   }
-}
-
-class ChatPreview {
-  final String name;
-  final String last;
-  final bool unread;
-
-  const ChatPreview({required this.name, required this.last, required this.unread});
 }
 
 class ChatScreen extends StatefulWidget {
@@ -1418,7 +1297,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 'Quiet Hours are ON (${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)})',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           if (feedback != null)
@@ -1434,7 +1316,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 feedback!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           Expanded(
@@ -1452,7 +1337,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                     decoration: const InputDecoration(hintText: 'Type a message'),
                     onSubmitted: (_) => _send(),
                   ),
@@ -1495,7 +1384,9 @@ class _Bubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
-    final color = msg.fromMe ? NatterBrand.blue.withOpacity(0.95) : Colors.white.withOpacity(0.20);
+    final color = msg.fromMe
+        ? NatterBrand.blue.withOpacity(0.95)
+        : Colors.white.withOpacity(0.20);
 
     return Align(
       alignment: align,
@@ -1510,7 +1401,11 @@ class _Bubble extends StatelessWidget {
         ),
         child: Text(
           msg.text,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -1525,7 +1420,9 @@ class ParentHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final hasRite = state.lastName != null && state.lastPromises.isNotEmpty && state.lastBadge != null;
+    final hasRite = state.lastName != null &&
+        state.lastPromises.isNotEmpty &&
+        state.lastBadge != null;
 
     return BrandScaffold(
       appBar: AppBar(
@@ -1537,7 +1434,10 @@ class ParentHomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => state.clearAlerts(),
-            child: const Text('Clear Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            child: const Text(
+              'Clear Alerts',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+            ),
           ),
           const SizedBox(width: 6),
         ],
@@ -1551,16 +1451,29 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'At a glance',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    _StatTile(label: 'Approved', value: state.approvedContacts.length.toString()),
-                    _StatTile(label: 'Pending', value: state.pendingRequests.length.toString()),
-                    _StatTile(label: 'Quiet Hours', value: state.quietHoursEnabled ? 'ON' : 'OFF'),
+                    _StatTile(
+                      label: 'Approved',
+                      value: state.approvedContacts.length.toString(),
+                    ),
+                    _StatTile(
+                      label: 'Pending',
+                      value: state.pendingRequests.length.toString(),
+                    ),
+                    _StatTile(
+                      label: 'Quiet Hours',
+                      value: state.quietHoursEnabled ? 'ON' : 'OFF',
+                    ),
                     _StatTile(label: 'Alerts', value: state.alerts.length.toString()),
                   ],
                 ),
@@ -1576,37 +1489,57 @@ class ParentHomeScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Rite of Passage',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     '${state.lastName} earned:',
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   BadgeCard(name: state.lastName!, badge: state.lastBadge!),
                   const SizedBox(height: 12),
                   Text(
                     'Promises:',
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: state.lastPromises
-                        .map((p) => Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.10),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: Colors.white.withOpacity(0.18)),
+                        .map(
+                          (p) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.10),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.18),
                               ),
-                              child: Text(
-                                p,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                            ),
+                            child: Text(
+                              p,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
                               ),
-                            ))
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ],
@@ -1621,17 +1554,26 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Controls',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context, calmRoute(const ParentContactsScreen())),
-                  style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green, foregroundColor: Colors.black),
+                  onPressed: () =>
+                      Navigator.push(context, calmRoute(const ParentContactsScreen())),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                  ),
                   child: Text('Contacts (${state.pendingRequests.length} pending)'),
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context, calmRoute(const ParentRulesScreen())),
+                  onPressed: () =>
+                      Navigator.push(context, calmRoute(const ParentRulesScreen())),
                   child: const Text('Rules & Alerts'),
                 ),
               ],
@@ -1646,13 +1588,20 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Recent Alerts (no message reading)',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 if (state.alerts.isEmpty)
                   Text(
                     'No alerts right now.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
                   )
                 else
                   ...state.alerts.take(6).map((a) => _AlertRow(event: a)),
@@ -1683,9 +1632,22 @@ class _StatTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
         ],
       ),
     );
@@ -1740,7 +1702,10 @@ class _AlertRow extends StatelessWidget {
             Expanded(
               child: Text(
                 event.message,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
@@ -1760,7 +1725,10 @@ class ParentContactsScreen extends StatelessWidget {
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Contacts'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -1769,10 +1737,23 @@ class ParentContactsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pending requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Pending requests',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 if (state.pendingRequests.isEmpty)
-                  Text('None right now.', style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700))
+                  Text(
+                    'None right now.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
                 else
                   ...state.pendingRequests.map((name) {
                     return Padding(
@@ -1788,11 +1769,23 @@ class ParentContactsScreen extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                              child: Text(name.substring(0, 1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: Text(
+                                name.substring(0, 1),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -1804,7 +1797,13 @@ class ParentContactsScreen extends StatelessWidget {
                                   ));
                                 }
                               },
-                              child: const Text('Approve', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: const Text(
+                                'Approve',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -1816,7 +1815,13 @@ class ParentContactsScreen extends StatelessWidget {
                                   ));
                                 }
                               },
-                              child: const Text('Block', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w800)),
+                              child: const Text(
+                                'Block',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -1831,21 +1836,39 @@ class ParentContactsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Approved contacts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Approved contacts',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
                   children: state.approvedContacts
-                      .map((n) => Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: Colors.white.withOpacity(0.16)),
+                      .map(
+                        (n) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: Colors.white.withOpacity(0.16)),
+                          ),
+                          child: Text(
+                            n,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
                             ),
-                            child: Text(n, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                          ))
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ],
@@ -1867,7 +1890,10 @@ class ParentRulesScreen extends StatelessWidget {
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Rules & Alerts'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -1876,12 +1902,25 @@ class ParentRulesScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quiet Hours', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Quiet Hours',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: state.quietHoursEnabled,
                   onChanged: state.setQuietEnabled,
-                  title: const Text('Enable Quiet Hours', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  title: const Text(
+                    'Enable Quiet Hours',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   subtitle: Text(
                     'Kids can’t send messages during this time.',
                     style: TextStyle(color: Colors.white.withOpacity(0.8)),
@@ -1895,7 +1934,10 @@ class ParentRulesScreen extends StatelessWidget {
                         label: 'Start',
                         time: state.quietStart,
                         onPick: () async {
-                          final picked = await showTimePicker(context: context, initialTime: state.quietStart);
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: state.quietStart,
+                          );
                           if (picked != null) state.setQuietStart(picked);
                         },
                       ),
@@ -1906,7 +1948,10 @@ class ParentRulesScreen extends StatelessWidget {
                         label: 'End',
                         time: state.quietEnd,
                         onPick: () async {
-                          final picked = await showTimePicker(context: context, initialTime: state.quietEnd);
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: state.quietEnd,
+                          );
                           if (picked != null) state.setQuietEnd(picked);
                         },
                       ),
@@ -1921,25 +1966,59 @@ class ParentRulesScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Alerts',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: state.alertsBlockedWord,
                   onChanged: (v) => state.setAlerts(blockedWord: v),
-                  title: const Text('Blocked-word attempts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert when a message is blocked.', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Blocked-word attempts',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Parents get an alert when a message is blocked.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
                 SwitchListTile(
                   value: state.alertsQuietHours,
                   onChanged: (v) => state.setAlerts(quietHours: v),
-                  title: const Text('Quiet Hours attempts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert if kids try to message during Quiet Hours.', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Quiet Hours attempts',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Parents get an alert if kids try to message during Quiet Hours.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
                 SwitchListTile(
                   value: state.alertsContactRequest,
                   onChanged: (v) => state.setAlerts(contactRequest: v),
-                  title: const Text('Contact events', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Alerts when a request is approved/blocked (demo).', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Contact events',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Alerts when a request is approved/blocked (demo).',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
               ],
             ),
@@ -1955,7 +2034,11 @@ class _TimeButton extends StatelessWidget {
   final TimeOfDay time;
   final VoidCallback onPick;
 
-  const _TimeButton({required this.label, required this.time, required this.onPick});
+  const _TimeButton({
+    required this.label,
+    required this.time,
+    required this.onPick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1973,9 +2056,22 @@ class _TimeButton extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(txt, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+          Text(
+            txt,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
         ],
       ),
     );
