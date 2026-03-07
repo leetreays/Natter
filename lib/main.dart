@@ -69,6 +69,7 @@ class AlertEvent {
 
 class AppState extends ChangeNotifier {
   // Contacts
+  final String myFriendCode = 'Nat-2048';
   final List<String> approvedContacts = ['Dad', 'Sam', 'Mia'];
   final List<String> pendingRequests = ['Ava', 'Leo'];
 
@@ -1156,45 +1157,77 @@ Future<void> _addFriendDialog(BuildContext context) async {
         icon: const Icon(Icons.person_add_alt_1_rounded),
         label: const Text('Add Friend', style: TextStyle(fontWeight: FontWeight.w900)),
       ),
-      child: ListView(
-        padding: const EdgeInsets.all(14),
+child: ListView(
+  padding: const EdgeInsets.all(14),
+  children: [
+
+    // YOUR FRIEND CODE CARD
+    BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (state.pendingRequests.isNotEmpty) ...[
-            BrandCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Pending friend approvals',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: state.pendingRequests.map((n) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: Colors.white.withOpacity(0.16)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.hourglass_bottom_rounded, color: Colors.white70, size: 16),
-                            const SizedBox(width: 8),
-                            Text(n, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
+          const Text(
+            'Your friend code',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
             ),
-            const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.16)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    state.myFriendCode,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Friend code copied: ${state.myFriendCode}'),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Copy'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Share this code with a friend so they can request to chat.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.78),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    ),
+
+    const SizedBox(height: 12),
+
+    if (state.pendingRequests.isNotEmpty) ...
           ],
           ...chats.map((c) {
             return Padding(
