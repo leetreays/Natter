@@ -796,11 +796,18 @@ class CeremonyScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.80),
+                color: Colors.black.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: Colors.white.withOpacity(0.18)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.35),
+                    blurRadius: 24,
+                    offset: const Offset(0, 16),
+                  ),
+                ],
               ),
-              child: CeremonialGraduation(
+              child: _SimpleCeremony(
                 name: name,
                 promises: promises,
                 badge: badge,
@@ -819,14 +826,13 @@ class CeremonyScreen extends StatelessWidget {
   }
 }
 
-class CeremonialGraduation extends StatefulWidget {
+class _SimpleCeremony extends StatelessWidget {
   final String name;
   final List<String> promises;
   final NatterBadge badge;
   final VoidCallback onEnter;
 
-  const CeremonialGraduation({
-    super.key,
+  const _SimpleCeremony({
     required this.name,
     required this.promises,
     required this.badge,
@@ -834,205 +840,88 @@ class CeremonialGraduation extends StatefulWidget {
   });
 
   @override
-  State<CeremonialGraduation> createState() => _CeremonialGraduationState();
-}
-
-class _CeremonialGraduationState extends State<CeremonialGraduation> with TickerProviderStateMixin {
-  late final AnimationController _reveal;
-  late final Animation<double> _fade;
-  late final Animation<double> _badgeDrop;
-
-  late final AnimationController _breath;
-  late final Animation<double> _breathAnim;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
-    _fade = CurvedAnimation(parent: _reveal, curve: Curves.easeInOut);
-    _badgeDrop = CurvedAnimation(parent: _reveal, curve: Curves.easeOutBack);
-
-    _breath = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
-      ..repeat(reverse: true);
-    _breathAnim = CurvedAnimation(parent: _breath, curve: Curves.easeInOut);
-
-    _reveal.forward();
-  }
-
-  @override
-  void dispose() {
-    _reveal.dispose();
-    _breath.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final badge = widget.badge;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 14, 8, 10),
-      child: Stack(
-        alignment: Alignment.center,
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Breathing glow
-          IgnorePointer(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([_fade, _breathAnim]),
-              builder: (_, __) {
-                final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
-                return Container(
-                  width: 560,
-                  height: 560,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        badge.color.withOpacity(0.20 * intensity),
-                        NatterBrand.pink.withOpacity(0.10 * intensity),
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.42, 0.78],
-                    ),
-                  ),
-                );
-              },
+          const Icon(
+            Icons.verified_rounded,
+            size: 72,
+            color: NatterBrand.yellow,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Welcome to Natter',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
             ),
           ),
-
-          // Twinkles
-          IgnorePointer(
-            child: Positioned.fill(
-              child: CustomPaint(
-                painter: _TwinklePainter(
-                  strengthListenable: Listenable.merge([_fade, _breathAnim]),
-                  strength: () => _fade.value * (0.7 + 0.3 * _breathAnim.value),
+          const SizedBox(height: 10),
+          Text(
+            name,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Your promises:',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...promises.map(
+            (p) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                ),
+                child: Text(
+                  p,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ),
           ),
-
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 620),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    'Welcome to Natter',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.80),
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    widget.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    'These are the promises you chose:',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: widget.promises.map((p) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: Colors.white.withOpacity(0.22)),
-                          ),
-                          child: Text(
-                            p,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 22),
-
-                AnimatedBuilder(
-                  animation: _badgeDrop,
-                  builder: (_, __) {
-                    final t = _badgeDrop.value;
-                    return Transform.translate(
-                      offset: Offset(0, (1 - t) * -18),
-                      child: Opacity(
-                        opacity: _fade.value,
-                        child: BadgeCard(name: widget.name, badge: badge),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 18),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: Text(
-                    "You're officially in. 🌿",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: NatterBrand.green.withOpacity(0.95),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 26),
-
-                FadeTransition(
-                  opacity: _fade,
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: widget.onEnter,
-                      child: const Text('Enter Natter ✨'),
-                    ),
-                  ),
-                ),
-              ],
+          const SizedBox(height: 18),
+          BadgeCard(name: name, badge: badge),
+          const SizedBox(height: 18),
+          Text(
+            "You're officially in. 🌿",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: NatterBrand.green.withOpacity(0.95),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onEnter,
+              child: const Text('Enter Natter ✨'),
             ),
           ),
         ],
@@ -1040,33 +929,6 @@ class _CeremonialGraduationState extends State<CeremonialGraduation> with Ticker
     );
   }
 }
-
-class _TwinklePainter extends CustomPainter {
-  final Listenable strengthListenable;
-  final double Function() strength;
-
-  _TwinklePainter({required this.strengthListenable, required this.strength})
-      : super(repaint: strengthListenable);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = strength().clamp(0.0, 1.0);
-    final rnd = Random(12);
-    final paint = Paint()..color = Colors.white.withOpacity(0.14 * s);
-
-    for (int i = 0; i < 28; i++) {
-      final dx = rnd.nextDouble() * size.width;
-      final dy = rnd.nextDouble() * size.height;
-      final r = (1.0 + rnd.nextDouble() * 2.4) * (0.7 + 0.3 * s);
-      canvas.drawCircle(Offset(dx, dy), r, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TwinklePainter oldDelegate) => true;
-}
-
-/// ===== Chats / Chat =====
 
 class ChatPreview {
   final String name;
