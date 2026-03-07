@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
+import 'dart:html' as html;
 
 void main() => runApp(const NatterApp());
 
@@ -1218,11 +1218,17 @@ child: Row(
     ),
     const SizedBox(width: 8),
     ElevatedButton(
-      onPressed: () async {
-        await Share.share(
-          'Add me on Natter with my friend code: ${state.myFriendCode}',
-        );
-      },
+onPressed: () {
+  final text = 'Add me on Natter with my friend code: ${state.myFriendCode}';
+
+  html.window.navigator.clipboard?.writeText(text);
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Friend code copied! Share it with a friend.'),
+    ),
+  );
+},
       style: ElevatedButton.styleFrom(
         backgroundColor: NatterBrand.yellow,
         foregroundColor: Colors.black,
