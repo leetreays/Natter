@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(const NatterApp());
 
@@ -1195,13 +1196,19 @@ child: ListView(
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Friend code copied: ${state.myFriendCode}'),
-                      ),
-                    );
-                  },
+onPressed: () async {
+  await Clipboard.setData(
+    ClipboardData(text: state.myFriendCode),
+  );
+
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Friend code copied: ${state.myFriendCode}'),
+    ),
+  );
+},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: NatterBrand.green,
                     foregroundColor: Colors.black,
