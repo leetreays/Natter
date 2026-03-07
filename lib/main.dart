@@ -1182,42 +1182,54 @@ child: ListView(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: Colors.white.withOpacity(0.16)),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    state.myFriendCode,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 22,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-onPressed: () async {
-  await Clipboard.setData(
-    ClipboardData(text: state.myFriendCode),
-  );
-
-  if (!context.mounted) return;
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('Friend code copied: ${state.myFriendCode}'),
+child: Row(
+  children: [
+    Expanded(
+      child: Text(
+        state.myFriendCode,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 22,
+          letterSpacing: 1.2,
+        ),
+      ),
     ),
-  );
-},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: NatterBrand.green,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text('Copy'),
-                ),
-              ],
-            ),
+    ElevatedButton(
+      onPressed: () async {
+        await Clipboard.setData(
+          ClipboardData(text: state.myFriendCode),
+        );
+
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Friend code copied: ${state.myFriendCode}'),
           ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: NatterBrand.green,
+        foregroundColor: Colors.black,
+      ),
+      child: const Text('Copy'),
+    ),
+    const SizedBox(width: 8),
+    ElevatedButton(
+      onPressed: () async {
+        await Share.share(
+          'Add me on Natter with my friend code: ${state.myFriendCode}',
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: NatterBrand.yellow,
+        foregroundColor: Colors.black,
+      ),
+      child: const Text('Share'),
+    ),
+  ],
+),
           const SizedBox(height: 8),
           Text(
             'Share this code with a friend so they can request to chat.',
