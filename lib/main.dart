@@ -78,6 +78,7 @@ class AppState extends ChangeNotifier {
   String? lastName;
   NatterBadge? lastBadge;
 
+  // --- helpers ---
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
     int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
     final tm = toMin(t);
@@ -97,6 +98,29 @@ class AppState extends ChangeNotifier {
     return _isTimeInRange(now, quietStart, quietEnd);
   }
 
+  bool isApproved(String name) =>
+      approvedContacts.any((c) => c.toLowerCase() == name.toLowerCase());
+
+  bool isPending(String name) =>
+      pendingRequests.any((p) => p.toLowerCase() == name.toLowerCase());
+
+  void requestContact(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    if (isApproved(trimmed) || isPending(trimmed)) return;
+
+    pendingRequests.insert(0, trimmed);
+
+    if (alertsContactRequest) {
+      addAlert(AlertEvent(
+        type: AlertType.contactRequest,
+        message: 'New contact request: $trimmed',
+      ));
+    }
+
+    notifyListeners();
+  }
+
   void addAlert(AlertEvent e) {
     alerts.insert(0, e);
     notifyListeners();
@@ -108,13 +132,13 @@ class AppState extends ChangeNotifier {
   }
 
   void approveContact(String name) {
-    pendingRequests.remove(name);
-    if (!approvedContacts.contains(name)) approvedContacts.add(name);
+    pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
+    if (!isApproved(name)) approvedContacts.add(name);
     notifyListeners();
   }
 
   void blockContact(String name) {
-    pendingRequests.remove(name);
+    pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
     notifyListeners();
   }
 
@@ -297,13 +321,23 @@ class _ConfettiPainter extends CustomPainter {
 class BrandScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget child;
+  final Widget? floatingActionButton;
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
 
-  const BrandScaffold({super.key, this.appBar, required this.child});
+  const BrandScaffold({
+    super.key,
+    this.appBar,
+    required this.child,
+    this.floatingActionButton,
+    this.floatingActionButtonLocation,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: appBar,
+      floatingActionButton: floatingActionButton,
+      floatingActionButtonLocation: floatingActionButtonLocation,
       body: BubblyBackground(child: SafeArea(child: child)),
     );
   }
@@ -334,7 +368,7 @@ class BrandCard extends StatelessWidget {
   }
 }
 
-/// Reusable logo widget with visible fallback.
+/// Reusable logo widget with visible fallback + debug print.
 class NatterLogo extends StatelessWidget {
   final double height;
   const NatterLogo({super.key, required this.height});
@@ -460,7 +494,7 @@ class _RiteScreenState extends State<RiteScreen> {
       return;
     }
 
-    await Future.delayed(const Duration(milliseconds: 350));
+    await Future.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;
 
     Navigator.pushReplacement(context, calmRoute(PromiseScreen(name: name)));
@@ -520,7 +554,7 @@ class _RiteScreenState extends State<RiteScreen> {
   }
 }
 
-/// ===== Badge =====
+/// ===== Ceremony / Badge =====
 class NatterBadge {
   final String title;
   final IconData icon;
@@ -602,7 +636,7 @@ class BadgeCard extends StatelessWidget {
   }
 }
 
-/// ===== Promises =====
+/// Promise screen + seal -> real ceremony page (prevents grey overlay bugs).
 class PromiseScreen extends StatefulWidget {
   final String name;
   const PromiseScreen({super.key, required this.name});
@@ -625,12 +659,19 @@ class _PromiseScreenState extends State<PromiseScreen> {
 
   void _seal() {
     final promises = selected.toList();
-    final state = AppStateScope.of(context);
-    state.recordRite(name: widget.name, promises: promises);
 
+    // Record rite for Parent screen
+    AppStateScope.of(context).recordRite(name: widget.name, promises: promises);
+
+    // ✅ Fix: navigate to a real page (not overlay/dialog)
     Navigator.push(
       context,
-      calmRoute(CeremonyScreen(name: widget.name, promises: promises)),
+      calmRoute(
+        CeremonyScreen(
+          name: widget.name,
+          promises: promises,
+        ),
+      ),
     );
   }
 
@@ -670,6 +711,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
                 Expanded(
                   child: Center(
                     child: SingleChildScrollView(
@@ -697,10 +739,15 @@ class _PromiseScreenState extends State<PromiseScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 10),
                 Text(
                   canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -719,12 +766,15 @@ class _PromiseScreenState extends State<PromiseScreen> {
   }
 }
 
-/// ✅ Stable ceremony (NO CustomPaint / NO animation controllers)
 class CeremonyScreen extends StatelessWidget {
   final String name;
   final List<String> promises;
 
-  const CeremonyScreen({super.key, required this.name, required this.promises});
+  const CeremonyScreen({
+    super.key,
+    required this.name,
+    required this.promises,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -746,24 +796,19 @@ class CeremonyScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                // Stronger / visible than before (no “too transparent” issue)
-                color: Colors.black.withOpacity(0.85),
+                color: Colors.black.withOpacity(0.80),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: Colors.white.withOpacity(0.18)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
-                    blurRadius: 24,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
               ),
-              child: _SimpleCeremony(
+              child: CeremonialGraduation(
                 name: name,
                 promises: promises,
                 badge: badge,
                 onEnter: () {
-                  Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
+                  Navigator.pushReplacement(
+                    context,
+                    calmRoute(const ChatsScreen()),
+                  );
                 },
               ),
             ),
@@ -774,13 +819,14 @@ class CeremonyScreen extends StatelessWidget {
   }
 }
 
-class _SimpleCeremony extends StatelessWidget {
+class CeremonialGraduation extends StatefulWidget {
   final String name;
   final List<String> promises;
   final NatterBadge badge;
   final VoidCallback onEnter;
 
-  const _SimpleCeremony({
+  const CeremonialGraduation({
+    super.key,
     required this.name,
     required this.promises,
     required this.badge,
@@ -788,86 +834,205 @@ class _SimpleCeremony extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.verified_rounded, size: 72, color: NatterBrand.yellow),
-          const SizedBox(height: 10),
-          Text(
-            'Welcome to Natter',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Your promises:',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
+  State<CeremonialGraduation> createState() => _CeremonialGraduationState();
+}
 
-          // promises list
-          ...promises.map(
-            (p) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withOpacity(0.18)),
-                ),
-                child: Text(
-                  p,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
+class _CeremonialGraduationState extends State<CeremonialGraduation> with TickerProviderStateMixin {
+  late final AnimationController _reveal;
+  late final Animation<double> _fade;
+  late final Animation<double> _badgeDrop;
+
+  late final AnimationController _breath;
+  late final Animation<double> _breathAnim;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _reveal = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+    _fade = CurvedAnimation(parent: _reveal, curve: Curves.easeInOut);
+    _badgeDrop = CurvedAnimation(parent: _reveal, curve: Curves.easeOutBack);
+
+    _breath = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))
+      ..repeat(reverse: true);
+    _breathAnim = CurvedAnimation(parent: _breath, curve: Curves.easeInOut);
+
+    _reveal.forward();
+  }
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    _breath.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final badge = widget.badge;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 14, 8, 10),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Breathing glow
+          IgnorePointer(
+            child: AnimatedBuilder(
+              animation: Listenable.merge([_fade, _breathAnim]),
+              builder: (_, __) {
+                final intensity = (0.70 + 0.30 * _breathAnim.value) * _fade.value;
+                return Container(
+                  width: 560,
+                  height: 560,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        badge.color.withOpacity(0.20 * intensity),
+                        NatterBrand.pink.withOpacity(0.10 * intensity),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.42, 0.78],
+                    ),
                   ),
+                );
+              },
+            ),
+          ),
+
+          // Twinkles
+          IgnorePointer(
+            child: Positioned.fill(
+              child: CustomPaint(
+                painter: _TwinklePainter(
+                  strengthListenable: Listenable.merge([_fade, _breathAnim]),
+                  strength: () => _fade.value * (0.7 + 0.3 * _breathAnim.value),
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 18),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    'Welcome to Natter',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.80),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
-          BadgeCard(name: name, badge: badge),
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    widget.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
 
-          const SizedBox(height: 18),
-          Text(
-            "You're officially in. 🌿",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: NatterBrand.green.withOpacity(0.95),
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onEnter,
-              child: const Text('Enter Natter ✨'),
+                const SizedBox(height: 14),
+
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    'These are the promises you chose:',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                FadeTransition(
+                  opacity: _fade,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: widget.promises.map((p) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 18),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: Colors.white.withOpacity(0.22)),
+                          ),
+                          child: Text(
+                            p,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+
+                AnimatedBuilder(
+                  animation: _badgeDrop,
+                  builder: (_, __) {
+                    final t = _badgeDrop.value;
+                    return Transform.translate(
+                      offset: Offset(0, (1 - t) * -18),
+                      child: Opacity(
+                        opacity: _fade.value,
+                        child: BadgeCard(name: widget.name, badge: badge),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 18),
+
+                FadeTransition(
+                  opacity: _fade,
+                  child: Text(
+                    "You're officially in. 🌿",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: NatterBrand.green.withOpacity(0.95),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 26),
+
+                FadeTransition(
+                  opacity: _fade,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: widget.onEnter,
+                      child: const Text('Enter Natter ✨'),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -876,7 +1041,33 @@ class _SimpleCeremony extends StatelessWidget {
   }
 }
 
+class _TwinklePainter extends CustomPainter {
+  final Listenable strengthListenable;
+  final double Function() strength;
+
+  _TwinklePainter({required this.strengthListenable, required this.strength})
+      : super(repaint: strengthListenable);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = strength().clamp(0.0, 1.0);
+    final rnd = Random(12);
+    final paint = Paint()..color = Colors.white.withOpacity(0.14 * s);
+
+    for (int i = 0; i < 28; i++) {
+      final dx = rnd.nextDouble() * size.width;
+      final dy = rnd.nextDouble() * size.height;
+      final r = (1.0 + rnd.nextDouble() * 2.4) * (0.7 + 0.3 * s);
+      canvas.drawCircle(Offset(dx, dy), r, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TwinklePainter oldDelegate) => true;
+}
+
 /// ===== Chats / Chat =====
+
 class ChatPreview {
   final String name;
   final String last;
@@ -887,6 +1078,117 @@ class ChatPreview {
 
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
+
+  Future<void> _addFriendDialog(BuildContext context) async {
+    final state = AppStateScope.of(context);
+    final controller = TextEditingController();
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(18),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.72),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Add a friend',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Type their name. A parent will approve it.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: controller,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  decoration: const InputDecoration(hintText: 'e.g. Ava'),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.white.withOpacity(0.22)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final name = controller.text.trim();
+                          if (name.isEmpty) return;
+
+                          if (state.isApproved(name)) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$name is already in your chats 🙂')),
+                            );
+                            return;
+                          }
+
+                          if (state.isPending(name)) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$name is already waiting for approval ⏳')),
+                            );
+                            return;
+                          }
+
+                          state.requestContact(name);
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Request sent! A parent will approve $name ✅')),
+                          );
+                        },
+                        child: const Text('Request'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -906,6 +1208,12 @@ class ChatsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Chats'),
         actions: [
+          // AppBar icon (nice-to-have)
+          IconButton(
+            tooltip: 'Add Friend',
+            onPressed: () => _addFriendDialog(context),
+            icon: const Icon(Icons.person_add_alt_1_rounded, color: Colors.white),
+          ),
           TextButton(
             onPressed: () => Navigator.push(context, calmRoute(const ParentHomeScreen())),
             child: Row(
@@ -931,41 +1239,90 @@ class ChatsScreen extends StatelessWidget {
           const SizedBox(width: 6),
         ],
       ),
-      child: ListView.separated(
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // ✅ Always-visible Add Friend button
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _addFriendDialog(context),
+        backgroundColor: NatterBrand.green,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text('Add Friend', style: TextStyle(fontWeight: FontWeight.w900)),
+      ),
+      child: ListView(
         padding: const EdgeInsets.all(14),
-        itemCount: chats.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, i) {
-          final c = chats[i];
-          return BrandCard(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: CircleAvatar(
-                radius: 22,
-                backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                child: Text(
-                  c.name.substring(0, 1),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+        children: [
+          if (state.pendingRequests.isNotEmpty) ...[
+            BrandCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Pending approval',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: state.pendingRequests.map((n) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: Colors.white.withOpacity(0.16)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.hourglass_bottom_rounded, color: Colors.white70, size: 16),
+                            const SizedBox(width: 8),
+                            Text(n, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          ...chats.map((c) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: BrandCard(
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    radius: 22,
+                    backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                    child: Text(
+                      c.name.substring(0, 1),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                  title: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                  subtitle: Text(
+                    c.last,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  trailing: c.unread
+                      ? Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(color: NatterBrand.green, borderRadius: BorderRadius.circular(99)),
+                        )
+                      : const Icon(Icons.chevron_right, color: Colors.white),
+                  onTap: () => Navigator.push(context, calmRoute(ChatScreen(contactName: c.name))),
                 ),
               ),
-              title: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-              subtitle: Text(
-                c.last,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white),
-              ),
-              trailing: c.unread
-                  ? Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(color: NatterBrand.green, borderRadius: BorderRadius.circular(99)),
-                    )
-                  : const Icon(Icons.chevron_right, color: Colors.white),
-              onTap: () => Navigator.push(context, calmRoute(ChatScreen(contactName: c.name))),
-            ),
-          );
-        },
+            );
+          }),
+          const SizedBox(height: 90), // space so FAB doesn't cover last row
+        ],
       ),
     );
   }
@@ -1176,7 +1533,10 @@ class ParentHomeScreen extends StatelessWidget {
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Parent Controls'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           TextButton(
             onPressed: () => state.clearAlerts(),
@@ -1192,7 +1552,10 @@ class ParentHomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('At a glance', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                const Text(
+                  'At a glance',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 12,
@@ -1213,13 +1576,22 @@ class ParentHomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Rite of Passage', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                  const Text(
+                    'Rite of Passage',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  ),
                   const SizedBox(height: 12),
-                  Text('${state.lastName} earned:', style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w700)),
+                  Text(
+                    '${state.lastName} earned:',
+                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 10),
                   BadgeCard(name: state.lastName!, badge: state.lastBadge!),
                   const SizedBox(height: 12),
-                  Text('Promises:', style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w800)),
+                  Text(
+                    'Promises:',
+                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w800),
+                  ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 10,
@@ -1232,7 +1604,10 @@ class ParentHomeScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(999),
                                 border: Border.all(color: Colors.white.withOpacity(0.18)),
                               ),
-                              child: Text(p, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                              child: Text(
+                                p,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                              ),
                             ))
                         .toList(),
                   ),
@@ -1245,7 +1620,10 @@ class ParentHomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Controls', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                const Text(
+                  'Controls',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                ),
                 const SizedBox(height: 12),
                 ElevatedButton(
                   onPressed: () => Navigator.push(context, calmRoute(const ParentContactsScreen())),
@@ -1257,6 +1635,26 @@ class ParentHomeScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(context, calmRoute(const ParentRulesScreen())),
                   child: const Text('Rules & Alerts'),
                 ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Recent Alerts (no message reading)',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 10),
+                if (state.alerts.isEmpty)
+                  Text(
+                    'No alerts right now.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700),
+                  )
+                else
+                  ...state.alerts.take(6).map((a) => _AlertRow(event: a)),
               ],
             ),
           ),
@@ -1293,6 +1691,64 @@ class _StatTile extends StatelessWidget {
   }
 }
 
+class _AlertRow extends StatelessWidget {
+  final AlertEvent event;
+  const _AlertRow({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon;
+    Color color;
+    switch (event.type) {
+      case AlertType.blockedWord:
+        icon = Icons.block_rounded;
+        color = NatterBrand.yellow;
+        break;
+      case AlertType.quietHours:
+        icon = Icons.nights_stay_rounded;
+        color = Colors.white;
+        break;
+      case AlertType.contactRequest:
+        icon = Icons.person_add_alt_1_rounded;
+        color = NatterBrand.green;
+        break;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.16)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.45)),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                event.message,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ParentContactsScreen extends StatelessWidget {
   const ParentContactsScreen({super.key});
 
@@ -1312,10 +1768,16 @@ class ParentContactsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Pending requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Pending requests',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                ),
                 const SizedBox(height: 10),
                 if (state.pendingRequests.isEmpty)
-                  Text('None right now.', style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700))
+                  Text(
+                    'None right now.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700),
+                  )
                 else
                   ...state.pendingRequests.map((name) {
                     return Padding(
@@ -1331,15 +1793,23 @@ class ParentContactsScreen extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                              child: Text(name.substring(0, 1), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: Text(
+                                name.substring(0, 1),
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                              ),
                             ),
                             const SizedBox(width: 10),
-                            Expanded(child: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900))),
+                            Expanded(
+                              child: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                            ),
                             TextButton(
                               onPressed: () {
                                 state.approveContact(name);
                                 if (state.alertsContactRequest) {
-                                  state.addAlert(AlertEvent(type: AlertType.contactRequest, message: 'Approved contact: $name'));
+                                  state.addAlert(AlertEvent(
+                                    type: AlertType.contactRequest,
+                                    message: 'Approved contact: $name',
+                                  ));
                                 }
                               },
                               child: const Text('Approve', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
@@ -1348,7 +1818,10 @@ class ParentContactsScreen extends StatelessWidget {
                               onPressed: () {
                                 state.blockContact(name);
                                 if (state.alertsContactRequest) {
-                                  state.addAlert(AlertEvent(type: AlertType.contactRequest, message: 'Blocked contact request: $name'));
+                                  state.addAlert(AlertEvent(
+                                    type: AlertType.contactRequest,
+                                    message: 'Blocked contact request: $name',
+                                  ));
                                 }
                               },
                               child: const Text('Block', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w800)),
@@ -1366,7 +1839,10 @@ class ParentContactsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Approved contacts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Approved contacts',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
@@ -1411,13 +1887,18 @@ class ParentRulesScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quiet Hours', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text('Quiet Hours',
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: state.quietHoursEnabled,
                   onChanged: state.setQuietEnabled,
-                  title: const Text('Enable Quiet Hours', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Kids can’t send messages during this time.', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text('Enable Quiet Hours',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  subtitle: Text(
+                    'Kids can’t send messages during this time.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -1458,20 +1939,26 @@ class ParentRulesScreen extends StatelessWidget {
                 SwitchListTile(
                   value: state.alertsBlockedWord,
                   onChanged: (v) => state.setAlerts(blockedWord: v),
-                  title: const Text('Blocked-word attempts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert when a message is blocked.', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text('Blocked-word attempts',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  subtitle: Text('Parents get an alert when a message is blocked.',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
                 ),
                 SwitchListTile(
                   value: state.alertsQuietHours,
                   onChanged: (v) => state.setAlerts(quietHours: v),
-                  title: const Text('Quiet Hours attempts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert if kids try to message during Quiet Hours.', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text('Quiet Hours attempts',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  subtitle: Text('Parents get an alert if kids try to message during Quiet Hours.',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
                 ),
                 SwitchListTile(
                   value: state.alertsContactRequest,
                   onChanged: (v) => state.setAlerts(contactRequest: v),
-                  title: const Text('Contact events', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Alerts when a request is approved/blocked (demo).', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text('Contact events',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  subtitle: Text('Alerts when a request is made/approved/blocked (demo).',
+                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
                 ),
               ],
             ),
