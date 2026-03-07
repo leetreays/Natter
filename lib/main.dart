@@ -69,7 +69,7 @@ class AlertEvent {
 
 class AppState extends ChangeNotifier {
   // Contacts
-  final String myFriendCode = 'Nat-2048';
+  final String myFriendCode = 'NAT-2048';
   final List<String> approvedContacts = ['Dad', 'Sam', 'Mia'];
   final List<String> pendingRequests = ['Ava', 'Leo'];
 
@@ -1160,8 +1160,6 @@ Future<void> _addFriendDialog(BuildContext context) async {
 child: ListView(
   padding: const EdgeInsets.all(14),
   children: [
-
-    // YOUR FRIEND CODE CARD
     BrandCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1224,44 +1222,111 @@ child: ListView(
         ],
       ),
     ),
-
     const SizedBox(height: 12),
 
-    if (state.pendingRequests.isNotEmpty) ...
+    if (state.pendingRequests.isNotEmpty) ...[
+      BrandCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Pending friend approvals',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: state.pendingRequests.map((n) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white.withOpacity(0.16)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.hourglass_bottom_rounded,
+                        color: Colors.white70,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        n,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ],
-          ...chats.map((c) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: BrandCard(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                    child: Text(
-                      c.name.substring(0, 1),
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                  title: Text(c.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-                  subtitle: Text(
-                    c.last,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: c.unread
-                      ? Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(color: NatterBrand.green, borderRadius: BorderRadius.circular(99)),
-                        )
-                      : const Icon(Icons.chevron_right, color: Colors.white),
-                  onTap: () => Navigator.push(context, calmRoute(ChatScreen(contactName: c.name))),
+        ),
+      ),
+      const SizedBox(height: 12),
+    ],
+
+    ...chats.map((c) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: BrandCard(
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: CircleAvatar(
+              radius: 22,
+              backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+              child: Text(
+                c.name.substring(0, 1),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
-            );
-          }),
+            ),
+            title: Text(
+              c.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            subtitle: Text(
+              c.last,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white),
+            ),
+            trailing: c.unread
+                ? Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: NatterBrand.green,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  )
+                : const Icon(Icons.chevron_right, color: Colors.white),
+            onTap: () => Navigator.push(
+              context,
+              calmRoute(ChatScreen(contactName: c.name)),
+            ),
+          ),
+        ),
+      );
+    }),
           const SizedBox(height: 90), // space so FAB doesn't cover last row
         ],
       ),
