@@ -47,6 +47,18 @@ class NatterBrand {
 /// ===== App State (no backend; demo only) =====
 enum AlertType { blockedWord, quietHours, contactRequest }
 
+class FriendDirectory {
+  static const Map<String, String> codeToName = {
+    'AVA-4821': 'Ava',
+    'LEO-7314': 'Leo',
+    'ZOE-1942': 'Zoe',
+    'MAX-5508': 'Max',
+  };
+
+  static String? nameForCode(String code) {
+    return codeToName[code.trim().toUpperCase()];
+  }
+}
 class AlertEvent {
   final AlertType type;
   final String message;
@@ -941,116 +953,150 @@ class ChatPreview {
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
 
-  Future<void> _addFriendDialog(BuildContext context) async {
-    final state = AppStateScope.of(context);
-    final controller = TextEditingController();
+Future<void> _addFriendDialog(BuildContext context) async {
+  final state = AppStateScope.of(context);
+  final controller = TextEditingController();
 
-    await showDialog<void>(
-      context: context,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(18),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.72),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Add a friend',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(18),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.72),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Add a friend',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  'Type their name. A parent will approve it.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontWeight: FontWeight.w700,
-                  ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Enter their friend code. A parent will approve it.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.85),
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: controller,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  decoration: const InputDecoration(hintText: 'e.g. Ava'),
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: controller,
+                textAlign: TextAlign.center,
+                textCapitalization: TextCapitalization.characters,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.white.withOpacity(0.22)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: const InputDecoration(
+                  hintText: 'e.g. AVA-4821',
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Try demo codes: AVA-4821, LEO-7314, ZOE-1942',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.70),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.white.withOpacity(0.22)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
                         ),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final name = controller.text.trim();
-                          if (name.isEmpty) return;
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final code = controller.text.trim().toUpperCase();
+                        final friendName = FriendDirectory.nameForCode(code);
 
-                          if (state.isApproved(name)) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('$name is already in your chats 🙂')),
-                            );
-                            return;
-                          }
+                        if (code.isEmpty) return;
 
-                          if (state.isPending(name)) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('$name is already waiting for approval ⏳')),
-                            );
-                            return;
-                          }
-
-                          state.requestContact(name);
+                        if (friendName == null) {
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Request sent! A parent will approve $name ✅')),
+                            const SnackBar(
+                              content: Text('That friend code was not recognised.'),
+                            ),
                           );
-                        },
-                        child: const Text('Request'),
-                      ),
+                          return;
+                        }
+
+                        if (state.isApproved(friendName)) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('$friendName is already in your chats 🙂'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (state.isPending(friendName)) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('$friendName is already waiting for approval ⏳'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        state.requestContact(friendName);
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Request sent for $friendName! A parent will approve it ✅',
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Request'),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1119,7 +1165,7 @@ class ChatsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Pending approval',
+                    'Pending friend approvals',
                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
                   ),
                   const SizedBox(height: 10),
