@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 
 void main() => runApp(const NatterApp());
 
-/// Calm fade + tiny slide transition for peaceful navigation.
 Route<T> calmRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
     pageBuilder: (_, __, ___) => page,
@@ -31,28 +30,21 @@ Route<T> calmRoute<T>(Widget page) {
   );
 }
 
-/// ===== Brand =====
 class NatterBrand {
   static const blue = Color(0xFF3DA6F3);
   static const green = Color(0xFFA4D35A);
   static const yellow = Color(0xFFFBC02D);
   static const pink = Color(0xFFFF5DA2);
+  static const purple = Color(0xFF9C6BFF);
 
   static const navy = Color(0xFF06112E);
   static const radius = 24.0;
-
-  /// Update this if you rename the file again.
   static const logoPath = 'assets/natter-logo-v2.png';
 }
 
-/// ===== App State (no backend; demo only) =====
 enum AlertType { blockedWord, quietHours, contactRequest, safetyCoach }
 
-enum SafetyLevel {
-  ok,
-  coach,
-  block,
-}
+enum SafetyLevel { ok, coach, block }
 
 class SafetyCheckResult {
   final SafetyLevel level;
@@ -117,6 +109,19 @@ extension NatterLevelInfo on NatterLevel {
         return 'You have reached the current top level.';
     }
   }
+
+  int get progressTarget {
+    switch (this) {
+      case NatterLevel.promiseKeeper:
+        return 1;
+      case NatterLevel.trustedChatter:
+        return 3;
+      case NatterLevel.kindCommunicator:
+        return 5;
+      case NatterLevel.digitalCitizen:
+        return 5;
+    }
+  }
 }
 
 class FriendDirectory {
@@ -144,52 +149,158 @@ class AlertEvent {
   }) : time = time ?? DateTime.now();
 }
 
+class NatterBadge {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final String description;
+
+  const NatterBadge({
+    required this.title,
+    required this.icon,
+    required this.color,
+    this.description = '',
+  });
+}
+
+NatterBadge badgeForPromises(Set<String> promises) {
+  return const NatterBadge(
+    title: 'Promise Keeper',
+    icon: Icons.shield_rounded,
+    color: NatterBrand.yellow,
+    description: 'Awarded for sealing your Natter promises.',
+  );
+}
+
+class AvatarData {
+  final int faceIndex;
+  final int hairIndex;
+  final int accessoryIndex;
+  final Color skinColor;
+  final Color hairColor;
+  final Color shirtColor;
+
+  const AvatarData({
+    required this.faceIndex,
+    required this.hairIndex,
+    required this.accessoryIndex,
+    required this.skinColor,
+    required this.hairColor,
+    required this.shirtColor,
+  });
+
+  AvatarData copyWith({
+    int? faceIndex,
+    int? hairIndex,
+    int? accessoryIndex,
+    Color? skinColor,
+    Color? hairColor,
+    Color? shirtColor,
+  }) {
+    return AvatarData(
+      faceIndex: faceIndex ?? this.faceIndex,
+      hairIndex: hairIndex ?? this.hairIndex,
+      accessoryIndex: accessoryIndex ?? this.accessoryIndex,
+      skinColor: skinColor ?? this.skinColor,
+      hairColor: hairColor ?? this.hairColor,
+      shirtColor: shirtColor ?? this.shirtColor,
+    );
+  }
+}
+
+class ChatPreview {
+  final String name;
+  final String last;
+  final bool unread;
+
+  const ChatPreview({
+    required this.name,
+    required this.last,
+    required this.unread,
+  });
+}
+
 class AppState extends ChangeNotifier {
-  // Contacts
   final String myFriendCode = 'NAT-2048';
   final List<String> approvedContacts = ['Dad', 'Sam', 'Mia'];
   final List<String> pendingRequests = ['Ava', 'Leo'];
 
-  // Rules
   bool quietHoursEnabled = true;
-  TimeOfDay quietStart = const TimeOfDay(hour: 20, minute: 0); // 8:00pm
-  TimeOfDay quietEnd = const TimeOfDay(hour: 7, minute: 0); // 7:00am
+  TimeOfDay quietStart = const TimeOfDay(hour: 20, minute: 0);
+  TimeOfDay quietEnd = const TimeOfDay(hour: 7, minute: 0);
 
-  // Alerts settings
   bool alertsBlockedWord = true;
   bool alertsContactRequest = true;
   bool alertsQuietHours = true;
   bool alertsSafetyCoach = true;
 
-  // Alerts feed (parents see this)
   final List<AlertEvent> alerts = [];
 
-  // Promises / badge
   List<String> lastPromises = const [];
   String? lastName;
   NatterBadge? lastBadge;
 
-  // Progress
   int kindnessRewrites = 0;
   int kindnessStreak = 0;
   int kindnessStars = 0;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
 
+  final List<NatterBadge> earnedBadges = [];
+
+  int weeklyApprovedFriends = 0;
+  int weeklyBlockedAttempts = 0;
+  int weeklyQuietHoursAttempts = 0;
+  int weeklyCoachPrompts = 0;
+  int weeklyFriendRequests = 0;
+
+  AvatarData avatar = const AvatarData(
+    faceIndex: 0,
+    hairIndex: 0,
+    accessoryIndex: 0,
+    skinColor: Color(0xFFF2C9A0),
+    hairColor: Color(0xFF3E2723),
+    shirtColor: NatterBrand.blue,
+  );
+
   bool get canRequestFriends =>
       currentLevel.index >= NatterLevel.trustedChatter.index;
 
-  // --- helpers ---
+  bool get hasUnlockedKindnessCoach =>
+      currentLevel.index >= NatterLevel.promiseKeeper.index;
+
+  bool get hasUnlockedFriendRequests =>
+      currentLevel.index >= NatterLevel.trustedChatter.index;
+
+  bool get hasUnlockedAdvancedCommunication =>
+      currentLevel.index >= NatterLevel.kindCommunicator.index;
+
+  int get progressValue {
+    switch (currentLevel) {
+      case NatterLevel.promiseKeeper:
+        return kindnessRewrites.clamp(0, 1);
+      case NatterLevel.trustedChatter:
+        return kindnessRewrites.clamp(0, 3);
+      case NatterLevel.kindCommunicator:
+        return kindnessRewrites.clamp(0, 5);
+      case NatterLevel.digitalCitizen:
+        return 5;
+    }
+  }
+
+  double get progressPercent {
+    final target = currentLevel.progressTarget;
+    if (target == 0) return 1;
+    return (progressValue / target).clamp(0, 1);
+  }
+
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
     int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
     final tm = toMin(t);
     final sm = toMin(start);
     final em = toMin(end);
 
-    // Same-day range
     if (sm < em) return tm >= sm && tm < em;
-
-    // Overnight range (e.g. 20:00 -> 07:00)
     return tm >= sm || tm < em;
   }
 
@@ -205,12 +316,18 @@ class AppState extends ChangeNotifier {
   bool isPending(String name) =>
       pendingRequests.any((p) => p.toLowerCase() == name.toLowerCase());
 
+  void updateAvatar(AvatarData newAvatar) {
+    avatar = newAvatar;
+    notifyListeners();
+  }
+
   void requestContact(String name) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
     if (isApproved(trimmed) || isPending(trimmed)) return;
 
     pendingRequests.insert(0, trimmed);
+    weeklyFriendRequests += 1;
 
     if (alertsContactRequest) {
       addAlert(AlertEvent(
@@ -235,6 +352,7 @@ class AppState extends ChangeNotifier {
   void approveContact(String name) {
     pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
     if (!isApproved(name)) approvedContacts.add(name);
+    weeklyApprovedFriends += 1;
     evaluateProgress();
     notifyListeners();
   }
@@ -272,6 +390,21 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void recordBlockedAttempt() {
+    weeklyBlockedAttempts += 1;
+    notifyListeners();
+  }
+
+  void recordQuietHoursAttempt() {
+    weeklyQuietHoursAttempts += 1;
+    notifyListeners();
+  }
+
+  void recordCoachPrompt() {
+    weeklyCoachPrompts += 1;
+    notifyListeners();
+  }
+
   void recordRite({
     required String name,
     required List<String> promises,
@@ -284,12 +417,26 @@ class AppState extends ChangeNotifier {
     kindnessStreak = 0;
     kindnessStars = 0;
     celebrationMessage = null;
+
+    earnedBadges
+      ..clear()
+      ..add(lastBadge!);
+
     notifyListeners();
   }
 
   void dismissCelebration() {
     celebrationMessage = null;
     notifyListeners();
+  }
+
+  void _awardBadge(NatterBadge badge, {String? celebration}) {
+    final alreadyEarned = earnedBadges.any((b) => b.title == badge.title);
+    if (alreadyEarned) return;
+    earnedBadges.add(badge);
+    if (celebration != null) {
+      celebrationMessage = celebration;
+    }
   }
 
   SafetyCheckResult checkMessageSafety(String text) {
@@ -299,7 +446,6 @@ class AppState extends ChangeNotifier {
       return const SafetyCheckResult.ok();
     }
 
-    // Hard-block list kept very small for MVP/demo purposes
     const blockedTerms = ['badword', 'swear'];
 
     for (final term in blockedTerms) {
@@ -343,9 +489,25 @@ class AppState extends ChangeNotifier {
     kindnessStars += 1;
 
     if (kindnessStreak == 3) {
-      celebrationMessage = '🌟 3-message kindness streak!';
+      _awardBadge(
+        const NatterBadge(
+          title: 'Kindness Spark',
+          icon: Icons.auto_awesome_rounded,
+          color: NatterBrand.yellow,
+          description: 'Earned for a 3-message kindness streak.',
+        ),
+        celebration: '🌟 3-message kindness streak!',
+      );
     } else if (kindnessStreak == 5) {
-      celebrationMessage = '💛 5-message kindness streak!';
+      _awardBadge(
+        const NatterBadge(
+          title: 'Heart Starter',
+          icon: Icons.favorite_rounded,
+          color: NatterBrand.pink,
+          description: 'Earned for a 5-message kindness streak.',
+        ),
+        celebration: '💛 5-message kindness streak!',
+      );
     }
 
     evaluateProgress();
@@ -360,7 +522,16 @@ class AppState extends ChangeNotifier {
         currentLevel = NatterLevel.trustedChatter;
         didLevelUp = true;
 
-        celebrationMessage = '🎉 Level up! Trusted Chatter unlocked.';
+        _awardBadge(
+          const NatterBadge(
+            title: 'Trusted Chatter',
+            icon: Icons.chat_bubble_rounded,
+            color: NatterBrand.green,
+            description: 'Unlocked after showing good early chat habits.',
+          ),
+          celebration: '🎉 Level up! Trusted Chatter unlocked.',
+        );
+
         addAlert(AlertEvent(
           type: AlertType.safetyCoach,
           message: 'Level up: Trusted Chatter unlocked.',
@@ -373,7 +544,16 @@ class AppState extends ChangeNotifier {
         currentLevel = NatterLevel.kindCommunicator;
         didLevelUp = true;
 
-        celebrationMessage = '🏅 Level up! Kind Communicator unlocked.';
+        _awardBadge(
+          const NatterBadge(
+            title: 'Kind Communicator',
+            icon: Icons.workspace_premium_rounded,
+            color: NatterBrand.pink,
+            description: 'Unlocked after multiple kind rewrites.',
+          ),
+          celebration: '🏅 Level up! Kind Communicator unlocked.',
+        );
+
         addAlert(AlertEvent(
           type: AlertType.safetyCoach,
           message: 'Level up: Kind Communicator unlocked.',
@@ -401,7 +581,6 @@ class AppStateScope extends InheritedNotifier<AppState> {
   }
 }
 
-/// ===== App =====
 class NatterApp extends StatelessWidget {
   const NatterApp({super.key});
 
@@ -484,7 +663,6 @@ class NatterApp extends StatelessWidget {
   }
 }
 
-/// Bright bubbly background with gradient + confetti dots.
 class BubblyBackground extends StatelessWidget {
   final Widget child;
   const BubblyBackground({super.key, required this.child});
@@ -518,7 +696,7 @@ class _ConfettiPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rnd = Random(7); // deterministic
+    final rnd = Random(7);
     final paints = [
       Paint()..color = NatterBrand.yellow.withOpacity(0.22),
       Paint()..color = NatterBrand.green.withOpacity(0.18),
@@ -589,7 +767,6 @@ class BrandCard extends StatelessWidget {
   }
 }
 
-/// Reusable logo widget with visible fallback + debug print.
 class NatterLogo extends StatelessWidget {
   final double height;
   const NatterLogo({super.key, required this.height});
@@ -644,8 +821,7 @@ class BrandedAppBarTitle extends StatelessWidget {
   }
 }
 
-/// ===== Screens =====
-
+// ===== Screens =====
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -793,97 +969,6 @@ class _RiteScreenState extends State<RiteScreen> {
   }
 }
 
-/// ===== Ceremony / Badge =====
-class NatterBadge {
-  final String title;
-  final IconData icon;
-  final Color color;
-
-  const NatterBadge({
-    required this.title,
-    required this.icon,
-    required this.color,
-  });
-}
-
-NatterBadge badgeForPromises(Set<String> promises) {
-  return const NatterBadge(
-    title: 'Promise Keeper',
-    icon: Icons.shield_rounded,
-    color: NatterBrand.yellow,
-  );
-}
-
-class BadgeCard extends StatelessWidget {
-  final String name;
-  final NatterBadge badge;
-
-  const BadgeCard({
-    super.key,
-    required this.name,
-    required this.badge,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.22)),
-        boxShadow: [
-          BoxShadow(
-            color: badge.color.withOpacity(0.18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: badge.color.withOpacity(0.20),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: badge.color.withOpacity(0.70)),
-            ),
-            child: Icon(badge.icon, color: badge.color, size: 30),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  badge.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Awarded to $name',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.80),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Promise screen + seal -> real ceremony page (prevents grey overlay bugs).
 class PromiseScreen extends StatefulWidget {
   final String name;
   const PromiseScreen({super.key, required this.name});
@@ -1180,16 +1265,619 @@ class _SimpleCeremony extends StatelessWidget {
   }
 }
 
-class ChatPreview {
-  final String name;
-  final String last;
-  final bool unread;
+class AvatarPreview extends StatelessWidget {
+  final AvatarData avatar;
+  final double size;
 
-  const ChatPreview({
-    required this.name,
-    required this.last,
-    required this.unread,
+  const AvatarPreview({
+    super.key,
+    required this.avatar,
+    this.size = 96,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    final faceOptions = ['🙂', '😄', '😎', '🤩'];
+    final hairOptions = ['🟫', '⬛', '🟨', '🟧'];
+    final accessoryOptions = ['•', '🕶', '🎀', '🧢'];
+
+    final face = faceOptions[avatar.faceIndex % faceOptions.length];
+    final hair = hairOptions[avatar.hairIndex % hairOptions.length];
+    final accessory =
+        accessoryOptions[avatar.accessoryIndex % accessoryOptions.length];
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: avatar.shirtColor.withOpacity(0.22),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withOpacity(0.28), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            top: size * 0.16,
+            child: Text(
+              hair,
+              style: TextStyle(fontSize: size * 0.18),
+            ),
+          ),
+          Text(
+            face,
+            style: TextStyle(fontSize: size * 0.38),
+          ),
+          if (accessory != '•')
+            Positioned(
+              bottom: size * 0.12,
+              child: Text(
+                accessory,
+                style: TextStyle(fontSize: size * 0.16),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class AvatarBuilderScreen extends StatefulWidget {
+  const AvatarBuilderScreen({super.key});
+
+  @override
+  State<AvatarBuilderScreen> createState() => _AvatarBuilderScreenState();
+}
+
+class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
+  late AvatarData draft;
+
+  final skinPalette = const [
+    Color(0xFFF2C9A0),
+    Color(0xFFD9A77C),
+    Color(0xFFB97C5A),
+    Color(0xFF8A5A44),
+  ];
+
+  final hairPalette = const [
+    Color(0xFF3E2723),
+    Color(0xFF1B1B1B),
+    Color(0xFFD4A017),
+    Color(0xFF8D6E63),
+  ];
+
+  final shirtPalette = const [
+    NatterBrand.blue,
+    NatterBrand.green,
+    NatterBrand.pink,
+    NatterBrand.purple,
+    NatterBrand.yellow,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    draft = AppStateScope.of(context).avatar;
+  }
+
+  Widget _pickerButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white.withOpacity(0.14),
+        foregroundColor: Colors.white,
+      ),
+      child: Text(label),
+    );
+  }
+
+  Widget _colorDot({
+    required Color color,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? Colors.white : Colors.white.withOpacity(0.24),
+            width: selected ? 3 : 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Avatar Builder'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          BrandCard(
+            child: Column(
+              children: [
+                AvatarPreview(avatar: draft, size: 130),
+                const SizedBox(height: 14),
+                const Text(
+                  'Make your Natter character',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Choose the look that feels most like you.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Face and style',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _pickerButton(
+                      label: 'Face',
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(
+                            faceIndex: draft.faceIndex + 1,
+                          );
+                        });
+                      },
+                    ),
+                    _pickerButton(
+                      label: 'Hair',
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(
+                            hairIndex: draft.hairIndex + 1,
+                          );
+                        });
+                      },
+                    ),
+                    _pickerButton(
+                      label: 'Accessory',
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(
+                            accessoryIndex: draft.accessoryIndex + 1,
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Skin tone',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+      const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: skinPalette.map((c) {
+                    return _colorDot(
+                      color: c,
+                      selected: draft.skinColor == c,
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(skinColor: c);
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Hair colour',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: hairPalette.map((c) {
+                    return _colorDot(
+                      color: c,
+                      selected: draft.hairColor == c,
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(hairColor: c);
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Shirt colour',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: shirtPalette.map((c) {
+                    return _colorDot(
+                      color: c,
+                      selected: draft.shirtColor == c,
+                      onTap: () {
+                        setState(() {
+                          draft = draft.copyWith(shirtColor: c);
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                state.updateAvatar(draft);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Avatar saved! ✨'),
+                  ),
+                );
+              },
+              child: const Text('Save Avatar'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  Widget _sectionTitle(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w900,
+        fontSize: 18,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final displayName = state.lastName ?? 'Natter User';
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'My Profile'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          BrandCard(
+            child: Column(
+              children: [
+                AvatarPreview(avatar: state.avatar, size: 120),
+                const SizedBox(height: 14),
+                Text(
+                  displayName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 28,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  state.currentLevel.title,
+                  style: const TextStyle(
+                    color: NatterBrand.yellow,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  state.currentLevel.description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.push(
+                      context,
+                      calmRoute(const AvatarBuilderScreen()),
+                    ),
+                    child: const Text('Edit Avatar'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Progress'),
+                const SizedBox(height: 12),
+                _ProgressBarCard(state: state),
+                const SizedBox(height: 12),
+                Text(
+                  'Next goal: ${state.currentLevel.nextGoal}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Stats'),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _ProfileStatTile(
+                      label: 'Stars',
+                      value: state.kindnessStars.toString(),
+                    ),
+                    _ProfileStatTile(
+                      label: 'Streak',
+                      value: state.kindnessStreak.toString(),
+                    ),
+                    _ProfileStatTile(
+                      label: 'Rewrites',
+                      value: state.kindnessRewrites.toString(),
+                    ),
+                    _ProfileStatTile(
+                      label: 'Friends',
+                      value: state.approvedContacts.length.toString(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sectionTitle('Badges'),
+                const SizedBox(height: 12),
+                if (state.earnedBadges.isEmpty)
+                  Text(
+                    'No badges yet.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.84),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                else
+                  ...state.earnedBadges.map(
+                    (badge) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: BadgeCard(
+                        name: displayName,
+                        badge: badge,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (state.lastPromises.isNotEmpty)
+            BrandCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('My Promises'),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: state.lastPromises.map((p) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.18),
+                          ),
+                        ),
+                        child: Text(
+                          p,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatTile extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ProfileStatTile({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 145,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressBarCard extends StatelessWidget {
+  final AppState state;
+
+  const _ProgressBarCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = state.progressPercent;
+    final progressText =
+        '${state.progressValue}/${state.currentLevel.progressTarget}';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          state.currentLevel.title,
+          style: const TextStyle(
+            color: NatterBrand.yellow,
+            fontWeight: FontWeight.w900,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: LinearProgressIndicator(
+            value: percent,
+            minHeight: 14,
+            backgroundColor: Colors.white.withOpacity(0.14),
+            valueColor: const AlwaysStoppedAnimation<Color>(NatterBrand.green),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Progress: $progressText',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class ChatsScreen extends StatelessWidget {
@@ -1301,6 +1989,30 @@ class ChatsScreen extends StatelessWidget {
                             return;
                           }
 
+                          if (state.isApproved(friendName)) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$friendName is already in your chats 🙂',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (state.isPending(friendName)) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$friendName is already waiting for approval ⏳',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
                           state.requestContact(friendName);
 
                           Navigator.pop(ctx);
@@ -1326,6 +2038,71 @@ class ChatsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _showCelebrationCard(BuildContext context, String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(18),
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.84),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
+              boxShadow: [
+                BoxShadow(
+                  color: NatterBrand.yellow.withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.celebration_rounded,
+                  color: NatterBrand.yellow,
+                  size: 52,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Celebration!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 24,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Awesome ✨'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -1334,19 +2111,37 @@ class ChatsScreen extends StatelessWidget {
         .map(
           (name) => ChatPreview(
             name: name,
-            last: 'Say hi 👋',
+            last: name == 'Dad' ? 'Dinner at 6 😊' : 'Say hi 👋',
             unread: name == 'Dad' || name == 'Sam',
           ),
         )
         .toList();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted) return;
+      final message = state.celebrationMessage;
+      if (message != null) {
+        state.dismissCelebration();
+        await _showCelebrationCard(context, message);
+      }
+    });
 
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Chats'),
         actions: [
           IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              calmRoute(const ProfileScreen()),
+            ),
+            icon: const Icon(Icons.account_circle_rounded),
+            tooltip: 'My Profile',
+          ),
+          IconButton(
             onPressed: () => _addFriendDialog(context),
             icon: const Icon(Icons.person_add_alt_1_rounded),
+            tooltip: 'Add Friend',
           ),
           TextButton(
             onPressed: () => Navigator.push(
@@ -1376,38 +2171,6 @@ class ChatsScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          if (state.celebrationMessage != null) ...[
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: NatterBrand.yellow.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: NatterBrand.yellow.withOpacity(0.55),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      state.celebrationMessage!,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => state.dismissCelebration(),
-                    icon: const Icon(Icons.close_rounded, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ],
           BrandCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1420,7 +2183,7 @@ class ChatsScreen extends StatelessWidget {
                     fontSize: 18,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   state.currentLevel.title,
                   style: const TextStyle(
@@ -1429,7 +2192,7 @@ class ChatsScreen extends StatelessWidget {
                     fontSize: 22,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   state.currentLevel.description,
                   style: const TextStyle(
@@ -1438,31 +2201,45 @@ class ChatsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _RewardPill(
-                      icon: Icons.auto_awesome_rounded,
-                      label: '${state.kindnessStars} stars',
-                    ),
-                    _RewardPill(
-                      icon: Icons.local_fire_department_rounded,
-                      label: '${state.kindnessStreak} streak',
-                    ),
-                    _RewardPill(
-                      icon: Icons.favorite_rounded,
-                      label: '${state.kindnessRewrites} kind rewrites',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Next: ${state.currentLevel.nextGoal}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.82),
-                    fontWeight: FontWeight.w700,
+                _ProgressBarCard(state: state),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          BrandCard(
+            child: Row(
+              children: [
+                AvatarPreview(avatar: state.avatar, size: 74),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        state.lastName ?? 'Your profile',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${state.kindnessStars} stars • ${state.kindnessStreak} streak',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.84),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    calmRoute(const ProfileScreen()),
+                  ),
+                  child: const Text('Profile'),
                 ),
               ],
             ),
@@ -1501,6 +2278,7 @@ class ChatsScreen extends StatelessWidget {
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
                             fontSize: 22,
+                            letterSpacing: 1.1,
                           ),
                         ),
                       ),
@@ -1564,6 +2342,16 @@ class ChatsScreen extends StatelessWidget {
                     c.last,
                     style: const TextStyle(color: Colors.white),
                   ),
+                  trailing: c.unread
+                      ? Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: NatterBrand.green,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        )
+                      : const Icon(Icons.chevron_right, color: Colors.white),
                   onTap: () => Navigator.push(
                     context,
                     calmRoute(ChatScreen(contactName: c.name)),
@@ -1578,43 +2366,6 @@ class ChatsScreen extends StatelessWidget {
     );
   }
 }
-
-class _RewardPill extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _RewardPill({
-    required this.icon,
-    required this.label,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: NatterBrand.yellow),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class ChatScreen extends StatefulWidget {
   final String contactName;
   const ChatScreen({super.key, required this.contactName});
@@ -1632,7 +2383,6 @@ class _ChatScreenState extends State<ChatScreen> {
   String? feedback;
 
   Future<bool> _showSafetyCoachDialog({
-    required String original,
     required String suggestion,
     required String reason,
   }) async {
@@ -1672,7 +2422,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   reason,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.88),
+                    color: Colors.white70,
                     fontWeight: FontWeight.w700,
                     height: 1.35,
                   ),
@@ -1765,7 +2515,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
     Future.delayed(const Duration(milliseconds: 650), () {
       if (!mounted) return;
-      setState(() => messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄')));
+      setState(() {
+        messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
+      });
     });
   }
 
@@ -1775,10 +2527,13 @@ class _ChatScreenState extends State<ChatScreen> {
     if (text.isEmpty) return;
 
     if (state.isQuietNow()) {
-      setState(() => feedback = "Quiet Hours are on — we’ll chat again later 🌙");
+      setState(() {
+        feedback = "Quiet Hours are on — we’ll chat again later 🌙";
+      });
       controller.clear();
 
       if (state.alertsQuietHours) {
+        state.recordQuietHoursAttempt();
         state.addAlert(AlertEvent(
           type: AlertType.quietHours,
           message:
@@ -1797,6 +2552,7 @@ class _ChatScreenState extends State<ChatScreen> {
       controller.clear();
 
       if (state.alertsBlockedWord) {
+        state.recordBlockedAttempt();
         state.addAlert(AlertEvent(
           type: AlertType.blockedWord,
           message: 'Blocked-word attempt in chat with ${widget.contactName}.',
@@ -1807,17 +2563,17 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (safety.level == SafetyLevel.coach) {
       if (state.alertsSafetyCoach) {
+        state.recordCoachPrompt();
         state.addAlert(AlertEvent(
           type: AlertType.safetyCoach,
-          message: 'Kindness coach triggered in chat with ${widget.contactName}.',
+          message:
+              'Kindness coach triggered in chat with ${widget.contactName}.',
         ));
       }
 
       final sendAnyway = await _showSafetyCoachDialog(
-        original: text,
         suggestion: safety.suggestion ?? 'Can we try that again kindly?',
-        reason:
-            safety.reason ?? 'That message could hurt someone’s feelings.',
+        reason: safety.reason ?? 'That message could hurt someone’s feelings.',
       );
 
       if (!mounted) return;
@@ -1840,6 +2596,13 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  String _formatTime(TimeOfDay t) {
+    final h = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+    final m = t.minute.toString().padLeft(2, '0');
+    final ap = t.period == DayPeriod.am ? 'am' : 'pm';
+    return '$h:$m$ap';
   }
 
   @override
@@ -1933,13 +2696,6 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
-  String _formatTime(TimeOfDay t) {
-    final h = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
-    final m = t.minute.toString().padLeft(2, '0');
-    final ap = t.period == DayPeriod.am ? 'am' : 'pm';
-    return '$h:$m$ap';
-  }
 }
 
 class _Msg {
@@ -1988,7 +2744,76 @@ class _Bubble extends StatelessWidget {
   }
 }
 
-/// ===== Parent screens =====
+class BadgeCard extends StatelessWidget {
+  final String name;
+  final NatterBadge badge;
+
+  const BadgeCard({
+    super.key,
+    required this.name,
+    required this.badge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withOpacity(0.22)),
+        boxShadow: [
+          BoxShadow(
+            color: badge.color.withOpacity(0.18),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: badge.color.withOpacity(0.20),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: badge.color.withOpacity(0.70)),
+            ),
+            child: Icon(badge.icon, color: badge.color, size: 30),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  badge.title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  badge.description.isEmpty
+                      ? 'Awarded to $name'
+                      : badge.description,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.80),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
@@ -2160,7 +2985,7 @@ class ParentHomeScreen extends StatelessWidget {
                   child: Text(
                     'Contacts (${state.pendingRequests.length} pending)',
                   ),
-                ),
+                                  ),
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () => Navigator.push(
@@ -2211,15 +3036,7 @@ class ParentHomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Stars earned: ${state.kindnessStars}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.86),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Next step: ${state.currentLevel.nextGoal}',
+                  'Kindness stars: ${state.kindnessStars}',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.86),
                     fontWeight: FontWeight.w700,
@@ -2419,7 +3236,9 @@ class ParentContactsScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white.withOpacity(0.16)),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.16),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -2753,3 +3572,4 @@ class _TimeButton extends StatelessWidget {
     );
   }
 }
+       
