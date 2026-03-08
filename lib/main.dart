@@ -46,7 +46,30 @@ class NatterBrand {
 }
 
 /// ===== App State (no backend; demo only) =====
-enum AlertType { blockedWord, quietHours, contactRequest }
+enum AlertType { blockedWord, quietHours, contactRequest, safetyCoach }
+
+enum SafetyLevel {
+  ok,
+  coach,
+  block,
+}
+
+class SafetyCheckResult {
+  final SafetyLevel level;
+  final String? reason;
+  final String? suggestion;
+
+  const SafetyCheckResult({
+    required this.level,
+    this.reason,
+    this.suggestion,
+  });
+
+  const SafetyCheckResult.ok()
+      : level = SafetyLevel.ok,
+        reason = null,
+        suggestion = null;
+}
 
 class FriendDirectory {
   static const Map<String, String> codeToName = {
@@ -60,12 +83,17 @@ class FriendDirectory {
     return codeToName[code.trim().toUpperCase()];
   }
 }
+
 class AlertEvent {
   final AlertType type;
   final String message;
   final DateTime time;
-  AlertEvent({required this.type, required this.message, DateTime? time})
-      : time = time ?? DateTime.now();
+
+  AlertEvent({
+    required this.type,
+    required this.message,
+    DateTime? time,
+  }) : time = time ?? DateTime.now();
 }
 
 class AppState extends ChangeNotifier {
@@ -83,6 +111,7 @@ class AppState extends ChangeNotifier {
   bool alertsBlockedWord = true;
   bool alertsContactRequest = true;
   bool alertsQuietHours = true;
+  bool alertsSafetyCoach = true;
 
   // Alerts feed (parents see this)
   final List<AlertEvent> alerts = [];
@@ -91,6 +120,9 @@ class AppState extends ChangeNotifier {
   List<String> lastPromises = const [];
   String? lastName;
   NatterBadge? lastBadge;
+
+  // Progress
+  int kindnessRewrites = 0;
 
   // --- helpers ---
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
@@ -175,10 +207,12 @@ class AppState extends ChangeNotifier {
     bool? blockedWord,
     bool? contactRequest,
     bool? quietHours,
+    bool? safetyCoach,
   }) {
     if (blockedWord != null) alertsBlockedWord = blockedWord;
     if (contactRequest != null) alertsContactRequest = contactRequest;
     if (quietHours != null) alertsQuietHours = quietHours;
+    if (safetyCoach != null) alertsSafetyCoach = safetyCoach;
     notifyListeners();
   }
 
@@ -189,6 +223,56 @@ class AppState extends ChangeNotifier {
     lastName = name;
     lastPromises = List<String>.from(promises);
     lastBadge = badgeForPromises(promises.toSet());
+    notifyListeners();
+  }
+
+  SafetyCheckResult checkMessageSafety(String text) {
+    final lower = text.trim().toLowerCase();
+
+    if (lower.isEmpty) {
+      return const SafetyCheckResult.ok();
+    }
+
+    // Hard-block list kept very small for MVP/demo purposes
+    const blockedTerms = ['badword', 'swear'];
+
+    for (final term in blockedTerms) {
+      if (lower.contains(term)) {
+        return const SafetyCheckResult(
+          level: SafetyLevel.block,
+          reason: 'That word is not allowed on Natter.',
+          suggestion: 'Try saying it in a calmer or kinder way.',
+        );
+      }
+    }
+
+    const coachingPatterns = {
+      "you're stupid": "I’m upset right now. Can we try again?",
+      "you are stupid": "I’m upset right now. Can we try again?",
+      "i hate you": "I’m really upset and need a minute.",
+      "shut up": "Can we slow down for a second?",
+      "go away": "I need some space right now.",
+      "leave me alone": "I want a little quiet time right now.",
+      "idiot": "That upset me. Can we talk kindly?",
+      "dumb": "That didn’t feel good. Can we reset?",
+      "mean": "That felt unkind. Can we start over?",
+    };
+
+    for (final entry in coachingPatterns.entries) {
+      if (lower.contains(entry.key)) {
+        return SafetyCheckResult(
+          level: SafetyLevel.coach,
+          reason: 'That message could hurt someone’s feelings.',
+          suggestion: entry.value,
+        );
+      }
+    }
+
+    return const SafetyCheckResult.ok();
+  }
+
+  void recordKindRewrite() {
+    kindnessRewrites += 1;
     notifyListeners();
   }
 }
@@ -236,14 +320,19 @@ class NatterApp extends StatelessWidget {
           snackBarTheme: SnackBarThemeData(
             backgroundColor: Colors.black.withOpacity(0.85),
             contentTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             behavior: SnackBarBehavior.floating,
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
             fillColor: Colors.white.withOpacity(0.14),
             hintStyle: const TextStyle(color: Colors.white70),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(NatterBrand.radius),
               borderSide: BorderSide.none,
@@ -254,8 +343,13 @@ class NatterApp extends StatelessWidget {
               backgroundColor: NatterBrand.blue,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           chipTheme: base.chipTheme.copyWith(
@@ -269,7 +363,10 @@ class NatterApp extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
             ),
           ),
-          dividerTheme: const DividerThemeData(color: Colors.white12, thickness: 1),
+          dividerTheme: const DividerThemeData(
+            color: Colors.white12,
+            thickness: 1,
+          ),
         ),
         home: const HomeScreen(),
       ),
@@ -373,7 +470,7 @@ class BrandCard extends StatelessWidget {
             color: Colors.black.withOpacity(0.12),
             blurRadius: 16,
             offset: const Offset(0, 10),
-          )
+          ),
         ],
       ),
       padding: const EdgeInsets.all(18),
@@ -408,7 +505,10 @@ class NatterLogo extends StatelessWidget {
             ),
             child: const Text(
               'Logo missing',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           );
         },
@@ -455,21 +555,30 @@ class HomeScreen extends StatelessWidget {
                 const Text(
                   'Playful, safe messaging for kids.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white, fontSize: 18, height: 1.3),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    height: 1.3,
+                  ),
                 ),
                 const SizedBox(height: 18),
                 const BrandCard(
                   child: Text(
                     'Text-only chats • Kinder words • Parent controls',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 16, height: 1.3),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      height: 1.3,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.push(context, calmRoute(const RiteScreen())),
+                    onPressed: () =>
+                        Navigator.push(context, calmRoute(const RiteScreen())),
                     child: const Text('Begin ✨'),
                   ),
                 ),
@@ -536,7 +645,11 @@ class _RiteScreenState extends State<RiteScreen> {
                   const Text(
                     'Before you enter Natter…\nWhat should we call you?',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white, fontSize: 22, height: 1.25),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      height: 1.25,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   TextField(
@@ -547,7 +660,9 @@ class _RiteScreenState extends State<RiteScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
-                    decoration: const InputDecoration(hintText: 'Enter your name'),
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your name',
+                    ),
                     onSubmitted: (_) => _continue(),
                   ),
                   const SizedBox(height: 14),
@@ -574,7 +689,11 @@ class NatterBadge {
   final IconData icon;
   final Color color;
 
-  const NatterBadge({required this.title, required this.icon, required this.color});
+  const NatterBadge({
+    required this.title,
+    required this.icon,
+    required this.color,
+  });
 }
 
 NatterBadge badgeForPromises(Set<String> promises) {
@@ -589,7 +708,11 @@ class BadgeCard extends StatelessWidget {
   final String name;
   final NatterBadge badge;
 
-  const BadgeCard({super.key, required this.name, required this.badge});
+  const BadgeCard({
+    super.key,
+    required this.name,
+    required this.badge,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -675,9 +798,12 @@ class _PromiseScreenState extends State<PromiseScreen> {
     final promises = selected.toList();
 
     // Record rite for Parent screen
-    AppStateScope.of(context).recordRite(name: widget.name, promises: promises);
+    AppStateScope.of(context).recordRite(
+      name: widget.name,
+      promises: promises,
+    );
 
-    // ✅ Fix: navigate to a real page (not overlay/dialog)
+    // Navigate to a real page (not overlay/dialog)
     Navigator.push(
       context,
       calmRoute(
@@ -695,7 +821,9 @@ class _PromiseScreenState extends State<PromiseScreen> {
     final canContinue = selected.length >= 3;
 
     return BrandScaffold(
-      appBar: AppBar(title: const BrandedAppBarTitle(title: 'Your promises')),
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Your promises'),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Center(
@@ -725,7 +853,6 @@ class _PromiseScreenState extends State<PromiseScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 Expanded(
                   child: Center(
                     child: SingleChildScrollView(
@@ -753,10 +880,11 @@ class _PromiseScreenState extends State<PromiseScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
                 Text(
-                  canContinue ? 'Nice. That’s your promise set.' : 'Choose $remaining more',
+                  canContinue
+                      ? 'Nice. That’s your promise set.'
+                      : 'Choose $remaining more',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -949,8 +1077,13 @@ class ChatPreview {
   final String last;
   final bool unread;
 
-  const ChatPreview({required this.name, required this.last, required this.unread});
+  const ChatPreview({
+    required this.name,
+    required this.last,
+    required this.unread,
+  });
 }
+
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
 
@@ -1012,7 +1145,9 @@ class ChatsScreen extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.white.withOpacity(0.22)),
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.22),
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(999),
                           ),
@@ -1038,7 +1173,9 @@ class ChatsScreen extends StatelessWidget {
                             Navigator.pop(ctx);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('That friend code was not recognised.'),
+                                content: Text(
+                                  'That friend code was not recognised.',
+                                ),
                               ),
                             );
                             return;
@@ -1134,7 +1271,10 @@ class ChatsScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.10),
                     borderRadius: BorderRadius.circular(18),
@@ -1243,9 +1383,142 @@ class _ChatScreenState extends State<ChatScreen> {
   ];
   String? feedback;
 
-  bool _blockedWord(String text) {
-    final lower = text.toLowerCase();
-    return lower.contains('badword') || lower.contains('swear');
+  Future<bool> _showSafetyCoachDialog({
+    required String original,
+    required String suggestion,
+    required String reason,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(18),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.80),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.favorite_rounded,
+                  color: NatterBrand.pink,
+                  size: 42,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Try a kinder message',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  reason,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.88),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.white.withOpacity(0.16)),
+                  ),
+                  child: Text(
+                    suggestion,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.22),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          controller.text = suggestion;
+                          controller.selection = TextSelection.fromPosition(
+                            TextPosition(offset: controller.text.length),
+                          );
+                          Navigator.pop(ctx, false);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: NatterBrand.green,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: const Text('Rewrite'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Send anyway'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
+  void _sendMessageNow(String text) {
+    setState(() {
+      feedback = null;
+      messages.insert(0, _Msg(fromMe: true, text: text));
+    });
+    controller.clear();
+
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+      setState(() => messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄')));
+    });
   }
 
   void _send() async {
@@ -1261,15 +1534,19 @@ class _ChatScreenState extends State<ChatScreen> {
       if (state.alertsQuietHours) {
         state.addAlert(AlertEvent(
           type: AlertType.quietHours,
-          message: 'Message attempt during Quiet Hours (to ${widget.contactName}).',
+          message:
+              'Message attempt during Quiet Hours (to ${widget.contactName}).',
         ));
       }
       return;
     }
 
-    // Bad word check
-    if (_blockedWord(text)) {
-      setState(() => feedback = "Oops—those words aren’t allowed on Natter.");
+    final safety = state.checkMessageSafety(text);
+
+    if (safety.level == SafetyLevel.block) {
+      setState(() {
+        feedback = safety.reason ?? "That word isn’t allowed on Natter.";
+      });
       controller.clear();
 
       if (state.alertsBlockedWord) {
@@ -1281,15 +1558,35 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    setState(() {
-      feedback = null;
-      messages.insert(0, _Msg(fromMe: true, text: text));
-    });
-    controller.clear();
+    if (safety.level == SafetyLevel.coach) {
+      if (state.alertsSafetyCoach) {
+        state.addAlert(AlertEvent(
+          type: AlertType.safetyCoach,
+          message: 'Kindness coach triggered in chat with ${widget.contactName}.',
+        ));
+      }
 
-    await Future.delayed(const Duration(milliseconds: 650));
-    if (!mounted) return;
-    setState(() => messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄')));
+      final sendAnyway = await _showSafetyCoachDialog(
+        original: text,
+        suggestion: safety.suggestion ?? 'Can we try that again kindly?',
+        reason:
+            safety.reason ?? 'That message could hurt someone’s feelings.',
+      );
+
+      if (!mounted) return;
+
+      if (sendAnyway) {
+        _sendMessageNow(text);
+      } else {
+        state.recordKindRewrite();
+        setState(() {
+          feedback = 'Nice pause. Try rewriting your message kindly 💛';
+        });
+      }
+      return;
+    }
+
+    _sendMessageNow(text);
   }
 
   @override
@@ -1304,7 +1601,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final quiet = state.isQuietNow();
 
     return BrandScaffold(
-      appBar: AppBar(title: BrandedAppBarTitle(title: widget.contactName)),
+      appBar: AppBar(
+        title: BrandedAppBarTitle(title: widget.contactName),
+      ),
       child: Column(
         children: [
           if (quiet)
@@ -1320,7 +1619,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 'Quiet Hours are ON (${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)})',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           if (feedback != null)
@@ -1336,7 +1638,10 @@ class _ChatScreenState extends State<ChatScreen> {
               child: Text(
                 feedback!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           Expanded(
@@ -1354,8 +1659,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: controller,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                    decoration: const InputDecoration(hintText: 'Type a message'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message',
+                    ),
                     onSubmitted: (_) => _send(),
                   ),
                 ),
@@ -1387,7 +1698,11 @@ class _ChatScreenState extends State<ChatScreen> {
 class _Msg {
   final bool fromMe;
   final String text;
-  _Msg({required this.fromMe, required this.text});
+
+  _Msg({
+    required this.fromMe,
+    required this.text,
+  });
 }
 
 class _Bubble extends StatelessWidget {
@@ -1396,8 +1711,11 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
-    final color = msg.fromMe ? NatterBrand.blue.withOpacity(0.95) : Colors.white.withOpacity(0.20);
+    final align =
+        msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
+    final color = msg.fromMe
+        ? NatterBrand.blue.withOpacity(0.95)
+        : Colors.white.withOpacity(0.20);
 
     return Align(
       alignment: align,
@@ -1412,7 +1730,11 @@ class _Bubble extends StatelessWidget {
         ),
         child: Text(
           msg.text,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -1427,7 +1749,9 @@ class ParentHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final hasRite = state.lastName != null && state.lastPromises.isNotEmpty && state.lastBadge != null;
+    final hasRite = state.lastName != null &&
+        state.lastPromises.isNotEmpty &&
+        state.lastBadge != null;
 
     return BrandScaffold(
       appBar: AppBar(
@@ -1439,7 +1763,13 @@ class ParentHomeScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => state.clearAlerts(),
-            child: const Text('Clear Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            child: const Text(
+              'Clear Alerts',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ),
           const SizedBox(width: 6),
         ],
@@ -1453,17 +1783,33 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'At a glance',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    _StatTile(label: 'Approved', value: state.approvedContacts.length.toString()),
-                    _StatTile(label: 'Pending', value: state.pendingRequests.length.toString()),
-                    _StatTile(label: 'Quiet Hours', value: state.quietHoursEnabled ? 'ON' : 'OFF'),
-                    _StatTile(label: 'Alerts', value: state.alerts.length.toString()),
+                    _StatTile(
+                      label: 'Approved',
+                      value: state.approvedContacts.length.toString(),
+                    ),
+                    _StatTile(
+                      label: 'Pending',
+                      value: state.pendingRequests.length.toString(),
+                    ),
+                    _StatTile(
+                      label: 'Quiet Hours',
+                      value: state.quietHoursEnabled ? 'ON' : 'OFF',
+                    ),
+                    _StatTile(
+                      label: 'Alerts',
+                      value: state.alerts.length.toString(),
+                    ),
                   ],
                 ),
               ],
@@ -1477,37 +1823,60 @@ class ParentHomeScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Rite of Passage',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     '${state.lastName} earned:',
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  BadgeCard(name: state.lastName!, badge: state.lastBadge!),
+                  BadgeCard(
+                    name: state.lastName!,
+                    badge: state.lastBadge!,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     'Promises:',
-                    style: TextStyle(color: Colors.white.withOpacity(0.9), fontWeight: FontWeight.w800),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: state.lastPromises
-                        .map((p) => Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.10),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: Colors.white.withOpacity(0.18)),
+                        .map(
+                          (p) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.10),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.18),
                               ),
-                              child: Text(
-                                p,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                            ),
+                            child: Text(
+                              p,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
                               ),
-                            ))
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ],
@@ -1521,17 +1890,32 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Controls',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context, calmRoute(const ParentContactsScreen())),
-                  style: ElevatedButton.styleFrom(backgroundColor: NatterBrand.green, foregroundColor: Colors.black),
-                  child: Text('Contacts (${state.pendingRequests.length} pending)'),
+                  onPressed: () => Navigator.push(
+                    context,
+                    calmRoute(const ParentContactsScreen()),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: Text(
+                    'Contacts (${state.pendingRequests.length} pending)',
+                  ),
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(context, calmRoute(const ParentRulesScreen())),
+                  onPressed: () => Navigator.push(
+                    context,
+                    calmRoute(const ParentRulesScreen()),
+                  ),
                   child: const Text('Rules & Alerts'),
                 ),
               ],
@@ -1544,13 +1928,20 @@ class ParentHomeScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Recent Alerts (no message reading)',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 if (state.alerts.isEmpty)
                   Text(
                     'No alerts right now.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
                   )
                 else
                   ...state.alerts.take(6).map((a) => _AlertRow(event: a)),
@@ -1566,7 +1957,11 @@ class ParentHomeScreen extends StatelessWidget {
 class _StatTile extends StatelessWidget {
   final String label;
   final String value;
-  const _StatTile({required this.label, required this.value});
+
+  const _StatTile({
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1581,9 +1976,22 @@ class _StatTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 20)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
         ],
       ),
     );
@@ -1598,6 +2006,7 @@ class _AlertRow extends StatelessWidget {
   Widget build(BuildContext context) {
     IconData icon;
     Color color;
+
     switch (event.type) {
       case AlertType.blockedWord:
         icon = Icons.block_rounded;
@@ -1610,6 +2019,10 @@ class _AlertRow extends StatelessWidget {
       case AlertType.contactRequest:
         icon = Icons.person_add_alt_1_rounded;
         color = NatterBrand.green;
+        break;
+      case AlertType.safetyCoach:
+        icon = Icons.favorite_rounded;
+        color = NatterBrand.pink;
         break;
     }
 
@@ -1638,7 +2051,10 @@ class _AlertRow extends StatelessWidget {
             Expanded(
               child: Text(
                 event.message,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
@@ -1658,7 +2074,10 @@ class ParentContactsScreen extends StatelessWidget {
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Contacts'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -1669,13 +2088,20 @@ class ParentContactsScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Pending requests',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 if (state.pendingRequests.isEmpty)
                   Text(
                     'None right now.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w700),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
                   )
                 else
                   ...state.pendingRequests.map((name) {
@@ -1691,15 +2117,25 @@ class ParentContactsScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                              backgroundColor:
+                                  NatterBrand.yellow.withOpacity(0.35),
                               child: Text(
                                 name.substring(0, 1),
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: Text(
+                                name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -1711,7 +2147,13 @@ class ParentContactsScreen extends StatelessWidget {
                                   ));
                                 }
                               },
-                              child: const Text('Approve', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                              child: const Text(
+                                'Approve',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ),
                             TextButton(
                               onPressed: () {
@@ -1723,7 +2165,13 @@ class ParentContactsScreen extends StatelessWidget {
                                   ));
                                 }
                               },
-                              child: const Text('Block', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w800)),
+                              child: const Text(
+                                'Block',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -1740,22 +2188,39 @@ class ParentContactsScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Approved contacts',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
                   children: state.approvedContacts
-                      .map((n) => Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: Colors.white.withOpacity(0.16)),
+                      .map(
+                        (n) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.16),
                             ),
-                            child: Text(n, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                          ))
+                          ),
+                          child: Text(
+                            n,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ],
@@ -1777,7 +2242,10 @@ class ParentRulesScreen extends StatelessWidget {
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Rules & Alerts'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       child: ListView(
         padding: const EdgeInsets.all(16),
@@ -1786,14 +2254,25 @@ class ParentRulesScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Quiet Hours',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Quiet Hours',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: state.quietHoursEnabled,
                   onChanged: state.setQuietEnabled,
-                  title: const Text('Enable Quiet Hours',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  title: const Text(
+                    'Enable Quiet Hours',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                   subtitle: Text(
                     'Kids can’t send messages during this time.',
                     style: TextStyle(color: Colors.white.withOpacity(0.8)),
@@ -1807,7 +2286,10 @@ class ParentRulesScreen extends StatelessWidget {
                         label: 'Start',
                         time: state.quietStart,
                         onPick: () async {
-                          final picked = await showTimePicker(context: context, initialTime: state.quietStart);
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: state.quietStart,
+                          );
                           if (picked != null) state.setQuietStart(picked);
                         },
                       ),
@@ -1818,7 +2300,10 @@ class ParentRulesScreen extends StatelessWidget {
                         label: 'End',
                         time: state.quietEnd,
                         onPick: () async {
-                          final picked = await showTimePicker(context: context, initialTime: state.quietEnd);
+                          final picked = await showTimePicker(
+                            context: context,
+                            initialTime: state.quietEnd,
+                          );
                           if (picked != null) state.setQuietEnd(picked);
                         },
                       ),
@@ -1833,31 +2318,74 @@ class ParentRulesScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Alerts', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+                const Text(
+                  'Alerts',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   value: state.alertsBlockedWord,
                   onChanged: (v) => state.setAlerts(blockedWord: v),
-                  title: const Text('Blocked-word attempts',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert when a message is blocked.',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Blocked-word attempts',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Parents get an alert when a message is blocked.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
                 SwitchListTile(
                   value: state.alertsQuietHours,
                   onChanged: (v) => state.setAlerts(quietHours: v),
-                  title: const Text('Quiet Hours attempts',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Parents get an alert if kids try to message during Quiet Hours.',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Quiet Hours attempts',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Parents get an alert if kids try to message during Quiet Hours.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
                 SwitchListTile(
                   value: state.alertsContactRequest,
                   onChanged: (v) => state.setAlerts(contactRequest: v),
-                  title: const Text('Contact events',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                  subtitle: Text('Alerts when a request is made/approved/blocked (demo).',
-                      style: TextStyle(color: Colors.white.withOpacity(0.8))),
+                  title: const Text(
+                    'Contact events',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Alerts when a request is made, approved, or blocked.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
+                ),
+                SwitchListTile(
+                  value: state.alertsSafetyCoach,
+                  onChanged: (v) => state.setAlerts(safetyCoach: v),
+                  title: const Text(
+                    'Kindness coach prompts',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Parents get a signal when Natter coaches a message, without seeing the message itself.',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
+                  ),
                 ),
               ],
             ),
@@ -1873,7 +2401,11 @@ class _TimeButton extends StatelessWidget {
   final TimeOfDay time;
   final VoidCallback onPick;
 
-  const _TimeButton({required this.label, required this.time, required this.onPick});
+  const _TimeButton({
+    required this.label,
+    required this.time,
+    required this.onPick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1886,14 +2418,29 @@ class _TimeButton extends StatelessWidget {
       onPressed: onPick,
       style: OutlinedButton.styleFrom(
         side: BorderSide(color: Colors.white.withOpacity(0.22)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
       ),
       child: Column(
         children: [
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.85), fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.85),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(txt, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
+          Text(
+            txt,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
         ],
       ),
     );
