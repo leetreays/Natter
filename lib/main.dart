@@ -71,6 +71,54 @@ class SafetyCheckResult {
         suggestion = null;
 }
 
+enum NatterLevel {
+  promiseKeeper,
+  trustedChatter,
+  kindCommunicator,
+  digitalCitizen,
+}
+
+extension NatterLevelInfo on NatterLevel {
+  String get title {
+    switch (this) {
+      case NatterLevel.promiseKeeper:
+        return 'Promise Keeper';
+      case NatterLevel.trustedChatter:
+        return 'Trusted Chatter';
+      case NatterLevel.kindCommunicator:
+        return 'Kind Communicator';
+      case NatterLevel.digitalCitizen:
+        return 'Digital Citizen';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case NatterLevel.promiseKeeper:
+        return "You've made your Natter promises.";
+      case NatterLevel.trustedChatter:
+        return "You're building good chat habits.";
+      case NatterLevel.kindCommunicator:
+        return "You're communicating thoughtfully.";
+      case NatterLevel.digitalCitizen:
+        return "You're ready for more independence online.";
+    }
+  }
+
+  String get nextGoal {
+    switch (this) {
+      case NatterLevel.promiseKeeper:
+        return 'Use kind rewriting once and build approved friendships.';
+      case NatterLevel.trustedChatter:
+        return 'Use kind rewriting 3 times to become a Kind Communicator.';
+      case NatterLevel.kindCommunicator:
+        return 'Keep showing thoughtful habits as new features arrive.';
+      case NatterLevel.digitalCitizen:
+        return 'You have reached the current top level.';
+    }
+  }
+}
+
 class FriendDirectory {
   static const Map<String, String> codeToName = {
     'AVA-4821': 'Ava',
@@ -123,6 +171,13 @@ class AppState extends ChangeNotifier {
 
   // Progress
   int kindnessRewrites = 0;
+  int kindnessStreak = 0;
+  int kindnessStars = 0;
+  String? celebrationMessage;
+  NatterLevel currentLevel = NatterLevel.promiseKeeper;
+
+  bool get canRequestFriends =>
+      currentLevel.index >= NatterLevel.trustedChatter.index;
 
   // --- helpers ---
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
@@ -180,6 +235,7 @@ class AppState extends ChangeNotifier {
   void approveContact(String name) {
     pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
     if (!isApproved(name)) approvedContacts.add(name);
+    evaluateProgress();
     notifyListeners();
   }
 
@@ -223,6 +279,16 @@ class AppState extends ChangeNotifier {
     lastName = name;
     lastPromises = List<String>.from(promises);
     lastBadge = badgeForPromises(promises.toSet());
+    currentLevel = NatterLevel.promiseKeeper;
+    kindnessRewrites = 0;
+    kindnessStreak = 0;
+    kindnessStars = 0;
+    celebrationMessage = null;
+    notifyListeners();
+  }
+
+  void dismissCelebration() {
+    celebrationMessage = null;
     notifyListeners();
   }
 
@@ -273,7 +339,51 @@ class AppState extends ChangeNotifier {
 
   void recordKindRewrite() {
     kindnessRewrites += 1;
+    kindnessStreak += 1;
+    kindnessStars += 1;
+
+    if (kindnessStreak == 3) {
+      celebrationMessage = '🌟 3-message kindness streak!';
+    } else if (kindnessStreak == 5) {
+      celebrationMessage = '💛 5-message kindness streak!';
+    }
+
+    evaluateProgress();
     notifyListeners();
+  }
+
+  void evaluateProgress() {
+    var didLevelUp = false;
+
+    if (currentLevel == NatterLevel.promiseKeeper) {
+      if (approvedContacts.isNotEmpty && kindnessRewrites >= 1) {
+        currentLevel = NatterLevel.trustedChatter;
+        didLevelUp = true;
+
+        celebrationMessage = '🎉 Level up! Trusted Chatter unlocked.';
+        addAlert(AlertEvent(
+          type: AlertType.safetyCoach,
+          message: 'Level up: Trusted Chatter unlocked.',
+        ));
+      }
+    }
+
+    if (currentLevel == NatterLevel.trustedChatter) {
+      if (kindnessRewrites >= 3) {
+        currentLevel = NatterLevel.kindCommunicator;
+        didLevelUp = true;
+
+        celebrationMessage = '🏅 Level up! Kind Communicator unlocked.';
+        addAlert(AlertEvent(
+          type: AlertType.safetyCoach,
+          message: 'Level up: Kind Communicator unlocked.',
+        ));
+      }
+    }
+
+    if (didLevelUp) {
+      notifyListeners();
+    }
   }
 }
 
@@ -797,13 +907,11 @@ class _PromiseScreenState extends State<PromiseScreen> {
   void _seal() {
     final promises = selected.toList();
 
-    // Record rite for Parent screen
     AppStateScope.of(context).recordRite(
       name: widget.name,
       promises: promises,
     );
 
-    // Navigate to a real page (not overlay/dialog)
     Navigator.push(
       context,
       calmRoute(
@@ -1181,6 +1289,18 @@ class ChatsScreen extends StatelessWidget {
                             return;
                           }
 
+                          if (!state.canRequestFriends) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "You'll unlock friend requests soon as you keep chatting kindly.",
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
                           state.requestContact(friendName);
 
                           Navigator.pop(ctx);
@@ -1256,6 +1376,98 @@ class ChatsScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
+          if (state.celebrationMessage != null) ...[
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: NatterBrand.yellow.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: NatterBrand.yellow.withOpacity(0.55),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      state.celebrationMessage!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => state.dismissCelebration(),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Natter Level',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  state.currentLevel.title,
+                  style: const TextStyle(
+                    color: NatterBrand.yellow,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  state.currentLevel.description,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _RewardPill(
+                      icon: Icons.auto_awesome_rounded,
+                      label: '${state.kindnessStars} stars',
+                    ),
+                    _RewardPill(
+                      icon: Icons.local_fire_department_rounded,
+                      label: '${state.kindnessStreak} streak',
+                    ),
+                    _RewardPill(
+                      icon: Icons.favorite_rounded,
+                      label: '${state.kindnessRewrites} kind rewrites',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Next: ${state.currentLevel.nextGoal}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.82),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           BrandCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1361,6 +1573,42 @@ class ChatsScreen extends StatelessWidget {
             );
           }),
           const SizedBox(height: 90),
+        ],
+      ),
+    );
+  }
+}
+
+class _RewardPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _RewardPill({
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withOpacity(0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: NatterBrand.yellow),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -1526,7 +1774,6 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = controller.text.trim();
     if (text.isEmpty) return;
 
-    // Quiet hours check
     if (state.isQuietNow()) {
       setState(() => feedback = "Quiet Hours are on — we’ll chat again later 🌙");
       controller.clear();
@@ -1810,6 +2057,10 @@ class ParentHomeScreen extends StatelessWidget {
                       label: 'Alerts',
                       value: state.alerts.length.toString(),
                     ),
+                    _StatTile(
+                      label: 'Level',
+                      value: state.currentLevel.title,
+                    ),
                   ],
                 ),
               ],
@@ -1917,6 +2168,62 @@ class ParentHomeScreen extends StatelessWidget {
                     calmRoute(const ParentRulesScreen()),
                   ),
                   child: const Text('Rules & Alerts'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Progress',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Current level: ${state.currentLevel.title}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Kind rewrites: ${state.kindnessRewrites}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Kindness streak: ${state.kindnessStreak}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Stars earned: ${state.kindnessStars}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Next step: ${state.currentLevel.nextGoal}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
