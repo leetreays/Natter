@@ -2212,6 +2212,272 @@ class ChatsScreen extends StatelessWidget {
     );
   }
 
+  Widget _levelCard(AppState state) {
+    return BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Your Natter Level',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            state.currentLevel.title,
+            style: const TextStyle(
+              color: NatterBrand.yellow,
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            state.currentLevel.description,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ProgressBarCard(state: state),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.16)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Kindness Streak',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${state.kindnessStreak} positive messages in a row 🔥',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  state.kindnessStreak < 3
+                      ? 'Reach 3 for Kindness Spark.'
+                      : state.kindnessStreak < 5
+                          ? 'Reach 5 for Heart Starter.'
+                          : state.kindnessStreak < 10
+                              ? 'Reach 10 for Kindness Rocket.'
+                              : 'Amazing streak — keep it going!',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.82),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _profileCard(BuildContext context, AppState state) {
+    return BrandCard(
+      child: Row(
+        children: [
+          AvatarPreview(avatar: state.avatar, size: 74),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  state.lastName ?? 'Your profile',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${state.kindnessStars} stars • ${state.kindnessStreak} streak',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              calmRoute(const ProfileScreen()),
+            ),
+            child: const Text('Profile'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dailyQuestCard(AppState state) {
+    return BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                state.dailyQuest.icon,
+                color: NatterBrand.yellow,
+                size: 24,
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Daily Quest',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            state.dailyQuest.title,
+            style: const TextStyle(
+              color: NatterBrand.yellow,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            state.dailyQuest.description,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value:
+                  (state.dailyQuestProgress / state.dailyQuest.target).clamp(0, 1),
+              minHeight: 12,
+              backgroundColor: Colors.white.withOpacity(0.14),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                state.dailyQuestCompleted
+                    ? NatterBrand.green
+                    : NatterBrand.yellow,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            state.dailyQuestCompleted
+                ? 'Complete! +${state.dailyQuest.rewardStars} stars earned ✨'
+                : 'Progress: ${state.dailyQuestProgress}/${state.dailyQuest.target}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.86),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _friendCodeCard(BuildContext context, AppState state) {
+    return BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Your friend code',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              vertical: 14,
+              horizontal: 16,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.16)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    state.myFriendCode,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      ClipboardData(
+                        text:
+                            'Add me on Natter with my friend code: ${state.myFriendCode}',
+                      ),
+                    );
+
+                    if (!context.mounted) return;
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Friend code copied! Share it with a friend.',
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Copy'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -2286,529 +2552,18 @@ class ChatsScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Your Natter Level',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.currentLevel.title,
-                  style: const TextStyle(
-                    color: NatterBrand.yellow,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 22,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  state.currentLevel.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _ProgressBarCard(state: state),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.16)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Kindness Streak',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${state.kindnessStreak} positive messages in a row 🔥',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        state.kindnessStreak < 3
-                            ? 'Reach 3 for Kindness Spark.'
-                            : state.kindnessStreak < 5
-                                ? 'Reach 5 for Heart Starter.'
-                                : state.kindnessStreak < 10
-                                    ? 'Reach 10 for Kindness Rocket.'
-                                    : 'Amazing streak — keep it going!',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.82),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _levelCard(state),
           const SizedBox(height: 12),
-          BrandCard(
-          BrandCard(
-            child: Row(
-              children: [
-                AvatarPreview(avatar: state.avatar, size: 74),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.lastName ?? 'Your profile',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${state.kindnessStars} stars • ${state.kindnessStreak} streak',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.84),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    calmRoute(const ProfileScreen()),
-                  ),
-                  child: const Text('Profile'),
-                ),
-              ],
-            ),
-          ),
+          _profileCard(context, state),
           const SizedBox(height: 12),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      state.dailyQuest.icon,
-                      color: NatterBrand.yellow,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Daily Quest',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.dailyQuest.title,
-                  style: const TextStyle(
-                    color: NatterBrand.yellow,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  state.dailyQuest.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: (state.dailyQuestProgress / state.dailyQuest.target)
-                        .clamp(0, 1),
-                    minHeight: 12,
-                    backgroundColor: Colors.white.withOpacity(0.14),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      state.dailyQuestCompleted
-                          ? NatterBrand.green
-                          : NatterBrand.yellow,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.dailyQuestCompleted
-                      ? 'Complete! +${state.dailyQuest.rewardStars} stars earned ✨'
-                      : 'Progress: ${state.dailyQuestProgress}/${state.dailyQuest.target}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.86),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _dailyQuestCard(state),
           const SizedBox(height: 12),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Your friend code',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.16)),
-BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Your Natter Level',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.currentLevel.title,
-                  style: const TextStyle(
-                    color: NatterBrand.yellow,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 22,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  state.currentLevel.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _ProgressBarCard(state: state),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.16)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Kindness Streak',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${state.kindnessStreak} positive messages in a row 🔥',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        state.kindnessStreak < 3
-                            ? 'Reach 3 for Kindness Spark.'
-                            : state.kindnessStreak < 5
-                                ? 'Reach 5 for Heart Starter.'
-                                : state.kindnessStreak < 10
-                                    ? 'Reach 10 for Kindness Rocket.'
-                                    : 'Amazing streak — keep it going!',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.82),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          BrandCard(
-            child: Row(
-              children: [
-                AvatarPreview(avatar: state.avatar, size: 74),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        state.lastName ?? 'Your profile',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${state.kindnessStars} stars • ${state.kindnessStreak} streak',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.84),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    calmRoute(const ProfileScreen()),
-                  ),
-                  child: const Text('Profile'),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      state.dailyQuest.icon,
-                      color: NatterBrand.yellow,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      'Daily Quest',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.dailyQuest.title,
-                  style: const TextStyle(
-                    color: NatterBrand.yellow,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  state.dailyQuest.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: (state.dailyQuestProgress / state.dailyQuest.target)
-                        .clamp(0, 1),
-                    minHeight: 12,
-                    backgroundColor: Colors.white.withOpacity(0.14),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      state.dailyQuestCompleted
-                          ? NatterBrand.green
-                          : NatterBrand.yellow,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  state.dailyQuestCompleted
-                      ? 'Complete! +${state.dailyQuest.rewardStars} stars earned ✨'
-                      : 'Progress: ${state.dailyQuestProgress}/${state.dailyQuest.target}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.86),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Your friend code',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 14,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.16)),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          state.myFriendCode,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 22,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await Clipboard.setData(
-                            ClipboardData(
-                              text:
-                                  'Add me on Natter with my friend code: ${state.myFriendCode}',
-                            ),
-                          );
-
-                          if (!context.mounted) return;
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Friend code copied! Share it with a friend.',
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NatterBrand.green,
-                          foregroundColor: Colors.black,
-                        ),
-                        child: const Text('Copy'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _friendCodeCard(context, state),
           const SizedBox(height: 12),
           ...chats.map((c) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: BrandCard(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                    child: Text(
-                      c.name.substring(0, 1),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    c.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  subtitle: Text(
-                    c.last,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: c.unread
-                      ? Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: NatterBrand.green,
-                            borderRadius: BorderRadius.circular(99),
-                          ),
-                        )
-                      : const Icon(Icons.chevron_right, color: Colors.white),
-                  onTap: () => Navigator.push(
-                    context,
-                    calmRoute(ChatScreen(contactName: c.name)),
-                  ),
-                ),
-              ),
-            );
-          }),
-          const SizedBox(height: 90),
-        ],
-      ),
-    );
-  }
-}
+              child:
 class ChatScreen extends StatefulWidget {
   final String contactName;
   const ChatScreen({super.key, required this.contactName});
