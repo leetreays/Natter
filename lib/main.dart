@@ -137,6 +137,22 @@ class FriendDirectory {
   }
 }
 
+class DailyQuest {
+  final String title;
+  final String description;
+  final int target;
+  final int rewardStars;
+  final IconData icon;
+
+  const DailyQuest({
+    required this.title,
+    required this.description,
+    required this.target,
+    required this.rewardStars,
+    required this.icon,
+  });
+}
+
 class AlertEvent {
   final AlertType type;
   final String message;
@@ -247,6 +263,16 @@ class AppState extends ChangeNotifier {
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
 
+  DailyQuest dailyQuest = const DailyQuest(
+    title: 'Kindness Quest',
+    description: 'Send 3 positive messages today.',
+    target: 3,
+    rewardStars: 3,
+    icon: Icons.auto_awesome_rounded,
+  );
+  int dailyQuestProgress = 0;
+  bool dailyQuestCompleted = false;
+  
   final List<NatterBadge> earnedBadges = [];
 
   int weeklyApprovedFriends = 0;
@@ -319,6 +345,32 @@ class AppState extends ChangeNotifier {
 
   void updateAvatar(AvatarData newAvatar) {
     avatar = newAvatar;
+    notifyListeners();
+  }
+
+  void _checkDailyQuestProgress() {
+    if (!dailyQuestCompleted && dailyQuestProgress >= dailyQuest.target) {
+      dailyQuestCompleted = true;
+      kindnessStars += dailyQuest.rewardStars;
+
+      _awardBadge(
+        const NatterBadge(
+          title: 'Quest Finisher',
+          icon: Icons.task_alt_rounded,
+          color: NatterBrand.purple,
+          description: 'Awarded for completing a daily quest.',
+        ),
+        celebrationTitleText: 'Daily Quest Complete!',
+        celebrationMessageText:
+            '✨ ${dailyQuest.title} complete!\n\nYou earned ${dailyQuest.rewardStars} bonus stars.',
+      );
+    }
+  }
+
+  void recordDailyQuestStep() {
+    if (dailyQuestCompleted) return;
+    dailyQuestProgress += 1;
+    _checkDailyQuestProgress();
     notifyListeners();
   }
 
@@ -535,6 +587,7 @@ class AppState extends ChangeNotifier {
   void recordPositiveMessage() {
     kindnessStreak += 1;
     kindnessStars += 1;
+    recordDailyQuestStep();
     _checkStreakMilestones();
     notifyListeners();
   }
@@ -543,6 +596,7 @@ class AppState extends ChangeNotifier {
     kindnessRewrites += 1;
     kindnessStreak += 1;
     kindnessStars += 2; // rewrite gets a bonus reward
+    recordDailyQuestStep();
     _checkStreakMilestones();
     evaluateProgress();
     notifyListeners();
@@ -2314,6 +2368,7 @@ class ChatsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           BrandCard(
+          BrandCard(
             child: Row(
               children: [
                 AvatarPreview(avatar: state.avatar, size: 74),
@@ -2347,6 +2402,75 @@ class ChatsScreen extends StatelessWidget {
                     calmRoute(const ProfileScreen()),
                   ),
                   child: const Text('Profile'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      state.dailyQuest.icon,
+                      color: NatterBrand.yellow,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'Daily Quest',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  state.dailyQuest.title,
+                  style: const TextStyle(
+                    color: NatterBrand.yellow,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  state.dailyQuest.description,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: (state.dailyQuestProgress / state.dailyQuest.target)
+                        .clamp(0, 1),
+                    minHeight: 12,
+                    backgroundColor: Colors.white.withOpacity(0.14),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      state.dailyQuestCompleted
+                          ? NatterBrand.green
+                          : NatterBrand.yellow,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  state.dailyQuestCompleted
+                      ? 'Complete! +${state.dailyQuest.rewardStars} stars earned ✨'
+                      : 'Progress: ${state.dailyQuestProgress}/${state.dailyQuest.target}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
