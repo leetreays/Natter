@@ -243,6 +243,7 @@ class AppState extends ChangeNotifier {
   int kindnessRewrites = 0;
   int kindnessStreak = 0;
   int kindnessStars = 0;
+  String? celebrationTitle;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
 
@@ -426,16 +427,24 @@ class AppState extends ChangeNotifier {
   }
 
   void dismissCelebration() {
+    celebrationTitle = null;
     celebrationMessage = null;
     notifyListeners();
   }
 
-  void _awardBadge(NatterBadge badge, {String? celebration}) {
+  void _awardBadge(
+    NatterBadge badge, {
+    String? celebrationTitleText,
+    String? celebrationMessageText,
+  }) {
     final alreadyEarned = earnedBadges.any((b) => b.title == badge.title);
     if (alreadyEarned) return;
+
     earnedBadges.add(badge);
-    if (celebration != null) {
-      celebrationMessage = celebration;
+
+    if (celebrationTitleText != null || celebrationMessageText != null) {
+      celebrationTitle = celebrationTitleText;
+      celebrationMessage = celebrationMessageText;
     }
   }
 
@@ -492,7 +501,9 @@ class AppState extends ChangeNotifier {
           color: NatterBrand.yellow,
           description: 'Earned for a 3-message kindness streak.',
         ),
-        celebration: '🌟 3-message kindness streak!',
+        celebrationTitleText: 'New Badge Unlocked!',
+        celebrationMessageText:
+            '🌟 Kindness Spark unlocked for a 3-message kindness streak.',
       );
     } else if (kindnessStreak == 5) {
       _awardBadge(
@@ -502,7 +513,9 @@ class AppState extends ChangeNotifier {
           color: NatterBrand.pink,
           description: 'Earned for a 5-message kindness streak.',
         ),
-        celebration: '💛 5-message kindness streak!',
+        celebrationTitleText: 'New Badge Unlocked!',
+        celebrationMessageText:
+            '💛 Heart Starter unlocked for a 5-message kindness streak.',
       );
     } else if (kindnessStreak == 10) {
       _awardBadge(
@@ -512,7 +525,9 @@ class AppState extends ChangeNotifier {
           color: NatterBrand.green,
           description: 'Earned for a 10-message kindness streak.',
         ),
-        celebration: '🚀 10-message kindness streak!',
+        celebrationTitleText: 'New Badge Unlocked!',
+        celebrationMessageText:
+            '🚀 Kindness Rocket unlocked for a 10-message kindness streak.',
       );
     }
   }
@@ -548,7 +563,9 @@ class AppState extends ChangeNotifier {
             color: NatterBrand.green,
             description: 'Unlocked after showing good early chat habits.',
           ),
-          celebration: '🎉 Level up! Trusted Chatter unlocked.',
+          celebrationTitleText: 'Level Up!',
+          celebrationMessageText:
+              '🎉 You are now a Trusted Chatter.\n\nFriend requests are now unlocked.',
         );
 
         addAlert(AlertEvent(
@@ -570,7 +587,9 @@ class AppState extends ChangeNotifier {
             color: NatterBrand.pink,
             description: 'Unlocked after multiple kind rewrites.',
           ),
-          celebration: '🏅 Level up! Kind Communicator unlocked.',
+          celebrationTitleText: 'Level Up!',
+          celebrationMessageText:
+              '🏅 You are now a Kind Communicator.\n\nYou are building really thoughtful chat habits.',
         );
 
         addAlert(AlertEvent(
@@ -2057,7 +2076,11 @@ class ChatsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _showCelebrationCard(BuildContext context, String message) async {
+  Future<void> _showCelebrationCard(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) async {
     await showDialog<void>(
       context: context,
       builder: (ctx) {
@@ -2067,51 +2090,64 @@ class ChatsScreen extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.84),
-              borderRadius: BorderRadius.circular(26),
+              color: Colors.black.withOpacity(0.88),
+              borderRadius: BorderRadius.circular(28),
               border: Border.all(color: Colors.white.withOpacity(0.18)),
               boxShadow: [
                 BoxShadow(
-                  color: NatterBrand.yellow.withOpacity(0.18),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
+                  color: NatterBrand.yellow.withOpacity(0.20),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.celebration_rounded,
-                  color: NatterBrand.yellow,
-                  size: 52,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Celebration!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 24,
+                Container(
+                  width: 74,
+                  height: 74,
+                  decoration: BoxDecoration(
+                    color: NatterBrand.yellow.withOpacity(0.14),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: NatterBrand.yellow.withOpacity(0.45),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: NatterBrand.yellow,
+                    size: 38,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 26,
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withOpacity(0.92),
                     fontWeight: FontWeight.w700,
-                    height: 1.35,
+                    height: 1.4,
+                    fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Awesome ✨'),
+                    child: const Text('Keep Going ✨'),
                   ),
                 ),
               ],
@@ -2138,10 +2174,16 @@ class ChatsScreen extends StatelessWidget {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.mounted) return;
+      final title = state.celebrationTitle;
       final message = state.celebrationMessage;
-      if (message != null) {
+
+      if (title != null && message != null) {
         state.dismissCelebration();
-        await _showCelebrationCard(context, message);
+        await _showCelebrationCard(
+          context,
+          title: title,
+          message: message,
+        );
       }
     });
 
