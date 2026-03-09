@@ -483,11 +483,7 @@ class AppState extends ChangeNotifier {
     return const SafetyCheckResult.ok();
   }
 
-  void recordKindRewrite() {
-    kindnessRewrites += 1;
-    kindnessStreak += 1;
-    kindnessStars += 1;
-
+  void _checkStreakMilestones() {
     if (kindnessStreak == 3) {
       _awardBadge(
         const NatterBadge(
@@ -508,8 +504,31 @@ class AppState extends ChangeNotifier {
         ),
         celebration: '💛 5-message kindness streak!',
       );
+    } else if (kindnessStreak == 10) {
+      _awardBadge(
+        const NatterBadge(
+          title: 'Kindness Rocket',
+          icon: Icons.rocket_launch_rounded,
+          color: NatterBrand.green,
+          description: 'Earned for a 10-message kindness streak.',
+        ),
+        celebration: '🚀 10-message kindness streak!',
+      );
     }
+  }
 
+  void recordPositiveMessage() {
+    kindnessStreak += 1;
+    kindnessStars += 1;
+    _checkStreakMilestones();
+    notifyListeners();
+  }
+
+  void recordKindRewrite() {
+    kindnessRewrites += 1;
+    kindnessStreak += 1;
+    kindnessStars += 2; // rewrite gets a bonus reward
+    _checkStreakMilestones();
     evaluateProgress();
     notifyListeners();
   }
@@ -2202,6 +2221,52 @@ class ChatsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _ProgressBarCard(state: state),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.white.withOpacity(0.16)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Kindness Streak',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${state.kindnessStreak} positive messages in a row 🔥',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.kindnessStreak < 3
+                            ? 'Reach 3 for Kindness Spark.'
+                            : state.kindnessStreak < 5
+                                ? 'Reach 5 for Heart Starter.'
+                                : state.kindnessStreak < 10
+                                    ? 'Reach 10 for Kindness Rocket.'
+                                    : 'Amazing streak — keep it going!',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.82),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -2506,7 +2571,11 @@ class _ChatScreenState extends State<ChatScreen> {
     return result ?? false;
   }
 
-  void _sendMessageNow(String text) {
+void _sendMessageNow(String text) {
+    final state = AppStateScope.of(context);
+
+    state.recordPositiveMessage();
+
     setState(() {
       feedback = null;
       messages.insert(0, _Msg(fromMe: true, text: text));
@@ -2519,8 +2588,7 @@ class _ChatScreenState extends State<ChatScreen> {
         messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
       });
     });
-  }
-
+}
   void _send() async {
     final state = AppStateScope.of(context);
     final text = controller.text.trim();
