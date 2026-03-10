@@ -224,6 +224,10 @@ class AvatarData {
   }
 }
 
+class NatterReaction {
+  static const List<String> allowed = ['👍', '❤️', '🌟', '🎉', '😂'];
+}
+
 class ChatPreview {
   final String name;
   final String last;
@@ -2950,10 +2954,12 @@ void _sendMessageNow(String text) {
 class _Msg {
   final bool fromMe;
   final String text;
+  String? reaction;
 
   _Msg({
     required this.fromMe,
     required this.text,
+    this.reaction,
   });
 }
 
