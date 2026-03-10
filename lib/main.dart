@@ -3877,29 +3877,29 @@ class ParentContactsScreen extends StatelessWidget {
                   spacing: 10,
                   runSpacing: 10,
                   children: state.approvedContacts
-                      .map(
-                        (n) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            horizontal: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.16),
-                            ),
-                          ),
-                          child: Text(
-                            n,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+    .map(
+      (friend) => Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 8,
+          horizontal: 12,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.16),
+          ),
+        ),
+        child: Text(
+          friend.name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    )
+    .toList(),
                 ),
               ],
             ),
