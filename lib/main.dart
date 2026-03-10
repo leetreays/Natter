@@ -3007,7 +3007,10 @@ void _sendMessageNow(String text) {
               reverse: true,
               padding: const EdgeInsets.all(14),
               itemCount: messages.length,
-              itemBuilder: (_, i) => _Bubble(msg: messages[i]),
+              itemBuilder: (_, i) => _Bubble(
+  msg: messages[i],
+  onTap: () => _pickReaction(i),
+),
             ),
           ),
           Padding(
@@ -3060,7 +3063,12 @@ class _Msg {
 
 class _Bubble extends StatelessWidget {
   final _Msg msg;
-  const _Bubble({required this.msg});
+  final VoidCallback? onTap;
+
+  const _Bubble({
+    required this.msg,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -3072,23 +3080,51 @@ class _Bubble extends StatelessWidget {
 
     return Align(
       alignment: align,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        constraints: const BoxConstraints(maxWidth: 520),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withOpacity(0.12)),
-        ),
-        child: Text(
-          msg.text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
+      child: Column(
+        crossAxisAlignment:
+            msg.fromMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: msg.fromMe ? null : onTap,
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+              constraints: const BoxConstraints(maxWidth: 520),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.12)),
+              ),
+              child: Text(
+                msg.text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ),
-        ),
+          if (msg.reaction != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.10),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: Colors.white.withOpacity(0.14)),
+                ),
+                child: Text(
+                  msg.reaction!,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
