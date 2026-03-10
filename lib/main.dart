@@ -2554,10 +2554,10 @@ class ChatsScreen extends StatelessWidget {
 
     final chats = state.approvedContacts
         .map(
-          (name) => ChatPreview(
-            name: name,
-            last: name == 'Dad' ? 'Dinner at 6 😊' : 'Say hi 👋',
-            unread: name == 'Dad' || name == 'Sam',
+          (friend) => ChatPreview(
+            name: friend.name,
+            last: friend.name == 'Dad' ? 'Dinner at 6 😊' : 'Say hi 👋',
+            unread: friend.name == 'Dad' || friend.name == 'Sam',
           ),
         )
         .toList();
@@ -2647,12 +2647,31 @@ class ChatsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  title: Text(
-                    c.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
+                  title: Builder(
+                    builder: (context) {
+                      final friend = state.getFriendByName(c.name);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            c.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          if (friend != null)
+                            Text(
+                              'Friendship ${friend.stars}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.78),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                   subtitle: Text(
                     c.last,
@@ -2991,7 +3010,9 @@ void _sendMessageNow(String text) {
     final state = AppStateScope.of(context);
 
     state.recordPositiveMessage();
-
+  
+state.addFriendshipPoints(widget.contactName, 2);
+  
     setState(() {
       feedback = null;
       messages.insert(0, _Msg(fromMe: true, text: text));
@@ -3065,10 +3086,11 @@ void _sendMessageNow(String text) {
       if (sendAnyway) {
         _sendMessageNow(text);
       } else {
-        state.recordKindRewrite();
-        setState(() {
-          feedback = 'Nice pause. Try rewriting your message kindly 💛';
-        });
+  state.recordKindRewrite();
+  state.addFriendshipPoints(widget.contactName, 3);
+  setState(() {
+    feedback = 'Nice pause. Try rewriting your message kindly 💛';
+  });
       }
       return;
     }
