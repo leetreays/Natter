@@ -137,6 +137,26 @@ class FriendDirectory {
   }
 }
 
+class Friend {
+  final String name;
+  int friendshipPoints;
+
+  Friend({
+    required this.name,
+    this.friendshipPoints = 0,
+  });
+
+  int get level {
+    if (friendshipPoints >= 100) return 5;
+    if (friendshipPoints >= 50) return 4;
+    if (friendshipPoints >= 25) return 3;
+    if (friendshipPoints >= 10) return 2;
+    return 1;
+  }
+
+  String get stars => '⭐' * level;
+}
+
 class DailyQuest {
   final String title;
   final String description;
@@ -255,7 +275,11 @@ class ChatPreview {
 
 class AppState extends ChangeNotifier {
   final String myFriendCode = 'NAT-2048';
-  final List<String> approvedContacts = ['Dad', 'Sam', 'Mia'];
+  final List<Friend> approvedContacts = [
+    Friend(name: 'Dad', friendshipPoints: 40),
+    Friend(name: 'Sam', friendshipPoints: 18),
+    Friend(name: 'Mia', friendshipPoints: 8),
+  ];
   final List<String> pendingRequests = ['Ava', 'Leo'];
 
   bool quietHoursEnabled = true;
@@ -355,11 +379,38 @@ class AppState extends ChangeNotifier {
   }
 
   bool isApproved(String name) =>
-      approvedContacts.any((c) => c.toLowerCase() == name.toLowerCase());
-
+      approvedContacts.any((c) => c.name.toLowerCase() == name.toLowerCase());
+  
   bool isPending(String name) =>
       pendingRequests.any((p) => p.toLowerCase() == name.toLowerCase());
 
+  Friend? getFriendByName(String name) {
+    try {
+      return approvedContacts.firstWhere(
+        (f) => f.name.toLowerCase() == name.toLowerCase(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void addFriendshipPoints(String name, int points) {
+    final friend = getFriendByName(name);
+    if (friend == null) return;
+
+    final beforeLevel = friend.level;
+    friend.friendshipPoints += points;
+    final afterLevel = friend.level;
+
+    if (afterLevel > beforeLevel) {
+      celebrationTitle = 'Friendship Level Up!';
+      celebrationMessage =
+          '💛 ${friend.name} is now Friendship Level $afterLevel.';
+    }
+
+    notifyListeners();
+  }
+  
   void updateAvatar(AvatarData newAvatar) {
     avatar = newAvatar;
     notifyListeners();
@@ -421,7 +472,9 @@ class AppState extends ChangeNotifier {
 
   void approveContact(String name) {
     pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
-    if (!isApproved(name)) approvedContacts.add(name);
+    if (!isApproved(name)) {
+      approvedContacts.add(Friend(name: name, friendshipPoints: 0));
+    }
     weeklyApprovedFriends += 1;
     evaluateProgress();
     notifyListeners();
