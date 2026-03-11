@@ -3340,8 +3340,28 @@ class _Bubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-  'This message might not feel kind.',
+
+  Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: NatterBrand.yellow.withOpacity(0.18),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(color: NatterBrand.yellow.withOpacity(0.6)),
+    ),
+    child: const Text(
+      'Protected delivery',
+      style: TextStyle(
+        color: NatterBrand.yellow,
+        fontWeight: FontWeight.w900,
+        fontSize: 12,
+        letterSpacing: 0.4,
+      ),
+    ),
+  ),
+
+  const Text(
+    'This message might not feel kind.',
   style: TextStyle(
     color: Colors.white,
     fontWeight: FontWeight.w900,
