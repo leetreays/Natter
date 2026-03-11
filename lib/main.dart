@@ -3341,21 +3341,22 @@ class _Bubble extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'This message may be unkind.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'You can choose what happens next.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+  'This message might not feel kind.',
+  style: TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 16,
+  ),
+),
+const SizedBox(height: 8),
+Text(
+  'You are in control. Choose what feels best for you.',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.85),
+    fontWeight: FontWeight.w700,
+    height: 1.3,
+  ),
+),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -3367,7 +3368,7 @@ class _Bubble extends StatelessWidget {
                           backgroundColor: NatterBrand.yellow,
                           foregroundColor: Colors.black,
                         ),
-                        child: const Text('Read'),
+                        child: const Text('Read it'),
                       ),
                       OutlinedButton(
                         onPressed: onHide,
@@ -3377,7 +3378,7 @@ class _Bubble extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'Hide',
+                          'Not now',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
