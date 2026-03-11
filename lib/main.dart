@@ -3006,25 +3006,40 @@ Future<void> _pickReaction(int index) async {
   }
   
                 
-void _sendMessageNow(String text) {
-    final state = AppStateScope.of(context);
+void _sendMessageNow(String text, {bool flagged = false}) {
+  final state = AppStateScope.of(context);
 
-    state.recordPositiveMessage();
-  
-state.addFriendshipPoints(widget.contactName, 2);
-  
+  state.recordPositiveMessage();
+  state.addFriendshipPoints(widget.contactName, 2);
+
+  setState(() {
+    feedback = null;
+    messages.insert(
+      0,
+      _Msg(
+        fromMe: true,
+        text: text,
+        isFlagged: flagged,
+      ),
+    );
+  });
+  controller.clear();
+
+  Future.delayed(const Duration(milliseconds: 650), () {
+    if (!mounted) return;
     setState(() {
-      feedback = null;
-      messages.insert(0, _Msg(fromMe: true, text: text));
+      messages.insert(
+        0,
+        _Msg(
+          fromMe: false,
+          text: flagged
+              ? 'This message may be unkind.'
+              : 'Nice! 😄',
+          isFlagged: flagged,
+        ),
+      );
     });
-    controller.clear();
-
-    Future.delayed(const Duration(milliseconds: 650), () {
-      if (!mounted) return;
-      setState(() {
-        messages.insert(0, _Msg(fromMe: false, text: 'Nice! 😄'));
-      });
-    });
+  });
 }
   void _send() async {
     final state = AppStateScope.of(context);
@@ -3084,8 +3099,22 @@ state.addFriendshipPoints(widget.contactName, 2);
       if (!mounted) return;
 
       if (sendAnyway) {
-        _sendMessageNow(text);
-      } else {
+  if (state.alertsSafetyCoach) {
+    state.addAlert(AlertEvent(
+      type: AlertType.safetyCoach,
+      message:
+          'A coached message was sent anyway to ${widget.contactName}.',
+    ));
+
+    state.addAlert(AlertEvent(
+      type: AlertType.safetyCoach,
+      message:
+          '${widget.contactName} received a potentially unkind message.',
+    ));
+  }
+
+  _sendMessageNow(text, flagged: true);
+} else {
   state.recordKindRewrite();
   state.addFriendshipPoints(widget.contactName, 3);
   setState(() {
@@ -3219,11 +3248,17 @@ class _Msg {
   final bool fromMe;
   final String text;
   String? reaction;
+  bool isFlagged;
+  bool isRevealed;
+  bool isHidden;
 
   _Msg({
     required this.fromMe,
     required this.text,
     this.reaction,
+    this.isFlagged = false,
+    this.isRevealed = false,
+    this.isHidden = false,
   });
 }
 
