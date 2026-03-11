@@ -286,6 +286,13 @@ class AppState extends ChangeNotifier {
   TimeOfDay quietStart = const TimeOfDay(hour: 20, minute: 0);
   TimeOfDay quietEnd = const TimeOfDay(hour: 7, minute: 0);
 
+  // ===== Parent Peace Dashboard Counters =====
+int positiveMessages = 0;
+int kindnessRewrites = 0;
+int blockedAttempts = 0;
+int quietHoursAttempts = 0;
+int coachPrompts = 0;
+  
   bool alertsBlockedWord = true;
   bool alertsContactRequest = true;
   bool alertsQuietHours = true;
@@ -550,18 +557,18 @@ int get kindnessScore {
   }
 
   void recordBlockedAttempt() {
-    weeklyBlockedAttempts += 1;
-    notifyListeners();
+  blockedAttempts++;
+  notifyListeners();
   }
 
   void recordQuietHoursAttempt() {
-    weeklyQuietHoursAttempts += 1;
-    notifyListeners();
+  quietHoursAttempts++;
+  notifyListeners();
   }
 
   void recordCoachPrompt() {
-    weeklyCoachPrompts += 1;
-    notifyListeners();
+  coachPrompts++;
+  notifyListeners();
   }
 
   void recordRite({
@@ -691,21 +698,13 @@ int get kindnessScore {
   }
 
   void recordPositiveMessage() {
-    kindnessStreak += 1;
-    kindnessStars += 1;
-    recordDailyQuestStep();
-    _checkStreakMilestones();
-    notifyListeners();
+  positiveMessages++;
+  notifyListeners();
   }
 
   void recordKindRewrite() {
-    kindnessRewrites += 1;
-    kindnessStreak += 1;
-    kindnessStars += 2; // rewrite gets a bonus reward
-    recordDailyQuestStep();
-    _checkStreakMilestones();
-    evaluateProgress();
-    notifyListeners();
+  kindnessRewrites++;
+  notifyListeners();
   }
 
   void evaluateProgress() {
@@ -3966,6 +3965,47 @@ class ParentHomeScreen extends StatelessWidget {
               ],
             ),
           ),
+          BrandCard(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        "Parent Peace Dashboard",
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+
+      _StatTile(
+        label: "Positive messages",
+        value: state.positiveMessages.toString(),
+      ),
+
+      _StatTile(
+        label: "Kindness rewrites",
+        value: state.kindnessRewrites.toString(),
+      ),
+
+      _StatTile(
+        label: "Blocked attempts",
+        value: state.blockedAttempts.toString(),
+      ),
+
+      _StatTile(
+        label: "Quiet Hours attempts",
+        value: state.quietHoursAttempts.toString(),
+      ),
+
+      _StatTile(
+        label: "Coach prompts",
+        value: state.coachPrompts.toString(),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
           BrandCard(
             child: Column(
