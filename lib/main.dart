@@ -704,8 +704,12 @@ int get kindnessScore {
   void recordKindRewrite() {
   kindnessRewrites++;
 
-  evaluateProgress();
+  addAlert(AlertEvent(
+    type: AlertType.safetyCoach,
+    message: "A message was rewritten kindly.",
+  ));
 
+  evaluateProgress();
   notifyListeners();
   }
 
