@@ -361,7 +361,43 @@ class AppState extends ChangeNotifier {
     if (target == 0) return 1;
     return (progressValue / target).clamp(0, 1);
   }
+  
+int get kindnessScore {
+    int score = 100;
 
+    score -= weeklyBlockedAttempts * 12;
+    score -= weeklyQuietHoursAttempts * 8;
+    score -= weeklyCoachPrompts * 5;
+
+    score += kindnessRewrites * 4;
+    score += kindnessStreak * 2;
+
+    if (score > 100) score = 100;
+    if (score < 0) score = 0;
+
+    return score;
+  }
+
+  String get peaceStatus {
+    if (weeklyBlockedAttempts >= 2 || weeklyQuietHoursAttempts >= 3) {
+      return 'Needs review';
+    }
+    if (weeklyCoachPrompts >= 2 || weeklyBlockedAttempts == 1) {
+      return 'Mostly calm';
+    }
+    return 'Everything looks good';
+  }
+
+  Color get peaceColor {
+    if (weeklyBlockedAttempts >= 2 || weeklyQuietHoursAttempts >= 3) {
+      return NatterBrand.pink;
+    }
+    if (weeklyCoachPrompts >= 2 || weeklyBlockedAttempts == 1) {
+      return NatterBrand.yellow;
+    }
+    return NatterBrand.green;
+  }
+  
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
     int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
     final tm = toMin(t);
@@ -3558,6 +3594,144 @@ class BadgeCard extends StatelessWidget {
   }
 }
 
+class _PeaceIndicatorCard extends StatelessWidget {
+  final AppState state;
+
+  const _PeaceIndicatorCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandCard(
+      child: Column(
+        children: [
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              color: state.peaceColor.withOpacity(0.18),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: state.peaceColor.withOpacity(0.7),
+                width: 3,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.favorite_rounded,
+                color: state.peaceColor,
+                size: 44,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Parent Peace',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            state.peaceStatus,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: state.peaceColor,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'A quick view of how things are going.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KindnessScoreCard extends StatelessWidget {
+  final AppState state;
+
+  const _KindnessScoreCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Kindness Score',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                state.kindnessScore.toString(),
+                style: const TextStyle(
+                  color: NatterBrand.yellow,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 42,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 6),
+                child: Text(
+                  '/100',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: state.kindnessScore / 100,
+              minHeight: 12,
+              backgroundColor: Colors.white.withOpacity(0.14),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                state.kindnessScore >= 80
+                    ? NatterBrand.green
+                    : state.kindnessScore >= 50
+                        ? NatterBrand.yellow
+                        : NatterBrand.pink,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Built from kindness rewrites, streaks, and safety events.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
 
@@ -3592,6 +3766,10 @@ class ParentHomeScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _PeaceIndicatorCard(state: state),
+          const SizedBox(height: 14),
+          _KindnessScoreCard(state: state),
+          const SizedBox(height: 14),
           BrandCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -3794,7 +3972,7 @@ class ParentHomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Recent Alerts (no message reading)',
+                  'Recent Activity (no message reading)',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -3804,7 +3982,7 @@ class ParentHomeScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 if (state.alerts.isEmpty)
                   Text(
-                    'No alerts right now.',
+                    'No recent concerns right now.',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.85),
                       fontWeight: FontWeight.w700,
