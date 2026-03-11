@@ -3005,6 +3005,32 @@ Future<void> _pickReaction(int index) async {
     }
   }
   
+void _revealFlaggedMessage(_Msg msg) {
+    setState(() {
+      msg.isRevealed = true;
+    });
+  }
+
+  void _hideFlaggedMessage(_Msg msg) {
+    setState(() {
+      msg.isHidden = true;
+    });
+  }
+
+  void _blockAfterFlaggedMessage(_Msg msg) {
+    final state = AppStateScope.of(context);
+
+    state.blockContact(widget.contactName);
+    state.addAlert(AlertEvent(
+      type: AlertType.contactRequest,
+      message: 'Contact blocked after flagged message: ${widget.contactName}',
+    ));
+
+    setState(() {
+      msg.isHidden = true;
+      feedback = '${widget.contactName} has been blocked.';
+    });
+  }
                 
 void _sendMessageNow(String text, {bool flagged = false}) {
   final state = AppStateScope.of(context);
@@ -3197,6 +3223,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
               itemBuilder: (_, i) => _Bubble(
   msg: messages[i],
   onTap: () => _pickReaction(i),
+  onReveal: () => _revealFlaggedMessage(messages[i]),
+  onHide: () => _hideFlaggedMessage(messages[i]),
+  onBlock: () => _blockAfterFlaggedMessage(messages[i]),
 ),
             ),
           ),
@@ -3265,10 +3294,16 @@ class _Msg {
 class _Bubble extends StatelessWidget {
   final _Msg msg;
   final VoidCallback? onTap;
+  final VoidCallback? onReveal;
+  final VoidCallback? onHide;
+  final VoidCallback? onBlock;
 
   const _Bubble({
     required this.msg,
     this.onTap,
+    this.onReveal,
+    this.onHide,
+    this.onBlock,
   });
 
   @override
@@ -3279,34 +3314,134 @@ class _Bubble extends StatelessWidget {
         ? NatterBrand.blue.withOpacity(0.95)
         : Colors.white.withOpacity(0.20);
 
+    if (msg.isHidden) {
+      return const SizedBox.shrink();
+    }
+
+    final showProtectedCard =
+        !msg.fromMe && msg.isFlagged && !msg.isRevealed;
+
     return Align(
       alignment: align,
       child: Column(
         crossAxisAlignment:
             msg.fromMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          GestureDetector(
-            onTap: msg.fromMe ? null : onTap,
-            child: Container(
+          if (showProtectedCard)
+            Container(
               margin: const EdgeInsets.symmetric(vertical: 6),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+              padding: const EdgeInsets.all(14),
               constraints: const BoxConstraints(maxWidth: 520),
               decoration: BoxDecoration(
-                color: color,
+                color: Colors.black.withOpacity(0.45),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white.withOpacity(0.12)),
+                border: Border.all(color: NatterBrand.yellow, width: 1.6),
               ),
-              child: Text(
-                msg.text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'This message may be unkind.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'You can choose what happens next.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ElevatedButton(
+                        onPressed: onReveal,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: NatterBrand.yellow,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: const Text('Read'),
+                      ),
+                      OutlinedButton(
+                        onPressed: onHide,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.24),
+                          ),
+                        ),
+                        child: const Text(
+                          'Hide',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: onBlock,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.24),
+                          ),
+                        ),
+                        child: const Text(
+                          'Block contact',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          else
+            GestureDetector(
+              onTap: msg.fromMe ? null : onTap,
+              child: Container(
+                margin: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                constraints: const BoxConstraints(maxWidth: 520),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: msg.isFlagged
+                        ? NatterBrand.yellow.withOpacity(0.9)
+                        : Colors.white.withOpacity(0.12),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (msg.isFlagged && !msg.fromMe)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          'Flagged message',
+                          style: TextStyle(
+                            color: NatterBrand.yellow.withOpacity(0.95),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    Text(
+                      msg.text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-          if (msg.reaction != null)
+          if (msg.reaction != null && !showProtectedCard)
             Padding(
               padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
               child: Container(
