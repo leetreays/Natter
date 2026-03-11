@@ -288,7 +288,6 @@ class AppState extends ChangeNotifier {
 
   // ===== Parent Peace Dashboard Counters =====
 int positiveMessages = 0;
-int kindnessRewrites = 0;
 int blockedAttempts = 0;
 int quietHoursAttempts = 0;
 int coachPrompts = 0;
@@ -704,6 +703,9 @@ int get kindnessScore {
 
   void recordKindRewrite() {
   kindnessRewrites++;
+
+  evaluateProgress();
+
   notifyListeners();
   }
 
