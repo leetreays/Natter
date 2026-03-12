@@ -3378,6 +3378,19 @@ void _sendMessageNow(String text, {bool flagged = false}) {
     return '$h:$m$ap';
   }
 
+  String? _kindnessStreakMessage(AppState state) {
+    if (state.kindnessStreak >= 10) {
+      return '🚀 Kindness Rocket! ${state.kindnessStreak} kind messages in a row';
+    }
+    if (state.kindnessStreak >= 5) {
+      return '💛 Heart Starter! ${state.kindnessStreak} kind messages in a row';
+    }
+    if (state.kindnessStreak >= 3) {
+      return '🔥 Kindness Streak: ${state.kindnessStreak}';
+    }
+    return null;
+  }
+  
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -3424,6 +3437,36 @@ void _sendMessageNow(String text, {bool flagged = false}) {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          if (_kindnessStreakMessage(state) != null)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: NatterBrand.yellow.withOpacity(0.14),
+                border: Border.all(
+                  color: NatterBrand.yellow.withOpacity(0.55),
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: NatterBrand.yellow.withOpacity(0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Text(
+                _kindnessStreakMessage(state)!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
                 ),
               ),
             ),
