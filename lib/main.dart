@@ -187,20 +187,6 @@ class FriendshipMoment {
   });
 }
 
-class FriendshipMoment {
-  final String title;
-  final String description;
-  final IconData icon;
-  final DateTime time;
-
-  const FriendshipMoment({
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.time,
-  });
-}
-
 class AlertEvent {
   final AlertType type;
   final String message;
@@ -327,8 +313,6 @@ int coachPrompts = 0;
 
   final List<AlertEvent> alerts = [];
 
-  final List<FriendshipMoment> friendshipMoments = [];
-  
   List<String> lastPromises = const [];
   String? lastName;
   NatterBadge? lastBadge;
@@ -651,30 +635,6 @@ int get kindnessScore {
   void dismissCelebration() {
     celebrationTitle = null;
     celebrationMessage = null;
-    notifyListeners();
-  }
-
-  void addFriendshipMoment({
-    required String title,
-    required String description,
-    required IconData icon,
-    bool celebrate = false,
-  }) {
-    friendshipMoments.insert(
-      0,
-      FriendshipMoment(
-        title: title,
-        description: description,
-        icon: icon,
-        time: DateTime.now(),
-      ),
-    );
-
-    if (celebrate) {
-      celebrationTitle = title;
-      celebrationMessage = description;
-    }
-
     notifyListeners();
   }
   
