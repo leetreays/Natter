@@ -187,6 +187,20 @@ class FriendshipMoment {
   });
 }
 
+class FriendshipMoment {
+  final String title;
+  final String description;
+  final IconData icon;
+  final DateTime time;
+
+  const FriendshipMoment({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.time,
+  });
+}
+
 class AlertEvent {
   final AlertType type;
   final String message;
@@ -313,6 +327,8 @@ int coachPrompts = 0;
 
   final List<AlertEvent> alerts = [];
 
+  final List<FriendshipMoment> friendshipMoments = [];
+  
   List<String> lastPromises = const [];
   String? lastName;
   NatterBadge? lastBadge;
@@ -638,6 +654,30 @@ int get kindnessScore {
     notifyListeners();
   }
 
+  void addFriendshipMoment({
+    required String title,
+    required String description,
+    required IconData icon,
+    bool celebrate = false,
+  }) {
+    friendshipMoments.insert(
+      0,
+      FriendshipMoment(
+        title: title,
+        description: description,
+        icon: icon,
+        time: DateTime.now(),
+      ),
+    );
+
+    if (celebrate) {
+      celebrationTitle = title;
+      celebrationMessage = description;
+    }
+
+    notifyListeners();
+  }
+  
   void _awardBadge(
     NatterBadge badge, {
     String? celebrationTitleText,
@@ -762,7 +802,6 @@ int get kindnessScore {
     message: "A message was rewritten kindly.",
   ));
 
-  // Create a Friendship Moment for the first rewrite
   if (kindnessRewrites == 1) {
     addFriendshipMoment(
       title: 'Friendship Moment',
@@ -2110,6 +2149,7 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          
           const SizedBox(height: 14),
           if (state.lastPromises.isNotEmpty)
             BrandCard(
