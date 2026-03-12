@@ -173,6 +173,20 @@ class DailyQuest {
   });
 }
 
+class FriendshipMoment {
+  final String title;
+  final String description;
+  final IconData icon;
+  final DateTime time;
+
+  const FriendshipMoment({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.time,
+  });
+}
+
 class AlertEvent {
   final AlertType type;
   final String message;
@@ -322,6 +336,8 @@ int coachPrompts = 0;
   
   final List<NatterBadge> earnedBadges = [];
 
+  final List<FriendshipMoment> friendshipMoments = [];
+  
   int weeklyApprovedFriends = 0;
   int weeklyBlockedAttempts = 0;
   int weeklyQuietHoursAttempts = 0;
@@ -437,22 +453,24 @@ int get kindnessScore {
   }
 
   void addFriendshipPoints(String name, int points) {
-    final friend = getFriendByName(name);
-    if (friend == null) return;
+  final friend = getFriendByName(name);
+  if (friend == null) return;
 
-    final beforeLevel = friend.level;
-    friend.friendshipPoints += points;
-    final afterLevel = friend.level;
+  final beforeLevel = friend.level;
+  friend.friendshipPoints += points;
+  final afterLevel = friend.level;
 
-    if (afterLevel > beforeLevel) {
-      celebrationTitle = 'Friendship Level Up!';
-      celebrationMessage =
-          '💛 ${friend.name} is now Friendship Level $afterLevel.';
-    }
-
-    notifyListeners();
+  if (afterLevel > beforeLevel) {
+    addFriendshipMoment(
+      title: 'Friendship Level Up!',
+      description: '💛 ${friend.name} is now Friendship Level $afterLevel.',
+      icon: Icons.workspace_premium_rounded,
+      celebrate: true,
+    );
   }
-  
+
+  notifyListeners();
+  }  
   void updateAvatar(AvatarData newAvatar) {
     avatar = newAvatar;
     notifyListeners();
@@ -475,6 +493,30 @@ int get kindnessScore {
             '✨ ${dailyQuest.title} complete!\n\nYou earned ${dailyQuest.rewardStars} bonus stars.',
       );
     }
+  }
+
+  void addFriendshipMoment({
+    required String title,
+    required String description,
+    required IconData icon,
+    bool celebrate = false,
+  }) {
+    friendshipMoments.insert(
+      0,
+      FriendshipMoment(
+        title: title,
+        description: description,
+        icon: icon,
+        time: DateTime.now(),
+      ),
+    );
+
+    if (celebrate) {
+      celebrationTitle = title;
+      celebrationMessage = description;
+    }
+
+    notifyListeners();
   }
 
   void recordDailyQuestStep() {
@@ -698,6 +740,17 @@ int get kindnessScore {
 
   void recordPositiveMessage() {
   positiveMessages++;
+  kindnessStreak++;
+
+  if (kindnessStreak == 3) {
+    addFriendshipMoment(
+      title: 'Friendship Moment',
+      description: '⭐ You built a 3-message kindness streak.',
+      icon: Icons.favorite_rounded,
+      celebrate: true,
+    );
+  }
+
   notifyListeners();
   }
 
@@ -708,6 +761,16 @@ int get kindnessScore {
     type: AlertType.safetyCoach,
     message: "A message was rewritten kindly.",
   ));
+
+  // Create a Friendship Moment for the first rewrite
+  if (kindnessRewrites == 1) {
+    addFriendshipMoment(
+      title: 'Friendship Moment',
+      description: '🌱 You chose to rewrite a message kindly.',
+      icon: Icons.auto_awesome_rounded,
+      celebrate: true,
+    );
+  }
 
   evaluateProgress();
   notifyListeners();
@@ -1944,6 +2007,103 @@ class ProfileScreen extends StatelessWidget {
                       child: BadgeCard(
                         name: displayName,
                         badge: badge,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.favorite_rounded,
+                      color: NatterBrand.yellow,
+                      size: 22,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Friendship Moments',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (state.friendshipMoments.isEmpty)
+                  Text(
+                    'No friendship moments yet.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.84),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                else
+                  ...state.friendshipMoments.take(6).map(
+                    (moment) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.16),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: NatterBrand.yellow.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: NatterBrand.yellow.withOpacity(0.45),
+                                ),
+                              ),
+                              child: Icon(
+                                moment.icon,
+                                color: NatterBrand.yellow,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    moment.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    moment.description,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.84),
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
