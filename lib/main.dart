@@ -1876,9 +1876,9 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _sectionTitle('Progress'),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 _ProgressBarCard(state: state),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Text(
                   'Next goal: ${state.currentLevel.nextGoal}',
                   style: TextStyle(
@@ -1896,7 +1896,7 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _sectionTitle('Stats'),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -1928,7 +1928,7 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _sectionTitle('Badges'),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 if (state.earnedBadges.isEmpty)
                   Text(
                     'No badges yet.',
@@ -1957,7 +1957,7 @@ class ProfileScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _sectionTitle('My Promises'),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -2025,13 +2025,14 @@ class _ProfileStatTile extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 22,
-            ),
-          ),
+  value,
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 24,
+    height: 1.0,
+  ),
+),
         ],
       ),
     );
@@ -2328,14 +2329,24 @@ class ChatsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Your Natter Level',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-            ),
-          ),
+          const Row(
+  children: [
+    Icon(
+      Icons.workspace_premium_rounded,
+      color: NatterBrand.yellow,
+      size: 22,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'Your Natter Level',
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w900,
+        fontSize: 18,
+      ),
+    ),
+  ],
+),
           const SizedBox(height: 10),
           Text(
             state.currentLevel.title,
@@ -2459,7 +2470,7 @@ class ChatsScreen extends StatelessWidget {
                 color: NatterBrand.yellow,
                 size: 24,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               const Text(
                 'Daily Quest',
                 style: TextStyle(
@@ -4076,13 +4087,14 @@ class _StatTile extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 20,
-            ),
-          ),
+  value,
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 24,
+    height: 1.0,
+  ),
+),
         ],
       ),
     );
