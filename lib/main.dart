@@ -3986,14 +3986,24 @@ class ParentHomeScreen extends StatelessWidget {
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        "Parent Peace Dashboard",
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
+      const Row(
+  children: [
+    Icon(
+      Icons.favorite_rounded,
+      color: NatterBrand.yellow,
+      size: 22,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'Parent Peace Dashboard',
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w900,
+        fontSize: 18,
       ),
+    ),
+  ],
+),
       const SizedBox(height: 12),
 
       _StatTile(
@@ -4028,14 +4038,24 @@ class ParentHomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Recent Activity (no message reading)',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                const Row(
+  children: [
+    Icon(
+      Icons.timeline_rounded,
+      color: NatterBrand.yellow,
+      size: 22,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'Recent Activity (no message reading)',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 18,
+        fontWeight: FontWeight.w900,
+      ),
+    ),
+  ],
+),
                 const SizedBox(height: 10),
                 if (state.alerts.isEmpty)
                   Text(
