@@ -142,9 +142,18 @@ class Friend {
   final String name;
   int friendshipPoints;
 
+  String activeQuestTitle;
+  int activeQuestProgress;
+  int activeQuestTarget;
+  int activeQuestReward;
+
   Friend({
     required this.name,
     this.friendshipPoints = 0,
+    this.activeQuestTitle = 'Send 3 kind messages',
+    this.activeQuestProgress = 0,
+    this.activeQuestTarget = 3,
+    this.activeQuestReward = 15,
   });
 
   int get level {
@@ -156,6 +165,40 @@ class Friend {
   }
 
   String get stars => '⭐' * level;
+
+  double get meterPercent {
+    final currentLevel = level;
+
+    if (currentLevel == 5) return 1.0;
+
+    int levelStart;
+    int levelEnd;
+
+    switch (currentLevel) {
+      case 1:
+        levelStart = 0;
+        levelEnd = 10;
+        break;
+      case 2:
+        levelStart = 10;
+        levelEnd = 25;
+        break;
+      case 3:
+        levelStart = 25;
+        levelEnd = 50;
+        break;
+      case 4:
+        levelStart = 50;
+        levelEnd = 100;
+        break;
+      default:
+        levelStart = 0;
+        levelEnd = 100;
+    }
+
+    return ((friendshipPoints - levelStart) / (levelEnd - levelStart))
+        .clamp(0.0, 1.0);
+  }
 }
 
 class DailyQuest {
@@ -455,6 +498,36 @@ int get kindnessScore {
       return NatterBrand.yellow;
     }
     return NatterBrand.green;
+  }
+
+  void progressFriendQuest(String name, {int amount = 1}) {
+  final friend = getFriendByName(name);
+  if (friend == null) return;
+
+  if (friend.activeQuestProgress >= friend.activeQuestTarget) return;
+
+  friend.activeQuestProgress += amount;
+
+  if (friend.activeQuestProgress >= friend.activeQuestTarget) {
+    friend.activeQuestProgress = friend.activeQuestTarget;
+
+    addFriendshipPoints(name, friend.activeQuestReward);
+
+    addFriendshipMoment(
+      title: 'Quest Complete!',
+      description:
+          '🌟 You completed a friendship quest with ${friend.name}.',
+      icon: Icons.task_alt_rounded,
+      celebrate: true,
+    );
+
+    friend.activeQuestTitle = 'Use a conversation starter';
+    friend.activeQuestProgress = 0;
+    friend.activeQuestTarget = 1;
+    friend.activeQuestReward = 10;
+  }
+
+  notifyListeners();
   }
   
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
@@ -2950,6 +3023,67 @@ class ChatsScreen extends StatelessWidget {
     );
   }
 }
+
+class _FriendshipQuestCard extends StatelessWidget {
+  final Friend friend;
+
+  const _FriendshipQuestCard({required this.friend});
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${friend.name} ${friend.stars}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Friendship Meter',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: friend.meterPercent,
+              minHeight: 12,
+              backgroundColor: Colors.white.withOpacity(0.14),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(NatterBrand.green),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Quest: ${friend.activeQuestTitle}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ChatScreen extends StatefulWidget {
   final String contactName;
   const ChatScreen({super.key, required this.contactName});
@@ -3264,7 +3398,14 @@ const SizedBox(height: 14),
       );
     }
   }
-  
+  if (controllerText != null) {
+  final state = AppStateScope.of(context);
+  final friend = state.getFriendByName(widget.contactName);
+
+  if (friend != null && friend.activeQuestTitle == 'Use a conversation starter') {
+    state.progressFriendQuest(widget.contactName);
+  }
+  }
 void _showStallRescue() {
   showDialog(
     context: context,
@@ -3381,7 +3522,8 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   _stallTimer?.cancel();
 
   state.recordPositiveMessage();
-  state.addFriendshipPoints(widget.contactName, 2);
+state.addFriendshipPoints(widget.contactName, 2);
+state.progressFriendQuest(widget.contactName);
 
   setState(() {
     feedback = null;
@@ -3532,6 +3674,7 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final quiet = state.isQuietNow();
+    final friend = state.getFriendByName(widget.contactName);
 
     return BrandScaffold(
       appBar: AppBar(
@@ -3606,6 +3749,11 @@ void _sendMessageNow(String text, {bool flagged = false}) {
                   fontSize: 16,
                 ),
               ),
+            ),
+          if (friend != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: _FriendshipQuestCard(friend: friend),
             ),
           Expanded(
             child: ListView.builder(
