@@ -3381,7 +3381,6 @@ void _sendMessageNow(String text, {bool flagged = false}) {
         isFlagged: flagged,
       ),
     );
-    _stallCounter = 0;
   });
 
   controller.clear();
@@ -3404,6 +3403,7 @@ void _sendMessageNow(String text, {bool flagged = false}) {
 
     if (_stallCounter >= 3) {
       _showStallRescue();
+      _stallCounter = 0;
     }
   });
 }
