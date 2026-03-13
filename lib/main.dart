@@ -263,16 +263,53 @@ class NatterReaction {
 }
 
 class ConversationStarters {
-  static const List<String> prompts = [
-    "What made you smile today?",
-    "What game are you playing lately?",
-    "What's your favourite snack?",
-    "What's something fun you did today?",
-    "If you could invent a game, what would it be?",
-    "What made today a good day?",
-    "What's the best thing you learned recently?",
-    "Would you rather explore space or the ocean?",
-  ];
+class ConversationStarterOption {
+  final String label;
+  final String message;
+
+  const ConversationStarterOption({
+    required this.label,
+    required this.message,
+  });
+}
+
+class ConversationStarters {
+  static List<ConversationStarterOption> forFriend(String friendName) {
+    return [
+      ConversationStarterOption(
+        label: 'Ask $friendName what made them laugh today',
+        message: 'What made you laugh today?',
+      ),
+      ConversationStarterOption(
+        label: 'Tell $friendName something good about your day',
+        message: 'Something good happened today!',
+      ),
+      ConversationStarterOption(
+        label: 'Ask $friendName what game they like best',
+        message: 'What game do you like best?',
+      ),
+      ConversationStarterOption(
+        label: 'Ask $friendName what they did after school',
+        message: 'What did you do after school?',
+      ),
+      ConversationStarterOption(
+        label: 'Ask $friendName what their favourite snack is',
+        message: 'What is your favourite snack?',
+      ),
+      ConversationStarterOption(
+        label: 'Tell $friendName your favourite part of today',
+        message: 'My favourite part of today was...',
+      ),
+      ConversationStarterOption(
+        label: 'Ask $friendName what they would do with a superpower',
+        message: 'What would you do if you had a superpower?',
+      ),
+      ConversationStarterOption(
+        label: 'Ask $friendName which animal they would be',
+        message: 'If you could be any animal, what would you be?',
+      ),
+    ];
+  }
 }
 
 class ChatPreview {
@@ -3168,19 +3205,28 @@ Future<void> _pickReaction(int index) async {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Conversation Starter",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                ...ConversationStarters.prompts.map((prompt) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(ctx, prompt),
+  'Conversation Starter',
+  style: TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 20,
+  ),
+),
+const SizedBox(height: 8),
+Text(
+  'Try one with ${widget.contactName}.',
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.82),
+    fontWeight: FontWeight.w700,
+  ),
+),
+const SizedBox(height: 14),
+                ...ConversationStarters.forFriend(widget.contactName).map((option) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: InkWell(
+      onTap: () => Navigator.pop(ctx, option.message),
                       child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -3192,7 +3238,7 @@ Future<void> _pickReaction(int index) async {
                           ),
                         ),
                         child: Text(
-                          prompt,
+                          option.label,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
