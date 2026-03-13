@@ -3407,7 +3407,7 @@ const SizedBox(height: 14),
       );
     }
   }
-  if (controllerText != null) {
+
   final state = AppStateScope.of(context);
   final friend = state.getFriendByName(widget.contactName);
 
