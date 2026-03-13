@@ -3407,11 +3407,7 @@ void _sendMessageNow(String text, {bool flagged = false}) {
     }
   });
 }
-
-  if (_stallCounter >= 3) {
-    _showStallRescue();
-  }
-});
+  
   void _send() async {
     final state = AppStateScope.of(context);
     final text = controller.text.trim();
