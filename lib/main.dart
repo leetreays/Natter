@@ -140,6 +140,9 @@ class FriendDirectory {
 
 class Friend {
   final String name;
+  final String schoolName;
+  final String yearGroup;
+
   int friendshipPoints;
 
   String activeQuestTitle;
@@ -149,6 +152,8 @@ class Friend {
 
   Friend({
     required this.name,
+    this.schoolName = 'North Borough Junior School',
+    this.yearGroup = 'Year 4',
     this.friendshipPoints = 0,
     this.activeQuestTitle = 'Send 3 kind messages',
     this.activeQuestProgress = 0,
@@ -375,6 +380,22 @@ class AppState extends ChangeNotifier {
     Friend(name: 'Mia', friendshipPoints: 8),
   ];
   final List<String> pendingRequests = ['Ava', 'Leo'];
+  
+  List<Friend> get sameSchoolFriends {
+  return friends
+      .where((f) => f.schoolName == schoolName)
+      .toList();
+  }
+  List<Friend> get sameYearFriends {
+  return friends
+      .where((f) =>
+          f.schoolName == schoolName &&
+          f.yearGroup == yearGroup)
+      .toList();
+  }
+  
+  String schoolName = "North Borough Junior School";
+String yearGroup = "Year 4";
 
   bool quietHoursEnabled = true;
   TimeOfDay quietStart = const TimeOfDay(hour: 20, minute: 0);
@@ -2873,6 +2894,8 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    final schoolFriends = state.sameSchoolFriends;
+    final yearFriends = state.sameYearFriends;
 
     final chats = state.approvedContacts
         .map(
@@ -2952,6 +2975,47 @@ class ChatsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _friendCodeCard(context, state),
           const SizedBox(height: 12),
+          children: [
+
+  if (schoolFriends.isNotEmpty)
+    Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      child: BrandCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Your School Circle",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "${schoolFriends.length} friends from your school",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${yearFriends.length} from your year group",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.65),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+
+  Expanded(
+    child: ListView.builder(
           ...chats.map((c) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -2992,7 +3056,7 @@ class ChatsScreen extends StatelessWidget {
                               ),
                             ),
                           if (friend != null)
-  Text(
+                            Text(
     'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
     style: TextStyle(
       color: Colors.white.withOpacity(0.68),
