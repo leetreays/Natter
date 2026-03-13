@@ -3378,8 +3378,8 @@ void _revealFlaggedMessage(_Msg msg) {
   
 void _sendMessageNow(String text, {bool flagged = false}) {
   final state = AppStateScope.of(context);
-_stallTimer?.cancel();
-  
+  _stallTimer?.cancel();
+
   state.recordPositiveMessage();
   state.addFriendshipPoints(widget.contactName, 2);
 
@@ -3400,8 +3400,6 @@ _stallTimer?.cancel();
   Future.delayed(const Duration(milliseconds: 650), () {
     if (!mounted) return;
 
-    _stallCounter++;
-
     setState(() {
       messages.insert(
         0,
@@ -3414,12 +3412,6 @@ _stallTimer?.cancel();
     });
 
     _startStallTimer();
-  });
-
-    if (_stallCounter >= 3) {
-      _showStallRescue();
-      _stallCounter = 0;
-    }
   });
 }
   
