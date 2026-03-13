@@ -2964,7 +2964,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _Msg(fromMe: false, text: 'Wanna chat?'),
   ];
   String? feedback;
-
+int _stallCounter = 0;
+  
   Future<bool> _showSafetyCoachDialog({
     required String suggestion,
     required String reason,
@@ -3262,6 +3263,81 @@ const SizedBox(height: 14),
     }
   }
   
+void _showStallRescue() {
+  showDialog(
+    context: context,
+    builder: (ctx) {
+      final starters =
+          ConversationStarters.forFriend(widget.contactName).take(3).toList();
+
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.18)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.chat_bubble_outline,
+                color: NatterBrand.yellow,
+                size: 40,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "Need help continuing?",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ...starters.map((option) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
+                    onTap: () {
+                      controller.text = option.message;
+                      controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: controller.text.length),
+                      );
+                      Navigator.pop(ctx);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.16),
+                        ),
+                      ),
+                      child: Text(
+                        option.label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+  
 void _revealFlaggedMessage(_Msg msg) {
     setState(() {
       msg.isRevealed = true;
@@ -3296,34 +3372,36 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   state.addFriendshipPoints(widget.contactName, 2);
 
   setState(() {
-    feedback = null;
+  setState(() {
+  feedback = null;
+  messages.insert(0, _Msg(fromMe: true, text: text));
+
+  _stallCounter = 0;
+});
+  controller.clear();
+
+  Future.delayed(const Duration(milliseconds: 650), () {
+  if (!mounted) return;
+
+  _stallCounter++;
+
+  setState(() {
     messages.insert(
       0,
       _Msg(
-        fromMe: true,
-        text: text,
+        fromMe: false,
+        text: flagged
+            ? 'This message may be unkind.'
+            : 'Nice! 😄',
         isFlagged: flagged,
       ),
     );
   });
-  controller.clear();
 
-  Future.delayed(const Duration(milliseconds: 650), () {
-    if (!mounted) return;
-    setState(() {
-      messages.insert(
-        0,
-        _Msg(
-          fromMe: false,
-          text: flagged
-              ? 'This message may be unkind.'
-              : 'Nice! 😄',
-          isFlagged: flagged,
-        ),
-      );
-    });
-  });
-}
+  if (_stallCounter >= 3) {
+    _showStallRescue();
+  }
+});
   void _send() async {
     final state = AppStateScope.of(context);
     final text = controller.text.trim();
