@@ -3372,31 +3372,41 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   state.addFriendshipPoints(widget.contactName, 2);
 
   setState(() {
-  setState(() {
-  feedback = null;
-  messages.insert(0, _Msg(fromMe: true, text: text));
-
-  _stallCounter = 0;
-});
-  controller.clear();
-
-  Future.delayed(const Duration(milliseconds: 650), () {
-  if (!mounted) return;
-
-  _stallCounter++;
-
-  setState(() {
+    feedback = null;
     messages.insert(
       0,
       _Msg(
-        fromMe: false,
-        text: flagged
-            ? 'This message may be unkind.'
-            : 'Nice! 😄',
+        fromMe: true,
+        text: text,
         isFlagged: flagged,
       ),
     );
+    _stallCounter = 0;
   });
+
+  controller.clear();
+
+  Future.delayed(const Duration(milliseconds: 650), () {
+    if (!mounted) return;
+
+    _stallCounter++;
+
+    setState(() {
+      messages.insert(
+        0,
+        _Msg(
+          fromMe: false,
+          text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
+          isFlagged: flagged,
+        ),
+      );
+    });
+
+    if (_stallCounter >= 3) {
+      _showStallRescue();
+    }
+  });
+}
 
   if (_stallCounter >= 3) {
     _showStallRescue();
