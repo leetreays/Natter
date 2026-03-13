@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
 
 void main() => runApp(const NatterApp());
 
@@ -2964,7 +2965,8 @@ class _ChatScreenState extends State<ChatScreen> {
     _Msg(fromMe: false, text: 'Wanna chat?'),
   ];
   String? feedback;
-int _stallCounter = 0;
+  int _stallCounter = 0;
+  Timer? _stallTimer;
   
   Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -3364,10 +3366,20 @@ void _revealFlaggedMessage(_Msg msg) {
       feedback = '${widget.contactName} has been blocked.';
     });
   }
-                
+
+  void _startStallTimer() {
+  _stallTimer?.cancel();
+
+  _stallTimer = Timer(const Duration(seconds: 8), () {
+    if (!mounted) return;
+    _showStallRescue();
+  });
+  }
+  
 void _sendMessageNow(String text, {bool flagged = false}) {
   final state = AppStateScope.of(context);
-
+_stallTimer?.cancel();
+  
   state.recordPositiveMessage();
   state.addFriendshipPoints(widget.contactName, 2);
 
@@ -3400,6 +3412,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
         ),
       );
     });
+
+    _startStallTimer();
+  });
 
     if (_stallCounter >= 3) {
       _showStallRescue();
@@ -3496,6 +3511,7 @@ void _sendMessageNow(String text, {bool flagged = false}) {
 
   @override
   void dispose() {
+    _stallTimer?.cancel();
     controller.dispose();
     super.dispose();
   }
