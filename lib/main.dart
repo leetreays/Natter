@@ -2991,6 +2991,15 @@ class ChatsScreen extends StatelessWidget {
                                 fontSize: 12,
                               ),
                             ),
+                          if (friend != null)
+  Text(
+    'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+    style: TextStyle(
+      color: Colors.white.withOpacity(0.68),
+      fontWeight: FontWeight.w700,
+      fontSize: 11,
+    ),
+  ),
                         ],
                       );
                     },
