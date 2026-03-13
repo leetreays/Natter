@@ -3370,7 +3370,7 @@ void _revealFlaggedMessage(_Msg msg) {
   void _startStallTimer() {
   _stallTimer?.cancel();
 
-  _stallTimer = Timer(const Duration(seconds: 8), () {
+  _stallTimer = Timer(const Duration(seconds: 20), () {
     if (!mounted) return;
     _showStallRescue();
   });
