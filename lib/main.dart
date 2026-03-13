@@ -262,7 +262,6 @@ class NatterReaction {
   static const List<String> allowed = ['👍', '❤️', '🌟', '🎉', '😂'];
 }
 
-class ConversationStarters {
 class ConversationStarterOption {
   final String label;
   final String message;
