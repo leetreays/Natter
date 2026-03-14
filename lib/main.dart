@@ -3362,7 +3362,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
-  
+  bool _otherUserTyping = false;
   Future<bool> _showSafetyCoachDialog({
     required String suggestion,
     required String reason,
@@ -3817,22 +3817,28 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
 
   controller.clear();
 
-  Future.delayed(const Duration(milliseconds: 650), () {
-    if (!mounted) return;
+  setState(() {
+  _otherUserTyping = true;
+});
 
-    setState(() {
-      messages.insert(
-        0,
-        _Msg(
-          fromMe: false,
-          text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
-          isFlagged: flagged,
-        ),
-      );
-    });
+Future.delayed(const Duration(seconds: 2), () {
+  if (!mounted) return;
 
-    _startStallTimer();
+  setState(() {
+    _otherUserTyping = false;
+
+    messages.insert(
+      0,
+      _Msg(
+        fromMe: false,
+        text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
+        isFlagged: flagged,
+      ),
+    );
   });
+
+  _startStallTimer();
+});
 }
   
   void _send() async {
@@ -4034,19 +4040,36 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
               child: _FriendshipQuestCard(friend: friend),
             ),
           Expanded(
-            child: ListView.builder(
-              reverse: true,
-              padding: const EdgeInsets.all(14),
-              itemCount: messages.length,
-              itemBuilder: (_, i) => _Bubble(
-  msg: messages[i],
-  onTap: () => _pickReaction(i),
-  onReveal: () => _revealFlaggedMessage(messages[i]),
-  onHide: () => _hideFlaggedMessage(messages[i]),
-  onBlock: () => _blockAfterFlaggedMessage(messages[i]),
-),
+  child: ListView.builder(
+    reverse: true,
+    padding: const EdgeInsets.all(14),
+    itemCount: messages.length + (_otherUserTyping ? 1 : 0),
+    itemBuilder: (_, i) {
+      if (_otherUserTyping && i == 0) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            '${widget.contactName} is typing…',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontStyle: FontStyle.italic,
             ),
           ),
+        );
+      }
+
+      final msg = messages[_otherUserTyping ? i - 1 : i];
+
+      return _Bubble(
+        msg: msg,
+        onTap: () => _pickReaction(_otherUserTyping ? i - 1 : i),
+        onReveal: () => _revealFlaggedMessage(msg),
+        onHide: () => _hideFlaggedMessage(msg),
+        onBlock: () => _blockAfterFlaggedMessage(msg),
+      );
+    },
+  ),
+),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
             child: Row(
