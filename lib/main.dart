@@ -393,6 +393,9 @@ class AppState extends ChangeNotifier {
       .toList();
 }
 
+  String? lastQuestCelebrationFriend;
+  String? lastQuestCelebrationTitle;
+
 List<Friend> get sameYearFriends {
   return approvedContacts
       .where((f) =>
@@ -540,6 +543,8 @@ int get kindnessScore {
 
   if (friend.activeQuestProgress >= friend.activeQuestTarget) {
     friend.activeQuestProgress = friend.activeQuestTarget;
+    lastQuestCelebrationFriend = friend.name;
+lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     addFriendshipPoints(name, friend.activeQuestReward);
 
@@ -3644,7 +3649,20 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   state.recordPositiveMessage();
 state.addFriendshipPoints(widget.contactName, 2);
 state.progressFriendQuest(widget.contactName);
+  
+if (state.lastQuestCelebrationFriend == widget.contactName) {
+  messages.insert(
+    0,
+    _Msg(
+      fromMe: false,
+      text:
+          '🎉 Quest Complete!\n\nYou and ${widget.contactName} completed:\n${state.lastQuestCelebrationTitle}\n\n+15 friendship points',
+      isSystem: true,
+    ),
+  );
 
+  state.lastQuestCelebrationFriend = null;
+}
   setState(() {
     feedback = null;
     messages.insert(
@@ -3940,6 +3958,7 @@ class _Msg {
   bool isFlagged;
   bool isRevealed;
   bool isHidden;
+  final bool isSystem;
 
   _Msg({
     required this.fromMe,
@@ -3948,6 +3967,7 @@ class _Msg {
     this.isFlagged = false,
     this.isRevealed = false,
     this.isHidden = false,
+    this.isSystem = false,
   });
 }
 
@@ -3976,6 +3996,30 @@ class _Bubble extends StatelessWidget {
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
+    }
+    
+    if (msg.isSystem) {
+  return Center(
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: NatterBrand.yellow.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: NatterBrand.yellow.withOpacity(0.35),
+        ),
+      ),
+      child: Text(
+        msg.text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ),
+  );
     }
 
     final showProtectedCard =
