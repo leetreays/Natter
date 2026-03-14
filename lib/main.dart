@@ -3162,70 +3162,78 @@ class _FriendshipQuestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BrandCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${friend.name} ${friend.stars}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  friend.friendshipStage,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.82),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    value: friend.meterPercent,
-                    minHeight: 10,
-                    backgroundColor: Colors.white.withOpacity(0.14),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      NatterBrand.green,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          calmRoute(FriendshipJourneyScreen(friend: friend)),
+        );
+      },
+      child: BrandCard(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${friend.name} ${friend.stars}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget} complete',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.84),
-                    fontWeight: FontWeight.w700,
+                  const SizedBox(height: 4),
+                  Text(
+                    friend.friendshipStage,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.82),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                calmRoute(FriendshipJourneyScreen(friend: friend)),
-              );
-            },
-            child: const Text(
-              'View →',
-              style: TextStyle(
-                color: NatterBrand.yellow,
-                fontWeight: FontWeight.w900,
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: LinearProgressIndicator(
+                      value: friend.meterPercent,
+                      minHeight: 10,
+                      backgroundColor: Colors.white.withOpacity(0.14),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        NatterBrand.green,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget} complete',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.84),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  calmRoute(FriendshipJourneyScreen(friend: friend)),
+                );
+              },
+              child: const Text(
+                'View →',
+                style: TextStyle(
+                  color: NatterBrand.yellow,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
