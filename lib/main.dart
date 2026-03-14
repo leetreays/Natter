@@ -3200,7 +3200,7 @@ class _FriendshipQuestCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+                  'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget} complete'
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.84),
                     fontWeight: FontWeight.w700,
