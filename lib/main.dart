@@ -155,11 +155,17 @@ class Friend {
     this.schoolName = 'North Borough Junior School',
     this.yearGroup = 'Year 4',
     this.friendshipPoints = 0,
-    this.activeQuestTitle = 'Send 3 kind messages',
+    this.activeQuestTitle = '',
     this.activeQuestProgress = 0,
     this.activeQuestTarget = 3,
     this.activeQuestReward = 15,
   });
+
+  void ensureQuestTitle() {
+  if (activeQuestTitle.isEmpty) {
+    activeQuestTitle = 'Send 3 kind messages to $name';
+  }
+  }
 
   int get level {
     if (friendshipPoints >= 100) return 5;
@@ -526,6 +532,8 @@ int get kindnessScore {
   final friend = getFriendByName(name);
   if (friend == null) return;
 
+  friend.ensureQuestTitle();
+
   if (friend.activeQuestProgress >= friend.activeQuestTarget) return;
 
   friend.activeQuestProgress += amount;
@@ -537,16 +545,22 @@ int get kindnessScore {
 
     addFriendshipMoment(
       title: 'Quest Complete!',
-      description:
-          '🌟 You completed a friendship quest with ${friend.name}.',
+      description: '🌟 You completed a shared quest with ${friend.name}.',
       icon: Icons.task_alt_rounded,
       celebrate: true,
     );
 
-    friend.activeQuestTitle = 'Use a conversation starter';
-    friend.activeQuestProgress = 0;
-    friend.activeQuestTarget = 1;
-    friend.activeQuestReward = 10;
+    if (friend.schoolName == schoolName) {
+      friend.activeQuestTitle = 'Use a conversation starter with ${friend.name}';
+      friend.activeQuestProgress = 0;
+      friend.activeQuestTarget = 1;
+      friend.activeQuestReward = 10;
+    } else {
+      friend.activeQuestTitle = 'Send 2 kind messages to ${friend.name}';
+      friend.activeQuestProgress = 0;
+      friend.activeQuestTarget = 2;
+      friend.activeQuestReward = 10;
+    }
   }
 
   notifyListeners();
@@ -905,6 +919,12 @@ int get kindnessScore {
 
   evaluateProgress();
   notifyListeners();
+  }
+
+  void ensureFriendQuests() {
+  for (final friend in approvedContacts) {
+    friend.ensureQuestTitle();
+  }
   }
 
   void evaluateProgress() {
@@ -2904,6 +2924,7 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    state.ensureFriendQuests();
     final schoolFriends = state.sameSchoolFriends;
     final yearFriends = state.sameYearFriends;
 
@@ -3155,12 +3176,15 @@ class _FriendshipQuestCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Quest: ${friend.activeQuestTitle}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
+  'Shared Quest',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.84),
+    fontWeight: FontWeight.w800,
+  ),
+),
+const SizedBox(height: 6),
+Text(
+  friend.activeQuestTitle,
           const SizedBox(height: 6),
           Text(
             'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
