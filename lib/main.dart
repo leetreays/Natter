@@ -3096,7 +3096,7 @@ class ChatsScreen extends StatelessWidget {
           ),
         if (friend != null)
           Text(
-            'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+            'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
             style: TextStyle(
               color: Colors.white.withOpacity(0.68),
               fontWeight: FontWeight.w700,
@@ -3516,7 +3516,7 @@ Future<void> _pickStarter() async {
     final friend = state.getFriendByName(widget.contactName);
 
     if (friend != null &&
-        friend.activeQuestTitle == 'Use a conversation starter') {
+        friend.activeQuestTitle.contains('Use a conversation starter'){
       state.progressFriendQuest(widget.contactName);
     }
   }
