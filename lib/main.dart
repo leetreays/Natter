@@ -3207,13 +3207,13 @@ class _FriendshipQuestCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget} done',
+                    'Quest progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.84),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
