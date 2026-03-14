@@ -179,6 +179,13 @@ class Friend {
 
   String get stars => '⭐' * level;
 
+  String get friendshipStage {
+  if (friendshipPoints >= 100) return '🌟 Legendary Friendship';
+  if (friendshipPoints >= 50) return '🌳 Strong Friendship';
+  if (friendshipPoints >= 10) return '🌿 Growing Friendship';
+  return '🌱 New Friendship';
+  }
+
   double get meterPercent {
     final currentLevel = level;
 
@@ -3167,6 +3174,14 @@ class _FriendshipQuestCard extends StatelessWidget {
               fontSize: 20,
             ),
           ),
+          const SizedBox(height: 4),
+Text(
+  friend.friendshipStage,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.82),
+    fontWeight: FontWeight.w700,
+  ),
+),
           const SizedBox(height: 8),
           Text(
             'Friendship Meter',
