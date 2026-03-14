@@ -3163,110 +3163,66 @@ class _FriendshipQuestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BrandCard(
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${friend.name} ${friend.stars}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 4),
-Text(
-  friend.friendshipStage,
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.82),
-    fontWeight: FontWeight.w700,
-  ),
-),
-          const SizedBox(height: 8),
-          Text(
-            'Friendship Meter',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              value: friend.meterPercent,
-              minHeight: 12,
-              backgroundColor: Colors.white.withOpacity(0.14),
-              valueColor: const AlwaysStoppedAnimation<Color>(NatterBrand.green),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.14),
-              ),
-            ),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.flag_rounded,
-                      color: NatterBrand.yellow,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Shared Quest',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.84),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
                 Text(
-                  friend.activeQuestTitle,
+                  '${friend.name} ${friend.stars}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
+                    fontSize: 20,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
-                  'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
+                  friend.friendshipStage,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.82),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: friend.meterPercent,
+                    minHeight: 10,
+                    backgroundColor: Colors.white.withOpacity(0.14),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      NatterBrand.green,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.84),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 12),
-Align(
-  alignment: Alignment.centerRight,
-  child: TextButton(
-    onPressed: () {
-      Navigator.push(
-        context,
-        calmRoute(FriendshipJourneyScreen(friend: friend)),
-      );
-    },
-    child: const Text(
-      'View Friendship →',
-      style: TextStyle(
-        color: NatterBrand.yellow,
-        fontWeight: FontWeight.w900,
-      ),
-    ),
-  ),
-),
               ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                calmRoute(FriendshipJourneyScreen(friend: friend)),
+              );
+            },
+            child: const Text(
+              'View →',
+              style: TextStyle(
+                color: NatterBrand.yellow,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],
@@ -4072,7 +4028,7 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
             ),
           if (friend != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: _FriendshipQuestCard(friend: friend),
             ),
           Expanded(
