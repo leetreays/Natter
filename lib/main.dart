@@ -3147,57 +3147,61 @@ class _FriendshipQuestCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-  Text(
-    '${friend.name} ${friend.stars}',
-    style: const TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w900,
-      fontSize: 20,
-    ),
-  ),
-  const SizedBox(height: 8),
-  Text(
-    'Friendship Meter',
-    style: TextStyle(
-      color: Colors.white.withOpacity(0.84),
-      fontWeight: FontWeight.w800,
-    ),
-  ),
-  const SizedBox(height: 8),
-  ClipRRect(
-    borderRadius: BorderRadius.circular(999),
-    child: LinearProgressIndicator(
-      value: friend.meterPercent,
-      minHeight: 12,
-      backgroundColor: Colors.white.withOpacity(0.14),
-      valueColor: const AlwaysStoppedAnimation<Color>(NatterBrand.green),
-    ),
-  ),
-  const SizedBox(height: 12),
-  Text(
-    'Shared Quest',
-    style: TextStyle(
-      color: Colors.white.withOpacity(0.84),
-      fontWeight: FontWeight.w800,
-    ),
-  ),
-  const SizedBox(height: 6),
-  Text(
-    friend.activeQuestTitle,
-    style: const TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w900,
-    ),
-  ),
-  const SizedBox(height: 6),
-  Text(
-    'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
-    style: TextStyle(
-      color: Colors.white.withOpacity(0.84),
-      fontWeight: FontWeight.w700,
-    ),
-  ),
-],
+          Text(
+            '${friend.name} ${friend.stars}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Friendship Meter',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: friend.meterPercent,
+              minHeight: 12,
+              backgroundColor: Colors.white.withOpacity(0.14),
+              valueColor: const AlwaysStoppedAnimation<Color>(NatterBrand.green),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Shared Quest',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            friend.activeQuestTitle,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class ChatScreen extends StatefulWidget {
   final String contactName;
