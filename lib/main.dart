@@ -3247,27 +3247,137 @@ Text(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 16),
-Text(
-  'Friendship Moments',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.9),
-    fontWeight: FontWeight.w900,
-  ),
-),
-const SizedBox(height: 8),
-...friend.friendshipMoments.reversed.take(5).map(
-  (m) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(
-      m,
+                const SizedBox(height: 12),
+Align(
+  alignment: Alignment.centerRight,
+  child: TextButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        calmRoute(FriendshipJourneyScreen(friend: friend)),
+      );
+    },
+    child: const Text(
+      'View Friendship →',
       style: TextStyle(
-        color: Colors.white.withOpacity(0.78),
-        fontWeight: FontWeight.w600,
+        color: NatterBrand.yellow,
+        fontWeight: FontWeight.w900,
       ),
     ),
   ),
 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FriendshipJourneyScreen extends StatelessWidget {
+  final Friend friend;
+
+  const FriendshipJourneyScreen({super.key, required this.friend});
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandScaffold(
+      appBar: AppBar(
+        title: BrandedAppBarTitle(title: '${friend.name} Journey'),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${friend.name} ${friend.stars}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 24,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  friend.friendshipStage,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.82),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Friendship Meter',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: friend.meterPercent,
+                    minHeight: 12,
+                    backgroundColor: Colors.white.withOpacity(0.14),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      NatterBrand.green,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Friendship Moments',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (friend.friendshipMoments.isEmpty)
+                  Text(
+                    'No friendship moments yet.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                else
+                  ...friend.friendshipMoments.reversed.map(
+                    (m) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.14),
+                          ),
+                        ),
+                        child: Text(
+                          m,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.88),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
