@@ -3038,40 +3038,54 @@ class ChatsScreen extends StatelessWidget {
                     ),
                   ),
                   title: Builder(
-                    builder: (context) {
-                      final friend = state.getFriendByName(c.name);
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            c.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          if (friend != null)
-                            Text(
-                              'Friendship ${friend.stars}',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.78),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                              ),
-                            ),
-                          if (friend != null)
-                            Text(
-                              'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.68),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
-                        ],
-                      );
-                    },
-                  ),
+  builder: (context) {
+    final friend = state.getFriendByName(c.name);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              c.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            if (friend != null && friend.schoolName == state.schoolName) ...[
+              const SizedBox(width: 6),
+              Text(
+                '🏫',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withOpacity(0.85),
+                ),
+              ),
+            ],
+          ],
+        ),
+        if (friend != null)
+          Text(
+            'Friendship ${friend.stars}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.78),
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+            ),
+          ),
+        if (friend != null)
+          Text(
+            'Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.68),
+              fontWeight: FontWeight.w700,
+              fontSize: 11,
+            ),
+          ),
+      ],
+    );
+  },
+),
                   subtitle: Text(
                     c.last,
                     style: const TextStyle(color: Colors.white),
