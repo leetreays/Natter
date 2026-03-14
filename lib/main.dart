@@ -150,6 +150,8 @@ class Friend {
   int activeQuestTarget;
   int activeQuestReward;
 
+  List<String> friendshipMoments = [];
+
   Friend({
     required this.name,
     this.schoolName = 'North Borough Junior School',
@@ -381,9 +383,12 @@ class ChatPreview {
 class AppState extends ChangeNotifier {
   final String myFriendCode = 'NAT-2048';
   final List<Friend> approvedContacts = [
-    Friend(name: 'Dad', friendshipPoints: 40),
-    Friend(name: 'Sam', friendshipPoints: 18),
-    Friend(name: 'Mia', friendshipPoints: 8),
+    Friend(name: 'Dad', friendshipPoints: 40)
+  ..friendshipMoments.add('⭐ You became friends'),
+    Friend(name: 'Sam', friendshipPoints: 18)
+  ..friendshipMoments.add('⭐ You became friends'),
+    Friend(name: 'Mia', friendshipPoints: 8)
+  ..friendshipMoments.add('⭐ You became friends'),
   ];
   final List<String> pendingRequests = ['Ava', 'Leo'];
   
@@ -547,7 +552,9 @@ int get kindnessScore {
 lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     addFriendshipPoints(name, friend.activeQuestReward);
-
+    
+    friend.friendshipMoments.add('🏆 You completed a quest together');
+    
     addFriendshipMoment(
       title: 'Quest Complete!',
       description: '🌟 You completed a shared quest with ${friend.name}.',
@@ -3225,6 +3232,27 @@ class _FriendshipQuestCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                const SizedBox(height: 16),
+Text(
+  'Friendship Moments',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.9),
+    fontWeight: FontWeight.w900,
+  ),
+),
+const SizedBox(height: 8),
+...friend.friendshipMoments.reversed.take(5).map(
+  (m) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Text(
+      m,
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.78),
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+),
               ],
             ),
           ),
@@ -3675,6 +3703,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   state.recordPositiveMessage();
 state.addFriendshipPoints(widget.contactName, 2);
 state.progressFriendQuest(widget.contactName);
+
+  final friend = state.getFriendByName(widget.contactName);
+friend?.friendshipMoments.add('💛 You sent a kind message');
   
 if (state.lastQuestCelebrationFriend == widget.contactName) {
   messages.insert(
