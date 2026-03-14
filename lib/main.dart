@@ -3195,16 +3195,26 @@ class _FriendshipQuestCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      value: friend.meterPercent,
-                      minHeight: 10,
-                      backgroundColor: Colors.white.withOpacity(0.14),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        NatterBrand.green,
-                      ),
-                    ),
-                  ),
+  borderRadius: BorderRadius.circular(999),
+  child: TweenAnimationBuilder<double>(
+    tween: Tween<double>(
+      begin: 0,
+      end: friend.meterPercent,
+    ),
+    duration: const Duration(milliseconds: 700),
+    curve: Curves.easeOutCubic,
+    builder: (context, value, _) {
+      return LinearProgressIndicator(
+        value: value,
+        minHeight: 10,
+        backgroundColor: Colors.white.withOpacity(0.14),
+        valueColor: const AlwaysStoppedAnimation<Color>(
+          NatterBrand.green,
+        ),
+      );
+    },
+  ),
+),
                   const SizedBox(height: 10),
                   Text(
                     'Quest progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
