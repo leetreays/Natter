@@ -3179,56 +3179,55 @@ class _FriendshipQuestCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
           Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(12),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.08),
-    borderRadius: BorderRadius.circular(16),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.14),
-    ),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Row(
-        children: [
-          const Icon(
-            Icons.flag_rounded,
-            color: NatterBrand.yellow,
-            size: 18,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            'Shared Quest',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w800,
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.14),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.flag_rounded,
+                      color: NatterBrand.yellow,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Shared Quest',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.84),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  friend.activeQuestTitle,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.84),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      Text(
-        friend.activeQuestTitle,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'Progress: ${friend.activeQuestProgress}/${friend.activeQuestTarget}   •   Reward: +${friend.activeQuestReward}',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.84),
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    ],
-  ),
-),
         ],
       ),
     );
