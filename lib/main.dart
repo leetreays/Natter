@@ -1025,7 +1025,7 @@ void evaluateGraduationReadiness() {
       positiveMessages >= 3 &&
       kindnessRewrites >= 1 &&
       completedSharedQuests >= 1 &&
-      conversationStartersUsed >= 1 &&
+      conversationStartersUsed >= 1 &&;
 
   if (hasMetRequirements && !readyForGraduation) {
     readyForGraduation = true;
