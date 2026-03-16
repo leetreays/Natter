@@ -1022,10 +1022,10 @@ void evaluateGraduationReadiness() {
   if (isGraduated) return;
 
   final hasMetRequirements =
-      positiveMessages >= 50 &&
-      kindnessRewrites >= 10 &&
-      completedSharedQuests >= 5 &&
-      conversationStartersUsed >= 5 &&
+      positiveMessages >= 3 &&
+      kindnessRewrites >= 1 &&
+      completedSharedQuests >= 1 &&
+      conversationStartersUsed >= 1 &&
       currentLevel == NatterLevel.digitalCitizen;
 
   if (hasMetRequirements && !readyForGraduation) {
@@ -1061,6 +1061,7 @@ void completeGraduation() {
   ));
 
   notifyListeners();
+}
 }
 
 class AppStateScope extends InheritedNotifier<AppState> {
