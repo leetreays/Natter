@@ -447,6 +447,12 @@ int coachPrompts = 0;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
 
+  bool isGraduated = false;
+  bool readyForGraduation = false;
+
+  int conversationStartersUsed = 0;
+  int completedSharedQuests = 0;
+
   DailyQuest dailyQuest = const DailyQuest(
     title: 'Kindness Quest',
     description: 'Send 3 positive messages today.',
@@ -497,14 +503,7 @@ int coachPrompts = 0;
       case NatterLevel.kindCommunicator:
         return kindnessRewrites.clamp(0, 5);
       case NatterLevel.digitalCitizen:
-        return 5;
-
-  bool isGraduated = false;
-  bool readyForGraduation = false;
-
-  int conversationStartersUsed = 0;
-  int completedSharedQuests = 0;
-         
+        return 5;         
     }
   }
 
@@ -957,66 +956,69 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
   }
   }
 
-  void evaluateProgress() {
-    var didLevelUp = false;
+void evaluateProgress() {
+  var didLevelUp = false;
 
-    if (currentLevel == NatterLevel.promiseKeeper) {
-      if (approvedContacts.isNotEmpty && kindnessRewrites >= 1) {
-        currentLevel = NatterLevel.trustedChatter;
-        didLevelUp = true;
+  if (currentLevel == NatterLevel.promiseKeeper) {
+    if (approvedContacts.isNotEmpty && kindnessRewrites >= 1) {
+      currentLevel = NatterLevel.trustedChatter;
+      didLevelUp = true;
 
-        _awardBadge(
-          const NatterBadge(
-            title: 'Trusted Chatter',
-            icon: Icons.chat_bubble_rounded,
-            color: NatterBrand.green,
-            description: 'Unlocked after showing good early chat habits.',
-          ),
-          celebrationTitleText: 'Level Up!',
-          celebrationMessageText:
-              '🎉 You are now a Trusted Chatter.\n\nFriend requests are now unlocked.',
-        );
+      _awardBadge(
+        const NatterBadge(
+          title: 'Trusted Chatter',
+          icon: Icons.chat_bubble_rounded,
+          color: NatterBrand.green,
+          description: 'Unlocked after showing good early chat habits.',
+        ),
+        celebrationTitleText: 'Level Up!',
+        celebrationMessageText:
+            '🎉 You are now a Trusted Chatter.\n\nFriend requests are now unlocked.',
+      );
 
-        addAlert(AlertEvent(
-          type: AlertType.safetyCoach,
-          message: 'Level up: Trusted Chatter unlocked.',
-        ));
-      }
+      addAlert(AlertEvent(
+        type: AlertType.safetyCoach,
+        message: 'Level up: Trusted Chatter unlocked.',
+      ));
     }
+  }
 
-    if (currentLevel == NatterLevel.trustedChatter) {
-      if (kindnessRewrites >= 3) {
-        currentLevel = NatterLevel.kindCommunicator;
-        didLevelUp = true;
+  if (currentLevel == NatterLevel.trustedChatter) {
+    if (kindnessRewrites >= 3) {
+      currentLevel = NatterLevel.kindCommunicator;
+      didLevelUp = true;
 
-        _awardBadge(
-          const NatterBadge(
-            title: 'Kind Communicator',
-            icon: Icons.workspace_premium_rounded,
-            color: NatterBrand.pink,
-            description: 'Unlocked after multiple kind rewrites.',
-          ),
-          celebrationTitleText: 'Level Up!',
-          celebrationMessageText:
-              '🏅 You are now a Kind Communicator.\n\nYou are building really thoughtful chat habits.',
-        );
+      _awardBadge(
+        const NatterBadge(
+          title: 'Kind Communicator',
+          icon: Icons.workspace_premium_rounded,
+          color: NatterBrand.pink,
+          description: 'Unlocked after multiple kind rewrites.',
+        ),
+        celebrationTitleText: 'Level Up!',
+        celebrationMessageText:
+            '🏅 You are now a Kind Communicator.\n\nYou are building really thoughtful chat habits.',
+      );
 
-        addAlert(AlertEvent(
-          type: AlertType.safetyCoach,
-          message: 'Level up: Kind Communicator unlocked.',
-        ));
-      }
+      addAlert(AlertEvent(
+        type: AlertType.safetyCoach,
+        message: 'Level up: Kind Communicator unlocked.',
+      ));
     }
+  }
 
-    if (didLevelUp) {
-      notifyListeners();
-    }
-    void recordConversationStarterUse() {
+  if (didLevelUp) {
+    notifyListeners();
+  }
+}
+
+void recordConversationStarterUse() {
   conversationStartersUsed += 1;
   evaluateGraduationReadiness();
   notifyListeners();
-    }
-    void evaluateGraduationReadiness() {
+}
+
+void evaluateGraduationReadiness() {
   if (isGraduated) return;
 
   final hasMetRequirements =
@@ -1033,7 +1035,9 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
         '🎓 You have shown kind communication, strong friendships, and safe online habits.\n\nIt’s time to begin your graduation.';
     notifyListeners();
   }
-  void completeGraduation() {
+}
+
+void completeGraduation() {
   if (isGraduated) return;
 
   isGraduated = true;
@@ -1057,9 +1061,6 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
   ));
 
   notifyListeners();
-  }
-    }
-  }
 }
 
 class AppStateScope extends InheritedNotifier<AppState> {
