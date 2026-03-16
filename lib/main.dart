@@ -1026,7 +1026,6 @@ void evaluateGraduationReadiness() {
       kindnessRewrites >= 1 &&
       completedSharedQuests >= 1 &&
       conversationStartersUsed >= 1 &&
-      currentLevel == NatterLevel.digitalCitizen;
 
   if (hasMetRequirements && !readyForGraduation) {
     readyForGraduation = true;
