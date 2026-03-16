@@ -498,6 +498,13 @@ int coachPrompts = 0;
         return kindnessRewrites.clamp(0, 5);
       case NatterLevel.digitalCitizen:
         return 5;
+
+  bool isGraduated = false;
+  bool readyForGraduation = false;
+
+  int conversationStartersUsed = 0;
+  int completedSharedQuests = 0;
+         
     }
   }
 
@@ -559,6 +566,7 @@ int get kindnessScore {
 lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     addFriendshipPoints(name, friend.activeQuestReward);
+    completedSharedQuests += 1;
     
     friend.friendshipMoments.add('🏆 You completed a quest together');
     
@@ -581,6 +589,7 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
       friend.activeQuestReward = 10;
     }
   }
+  evaluateGraduationReadiness();
 
   notifyListeners();
   }
@@ -915,6 +924,7 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
       celebrate: true,
     );
   }
+  evaluateGraduationReadiness();  
 
   notifyListeners();
   }
@@ -937,6 +947,7 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
   }
 
   evaluateProgress();
+  evaluateGraduationReadiness();
   notifyListeners();
   }
 
@@ -999,6 +1010,54 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     if (didLevelUp) {
       notifyListeners();
+    }
+    void recordConversationStarterUse() {
+  conversationStartersUsed += 1;
+  evaluateGraduationReadiness();
+  notifyListeners();
+    }
+    void evaluateGraduationReadiness() {
+  if (isGraduated) return;
+
+  final hasMetRequirements =
+      positiveMessages >= 50 &&
+      kindnessRewrites >= 10 &&
+      completedSharedQuests >= 5 &&
+      conversationStartersUsed >= 5 &&
+      currentLevel == NatterLevel.digitalCitizen;
+
+  if (hasMetRequirements && !readyForGraduation) {
+    readyForGraduation = true;
+    celebrationTitle = 'You’re Ready!';
+    celebrationMessage =
+        '🎓 You have shown kind communication, strong friendships, and safe online habits.\n\nIt’s time to begin your graduation.';
+    notifyListeners();
+  }
+  void completeGraduation() {
+  if (isGraduated) return;
+
+  isGraduated = true;
+  readyForGraduation = false;
+
+  _awardBadge(
+    const NatterBadge(
+      title: 'Natter Graduate',
+      icon: Icons.school_rounded,
+      color: NatterBrand.yellow,
+      description: 'Awarded for completing the Natter journey.',
+    ),
+    celebrationTitleText: 'Graduation Complete!',
+    celebrationMessageText:
+        '🎓 You completed the Natter journey and earned your Graduate badge.',
+  );
+
+  addAlert(AlertEvent(
+    type: AlertType.safetyCoach,
+    message: 'Graduation completed: Natter Graduate unlocked.',
+  ));
+
+  notifyListeners();
+  }
     }
   }
 }
@@ -2155,6 +2214,31 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
           ),
+          if (state.isGraduated) ...[
+  const SizedBox(height: 14),
+  BrandCard(
+    child: Row(
+      children: [
+        const Icon(
+          Icons.school_rounded,
+          color: NatterBrand.yellow,
+          size: 28,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'Natter Graduate 🎓',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+],
           const SizedBox(height: 14),
           BrandCard(
             child: Column(
@@ -2963,13 +3047,22 @@ class ChatsScreen extends StatelessWidget {
       final message = state.celebrationMessage;
 
       if (title != null && message != null) {
-        state.dismissCelebration();
-        await _showCelebrationCard(
-          context,
-          title: title,
-          message: message,
-        );
-      }
+  final shouldOpenGraduation = state.readyForGraduation;
+
+  state.dismissCelebration();
+  await _showCelebrationCard(
+    context,
+    title: title,
+    message: message,
+  );
+
+  if (shouldOpenGraduation && context.mounted) {
+    Navigator.push(
+      context,
+      calmRoute(const GraduationScreen()),
+    );
+  }
+}
     });
 
     return BrandScaffold(
@@ -3345,6 +3438,184 @@ class FriendshipJourneyScreen extends StatelessWidget {
   }
 }
 
+class GraduationScreen extends StatelessWidget {
+  const GraduationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Graduation'),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          BrandCard(
+            child: Column(
+              children: [
+                Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: NatterBrand.yellow.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: NatterBrand.yellow.withOpacity(0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.school_rounded,
+                    color: NatterBrand.yellow,
+                    size: 42,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '🎓 Natter Graduation',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 28,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  state.lastName == null
+                      ? 'Congratulations!'
+                      : 'Congratulations, ${state.lastName}!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.92),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'You have completed the Natter journey.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _GraduationPoint(text: '💛 Kind communication'),
+                _GraduationPoint(text: '💬 Confident conversation'),
+                _GraduationPoint(text: '🤝 Strong friendships'),
+                _GraduationPoint(text: '🛡 Safe online choices'),
+                const SizedBox(height: 18),
+                Text(
+                  'You are ready for the wider internet.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: NatterBrand.green.withOpacity(0.95),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      state.completeGraduation();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Complete Graduation'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Journey',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '💛 Kind Messages: ${state.positiveMessages}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '🌟 Kindness Rewrites: ${state.kindnessRewrites}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '🤝 Shared Quests Completed: ${state.completedSharedQuests}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '💬 Conversation Starters Used: ${state.conversationStartersUsed}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GraduationPoint extends StatelessWidget {
+  final String text;
+
+  const _GraduationPoint({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.14)),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ChatScreen extends StatefulWidget {
   final String contactName;
   const ChatScreen({super.key, required this.contactName});
@@ -3659,6 +3930,8 @@ Future<void> _pickStarter() async {
     );
 
     final state = AppStateScope.of(context);
+    state.recordConversationStarterUse();
+    
     final friend = state.getFriendByName(widget.contactName);
 
     if (friend != null &&
@@ -4638,6 +4911,16 @@ class ParentHomeScreen extends StatelessWidget {
                       label: 'Level',
                       value: state.currentLevel.title,
                     ),
+                    if (state.isGraduated)
+  const SizedBox(height: 6),
+if (state.isGraduated)
+  const Text(
+    'Graduation status: Complete 🎓',
+    style: TextStyle(
+      color: NatterBrand.yellow,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
                   ],
                 ),
               ],
