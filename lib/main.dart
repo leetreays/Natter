@@ -1007,9 +1007,9 @@ bool evaluateProgress() {
       didLevelUp = true;
 
       Future.delayed(const Duration(seconds: 2), () {
-  evaluateGraduationReadiness();
-  notifyListeners();
-});
+        evaluateGraduationReadiness();
+        notifyListeners();
+      });
 
       _awardBadge(
         const NatterBadge(
@@ -1037,6 +1037,7 @@ bool evaluateProgress() {
 
   return didLevelUp;
 }
+  
 void recordConversationStarterUse() {
   conversationStartersUsed += 1;
   evaluateGraduationReadiness();
