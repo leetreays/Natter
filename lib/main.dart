@@ -574,84 +574,38 @@ int coachPrompts = 0;
   if (friend.activeQuestProgress >= friend.activeQuestTarget) {
     friend.activeQuestProgress = friend.activeQuestTarget;
     lastQuestCelebrationFriend = friend.name;
-lastQuestCelebrationTitle = friend.activeQuestTitle;
+    lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     addFriendshipPoints(name, friend.activeQuestReward);
     completedSharedQuests += 1;
-    
+
     friend.friendshipMoments.add('🏆 You completed a quest together');
-    
-    celebrate: friend.friendshipPoints >= 25,
+
+    addFriendshipMoment(
+      title: 'Quest Complete!',
+      description: '🌟 You completed a shared quest with ${friend.name}.',
+      icon: Icons.task_alt_rounded,
+      celebrate: friend.friendshipPoints >= 25,
+    );
 
     if (friend.activeQuestTitle.contains('Send')) {
-  friend.activeQuestTitle =
-      'Use a conversation starter with ${friend.name}';
-  friend.activeQuestProgress = 0;
-  friend.activeQuestTarget = 1;
-  friend.activeQuestReward = 10;
-} else {
-  friend.activeQuestTitle =
-      'Send 2 kind messages to ${friend.name}';
-  friend.activeQuestProgress = 0;
-  friend.activeQuestTarget = 2;
-  friend.activeQuestReward = 10;
+      friend.activeQuestTitle =
+          'Use a conversation starter with ${friend.name}';
+      friend.activeQuestProgress = 0;
+      friend.activeQuestTarget = 1;
+      friend.activeQuestReward = 10;
+    } else {
+      friend.activeQuestTitle =
+          'Send 2 kind messages to ${friend.name}';
+      friend.activeQuestProgress = 0;
+      friend.activeQuestTarget = 2;
+      friend.activeQuestReward = 10;
     }
   }
+
   evaluateGraduationReadiness();
-
   notifyListeners();
-  }
-  
-  addFriendshipMoment(
-  title: 'Quest Complete!',
-  description: '🌟 You completed a shared quest with ${friend.name}.',
-  icon: Icons.task_alt_rounded,
-  celebrate: friend.friendshipPoints >= 25,
-);
-  
-  DateTime? lastQuestCompletedAt;
-
-  final now = DateTime.now();
-
-if (friend.lastQuestCompletedAt != null &&
-    now.difference(friend.lastQuestCompletedAt!).inSeconds < 3) {
-  return;
 }
-
-friend.lastQuestCompletedAt = now;
-  
-  bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
-    int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
-    final tm = toMin(t);
-    final sm = toMin(start);
-    final em = toMin(end);
-
-    if (sm < em) return tm >= sm && tm < em;
-    return tm >= sm || tm < em;
-  }
-
-  bool isQuietNow() {
-    if (!quietHoursEnabled) return false;
-    final now = TimeOfDay.fromDateTime(DateTime.now());
-    return _isTimeInRange(now, quietStart, quietEnd);
-  }
-
-  bool isApproved(String name) =>
-      approvedContacts.any((c) => c.name.toLowerCase() == name.toLowerCase());
-  
-  bool isPending(String name) =>
-      pendingRequests.any((p) => p.toLowerCase() == name.toLowerCase());
-
-  Friend? getFriendByName(String name) {
-    try {
-      return approvedContacts.firstWhere(
-        (f) => f.name.toLowerCase() == name.toLowerCase(),
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
   void addFriendshipPoints(String name, int points) {
   final friend = getFriendByName(name);
   if (friend == null) return;
