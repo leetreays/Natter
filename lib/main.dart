@@ -1963,8 +1963,12 @@ class _GraduationCeremonyScreenState
                     onPressed: () {
                       state.completeGraduation();
 
-                      Navigator.popUntil(context, (route) => route.isFirst);
-                    },
+                      Navigator.pushAndRemoveUntil(
+  context,
+  calmRoute(const ChatsScreen()),
+  (route) => false,
+);
+                    }
                     style: ElevatedButton.styleFrom(
                       backgroundColor: NatterBrand.yellow,
                       foregroundColor: Colors.black,
