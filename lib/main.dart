@@ -604,16 +604,18 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
       celebrate: true,
     );
 
-    if (friend.schoolName == schoolName) {
-      friend.activeQuestTitle = 'Use a conversation starter with ${friend.name}';
-      friend.activeQuestProgress = 0;
-      friend.activeQuestTarget = 1;
-      friend.activeQuestReward = 10;
-    } else {
-      friend.activeQuestTitle = 'Send 2 kind messages to ${friend.name}';
-      friend.activeQuestProgress = 0;
-      friend.activeQuestTarget = 2;
-      friend.activeQuestReward = 10;
+    if (friend.activeQuestTitle.contains('Send')) {
+  friend.activeQuestTitle =
+      'Use a conversation starter with ${friend.name}';
+  friend.activeQuestProgress = 0;
+  friend.activeQuestTarget = 1;
+  friend.activeQuestReward = 10;
+} else {
+  friend.activeQuestTitle =
+      'Send 2 kind messages to ${friend.name}';
+  friend.activeQuestProgress = 0;
+  friend.activeQuestTarget = 2;
+  friend.activeQuestReward = 10;
     }
   }
   evaluateGraduationReadiness();
@@ -1053,6 +1055,11 @@ bool evaluateProgress() {
       digitalCitizenUnlockedAt = DateTime.now();
       didLevelUp = true;
 
+      Future.delayed(const Duration(seconds: 2), () {
+  evaluateGraduationReadiness();
+  notifyListeners();
+});
+
       _awardBadge(
         const NatterBadge(
           title: 'Digital Citizen',
@@ -1137,6 +1144,25 @@ void completeGraduation() {
 
   notifyListeners();
 }
+  int coachedMessagesSentAnyway = 0;
+
+  int get kindnessScore {
+  int score = 100;
+
+  score -= blockedAttempts * 15;
+  score -= coachedMessagesSentAnyway * 10;
+  score -= quietHoursAttempts * 5;
+
+  if (score < 0) score = 0;
+  if (score > 100) score = 100;
+
+  return score;
+  }
+
+  void recordCoachedMessageSentAnyway() {
+  coachedMessagesSentAnyway += 1;
+  notifyListeners();
+  }
 }
 
 class AppStateScope extends InheritedNotifier<AppState> {
@@ -4326,7 +4352,11 @@ void _sendMessageNow(String text, {bool flagged = false}) {
 
   state.recordPositiveMessage();
 state.addFriendshipPoints(widget.contactName, 2);
-state.progressFriendQuest(widget.contactName);
+final friend = state.getFriendByName(widget.contactName);
+if (friend != null &&
+    friend.activeQuestTitle.contains('Send')) {
+  state.progressFriendQuest(widget.contactName);
+}
 
   final friend = state.getFriendByName(widget.contactName);
 friend?.friendshipMoments.add('💛 You sent a kind message');
@@ -4440,6 +4470,8 @@ Future.delayed(const Duration(seconds: 2), () {
       if (!mounted) return;
 
       if (sendAnyway) {
+  state.recordCoachedMessageSentAnyway();
+
   if (state.alertsSafetyCoach) {
     state.addAlert(AlertEvent(
       type: AlertType.safetyCoach,
