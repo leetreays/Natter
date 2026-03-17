@@ -540,22 +540,6 @@ int coachPrompts = 0;
     if (target == 0) return 1;
     return (progressValue / target).clamp(0, 1);
   }
-  
-int get kindnessScore {
-    int score = 100;
-
-    score -= weeklyBlockedAttempts * 12;
-    score -= weeklyQuietHoursAttempts * 8;
-    score -= weeklyCoachPrompts * 5;
-
-    score += kindnessRewrites * 4;
-    score += kindnessStreak * 2;
-
-    if (score > 100) score = 100;
-    if (score < 0) score = 0;
-
-    return score;
-  }
 
   String get peaceStatus {
     if (weeklyBlockedAttempts >= 2 || weeklyQuietHoursAttempts >= 3) {
@@ -4358,7 +4342,6 @@ if (friend != null &&
   state.progressFriendQuest(widget.contactName);
 }
 
-  final friend = state.getFriendByName(widget.contactName);
 friend?.friendshipMoments.add('💛 You sent a kind message');
   
 if (state.lastQuestCelebrationFriend == widget.contactName) {
