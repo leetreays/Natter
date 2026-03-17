@@ -1071,10 +1071,10 @@ void evaluateGraduationReadiness() {
   }
 
   final hasMetRequirements =
-    positiveMessages >= 50 &&
-    kindnessRewrites >= 20 &&
-    completedSharedQuests >= 15 &&
-    conversationStartersUsed >= 15 &&
+    positiveMessages >= 5 &&
+    kindnessRewrites >= 2 &&
+    completedSharedQuests >= 2 &&
+    conversationStartersUsed >= 2 &&
     currentLevel == NatterLevel.digitalCitizen;
 
   if (hasMetRequirements && !readyForGraduation) {
@@ -3659,155 +3659,6 @@ class FriendshipJourneyScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class GraduationScreen extends StatelessWidget {
-  const GraduationScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final state = AppStateScope.of(context);
-
-    return BrandScaffold(
-      appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Graduation'),
-      ),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          BrandCard(
-            child: Column(
-              children: [
-                Container(
-                  width: 84,
-                  height: 84,
-                  decoration: BoxDecoration(
-                    color: NatterBrand.yellow.withOpacity(0.15),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: NatterBrand.yellow.withOpacity(0.4),
-                      width: 2,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: NatterBrand.yellow,
-                    size: 42,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  '🎓 Natter Graduation',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  state.lastName == null
-                      ? 'Congratulations!'
-                      : 'Congratulations, ${state.lastName}!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.92),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'You have completed the Natter journey.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _GraduationPoint(text: '💛 Kind communication'),
-                _GraduationPoint(text: '💬 Confident conversation'),
-                _GraduationPoint(text: '🤝 Strong friendships'),
-                _GraduationPoint(text: '🛡 Safe online choices'),
-                const SizedBox(height: 18),
-                Text(
-                  'You are ready for the wider internet.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: NatterBrand.green.withOpacity(0.95),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      state.completeGraduation();
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Complete Graduation'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Your Journey',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '💛 Kind Messages: ${state.positiveMessages}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '🌟 Kindness Rewrites: ${state.kindnessRewrites}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '🤝 Shared Quests Completed: ${state.completedSharedQuests}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '💬 Conversation Starters Used: ${state.conversationStartersUsed}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
               ],
             ),
           ),
