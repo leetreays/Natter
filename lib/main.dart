@@ -1897,6 +1897,7 @@ class _GraduationCeremonyScreenState
     super.initState();
 
     Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       setState(() => opacity = 1);
     });
   }
@@ -1922,9 +1923,7 @@ class _GraduationCeremonyScreenState
                     size: 90,
                     color: NatterBrand.yellow,
                   ),
-
                   const SizedBox(height: 24),
-
                   const Text(
                     'Congratulations',
                     style: TextStyle(
@@ -1933,9 +1932,7 @@ class _GraduationCeremonyScreenState
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   const Text(
                     'You are now a Natter Graduate 🎓',
                     textAlign: TextAlign.center,
@@ -1945,9 +1942,7 @@ class _GraduationCeremonyScreenState
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   Text(
                     'You have shown kindness, patience, and strong digital communication skills.',
                     textAlign: TextAlign.center,
@@ -1956,19 +1951,17 @@ class _GraduationCeremonyScreenState
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
                   ElevatedButton(
                     onPressed: () {
                       state.completeGraduation();
 
                       Navigator.pushAndRemoveUntil(
-  context,
-  calmRoute(const ChatsScreen()),
-  (route) => false,
-);
-                    }
+                        context,
+                        calmRoute(const ChatsScreen()),
+                        (route) => false,
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: NatterBrand.yellow,
                       foregroundColor: Colors.black,
