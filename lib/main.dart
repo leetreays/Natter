@@ -581,12 +581,7 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
     
     friend.friendshipMoments.add('🏆 You completed a quest together');
     
-    addFriendshipMoment(
-      title: 'Quest Complete!',
-      description: '🌟 You completed a shared quest with ${friend.name}.',
-      icon: Icons.task_alt_rounded,
-      celebrate: true,
-    );
+    celebrate: friend.friendshipPoints >= 25,
 
     if (friend.activeQuestTitle.contains('Send')) {
   friend.activeQuestTitle =
@@ -606,6 +601,24 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
 
   notifyListeners();
   }
+  
+  addFriendshipMoment(
+  title: 'Quest Complete!',
+  description: '🌟 You completed a shared quest with ${friend.name}.',
+  icon: Icons.task_alt_rounded,
+  celebrate: friend.friendshipPoints >= 25,
+);
+  
+  DateTime? lastQuestCompletedAt;
+
+  final now = DateTime.now();
+
+if (friend.lastQuestCompletedAt != null &&
+    now.difference(friend.lastQuestCompletedAt!).inSeconds < 3) {
+  return;
+}
+
+friend.lastQuestCompletedAt = now;
   
   bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
     int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
@@ -4343,6 +4356,14 @@ if (friend != null &&
 }
 
 friend?.friendshipMoments.add('💛 You sent a kind message');
+  
+if (friend != null &&
+    friend.activeQuestTitle.contains('Send') &&
+    friend.activeQuestProgress == friend.activeQuestTarget - 1) {
+  setState(() {
+    feedback = '🌟 Almost there! One more to complete your quest.';
+  });
+}
   
 if (state.lastQuestCelebrationFriend == widget.contactName) {
   messages.insert(
