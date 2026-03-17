@@ -453,6 +453,8 @@ int coachPrompts = 0;
   int conversationStartersUsed = 0;
   int completedSharedQuests = 0;
 
+  DateTime? digitalCitizenUnlockedAt;
+
   DailyQuest dailyQuest = const DailyQuest(
     title: 'Kindness Quest',
     description: 'Send 3 positive messages today.',
@@ -1022,6 +1024,7 @@ bool evaluateProgress() {
         completedSharedQuests >= 1 &&
         conversationStartersUsed >= 1) {
       currentLevel = NatterLevel.digitalCitizen;
+      digitalCitizenUnlockedAt = DateTime.now();
       didLevelUp = true;
 
       _awardBadge(
@@ -1058,6 +1061,14 @@ void recordConversationStarterUse() {
 
 void evaluateGraduationReadiness() {
   if (isGraduated) return;
+
+  if (currentLevel == NatterLevel.digitalCitizen &&
+    digitalCitizenUnlockedAt != null) {
+  final secondsSinceUnlock =
+      DateTime.now().difference(digitalCitizenUnlockedAt!).inSeconds;
+
+  if (secondsSinceUnlock < 2) return;
+  }
 
   final hasMetRequirements =
     positiveMessages >= 3 &&
