@@ -923,10 +923,15 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
       celebrate: true,
     );
   }
-  evaluateGraduationReadiness();  
+
+  final didLevelUp = evaluateProgress();
+
+  if (!didLevelUp) {
+    evaluateGraduationReadiness();
+  }
 
   notifyListeners();
-  }
+}
 
   void recordKindRewrite() {
   kindnessRewrites++;
@@ -945,10 +950,14 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
     );
   }
 
-  evaluateProgress();
-  evaluateGraduationReadiness();
-  notifyListeners();
+  final didLevelUp = evaluateProgress();
+
+  if (!didLevelUp) {
+    evaluateGraduationReadiness();
   }
+
+  notifyListeners();
+}
 
   void ensureFriendQuests() {
   for (final friend in approvedContacts) {
@@ -956,7 +965,7 @@ lastQuestCelebrationTitle = friend.activeQuestTitle;
   }
   }
 
-void evaluateProgress() {
+bool evaluateProgress() {
   var didLevelUp = false;
 
   if (currentLevel == NatterLevel.promiseKeeper) {
@@ -1007,37 +1016,40 @@ void evaluateProgress() {
     }
   }
 
+  if (currentLevel == NatterLevel.kindCommunicator) {
+    if (positiveMessages >= 3 &&
+        kindnessRewrites >= 1 &&
+        completedSharedQuests >= 1 &&
+        conversationStartersUsed >= 1) {
+      currentLevel = NatterLevel.digitalCitizen;
+      didLevelUp = true;
+
+      _awardBadge(
+        const NatterBadge(
+          title: 'Digital Citizen',
+          icon: Icons.shield_rounded,
+          color: NatterBrand.yellow,
+          description:
+              'Unlocked by showing strong digital communication habits.',
+        ),
+        celebrationTitleText: 'Level Up!',
+        celebrationMessageText:
+            '🛡 You are now a Digital Citizen.\n\nYou are showing strong online habits.',
+      );
+
+      addAlert(AlertEvent(
+        type: AlertType.safetyCoach,
+        message: 'Level up: Digital Citizen unlocked.',
+      ));
+    }
+  }
+
   if (didLevelUp) {
     notifyListeners();
   }
-  if (currentLevel == NatterLevel.kindCommunicator) {
-  if (positiveMessages >= 3 &&
-      kindnessRewrites >= 1 &&
-      completedSharedQuests >= 1 &&
-      conversationStartersUsed >= 1) {
-    currentLevel = NatterLevel.digitalCitizen;
-    didLevelUp = true;
 
-    _awardBadge(
-      const NatterBadge(
-        title: 'Digital Citizen',
-        icon: Icons.shield_rounded,
-        color: NatterBrand.yellow,
-        description: 'Unlocked by showing strong digital communication habits.',
-      ),
-      celebrationTitleText: 'Level Up!',
-      celebrationMessageText:
-          '🛡 You are now a Digital Citizen.\n\nYou are showing strong online habits.',
-    );
-
-    addAlert(AlertEvent(
-      type: AlertType.safetyCoach,
-      message: 'Level up: Digital Citizen unlocked.',
-    ));
-  }
-  }
+  return didLevelUp;
 }
-
 void recordConversationStarterUse() {
   conversationStartersUsed += 1;
   evaluateGraduationReadiness();
