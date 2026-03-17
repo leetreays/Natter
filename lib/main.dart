@@ -408,6 +408,32 @@ class AppState extends ChangeNotifier {
   String? lastQuestCelebrationFriend;
   String? lastQuestCelebrationTitle;
 
+  List<String> get digitalReadinessStrengths {
+  final strengths = <String>[];
+
+  if (positiveMessages >= 10) {
+    strengths.add('💛 Kind communication');
+  }
+  if (kindnessRewrites >= 3) {
+    strengths.add('🌱 Thoughtful message choices');
+  }
+  if (completedSharedQuests >= 3) {
+    strengths.add('🤝 Friendship building');
+  }
+  if (conversationStartersUsed >= 3) {
+    strengths.add('💬 Confident conversation');
+  }
+  if (alertsBlockedWord) {
+    strengths.add('🛡 Safe communication support');
+  }
+
+  if (strengths.isEmpty) {
+    strengths.add('🌟 Early digital confidence');
+  }
+
+  return strengths;
+  }
+
 List<Friend> get sameYearFriends {
   return approvedContacts
       .where((f) =>
@@ -1976,6 +2002,170 @@ class _GraduationCeremonyScreenState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class DigitalReadinessReportScreen extends StatelessWidget {
+  const DigitalReadinessReportScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Digital Readiness'),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.school_rounded,
+                      color: NatterBrand.yellow,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        state.isGraduated
+                            ? 'Natter Graduate'
+                            : 'Digital Readiness Journey',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  state.isGraduated
+                      ? '${state.lastName ?? 'Your child'} has successfully completed the Natter journey.'
+                      : '${state.lastName ?? 'Your child'} is developing strong digital communication habits.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Strengths Shown',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...state.digitalReadinessStrengths.map(
+                  (strength) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      strength,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Progress Highlights',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '💛 Positive messages: ${state.positiveMessages}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '🌱 Kindness rewrites: ${state.kindnessRewrites}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '🤝 Shared quests completed: ${state.completedSharedQuests}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '💬 Conversation starters used: ${state.conversationStartersUsed}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          BrandCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'What This Means',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  state.isGraduated
+                      ? 'Your child has demonstrated kind communication, safe message choices, and the ability to build positive digital friendships.'
+                      : 'Your child is building the skills needed to communicate kindly, handle messages safely, and grow positive online friendships.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -4916,6 +5106,44 @@ class _KindnessScoreCard extends StatelessWidget {
 
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
+
+  BrandCard(
+  child: Row(
+    children: [
+      const Icon(
+        Icons.description_rounded,
+        color: NatterBrand.yellow,
+        size: 26,
+      ),
+      const SizedBox(width: 12),
+      const Expanded(
+        child: Text(
+          'View Digital Readiness Report',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+          ),
+        ),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            calmRoute(const DigitalReadinessReportScreen()),
+          );
+        },
+        child: const Text(
+          'Open',
+          style: TextStyle(
+            color: NatterBrand.yellow,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    ],
+  ),
+),
 
   @override
   Widget build(BuildContext context) {
