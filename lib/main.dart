@@ -1071,10 +1071,10 @@ void evaluateGraduationReadiness() {
   }
 
   final hasMetRequirements =
-    positiveMessages >= 3 &&
-    kindnessRewrites >= 1 &&
-    completedSharedQuests >= 1 &&
-    conversationStartersUsed >= 1 &&
+    positiveMessages >= 50 &&
+    kindnessRewrites >= 20 &&
+    completedSharedQuests >= 15 &&
+    conversationStartersUsed >= 15 &&
     currentLevel == NatterLevel.digitalCitizen;
 
   if (hasMetRequirements && !readyForGraduation) {
@@ -1806,6 +1806,179 @@ class _SimpleCeremony extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class GraduationScreen extends StatelessWidget {
+  const GraduationScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return Scaffold(
+      backgroundColor: NatterBrand.blue,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.school_rounded,
+                size: 80,
+                color: NatterBrand.yellow,
+              ),
+              const SizedBox(height: 24),
+
+              const Text(
+                'You are ready to graduate',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                'You have shown kindness, built friendships, and learned how to communicate safely online.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    calmRoute(const GraduationCeremonyScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: NatterBrand.yellow,
+                  foregroundColor: Colors.black,
+                ),
+                child: const Text(
+                  'Begin Graduation',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GraduationCeremonyScreen extends StatefulWidget {
+  const GraduationCeremonyScreen({super.key});
+
+  @override
+  State<GraduationCeremonyScreen> createState() =>
+      _GraduationCeremonyScreenState();
+}
+
+class _GraduationCeremonyScreenState
+    extends State<GraduationCeremonyScreen> {
+  double opacity = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      setState(() => opacity = 1);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return Scaffold(
+      backgroundColor: NatterBrand.blue,
+      body: SafeArea(
+        child: Center(
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 800),
+            opacity: opacity,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    size: 90,
+                    color: NatterBrand.yellow,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'Congratulations',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    'You are now a Natter Graduate 🎓',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'You have shown kindness, patience, and strong digital communication skills.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  ElevatedButton(
+                    onPressed: () {
+                      state.completeGraduation();
+
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: NatterBrand.yellow,
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text(
+                      'Finish',
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -3093,28 +3266,34 @@ class ChatsScreen extends StatelessWidget {
         .toList();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!context.mounted) return;
-      final title = state.celebrationTitle;
-      final message = state.celebrationMessage;
+  if (!context.mounted) return;
 
-      if (title != null && message != null) {
-  final shouldOpenGraduation = state.readyForGraduation;
+  final title = state.celebrationTitle;
+  final message = state.celebrationMessage;
 
-  state.dismissCelebration();
-  await _showCelebrationCard(
-    context,
-    title: title,
-    message: message,
-  );
+  if (title != null && message != null) {
+    // 🎓 Graduation trigger
+    if (title == 'You’re Ready!') {
+      state.dismissCelebration();
 
-  if (shouldOpenGraduation && context.mounted) {
-    Navigator.push(
+      Navigator.push(
+        context,
+        calmRoute(const GraduationScreen()),
+      );
+
+      return;
+    }
+
+    // 🎉 Normal celebration
+    state.dismissCelebration();
+
+    await _showCelebrationCard(
       context,
-      calmRoute(const GraduationScreen()),
+      title: title,
+      message: message,
     );
   }
-}
-    });
+});
 
     return BrandScaffold(
       appBar: AppBar(
