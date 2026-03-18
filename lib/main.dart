@@ -2984,37 +2984,37 @@ class ChatsScreen extends StatelessWidget {
   ),
   const SizedBox(height: 8),
   Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: suggestions.map((name) {
-      return Chip(
-  avatar: CircleAvatar(
-    backgroundColor: NatterBrand.yellow.withOpacity(0.3),
-    child: Text(
-      name.substring(0, 1),
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w900,
-      ),
-    ),
-  ),
-        backgroundColor: Colors.white.withOpacity(0.12),
-        label: Text(
-          name,
+  spacing: 8,
+  runSpacing: 8,
+  children: suggestions.map<Widget>((name) {
+    return ActionChip(
+      backgroundColor: Colors.white.withOpacity(0.12),
+      avatar: CircleAvatar(
+        backgroundColor: NatterBrand.yellow.withOpacity(0.3),
+        child: Text(
+          name.substring(0, 1),
           style: const TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w900,
           ),
         ),
-        onPressed: () {
-          controller.text = name;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length),
-          );
-        },
-      );
-    }).toList(),
-  ),
+      ),
+      label: Text(
+        name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      onPressed: () {
+        controller.text = name;
+        controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: controller.text.length),
+        );
+      },
+    );
+  }).toList(),
+),
 ],
                 const SizedBox(height: 14),
                 TextField(
