@@ -1096,6 +1096,23 @@ void completeGraduation() {
 
   notifyListeners();
 }
+  
+  bool isApproved(String name) =>
+    approvedContacts.any((c) => c.name.toLowerCase() == name.toLowerCase());
+
+bool isPending(String name) =>
+    pendingRequests.any((p) => p.toLowerCase() == name.toLowerCase());
+
+Friend? getFriendByName(String name) {
+  try {
+    return approvedContacts.firstWhere(
+      (f) => f.name.toLowerCase() == name.toLowerCase(),
+    );
+  } catch (_) {
+    return null;
+  }
+}
+  
   int coachedMessagesSentAnyway = 0;
 
   int get kindnessScore {
