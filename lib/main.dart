@@ -125,16 +125,29 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
-class FriendDirectory {
-  static const Map<String, String> codeToName = {
-    'AVA-4821': 'Ava',
-    'LEO-7314': 'Leo',
-    'ZOE-1942': 'Zoe',
-    'MAX-5508': 'Max',
-  };
+class FriendProfile {
+  final String name;
+  final String code;
 
-  static String? nameForCode(String code) {
-    return codeToName[code.trim().toUpperCase()];
+  const FriendProfile(this.name, this.code);
+}
+
+class FriendDirectory {
+  static const List<FriendProfile> profiles = [
+    FriendProfile('Ava', 'AVA-4821'),
+    FriendProfile('Leo', 'LEO-7314'),
+    FriendProfile('Zoe', 'ZOE-1942'),
+    FriendProfile('Max', 'MAX-5508'),
+  ];
+
+  static FriendProfile? findByCode(String code) {
+    try {
+      return profiles.firstWhere(
+        (p) => p.code == code.trim().toUpperCase(),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 }
 
@@ -2935,7 +2948,7 @@ class ChatsScreen extends StatelessWidget {
   Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
-    final suggestions = state.suggestedFriendNames;
+    final suggestions = FriendDirectory.profiles;
 
     await showDialog<void>(
       context: context,
@@ -2983,31 +2996,31 @@ class ChatsScreen extends StatelessWidget {
     ),
   ),
   const SizedBox(height: 8),
-  Wrap(
+Wrap(
   spacing: 8,
   runSpacing: 8,
-  children: suggestions.map<Widget>((name) {
+  children: suggestions.map<Widget>((profile) {
     return ActionChip(
-      backgroundColor: Colors.white.withOpacity(0.12),
+      backgroundColor: NatterBrand.blue.withOpacity(0.6),
+      label: Text(
+        '${profile.name} (${profile.code})',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
       avatar: CircleAvatar(
-        backgroundColor: NatterBrand.yellow.withOpacity(0.3),
+        backgroundColor: NatterBrand.yellow,
         child: Text(
-          name.substring(0, 1),
+          profile.name.substring(0, 1),
           style: const TextStyle(
-            color: Colors.white,
+            color: Colors.black,
             fontWeight: FontWeight.w900,
           ),
         ),
       ),
-      label: Text(
-        name,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
       onPressed: () {
-        controller.text = name;
+        controller.text = profile.code;
         controller.selection = TextSelection.fromPosition(
           TextPosition(offset: controller.text.length),
         );
