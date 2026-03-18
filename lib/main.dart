@@ -510,8 +510,7 @@ int coachPrompts = 0;
     shirtColor: NatterBrand.blue,
   );
 
-  bool get canRequestFriends =>
-      currentLevel.index >= NatterLevel.trustedChatter.index;
+  bool get canRequestFriends => true;
 
   bool get hasUnlockedKindnessCoach =>
       currentLevel.index >= NatterLevel.promiseKeeper.index;
@@ -582,11 +581,11 @@ int coachPrompts = 0;
     friend.friendshipMoments.add('🏆 You completed a quest together');
 
     addFriendshipMoment(
-      title: 'Quest Complete!',
-      description: '🌟 You completed a shared quest with ${friend.name}.',
-      icon: Icons.task_alt_rounded,
-      celebrate: friend.friendshipPoints >= 25,
-    );
+  title: 'Quest Complete!',
+  description: '🌟 You completed a shared quest with ${friend.name}.',
+  icon: Icons.task_alt_rounded,
+  celebrate: false,
+);
 
     if (friend.activeQuestTitle.contains('Send')) {
       friend.activeQuestTitle =
@@ -3019,16 +3018,14 @@ class ChatsScreen extends StatelessWidget {
                           }
 
                           if (!state.canRequestFriends) {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "You'll unlock friend requests soon as you keep chatting kindly.",
-                                ),
-                              ),
-                            );
-                            return;
-                          }
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text(
+        "Nice! You can still request friends — keep chatting kindly too 🌟",
+      ),
+    ),
+  );
+}
 
                           if (state.isApproved(friendName)) {
                             Navigator.pop(ctx);
