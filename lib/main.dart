@@ -441,6 +441,15 @@ List<Friend> get sameYearFriends {
           f.yearGroup == yearGroup)
       .toList();
 }
+
+  List<String> get suggestedFriendNames {
+  return FriendDirectory.codeToName.values
+      .where((name) =>
+          !isApproved(name) &&
+          !isPending(name))
+      .take(3)
+      .toList();
+  }
   
   String schoolName = "North Borough Junior School";
 String yearGroup = "Year 4";
@@ -2926,6 +2935,7 @@ class ChatsScreen extends StatelessWidget {
   Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
+    final suggestions = state.suggestedFriendNames;
 
     await showDialog<void>(
       context: context,
@@ -2953,13 +2963,59 @@ class ChatsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Enter their friend code. A parent will approve it.',
+                  'Add a friend by code or pick a suggestion. A parent will approve it.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.85),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (suggestions.isNotEmpty) ...[
+  const SizedBox(height: 12),
+  Align(
+    alignment: Alignment.centerLeft,
+    child: Text(
+      'Suggested friends',
+      style: TextStyle(
+        color: Colors.white.withOpacity(0.9),
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  ),
+  const SizedBox(height: 8),
+  Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: suggestions.map((name) {
+      return Chip(
+  avatar: CircleAvatar(
+    backgroundColor: NatterBrand.yellow.withOpacity(0.3),
+    child: Text(
+      name.substring(0, 1),
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w900,
+      ),
+    ),
+  ),
+        backgroundColor: Colors.white.withOpacity(0.12),
+        label: Text(
+          name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        onPressed: () {
+          controller.text = name;
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+        },
+      );
+    }).toList(),
+  ),
+],
                 const SizedBox(height: 14),
                 TextField(
                   controller: controller,
