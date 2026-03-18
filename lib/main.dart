@@ -1096,6 +1096,22 @@ void completeGraduation() {
 
   notifyListeners();
 }
+
+  bool _isTimeInRange(TimeOfDay t, TimeOfDay start, TimeOfDay end) {
+  int toMin(TimeOfDay x) => x.hour * 60 + x.minute;
+  final tm = toMin(t);
+  final sm = toMin(start);
+  final em = toMin(end);
+
+  if (sm < em) return tm >= sm && tm < em;
+  return tm >= sm || tm < em;
+}
+
+bool isQuietNow() {
+  if (!quietHoursEnabled) return false;
+  final now = TimeOfDay.fromDateTime(DateTime.now());
+  return _isTimeInRange(now, quietStart, quietEnd);
+}
   
   bool isApproved(String name) =>
     approvedContacts.any((c) => c.name.toLowerCase() == name.toLowerCase());
@@ -1112,7 +1128,7 @@ Friend? getFriendByName(String name) {
     return null;
   }
 }
-  
+
   int coachedMessagesSentAnyway = 0;
 
   int get kindnessScore {
