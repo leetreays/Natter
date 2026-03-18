@@ -3578,6 +3578,20 @@ Wrap(
             tooltip: 'Add Friend',
           ),
           TextButton(
+  onPressed: () => Navigator.push(
+    context,
+    calmRoute(const JourneyScreen()),
+  ),
+  child: const Text(
+    'Journey',
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w800,
+    ),
+  ),
+),
+          
+          TextButton(
             onPressed: () => Navigator.push(
               context,
               calmRoute(ParentHomeScreen()),
