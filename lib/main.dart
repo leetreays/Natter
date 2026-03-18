@@ -140,11 +140,11 @@ class FriendDirectory {
     FriendProfile('Max', 'MAX-5508'),
   ];
 
-  static FriendProfile? findByCode(String code) {
+  static String? nameForCode(String code) {
     try {
-      return profiles.firstWhere(
-        (p) => p.code == code.trim().toUpperCase(),
-      );
+      return profiles
+          .firstWhere((p) => p.code == code.trim().toUpperCase())
+          .name;
     } catch (_) {
       return null;
     }
@@ -456,7 +456,8 @@ List<Friend> get sameYearFriends {
 }
 
   List<String> get suggestedFriendNames {
-  return FriendDirectory.codeToName.values
+  return FriendDirectory.profiles
+      .map((profile) => profile.name)
       .where((name) =>
           !isApproved(name) &&
           !isPending(name))
