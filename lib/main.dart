@@ -464,6 +464,19 @@ List<Friend> get sameYearFriends {
       .take(3)
       .toList();
   }
+
+  final List<String> dailySparks = [
+  "Ask someone what made them smile today 😊",
+  "Send a kind message to a friend 💛",
+  "Tell someone something you appreciate about them 🌟",
+  "Check in on a friend you haven’t spoken to today 👋",
+  "Say thank you to someone 🙏",
+];
+
+String get todaySpark {
+  final index = DateTime.now().day % dailySparks.length;
+  return dailySparks[index];
+}
   
   String schoolName = "North Borough Junior School";
 String yearGroup = "Year 4";
