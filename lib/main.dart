@@ -1706,6 +1706,34 @@ class _PromiseScreenState extends State<PromiseScreen> {
   }
 }
 
+class JourneyScreen extends StatelessWidget {
+  const JourneyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Journey'),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(14),
+        children: [
+          _levelCard(state),
+          const SizedBox(height: 12),
+          _profileCard(context, state),
+          const SizedBox(height: 12),
+          _dailyQuestCard(state),
+          const SizedBox(height: 12),
+          _friendCodeCard(context, state),
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+}
+
 class CeremonyScreen extends StatelessWidget {
   final String name;
   final List<String> promises;
@@ -3619,12 +3647,6 @@ Wrap(
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          _levelCard(state),
-          const SizedBox(height: 12),
-          _profileCard(context, state),
-          const SizedBox(height: 12),
-          _dailyQuestCard(state),
-          const SizedBox(height: 12),
           _friendCodeCard(context, state),
           const SizedBox(height: 12),
           if (schoolFriends.isNotEmpty)
