@@ -3647,6 +3647,52 @@ Wrap(
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
+          BrandCard(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Daily Spark',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 16,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        state.todaySpark,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.9),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 10),
+      Align(
+        alignment: Alignment.centerRight,
+        child: TextButton(
+          onPressed: () {
+            state.recordConversationStarterUse();
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Nice start! 🌟'),
+              ),
+            );
+          },
+          child: const Text(
+            'Use this',
+            style: TextStyle(
+              color: NatterBrand.yellow,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 12),
           _friendCodeCard(context, state),
           const SizedBox(height: 12),
           if (schoolFriends.isNotEmpty)
