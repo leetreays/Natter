@@ -514,6 +514,10 @@ int coachPrompts = 0;
   bool isGraduated = false;
   bool readyForGraduation = false;
 
+  bool hasSeenChirpWelcome = false;
+bool hasSentFirstMessage = false;
+bool hasSeenFirstReply = false;
+
   int conversationStartersUsed = 0;
   int completedSharedQuests = 0;
 
@@ -829,6 +833,10 @@ if (shouldCelebrate) {
     earnedBadges
       ..clear()
       ..add(lastBadge!);
+
+    if (!approvedContacts.any((f) => f.name == 'Ava')) {
+  approvedContacts.add(Friend(name: 'Ava', friendshipPoints: 0));
+    }
 
     notifyListeners();
   }
@@ -6118,6 +6126,65 @@ class ParentRulesScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ChirpDialogCard extends StatelessWidget {
+  final String imagePath;
+  final String message;
+  final String buttonText;
+  final VoidCallback onPressed;
+
+  const ChirpDialogCard({
+    super.key,
+    required this.imagePath,
+    required this.message,
+    required this.buttonText,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(20),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.78),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withOpacity(0.16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              imagePath,
+              height: 140,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: onPressed,
+                child: Text(buttonText),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
