@@ -163,6 +163,8 @@ class Friend {
   int activeQuestTarget;
   int activeQuestReward;
 
+  DateTime? lastQuestCelebratedAt;
+
   List<String> friendshipMoments = [];
 
   Friend({
@@ -616,12 +618,22 @@ int coachPrompts = 0;
 
     friend.friendshipMoments.add('🏆 You completed a quest together');
 
-    addFriendshipMoment(
-  title: 'Quest Complete!',
-  description: '🌟 You completed a shared quest with ${friend.name}.',
-  icon: Icons.task_alt_rounded,
-  celebrate: false,
-);
+final now = DateTime.now();
+
+final shouldCelebrate =
+    friend.lastQuestCelebratedAt == null ||
+    now.difference(friend.lastQuestCelebratedAt!).inSeconds > 30;
+
+if (shouldCelebrate) {
+  addFriendshipMoment(
+    title: 'Quest Complete!',
+    description: '🌟 You completed a shared quest with ${friend.name}.',
+    icon: Icons.task_alt_rounded,
+    celebrate: friend.friendshipPoints >= 25,
+  );
+
+  friend.lastQuestCelebratedAt = now;
+}
 
     if (friend.activeQuestTitle.contains('Send')) {
       friend.activeQuestTitle =
