@@ -1720,13 +1720,13 @@ class JourneyScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          _levelCard(state),
+          const ChatsScreen()._levelCard(state),
           const SizedBox(height: 12),
-          _profileCard(context, state),
+          const ChatsScreen()._profileCard(context, state),
           const SizedBox(height: 12),
-          _dailyQuestCard(state),
+          const ChatsScreen()._dailyQuestCard(state),
           const SizedBox(height: 12),
-          _friendCodeCard(context, state),
+          const ChatsScreen()._friendCodeCard(context, state),
           const SizedBox(height: 80),
         ],
       ),
