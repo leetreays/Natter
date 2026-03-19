@@ -3694,7 +3694,7 @@ Wrap(
             );
           },
           child: const Text(
-            'Use this',
+            'Try it',
             style: TextStyle(
               color: NatterBrand.yellow,
               fontWeight: FontWeight.w900,
