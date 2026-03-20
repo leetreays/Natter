@@ -4628,9 +4628,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
                   message: 'You’re doing great! Want to add another friend? 👋',
                   buttonText: 'Add a friend',
                   onPressed: () {
-                    Navigator.pop(nextDialogContext);
-                    _addFriendDialog(context);
-                  },
+  Navigator.pop(nextDialogContext);
+  const ChatsScreen()._addFriendDialog(context);
+},
                 ),
               );
             }
