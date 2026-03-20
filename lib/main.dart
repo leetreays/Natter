@@ -4535,41 +4535,42 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   _stallTimer?.cancel();
 
   final isFirstMessage = !state.hasSentFirstMessage;
-if (isFirstMessage) {
-  state.hasSentFirstMessage = true;
-}
+  if (isFirstMessage) {
+    state.hasSentFirstMessage = true;
+  }
 
   state.recordPositiveMessage();
-state.addFriendshipPoints(widget.contactName, 2);
-final friend = state.getFriendByName(widget.contactName);
-if (friend != null &&
-    friend.activeQuestTitle.contains('Send')) {
-  state.progressFriendQuest(widget.contactName);
-}
+  state.addFriendshipPoints(widget.contactName, 2);
 
-friend?.friendshipMoments.add('💛 You sent a kind message');
-  
-if (friend != null &&
-    friend.activeQuestTitle.contains('Send') &&
-    friend.activeQuestProgress == friend.activeQuestTarget - 1) {
-  setState(() {
-    feedback = '🌟 Almost there! One more to complete your quest.';
-  });
-}
-  
-if (state.lastQuestCelebrationFriend == widget.contactName) {
-  messages.insert(
-    0,
-    _Msg(
-      fromMe: false,
-      text:
-          '🎉 Quest Complete!\n\nYou and ${widget.contactName} completed:\n${state.lastQuestCelebrationTitle}\n\n+15 friendship points',
-      isSystem: true,
-    ),
-  );
+  final friend = state.getFriendByName(widget.contactName);
+  if (friend != null && friend.activeQuestTitle.contains('Send')) {
+    state.progressFriendQuest(widget.contactName);
+  }
 
-  state.lastQuestCelebrationFriend = null;
-}
+  friend?.friendshipMoments.add('💛 You sent a kind message');
+
+  if (friend != null &&
+      friend.activeQuestTitle.contains('Send') &&
+      friend.activeQuestProgress == friend.activeQuestTarget - 1) {
+    setState(() {
+      feedback = '🌟 Almost there! One more to complete your quest.';
+    });
+  }
+
+  if (state.lastQuestCelebrationFriend == widget.contactName) {
+    messages.insert(
+      0,
+      _Msg(
+        fromMe: false,
+        text:
+            '🎉 Quest Complete!\n\nYou and ${widget.contactName} completed:\n${state.lastQuestCelebrationTitle}\n\n+15 friendship points',
+        isSystem: true,
+      ),
+    );
+
+    state.lastQuestCelebrationFriend = null;
+  }
+
   setState(() {
     feedback = null;
     messages.insert(
@@ -4585,59 +4586,60 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
   controller.clear();
 
   setState(() {
-  _otherUserTyping = true;
-});
-
-Future.delayed(const Duration(seconds: 2), () {
-  if (!mounted) return;
-
-  setState(() {
-    _otherUserTyping = false;
-
-    messages.insert(
-      0,
-      _Msg(
-        fromMe: false,
-        text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
-        isFlagged: flagged,
-      ),
-    );
+    _otherUserTyping = true;
   });
 
-  if (isFirstMessage && !state.hasSeenFirstReply) {
-    state.hasSeenFirstReply = true;
+  Future.delayed(const Duration(seconds: 2), () {
+    if (!mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => ChirpDialogCard(
-        imagePath: 'assets/chirp_reply.png',
-        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-        buttonText: 'Continue',
-        onPressed: () {
-          Navigator.pop(dialogContext);
+    setState(() {
+      _otherUserTyping = false;
 
-          if (!state.hasSeenAddFriendPrompt) {
-            state.hasSeenAddFriendPrompt = true;
+      messages.insert(
+        0,
+        _Msg(
+          fromMe: false,
+          text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
+          isFlagged: flagged,
+        ),
+      );
+    });
 
-            showDialog(
-              context: context,
-              builder: (nextDialogContext) => ChirpDialogCard(
-                imagePath: 'assets/chirp_prompt.png',
-                message: 'You’re doing great! Want to add another friend? 👋',
-                buttonText: 'Add a friend',
-                onPressed: () {
-                  Navigator.pop(nextDialogContext);
-                  _addFriendDialog(context);
-                },
-              ),
-            );
-          }
-        },
-      ),
-    );
-  }
-  _startStallTimer();
-});
+    if (isFirstMessage && !state.hasSeenFirstReply) {
+      state.hasSeenFirstReply = true;
+
+      showDialog(
+        context: context,
+        builder: (dialogContext) => ChirpDialogCard(
+          imagePath: 'assets/chirp_reply.png',
+          message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+          buttonText: 'Continue',
+          onPressed: () {
+            Navigator.pop(dialogContext);
+
+            if (!state.hasSeenAddFriendPrompt) {
+              state.hasSeenAddFriendPrompt = true;
+
+              showDialog(
+                context: context,
+                builder: (nextDialogContext) => ChirpDialogCard(
+                  imagePath: 'assets/chirp_prompt.png',
+                  message: 'You’re doing great! Want to add another friend? 👋',
+                  buttonText: 'Add a friend',
+                  onPressed: () {
+                    Navigator.pop(nextDialogContext);
+                    _addFriendDialog(context);
+                  },
+                ),
+              );
+            }
+          },
+        ),
+      );
+    }
+
+    _startStallTimer();
+  });
 }
   
   void _send() async {
