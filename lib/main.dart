@@ -4589,7 +4589,6 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
 });
 
 Future.delayed(const Duration(seconds: 2), () {
-Future.delayed(const Duration(seconds: 2), () {
   if (!mounted) return;
 
   setState(() {
