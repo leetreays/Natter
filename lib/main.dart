@@ -838,6 +838,10 @@ if (shouldCelebrate) {
   approvedContacts.add(Friend(name: 'Ava', friendshipPoints: 0));
     }
 
+    hasSeenChirpWelcome = false;
+hasSentFirstMessage = false;
+hasSeenFirstReply = false;
+
     notifyListeners();
   }
 
@@ -3594,6 +3598,20 @@ Wrap(
     WidgetsBinding.instance.addPostFrameCallback((_) async {
   if (!context.mounted) return;
 
+  if (!state.hasSeenChirpWelcome) {
+    state.hasSeenChirpWelcome = true;
+
+    await showDialog(
+      context: context,
+      builder: (_) => ChirpDialogCard(
+        imagePath: 'assets/chirp_welcome.png',
+        message: "Hi, I’m Chirp! Let’s say hello to your first friend 👋",
+        buttonText: 'Let’s go',
+        onPressed: () => Navigator.pop(context),
+      ),
+    );
+  }    
+
   final title = state.celebrationTitle;
   final message = state.celebrationMessage;
 
@@ -4581,6 +4599,20 @@ Future.delayed(const Duration(seconds: 2), () {
       ),
     );
   });
+
+  if (isFirstMessage && !state.hasSeenFirstReply) {
+    state.hasSeenFirstReply = true;
+
+    showDialog(
+      context: context,
+      builder: (_) => ChirpDialogCard(
+        imagePath: 'assets/chirp_reply.png',
+        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+        buttonText: 'Continue',
+        onPressed: () => Navigator.pop(context),
+      ),
+    );
+  }
 
   _startStallTimer();
 });
