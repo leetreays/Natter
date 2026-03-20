@@ -3603,11 +3603,11 @@ Wrap(
 
     await showDialog(
       context: context,
-      builder: (_) => ChirpDialogCard(
+      builder: (dialogContext) => ChirpDialogCard(
         imagePath: 'assets/chirp_welcome.png',
         message: "Hi, I’m Chirp! Let’s say hello to your first friend 👋",
         buttonText: 'Let’s go',
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.pop(dialogContext),
       ),
     );
   }    
