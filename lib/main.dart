@@ -4535,6 +4535,11 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
 
+  final isFirstMessage = !state.hasSentFirstMessage;
+if (isFirstMessage) {
+  state.hasSentFirstMessage = true;
+}
+
   state.recordPositiveMessage();
 state.addFriendshipPoints(widget.contactName, 2);
 final friend = state.getFriendByName(widget.contactName);
