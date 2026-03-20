@@ -4609,15 +4609,15 @@ Future.delayed(const Duration(seconds: 2), () {
     state.hasSeenFirstReply = true;
 
     showDialog(
-      context: context,
-      builder: (_) => ChirpDialogCard(
-        imagePath: 'assets/chirp_reply.png',
-        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-        buttonText: 'Continue',
-        onPressed: () => Navigator.pop(context),
-      ),
+  context: context,
+  builder: (dialogContext) => ChirpDialogCard(
+    imagePath: 'assets/chirp_reply.png',
+    message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+    buttonText: 'Continue',
+    onPressed: () => Navigator.pop(dialogContext),
+     ),
     );
-  }
+   }
 
   _startStallTimer();
 });
