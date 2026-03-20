@@ -3209,6 +3209,7 @@ await showDialog<void>(
     );
   },
 );
+  }
 
   Future<void> _showCelebrationCard(
     BuildContext context, {
