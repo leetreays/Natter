@@ -3205,20 +3205,13 @@ if (!state.hasSeenAddFriendSuccess) {
           'Nice work — your friend request is on its way 💛\nA parent will approve it soon.',
       buttonText: 'Continue',
       onPressed: () => Navigator.pop(dialogContext),
-    ),
-  );
-}
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+      ),
         );
-      },
-    );
-  }
+      }
+    },
+    child: const Text('Request'),
+  ),
+),
 
   Future<void> _showCelebrationCard(
     BuildContext context, {
@@ -4599,6 +4592,7 @@ if (state.lastQuestCelebrationFriend == widget.contactName) {
 });
 
 Future.delayed(const Duration(seconds: 2), () {
+Future.delayed(const Duration(seconds: 2), () {
   if (!mounted) return;
 
   setState(() {
@@ -4618,32 +4612,34 @@ Future.delayed(const Duration(seconds: 2), () {
     state.hasSeenFirstReply = true;
 
     showDialog(
-  context: context,
-  builder: (dialogContext) => ChirpDialogCard(
-    imagePath: 'assets/chirp_reply.png',
-    message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-    buttonText: 'Continue',
-    onPressed: () {
-  Navigator.pop(dialogContext);
-
-  if (!state.hasSeenAddFriendPrompt) {
-    state.hasSeenAddFriendPrompt = true;
-
-    showDialog(
       context: context,
-      builder: (nextDialogContext) => ChirpDialogCard(
-        imagePath: 'assets/chirp_prompt.png',
-        message: 'You’re doing great! Want to add another friend? 👋',
-        buttonText: 'Add a friend',
+      builder: (dialogContext) => ChirpDialogCard(
+        imagePath: 'assets/chirp_reply.png',
+        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+        buttonText: 'Continue',
         onPressed: () {
-          Navigator.pop(nextDialogContext);
-          _addFriendDialog(context);
+          Navigator.pop(dialogContext);
+
+          if (!state.hasSeenAddFriendPrompt) {
+            state.hasSeenAddFriendPrompt = true;
+
+            showDialog(
+              context: context,
+              builder: (nextDialogContext) => ChirpDialogCard(
+                imagePath: 'assets/chirp_prompt.png',
+                message: 'You’re doing great! Want to add another friend? 👋',
+                buttonText: 'Add a friend',
+                onPressed: () {
+                  Navigator.pop(nextDialogContext);
+                  _addFriendDialog(context);
+                },
+              ),
+            );
+          }
         },
       ),
     );
   }
-},
-
   _startStallTimer();
 });
 }
