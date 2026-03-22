@@ -520,9 +520,18 @@ bool hasSeenFirstReply = false;
   bool hasSeenAddFriendPrompt = false;
 bool hasSeenAddFriendSuccess = false;
 
+  int onboardingStep = 0;
+// 0 = brand new
+// 1 = sent first message
+// 2 = saw first reply
+// 3 = saw add-friend prompt
+// 4 = sent first friend request
+
+  bool get isInOnboarding => onboardingStep < 4;
+  
   int conversationStartersUsed = 0;
   int completedSharedQuests = 0;
-
+  
   DateTime? digitalCitizenUnlockedAt;
 
   DailyQuest dailyQuest = const DailyQuest(
@@ -845,6 +854,7 @@ hasSentFirstMessage = false;
 hasSeenFirstReply = false;
     hasSeenAddFriendPrompt = false;
 hasSeenAddFriendSuccess = false;
+    onboardingStep = 0;
 
     notifyListeners();
   }
@@ -3181,11 +3191,12 @@ await showDialog<void>(
                       }
 
                       state.requestContact(friendName);
-                      Navigator.pop(ctx);
+Navigator.pop(ctx);
 
-                      if (!state.hasSeenAddFriendSuccess) {
-                        state.hasSeenAddFriendSuccess = true;
-
+if (!state.hasSeenAddFriendSuccess) {
+  state.hasSeenAddFriendSuccess = true;
+  state.onboardingStep = 4;
+  
                         showDialog(
                           context: context,
                           builder: (dialogContext) => ChirpDialogCard(
@@ -3598,8 +3609,8 @@ await showDialog<void>(
     WidgetsBinding.instance.addPostFrameCallback((_) async {
   if (!context.mounted) return;
 
-  if (!state.hasSeenChirpWelcome) {
-    state.hasSeenChirpWelcome = true;
+  if (!state.hasSeenChirpWelcome && state.isInOnboarding) {
+  state.hasSeenChirpWelcome = true;
 
     await showDialog(
       context: context,
@@ -3673,7 +3684,7 @@ await showDialog<void>(
           TextButton(
             onPressed: () => Navigator.push(
               context,
-              calmRoute(ParentHomeScreen()),
+              calmRoute(const ParentHomeScreen()),
             ),
             child: const Text(
               'Parent',
@@ -3698,6 +3709,30 @@ await showDialog<void>(
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
+          if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
+  BrandCard(
+    child: Row(
+      children: [
+        Image.asset(
+          'assets/chirp_prompt.png',
+          height: 56,
+          width: 56,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'Chirp says: Try saying hello to Ava 👋',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+  const SizedBox(height: 12),
+],
           BrandCard(
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -4536,9 +4571,10 @@ void _sendMessageNow(String text, {bool flagged = false}) {
   _stallTimer?.cancel();
 
   final isFirstMessage = !state.hasSentFirstMessage;
-  if (isFirstMessage) {
-    state.hasSentFirstMessage = true;
-  }
+if (isFirstMessage) {
+  state.hasSentFirstMessage = true;
+  state.onboardingStep = 1;
+}
 
   state.recordPositiveMessage();
   state.addFriendshipPoints(widget.contactName, 2);
@@ -4606,8 +4642,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
       );
     });
 
-    if (isFirstMessage && !state.hasSeenFirstReply) {
-      state.hasSeenFirstReply = true;
+    if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
+  state.hasSeenFirstReply = true;
+  state.onboardingStep = 2;
 
       showDialog(
         context: context,
@@ -4618,8 +4655,9 @@ void _sendMessageNow(String text, {bool flagged = false}) {
           onPressed: () {
             Navigator.pop(dialogContext);
 
-            if (!state.hasSeenAddFriendPrompt) {
-              state.hasSeenAddFriendPrompt = true;
+            if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
+  state.hasSeenAddFriendPrompt = true;
+  state.onboardingStep = 3;
 
               showDialog(
                 context: context,
