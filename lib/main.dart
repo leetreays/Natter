@@ -625,8 +625,10 @@ bool hasSeenAddFriendSuccess = false;
 
   if (friend.activeQuestProgress >= friend.activeQuestTarget) {
     friend.activeQuestProgress = friend.activeQuestTarget;
-    lastQuestCelebrationFriend = friend.name;
-    lastQuestCelebrationTitle = friend.activeQuestTitle;
+    if (shouldCelebrate) {
+  lastQuestCelebrationFriend = friend.name;
+  lastQuestCelebrationTitle = friend.activeQuestTitle;
+}
 
     addFriendshipPoints(name, friend.activeQuestReward);
     completedSharedQuests += 1;
