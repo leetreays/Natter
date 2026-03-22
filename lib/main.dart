@@ -625,32 +625,30 @@ bool hasSeenAddFriendSuccess = false;
 
   if (friend.activeQuestProgress >= friend.activeQuestTarget) {
     friend.activeQuestProgress = friend.activeQuestTarget;
-    if (shouldCelebrate) {
-  lastQuestCelebrationFriend = friend.name;
-  lastQuestCelebrationTitle = friend.activeQuestTitle;
-}
+    lastQuestCelebrationFriend = friend.name;
+    lastQuestCelebrationTitle = friend.activeQuestTitle;
 
     addFriendshipPoints(name, friend.activeQuestReward);
     completedSharedQuests += 1;
 
     friend.friendshipMoments.add('🏆 You completed a quest together');
 
-final now = DateTime.now();
+    final now = DateTime.now();
 
-final shouldCelebrate =
-    friend.lastQuestCelebratedAt == null ||
-    now.difference(friend.lastQuestCelebratedAt!).inSeconds > 30;
+    final shouldCelebrate =
+        friend.lastQuestCelebratedAt == null ||
+        now.difference(friend.lastQuestCelebratedAt!).inSeconds > 30;
 
-if (shouldCelebrate) {
-  addFriendshipMoment(
-    title: 'Quest Complete!',
-    description: '🌟 You completed a shared quest with ${friend.name}.',
-    icon: Icons.task_alt_rounded,
-    celebrate: friend.friendshipPoints >= 25,
-  );
+    if (shouldCelebrate) {
+      addFriendshipMoment(
+        title: 'Quest Complete!',
+        description: '🌟 You completed a shared quest with ${friend.name}.',
+        icon: Icons.task_alt_rounded,
+        celebrate: friend.friendshipPoints >= 25,
+      );
 
-  friend.lastQuestCelebratedAt = now;
-}
+      friend.lastQuestCelebratedAt = now;
+    }
 
     if (friend.activeQuestTitle.contains('Send')) {
       friend.activeQuestTitle =
