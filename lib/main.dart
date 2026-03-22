@@ -652,15 +652,15 @@ bool hasSeenAddFriendSuccess = false;
 
     if (friend.activeQuestTitle.contains('Send')) {
       friend.activeQuestTitle =
-          'Use a conversation starter with ${friend.name}';
+          'Use 2 conversation starters with ${friend.name}';
       friend.activeQuestProgress = 0;
-      friend.activeQuestTarget = 1;
+      friend.activeQuestTarget = 2;
       friend.activeQuestReward = 10;
     } else {
       friend.activeQuestTitle =
-          'Send 2 kind messages to ${friend.name}';
+          'Send 3 kind messages to ${friend.name}';
       friend.activeQuestProgress = 0;
-      friend.activeQuestTarget = 2;
+      friend.activeQuestTarget = 3;
       friend.activeQuestReward = 10;
     }
   }
