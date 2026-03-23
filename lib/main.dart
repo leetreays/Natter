@@ -1493,7 +1493,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const NatterLogo(height: 170),
+                const NatterLogo(height: 220),
                 const SizedBox(height: 12),
                 const Text(
   'Your first place to chat and grow 🌱',
