@@ -3861,18 +3861,16 @@ if (!state.hasSeenAddFriendSuccess) {
 ),
         ],
       ),
-      floatingActionButton: state.hasSentFirstMessage
-    ? FloatingActionButton.extended(
-        onPressed: () => _addFriendDialog(context),
-        backgroundColor: NatterBrand.green,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text(
-          'Add Friend',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-      )
-    : null,
+      floatingActionButton: FloatingActionButton.extended(
+  onPressed: () => _addFriendDialog(context),
+  backgroundColor: NatterBrand.green,
+  foregroundColor: Colors.black,
+  icon: const Icon(Icons.person_add_alt_1_rounded),
+  label: const Text(
+    'Add Friend',
+    style: TextStyle(fontWeight: FontWeight.w900),
+  ),
+),
         backgroundColor: NatterBrand.green,
         foregroundColor: Colors.black,
         icon: const Icon(Icons.person_add_alt_1_rounded),
