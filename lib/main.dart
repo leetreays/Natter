@@ -1496,7 +1496,7 @@ class HomeScreen extends StatelessWidget {
                 const NatterLogo(height: 170),
                 const SizedBox(height: 12),
                 const Text(
-                  'Playful, safe messaging for kids.',
+  'Your first place to chat and grow 🌱',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -1507,12 +1507,13 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 18),
                 const BrandCard(
                   child: Text(
-                    'Text-only chats • Kinder words • Parent controls',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      height: 1.3,
+  'Make friends. Send kind messages. Build your confidence.',
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.9),
+    fontWeight: FontWeight.w600,
+  ),
+),
                     ),
                   ),
                 ),
