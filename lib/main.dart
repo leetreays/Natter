@@ -1743,101 +1743,103 @@ void dispose() {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Expanded(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 12,
-                        children: options.map((t) {
-                          final isOn = selected.contains(t);
-                          return ScaleTransition(
-  scale: isOn ? _pulseController : const AlwaysStoppedAnimation(1),
-  child: AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    curve: Curves.easeOut,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: isOn
-          ? [
-              BoxShadow(
-                color: NatterBrand.yellow.withOpacity(0.35),
-                blurRadius: 16,
-                spreadRadius: 1,
+Expanded(
+  child: Center(
+    child: SingleChildScrollView(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 12,
+        runSpacing: 12,
+        children: options.map((t) {
+          final isOn = selected.contains(t);
+
+          return ScaleTransition(
+            scale: isOn ? _pulseController : const AlwaysStoppedAnimation(1),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: isOn
+                    ? [
+                        BoxShadow(
+                          color: NatterBrand.yellow.withOpacity(0.35),
+                          blurRadius: 16,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : [],
               ),
-            ]
-          : [],
-    ),
-    child: ChoiceChip(
-      label: Text(
-        t,
-        style: TextStyle(
-          fontWeight: FontWeight.w800,
-          fontSize: 15,
-          color: isOn
-    ? Colors.black
-    : (isLocked
-        ? Colors.black.withOpacity(0.45)
-        : NatterBrand.navy),
-        ),
-      ),
-      selected: isOn,
-      showCheckmark: false,
-      elevation: isOn ? 6 : 0,
-      shadowColor: NatterBrand.yellow.withOpacity(0.4),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
-      labelPadding: EdgeInsets.zero,
-      backgroundColor: isLocked && !isOn
-          ? Colors.white.withOpacity(0.08)
-          : Colors.white.withOpacity(0.9),
-      selectedColor: NatterBrand.yellow,
-      side: BorderSide(
-        color: isOn
-            ? NatterBrand.yellow
-            : (isLocked
-                ? Colors.white.withOpacity(0.1)
-                : Colors.white.withOpacity(0.25)),
-        width: 2,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      onSelected: (_) {
-      onSelected: (_) {
-  setState(() {
-    final beforeCount = selected.length;
-
-    if (isOn) {
-      selected.remove(t);
-      justCompletedPromiseSet = false;
-    } else if (!isLocked) {
-      selected.add(t);
-
-      // 🎉 THIS IS THE 3RD PROMISE MOMENT
-      if (beforeCount == 2 && selected.length == 3) {
-        justCompletedPromiseSet = true;
-
-        Future.delayed(const Duration(milliseconds: 900), () {
-          if (!mounted) return;
-          setState(() {
-            justCompletedPromiseSet = false;
-          });
-        });
-      }
-    }
-  });
-},
-                        }).toList(),
-                      ),
-                    ),
+              child: ChoiceChip(
+                label: Text(
+                  t,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                    color: isOn
+                        ? Colors.black
+                        : (isLocked
+                            ? Colors.black.withOpacity(0.45)
+                            : NatterBrand.navy),
                   ),
                 ),
-                const SizedBox(height: 10),
-                AnimatedSwitcher(
+                selected: isOn,
+                showCheckmark: false,
+                elevation: isOn ? 6 : 0,
+                shadowColor: NatterBrand.yellow.withOpacity(0.4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                labelPadding: EdgeInsets.zero,
+                backgroundColor: isLocked && !isOn
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.white.withOpacity(0.9),
+                selectedColor: NatterBrand.yellow,
+                side: BorderSide(
+                  color: isOn
+                      ? NatterBrand.yellow
+                      : (isLocked
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.25)),
+                  width: 2,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onSelected: (_) {
+                  setState(() {
+                    final beforeCount = selected.length;
+
+                    if (isOn) {
+                      selected.remove(t);
+                      justCompletedPromiseSet = false;
+                    } else if (!isLocked) {
+                      selected.add(t);
+
+                      if (beforeCount == 2 && selected.length == 3) {
+                        justCompletedPromiseSet = true;
+
+                        Future.delayed(const Duration(milliseconds: 900), () {
+                          if (!mounted) return;
+                          setState(() {
+                            justCompletedPromiseSet = false;
+                          });
+                        });
+                      }
+                    }
+                  });
+                },
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 10),
+AnimatedSwitcher(
   duration: const Duration(milliseconds: 250),
   child: Text(
     justCompletedPromiseSet
