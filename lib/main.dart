@@ -4039,6 +4039,10 @@ const SizedBox(height: 12),
               fontSize: 11,
             ),
           ),
+      ],
+    );
+  },
+),
 ...chats.map((c) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 12),
