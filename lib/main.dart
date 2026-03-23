@@ -1497,26 +1497,24 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Text(
   'Your first place to chat and grow 🌱',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const BrandCard(
-                  child: Text(
-  'Make friends. Send kind messages. Build your confidence.',
   textAlign: TextAlign.center,
   style: TextStyle(
-    color: Colors.white.withOpacity(0.9),
-    fontWeight: FontWeight.w600,
+    color: Colors.white,
+    fontSize: 18,
+    height: 1.3,
   ),
 ),
-                    ),
-                  ),
-                ),
+const SizedBox(height: 18),
+const BrandCard(
+  child: Text(
+    'Make friends. Send kind messages. Build your confidence.',
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w600,
+    ),
+  ),
+),
                 const SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
