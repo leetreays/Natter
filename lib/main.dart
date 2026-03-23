@@ -1670,6 +1670,7 @@ class _PromiseScreenState extends State<PromiseScreen> {
   Widget build(BuildContext context) {
     final remaining = 3 - selected.length;
     final canContinue = selected.length >= 3;
+    final isLocked = selected.length >= 3;
 
     return BrandScaffold(
       appBar: AppBar(
@@ -1716,9 +1717,14 @@ class _PromiseScreenState extends State<PromiseScreen> {
                           return ChoiceChip(
   label: Text(
     t,
-    style: const TextStyle(
+    style: TextStyle(
       fontWeight: FontWeight.w700,
       fontSize: 14,
+      color: isOn
+          ? Colors.white
+          : (isLocked
+              ? Colors.white.withOpacity(0.45)
+              : Colors.white),
     ),
   ),
   selected: isOn,
@@ -1730,12 +1736,16 @@ class _PromiseScreenState extends State<PromiseScreen> {
     vertical: 12,
   ),
   labelPadding: EdgeInsets.zero,
-  backgroundColor: Colors.white.withOpacity(0.08),
+  backgroundColor: isLocked && !isOn
+      ? Colors.white.withOpacity(0.03)
+      : Colors.white.withOpacity(0.08),
   selectedColor: NatterBrand.yellow.withOpacity(0.25),
   side: BorderSide(
     color: isOn
         ? NatterBrand.yellow
-        : Colors.white.withOpacity(0.2),
+        : (isLocked
+            ? Colors.white.withOpacity(0.08)
+            : Colors.white.withOpacity(0.2)),
     width: 2,
   ),
   shape: RoundedRectangleBorder(
@@ -1745,8 +1755,8 @@ class _PromiseScreenState extends State<PromiseScreen> {
     setState(() {
       if (isOn) {
         selected.remove(t);
-      } else {
-        if (selected.length < 3) selected.add(t);
+      } else if (!isLocked) {
+        selected.add(t);
       }
     });
   },
@@ -1758,9 +1768,9 @@ class _PromiseScreenState extends State<PromiseScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  canContinue
-                      ? 'Nice. That’s your promise set.'
-                      : 'Choose $remaining more',
+  canContinue
+      ? 'Your promise set is complete ✨'
+      : 'Choose $remaining more',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
