@@ -1759,10 +1759,10 @@ void dispose() {
           fontWeight: FontWeight.w800,
           fontSize: 15,
           color: isOn
-              ? Colors.black
-              : (isLocked
-                  ? Colors.white.withOpacity(0.6)
-                  : Colors.white),
+    ? Colors.black
+    : (isLocked
+        ? Colors.black.withOpacity(0.45)
+        : NatterBrand.navy),
         ),
       ),
       selected: isOn,
@@ -1775,8 +1775,8 @@ void dispose() {
       ),
       labelPadding: EdgeInsets.zero,
       backgroundColor: isLocked && !isOn
-          ? Colors.white.withOpacity(0.06)
-          : Colors.white.withOpacity(0.12),
+          ? Colors.white.withOpacity(0.08)
+          : Colors.white.withOpacity(0.9),
       selectedColor: NatterBrand.yellow,
       side: BorderSide(
         color: isOn
