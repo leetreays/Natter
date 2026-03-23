@@ -515,10 +515,12 @@ int coachPrompts = 0;
   bool readyForGraduation = false;
 
   bool hasSeenChirpWelcome = false;
-bool hasSentFirstMessage = false;
-bool hasSeenFirstReply = false;
+  bool hasSentFirstMessage = false;
+  bool hasSeenFirstReply = false;
   bool hasSeenAddFriendPrompt = false;
-bool hasSeenAddFriendSuccess = false;
+  bool hasSeenAddFriendSuccess = false;
+
+  bool hasSeenParentOnboarding = false;
 
   int onboardingStep = 0;
 // 0 = brand new
@@ -3682,18 +3684,22 @@ if (!state.hasSeenAddFriendSuccess) {
 ),
           
           TextButton(
-            onPressed: () => Navigator.push(
-              context,
-              calmRoute(const ParentHomeScreen()),
-            ),
-            child: const Text(
-              'Parent',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+  onPressed: () => Navigator.push(
+    context,
+    calmRoute(
+      state.hasSeenParentOnboarding
+          ? const ParentHomeScreen()
+          : const ParentOnboardingScreen(),
+    ),
+  ),
+  child: const Text(
+    'Parent',
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w800,
+    ),
+  ),
+),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -5397,6 +5403,166 @@ class _KindnessScoreCard extends StatelessWidget {
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
               fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ParentOnboardingScreen extends StatefulWidget {
+  const ParentOnboardingScreen({super.key});
+
+  @override
+  State<ParentOnboardingScreen> createState() =>
+      _ParentOnboardingScreenState();
+}
+
+class _ParentOnboardingScreenState extends State<ParentOnboardingScreen> {
+  int step = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    final pages = [
+      const _ParentIntroCard(
+        title: 'Welcome to Natter',
+        body:
+            'Natter helps children learn kind, safe communication before they move into wider digital spaces.',
+        imagePath: 'assets/owliver_hello.png',
+      ),
+      const _ParentIntroCard(
+        title: 'What you control',
+        body:
+            'You approve friends, set quiet hours, and receive gentle insight into how your child is building positive digital habits.',
+        imagePath: 'assets/owliver_teaching.png',
+      ),
+      const _ParentIntroCard(
+        title: 'How it works',
+        body:
+            'Your child chats in a supported space. Natter encourages kindness, helps with tricky messages, and celebrates healthy communication.',
+        imagePath: 'assets/owliver_thinking.png',
+      ),
+    ];
+
+    final isLast = step == pages.length - 1;
+
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(title: 'Parent Introduction'),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Expanded(
+              child: pages[step],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                pages.length,
+                (index) => Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: index == step
+                        ? NatterBrand.yellow
+                        : Colors.white.withOpacity(0.25),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                if (step > 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          step -= 1;
+                        });
+                      },
+                      child: const Text('Back'),
+                    ),
+                  ),
+                if (step > 0) const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (isLast) {
+                        state.hasSeenParentOnboarding = true;
+
+                        Navigator.pushReplacement(
+                          context,
+                          calmRoute(const ParentHomeScreen()),
+                        );
+                      } else {
+                        setState(() {
+                          step += 1;
+                        });
+                      }
+                    },
+                    child: Text(
+                      isLast ? 'Open Parent Controls' : 'Next',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ParentIntroCard extends StatelessWidget {
+  final String title;
+  final String body;
+  final String imagePath;
+
+  const _ParentIntroCard({
+    required this.title,
+    required this.body,
+    required this.imagePath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandCard(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            imagePath,
+            height: 170,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 18),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w700,
+              height: 1.4,
             ),
           ),
         ],
