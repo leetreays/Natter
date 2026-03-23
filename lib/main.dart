@@ -1837,16 +1837,29 @@ void dispose() {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
-  canContinue
-      ? 'Your promise set is complete ✨'
-      : 'Choose $remaining more',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                AnimatedSwitcher(
+  duration: const Duration(milliseconds: 250),
+  child: Text(
+    justCompletedPromiseSet
+        ? '✨ Beautiful choice. Your promise set is complete.'
+        : canContinue
+            ? 'Your promise set is complete ✨'
+            : 'Choose $remaining more',
+    key: ValueKey(
+      justCompletedPromiseSet
+          ? 'justCompleted'
+          : canContinue
+              ? 'complete'
+              : 'remaining',
+    ),
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+    ),
+    textAlign: TextAlign.center,
+  ),
+),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
