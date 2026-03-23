@@ -3749,354 +3749,355 @@ if (!state.hasSeenAddFriendSuccess) {
       ),
     );
   }
-
   @override
-  Widget build(BuildContext context) {
-    final state = AppStateScope.of(context);
-    state.ensureFriendQuests();
-    final schoolFriends = state.sameSchoolFriends;
-    final yearFriends = state.sameYearFriends;
+Widget build(BuildContext context) {
+  final state = AppStateScope.of(context);
+  final schoolFriends = state.sameSchoolFriends;
+  final yearFriends = state.sameYearFriends;
+  final chats = state.approvedContacts
+      .map((f) => ChatPreview(
+            name: f.name,
+            last: 'Tap to chat',
+            unread: false,
+          ))
+      .toList();
 
-    final chats = state.approvedContacts
-        .map(
-          (friend) => ChatPreview(
-            name: friend.name,
-            last: friend.name == 'Dad' ? 'Dinner at 6 😊' : 'Say hi 👋',
-            unread: friend.name == 'Dad' || friend.name == 'Sam',
-          ),
-        )
-        .toList();
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!context.mounted) return;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-  if (!context.mounted) return;
+    if (!state.hasSeenChirpWelcome && state.isInOnboarding) {
+      state.hasSeenChirpWelcome = true;
 
-  if (!state.hasSeenChirpWelcome && state.isInOnboarding) {
-  state.hasSeenChirpWelcome = true;
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) => ChirpDialogCard(
-        imagePath: 'assets/chirp_welcome.png',
-        message: "Hi, I’m Chirp! Let’s say hello to your first friend 👋",
-        buttonText: 'Let’s go',
-        onPressed: () => Navigator.pop(dialogContext),
-      ),
-    );
-  }    
-
-  final title = state.celebrationTitle;
-  final message = state.celebrationMessage;
-
-  if (title != null && message != null) {
-    // 🎓 Graduation trigger
-    if (title == 'You’re Ready!') {
-      state.dismissCelebration();
-
-      Navigator.push(
-        context,
-        calmRoute(const GraduationScreen()),
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => ChirpDialogCard(
+          imagePath: 'assets/chirp_welcome.png',
+          message: "Hi, I’m Chirp! Let’s say hello to your first friend 👋",
+          buttonText: 'Let’s go',
+          onPressed: () => Navigator.pop(dialogContext),
+        ),
       );
-
-      return;
     }
 
-    // 🎉 Normal celebration
-    state.dismissCelebration();
+    final title = state.celebrationTitle;
+    final message = state.celebrationMessage;
 
-    await _showCelebrationCard(
-      context,
-      title: title,
-      message: message,
-    );
-  }
-});
+    if (title != null && message != null) {
+      if (title == 'You’re Ready!') {
+        state.dismissCelebration();
 
-    return BrandScaffold(
-      appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Chats'),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              calmRoute(const ProfileScreen()),
-            ),
-            icon: const Icon(Icons.account_circle_rounded),
-            tooltip: 'My Profile',
+        Navigator.push(
+          context,
+          calmRoute(const GraduationScreen()),
+        );
+        return;
+      }
+
+      state.dismissCelebration();
+
+      await _showCelebrationCard(
+        context,
+        title: title,
+        message: message,
+      );
+    }
+  });
+
+  return BrandScaffold(
+    appBar: AppBar(
+      title: const BrandedAppBarTitle(title: 'Chats'),
+      actions: [
+        IconButton(
+          onPressed: () => Navigator.push(
+            context,
+            calmRoute(const ProfileScreen()),
           ),
-          IconButton(
-            onPressed: () => _addFriendDialog(context),
-            icon: const Icon(Icons.person_add_alt_1_rounded),
-            tooltip: 'Add Friend',
-          ),
-          TextButton(
-  onPressed: () => Navigator.push(
-    context,
-    calmRoute(const JourneyScreen()),
-  ),
-  child: const Text(
-    'Journey',
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w800,
-    ),
-  ),
-),
-          
-          TextButton(
-  onPressed: () => Navigator.push(
-    context,
-    calmRoute(
-      state.hasSeenParentOnboarding
-          ? const ParentHomeScreen()
-          : const ParentOnboardingScreen(),
-    ),
-  ),
-  child: const Text(
-    'Parent',
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w800,
-    ),
-  ),
-),
-        ],
-      ),
-      child: Stack(
-  children: [
-    ListView(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
-      children: [
-        if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
-          BrandCard(
-            child: Row(
-              children: [
-                Image.asset(
-                  'assets/chirp_prompt.png',
-                  height: 56,
-                  width: 56,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Chirp says: Try saying hello to Ava 👋',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-  const SizedBox(height: 12),
-],
-  if (!state.isInOnboarding) ...[
-          BrandCard(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Daily Spark',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 16,
+          icon: const Icon(Icons.account_circle_rounded),
+          tooltip: 'My Profile',
         ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        state.todaySpark,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.9),
-          fontWeight: FontWeight.w700,
+        IconButton(
+          onPressed: () => _addFriendDialog(context),
+          icon: const Icon(Icons.person_add_alt_1_rounded),
+          tooltip: 'Add Friend',
         ),
-      ),
-      const SizedBox(height: 10),
-      Align(
-        alignment: Alignment.centerRight,
-        child: TextButton(
-          onPressed: () {
-            state.recordConversationStarterUse();
-
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Nice start! 🌟'),
-              ),
-            );
-          },
+        TextButton(
+          onPressed: () => Navigator.push(
+            context,
+            calmRoute(const JourneyScreen()),
+          ),
           child: const Text(
-            'Try it',
+            'Journey',
             style: TextStyle(
-              color: NatterBrand.yellow,
-              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
-      ),
-    ],
-  ),
-),
-const SizedBox(height: 12),
-],
-          if (!state.isInOnboarding) ...[
-  _friendCodeCard(context, state),
-  const SizedBox(height: 12),
-],
-          if (!state.isInOnboarding && schoolFriends.isNotEmpty)
-  BrandCard(
-    child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Your School Circle',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${schoolFriends.length} friends from your school',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${yearFriends.length} from your year group',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.65),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
+        TextButton(
+          onPressed: () => Navigator.push(
+            context,
+            calmRoute(
+              state.hasSeenParentOnboarding
+                  ? ParentHomeScreen()
+                  : ParentOnboardingScreen(),
             ),
-          if (schoolFriends.isNotEmpty)
-            const SizedBox(height: 12),
-  ...chats.map((c) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: BrandCard(
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  radius: 22,
-                  backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                  child: Text(
-                    c.name.substring(0, 1),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-                title: Builder(
-                  builder: (context) {
-                    final friend = state.getFriendByName(c.name);
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              c.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            if (friend != null &&
-                                friend.schoolName == state.schoolName) ...[
-                              const SizedBox(width: 6),
-                              Text(
-                                '🏫',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.85),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                        if (friend != null)
-                          Text(
-                            'Friendship ${friend.stars}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.78),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        if (friend != null)
-                          Text(
-                            'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.68),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11,
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-                subtitle: Text(
-                  c.last,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                trailing: c.unread
-                    ? Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: NatterBrand.green,
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                      )
-                    : const Icon(Icons.chevron_right, color: Colors.white),
-                onTap: () => Navigator.push(
-                  context,
-                  calmRoute(ChatScreen(contactName: c.name)),
-                ),
-              ),
+          ),
+          child: const Text(
+            'Parent',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
             ),
-          );
-        }).toList(),
-
-        const SizedBox(height: 90),
+          ),
+        ),
       ],
     ),
+    child: Stack(
+      children: [
+        ListView(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
+          children: [
+            if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
+              BrandCard(
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/chirp_prompt.png',
+                      height: 56,
+                      width: 56,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Chirp says: Try saying hello to Ava 👋',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
 
-    Positioned(
-      right: 16,
-      bottom: 16,
-      child: ElevatedButton.icon(
-        onPressed: () => _addFriendDialog(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: NatterBrand.green,
-          foregroundColor: Colors.black,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-          elevation: 8,
+            if (!state.isInOnboarding) ...[
+              BrandCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Daily Spark',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.todaySpark,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          state.recordConversationStarterUse();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Nice start! 🌟'),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Try it',
+                          style: TextStyle(
+                            color: NatterBrand.yellow,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            if (!state.isInOnboarding) ...[
+              _friendCodeCard(context, state),
+              const SizedBox(height: 12),
+            ],
+
+            if (!state.isInOnboarding && schoolFriends.isNotEmpty) ...[
+              BrandCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Your School Circle',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${schoolFriends.length} friends from your school',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${yearFriends.length} from your year group',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.65),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+
+            ...chats.map((c) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: BrandCard(
+                  child: ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                      child: Text(
+                        c.name.substring(0, 1),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    title: Builder(
+                      builder: (context) {
+                        final friend = state.getFriendByName(c.name);
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  c.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                if (friend != null &&
+                                    friend.schoolName == state.schoolName) ...[
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '🏫',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.white.withOpacity(0.85),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            if (friend != null)
+                              Text(
+                                'Friendship ${friend.stars}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.78),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            if (friend != null)
+                              Text(
+                                'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.68),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 11,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    subtitle: Text(
+                      c.last,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: c.unread
+                        ? Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: NatterBrand.green,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.chevron_right,
+                            color: Colors.white,
+                          ),
+                    onTap: () => Navigator.push(
+                      context,
+                      calmRoute(ChatScreen(contactName: c.name)),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+
+            const SizedBox(height: 90),
+          ],
         ),
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text(
-          'Add Friend',
-          style: TextStyle(fontWeight: FontWeight.w900),
+
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: ElevatedButton.icon(
+            onPressed: () => _addFriendDialog(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: NatterBrand.green,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+              elevation: 8,
+            ),
+            icon: const Icon(Icons.person_add_alt_1_rounded),
+            label: const Text(
+              'Add Friend',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ),
         ),
-      ),
+      ],
     ),
-  ],
-),     
+  );
+}
+    
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
