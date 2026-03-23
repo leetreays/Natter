@@ -847,9 +847,8 @@ int coachPrompts = 0;
       ..clear()
       ..add(lastBadge!);
 
-    if (!approvedContacts.any((f) => f.name == 'Ava')) {
-  approvedContacts.add(Friend(name: 'Ava', friendshipPoints: 0));
-    }
+    approvedContacts.removeWhere((f) => f.name == 'Ava');
+approvedContacts.insert(0, Friend(name: 'Ava', friendshipPoints: 0));
 
     hasSeenChirpWelcome = false;
 hasSentFirstMessage = false;
@@ -3364,7 +3363,7 @@ if (!state.hasSeenAddFriendSuccess) {
                           builder: (dialogContext) => ChirpDialogCard(
                             imagePath: 'assets/chirp_reply.png',
                             message:
-                                'Nice work — your friend request is on its way 💛\nA parent will approve it soon.',
+    'Nice work — your friend request is on its way 💛\nA parent will approve it soon.\n\nYou’re ready to keep going on your own.',
                             buttonText: 'Continue',
                             onPressed: () => Navigator.pop(dialogContext),
                           ),
@@ -3862,8 +3861,18 @@ if (!state.hasSeenAddFriendSuccess) {
 ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: state.hasSentFirstMessage
+    ? FloatingActionButton.extended(
         onPressed: () => _addFriendDialog(context),
+        backgroundColor: NatterBrand.green,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text(
+          'Add Friend',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      )
+    : null,
         backgroundColor: NatterBrand.green,
         foregroundColor: Colors.black,
         icon: const Icon(Icons.person_add_alt_1_rounded),
@@ -3899,6 +3908,7 @@ if (!state.hasSeenAddFriendSuccess) {
   ),
   const SizedBox(height: 12),
 ],
+  if (!state.isInOnboarding) ...[
           BrandCard(
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -3945,11 +3955,15 @@ if (!state.hasSeenAddFriendSuccess) {
   ),
 ),
 const SizedBox(height: 12),
-          _friendCodeCard(context, state),
-          const SizedBox(height: 12),
-          if (schoolFriends.isNotEmpty)
-            BrandCard(
-              child: Column(
+],
+const SizedBox(height: 12),
+          if (!state.isInOnboarding) ...[
+  _friendCodeCard(context, state),
+  const SizedBox(height: 12),
+],
+          if (!state.isInOnboarding && schoolFriends.isNotEmpty)
+  BrandCard(
+    child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
