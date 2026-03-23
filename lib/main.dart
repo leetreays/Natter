@@ -4097,6 +4097,7 @@ Widget build(BuildContext context) {
     ),
   );
 }
+}
     
               
 class _FriendshipQuestCard extends StatelessWidget {
