@@ -1635,7 +1635,8 @@ class PromiseScreen extends StatefulWidget {
   State<PromiseScreen> createState() => _PromiseScreenState();
 }
 
-class _PromiseScreenState extends State<PromiseScreen> {
+class _PromiseScreenState extends State<PromiseScreen>
+    with SingleTickerProviderStateMixin {
   final options = const [
     'Be kind',
     'No secrets from adults',
@@ -1644,6 +1645,26 @@ class _PromiseScreenState extends State<PromiseScreen> {
     'Keep it text-only',
     'Take breaks',
   ];
+
+  late AnimationController _pulseController;
+
+  @override
+void initState() {
+  super.initState();
+
+  _pulseController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+    lowerBound: 0.9,
+    upperBound: 1.1,
+  )..repeat(reverse: true);
+}
+
+  @override
+void dispose() {
+  _pulseController.dispose();
+  super.dispose();
+}
 
   final Set<String> selected = {};
 
@@ -1714,52 +1735,80 @@ class _PromiseScreenState extends State<PromiseScreen> {
                         runSpacing: 12,
                         children: options.map((t) {
                           final isOn = selected.contains(t);
-                          return ChoiceChip(
-  label: Text(
-    t,
-    style: TextStyle(
-      fontWeight: FontWeight.w700,
-      fontSize: 14,
-      color: isOn
-          ? Colors.white
-          : (isLocked
-              ? Colors.white.withOpacity(0.45)
-              : Colors.white),
-    ),
-  ),
-  selected: isOn,
-  showCheckmark: false,
-  elevation: isOn ? 6 : 0,
-  shadowColor: NatterBrand.yellow.withOpacity(0.3),
-  padding: const EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 12,
-  ),
-  labelPadding: EdgeInsets.zero,
-  backgroundColor: isLocked && !isOn
-      ? Colors.white.withOpacity(0.03)
-      : Colors.white.withOpacity(0.08),
-  selectedColor: NatterBrand.yellow.withOpacity(0.25),
-  side: BorderSide(
-    color: isOn
-        ? NatterBrand.yellow
-        : (isLocked
-            ? Colors.white.withOpacity(0.08)
-            : Colors.white.withOpacity(0.2)),
-    width: 2,
-  ),
-  shape: RoundedRectangleBorder(
+                          return ScaleTransition(
+  scale: isOn ? _pulseController : const AlwaysStoppedAnimation(1),
+  child: AnimatedContainer(
+  duration: const Duration(milliseconds: 250),
+  curve: Curves.easeOut,
+  decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(16),
+
+    // ✨ Glow pulse (we'll refine below)
+    boxShadow: isOn
+        ? [
+            BoxShadow(
+              color: NatterBrand.yellow.withOpacity(0.35),
+              blurRadius: 16,
+              spreadRadius: 1,
+            ),
+          ]
+        : [],
   ),
-  onSelected: (_) {
-    setState(() {
-      if (isOn) {
-        selected.remove(t);
-      } else if (!isLocked) {
-        selected.add(t);
-      }
-    });
-  },
+  child: ChoiceChip(
+    label: Text(
+      t,
+      style: TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 15,
+        color: isOn
+            ? Colors.black // 🔥 MUCH stronger contrast
+            : (isLocked
+                ? Colors.white.withOpacity(0.6)
+                : Colors.white),
+      ),
+    ),
+    selected: isOn,
+    showCheckmark: false,
+
+    elevation: isOn ? 6 : 0,
+    shadowColor: NatterBrand.yellow.withOpacity(0.4),
+
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 12,
+    ),
+    labelPadding: EdgeInsets.zero,
+
+    // 🎨 MUCH BETTER CONTRAST
+    backgroundColor: isLocked && !isOn
+        ? Colors.white.withOpacity(0.06)
+        : Colors.white.withOpacity(0.12),
+
+    selectedColor: NatterBrand.yellow, // 🔥 SOLID colour (no opacity)
+
+    side: BorderSide(
+      color: isOn
+          ? NatterBrand.yellow
+          : (isLocked
+              ? Colors.white.withOpacity(0.1)
+              : Colors.white.withOpacity(0.25)),
+      width: 2,
+    ),
+
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+
+    onSelected: (_) {
+      setState(() {
+        if (isOn) {
+          selected.remove(t);
+        } else if (!isLocked) {
+          selected.add(t);
+        }
+      });
+    },
+  ),
 );
                         }).toList(),
                       ),
