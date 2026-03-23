@@ -1722,33 +1722,25 @@ class _PromiseScreenState extends State<PromiseScreen> {
     ),
   ),
   selected: isOn,
-
-  elevation: isOn ? 6 : 0,
-shadowColor: NatterBrand.yellow.withOpacity(0.3),
-
   showCheckmark: false,
-
+  elevation: isOn ? 6 : 0,
+  shadowColor: NatterBrand.yellow.withOpacity(0.3),
   padding: const EdgeInsets.symmetric(
     horizontal: 16,
     vertical: 12,
   ),
-
   labelPadding: EdgeInsets.zero,
-
   backgroundColor: Colors.white.withOpacity(0.08),
   selectedColor: NatterBrand.yellow.withOpacity(0.25),
-
   side: BorderSide(
     color: isOn
         ? NatterBrand.yellow
         : Colors.white.withOpacity(0.2),
     width: 2,
   ),
-
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(16),
   ),
-
   onSelected: (_) {
     setState(() {
       if (isOn) {
@@ -1759,16 +1751,6 @@ shadowColor: NatterBrand.yellow.withOpacity(0.3),
     });
   },
 );
-                            onSelected: (_) {
-                              setState(() {
-                                if (isOn) {
-                                  selected.remove(t);
-                                } else {
-                                  if (selected.length < 3) selected.add(t);
-                                }
-                              });
-                            },
-                          );
                         }).toList(),
                       ),
                     ),
