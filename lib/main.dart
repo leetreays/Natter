@@ -1726,7 +1726,6 @@ class _PromiseScreenState extends State<PromiseScreen> {
   elevation: isOn ? 6 : 0,
 shadowColor: NatterBrand.yellow.withOpacity(0.3),
 
-  // 🔥 THIS REMOVES SIZE SHIFT
   showCheckmark: false,
 
   padding: const EdgeInsets.symmetric(
@@ -1736,7 +1735,6 @@ shadowColor: NatterBrand.yellow.withOpacity(0.3),
 
   labelPadding: EdgeInsets.zero,
 
-  // 🎨 VISUALS (NOT SIZE)
   backgroundColor: Colors.white.withOpacity(0.08),
   selectedColor: NatterBrand.yellow.withOpacity(0.25),
 
@@ -5587,7 +5585,7 @@ class _ParentIntroCard extends StatelessWidget {
         children: [
           Image.asset(
             imagePath,
-            height: 170,
+            height: 300,
             fit: BoxFit.contain,
           ),
           const SizedBox(height: 18),
