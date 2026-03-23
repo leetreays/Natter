@@ -1647,6 +1647,8 @@ class _PromiseScreenState extends State<PromiseScreen>
   ];
 
   late AnimationController _pulseController;
+  late AnimationController _glowController;
+  late Animation<double> _glowAnimation;
 
   @override
 void initState() {
@@ -1661,8 +1663,26 @@ void initState() {
 }
 
   @override
+void initState() {
+  super.initState();
+
+  _glowController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..repeat(reverse: true);
+
+  _glowAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+    CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    ),
+  );
+}
+  
+  @override
 void dispose() {
-  _pulseController.dispose();
+  _pulseController.dispose();   // existing (chips glow)
+  _glowController.dispose();    // new (button glow)
   super.dispose();
 }
 
@@ -1820,10 +1840,50 @@ void dispose() {
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: canContinue ? _seal : null,
-                    child: const Text('Seal My Promises ✨'),
-                  ),
+                  child: AnimatedBuilder(
+  animation: _glowAnimation,
+  builder: (context, child) {
+    final scale = canContinue ? _glowAnimation.value : 1.0;
+
+    return Transform.scale(
+      scale: scale,
+      child: child,
+    );
+  },
+  child: Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(999),
+      boxShadow: canContinue
+          ? [
+              BoxShadow(
+                color: NatterBrand.green.withOpacity(0.45),
+                blurRadius: 18,
+                spreadRadius: 1,
+              ),
+            ]
+          : [],
+    ),
+    child: ElevatedButton(
+      onPressed: canContinue ? _seal : null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            canContinue ? NatterBrand.green : Colors.grey.shade700,
+        foregroundColor: Colors.black,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(999),
+        ),
+      ),
+      child: const Text(
+        'Seal My Promises ✨',
+        style: TextStyle(
+          fontWeight: FontWeight.w900,
+          fontSize: 16,
+        ),
+      ),
+    ),
+  ),
+),
                 ),
               ],
             ),
