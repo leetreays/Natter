@@ -1660,11 +1660,6 @@ void initState() {
     lowerBound: 0.9,
     upperBound: 1.1,
   )..repeat(reverse: true);
-}
-
-  @override
-void initState() {
-  super.initState();
 
   _glowController = AnimationController(
     vsync: this,
@@ -1687,6 +1682,8 @@ void dispose() {
 }
 
   final Set<String> selected = {};
+
+  bool justCompletedPromiseSet = false;
 
   void _seal() {
     final promises = selected.toList();
@@ -1810,17 +1807,30 @@ void dispose() {
         borderRadius: BorderRadius.circular(16),
       ),
       onSelected: (_) {
-        setState(() {
-          if (isOn) {
-            selected.remove(t);
-          } else if (!isLocked) {
-            selected.add(t);
-          }
+      onSelected: (_) {
+  setState(() {
+    final beforeCount = selected.length;
+
+    if (isOn) {
+      selected.remove(t);
+      justCompletedPromiseSet = false;
+    } else if (!isLocked) {
+      selected.add(t);
+
+      // 🎉 THIS IS THE 3RD PROMISE MOMENT
+      if (beforeCount == 2 && selected.length == 3) {
+        justCompletedPromiseSet = true;
+
+        Future.delayed(const Duration(milliseconds: 900), () {
+          if (!mounted) return;
+          setState(() {
+            justCompletedPromiseSet = false;
+          });
         });
-      },
-    ),
-  ),
-);
+      }
+    }
+  });
+},
                         }).toList(),
                       ),
                     ),
