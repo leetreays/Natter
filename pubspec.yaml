@@ -61,6 +61,10 @@ flutter:
     - assets/chirp_welcome.png
     - assets/chirp_prompt.png
     - assets/chirp_reply.png
+    - assets/owliver_hello.png
+    - assets/owliver_welldone.png
+    - assets/owliver_thinking.png
+    - assets/owliver_teaching.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
