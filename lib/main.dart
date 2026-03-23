@@ -1738,76 +1738,67 @@ void dispose() {
                           return ScaleTransition(
   scale: isOn ? _pulseController : const AlwaysStoppedAnimation(1),
   child: AnimatedContainer(
-  duration: const Duration(milliseconds: 250),
-  curve: Curves.easeOut,
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(16),
-
-    // ✨ Glow pulse (we'll refine below)
-    boxShadow: isOn
-        ? [
-            BoxShadow(
-              color: NatterBrand.yellow.withOpacity(0.35),
-              blurRadius: 16,
-              spreadRadius: 1,
-            ),
-          ]
-        : [],
-  ),
-  child: ChoiceChip(
-    label: Text(
-      t,
-      style: TextStyle(
-        fontWeight: FontWeight.w800,
-        fontSize: 15,
-        color: isOn
-            ? Colors.black // 🔥 MUCH stronger contrast
-            : (isLocked
-                ? Colors.white.withOpacity(0.6)
-                : Colors.white),
-      ),
-    ),
-    selected: isOn,
-    showCheckmark: false,
-
-    elevation: isOn ? 6 : 0,
-    shadowColor: NatterBrand.yellow.withOpacity(0.4),
-
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 12,
-    ),
-    labelPadding: EdgeInsets.zero,
-
-    // 🎨 MUCH BETTER CONTRAST
-    backgroundColor: isLocked && !isOn
-        ? Colors.white.withOpacity(0.06)
-        : Colors.white.withOpacity(0.12),
-
-    selectedColor: NatterBrand.yellow, // 🔥 SOLID colour (no opacity)
-
-    side: BorderSide(
-      color: isOn
-          ? NatterBrand.yellow
-          : (isLocked
-              ? Colors.white.withOpacity(0.1)
-              : Colors.white.withOpacity(0.25)),
-      width: 2,
-    ),
-
-    shape: RoundedRectangleBorder(
+    duration: const Duration(milliseconds: 250),
+    curve: Curves.easeOut,
+    decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(16),
+      boxShadow: isOn
+          ? [
+              BoxShadow(
+                color: NatterBrand.yellow.withOpacity(0.35),
+                blurRadius: 16,
+                spreadRadius: 1,
+              ),
+            ]
+          : [],
     ),
-
-    onSelected: (_) {
-      setState(() {
-        if (isOn) {
-          selected.remove(t);
-        } else if (!isLocked) {
-          selected.add(t);
-        }
-      });
-    },
+    child: ChoiceChip(
+      label: Text(
+        t,
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: 15,
+          color: isOn
+              ? Colors.black
+              : (isLocked
+                  ? Colors.white.withOpacity(0.6)
+                  : Colors.white),
+        ),
+      ),
+      selected: isOn,
+      showCheckmark: false,
+      elevation: isOn ? 6 : 0,
+      shadowColor: NatterBrand.yellow.withOpacity(0.4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
+      labelPadding: EdgeInsets.zero,
+      backgroundColor: isLocked && !isOn
+          ? Colors.white.withOpacity(0.06)
+          : Colors.white.withOpacity(0.12),
+      selectedColor: NatterBrand.yellow,
+      side: BorderSide(
+        color: isOn
+            ? NatterBrand.yellow
+            : (isLocked
+                ? Colors.white.withOpacity(0.1)
+                : Colors.white.withOpacity(0.25)),
+        width: 2,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      onSelected: (_) {
+        setState(() {
+          if (isOn) {
+            selected.remove(t);
+          } else if (!isLocked) {
+            selected.add(t);
+          }
+        });
+      },
+    ),
   ),
 );
                         }).toList(),
