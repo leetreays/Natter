@@ -3861,49 +3861,33 @@ if (!state.hasSeenAddFriendSuccess) {
 ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-  onPressed: () => _addFriendDialog(context),
-  backgroundColor: NatterBrand.green,
-  foregroundColor: Colors.black,
-  icon: const Icon(Icons.person_add_alt_1_rounded),
-  label: const Text(
-    'Add Friend',
-    style: TextStyle(fontWeight: FontWeight.w900),
-  ),
-),
-        backgroundColor: NatterBrand.green,
-        foregroundColor: Colors.black,
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text(
-          'Add Friend',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-      ),
-      child: ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
-          if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
-  BrandCard(
-    child: Row(
+      child: Stack(
+  children: [
+    ListView(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
       children: [
-        Image.asset(
-          'assets/chirp_prompt.png',
-          height: 56,
-          width: 56,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            'Chirp says: Try saying hello to Ava 👋',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+        if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
+          BrandCard(
+            child: Row(
+              children: [
+                Image.asset(
+                  'assets/chirp_prompt.png',
+                  height: 56,
+                  width: 56,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Chirp says: Try saying hello to Ava 👋',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
-    ),
-  ),
   const SizedBox(height: 12),
 ],
   if (!state.isInOnboarding) ...[
@@ -3954,7 +3938,6 @@ if (!state.hasSeenAddFriendSuccess) {
 ),
 const SizedBox(height: 12),
 ],
-const SizedBox(height: 12),
           if (!state.isInOnboarding) ...[
   _friendCodeCard(context, state),
   const SizedBox(height: 12),
@@ -4056,38 +4039,127 @@ const SizedBox(height: 12),
               fontSize: 11,
             ),
           ),
-      ],
-    );
-  },
-),
-                  subtitle: Text(
-                    c.last,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: c.unread
-                      ? Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: NatterBrand.green,
-                            borderRadius: BorderRadius.circular(99),
-                          ),
-                        )
-                      : const Icon(Icons.chevron_right, color: Colors.white),
-                  onTap: () => Navigator.push(
-                    context,
-                    calmRoute(ChatScreen(contactName: c.name)),
-                  ),
+...chats.map((c) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: BrandCard(
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: CircleAvatar(
+          radius: 22,
+          backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+          child: Text(
+            c.name.substring(0, 1),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        title: Builder(
+          builder: (context) {
+            final friend = state.getFriendByName(c.name);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      c.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (friend != null &&
+                        friend.schoolName == state.schoolName) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '🏫',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
+                if (friend != null)
+                  Text(
+                    'Friendship ${friend.stars}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                if (friend != null)
+                  Text(
+                    'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.68),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
+                  ),
+              ],
             );
-          }),
-          const SizedBox(height: 90),
-        ],
+          },
+        ),
+        subtitle: Text(
+          c.last,
+          style: const TextStyle(color: Colors.white),
+        ),
+        trailing: c.unread
+            ? Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: NatterBrand.green,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              )
+            : const Icon(Icons.chevron_right, color: Colors.white),
+        onTap: () => Navigator.push(
+          context,
+          calmRoute(ChatScreen(contactName: c.name)),
+        ),
       ),
-    );
-  }
-}
+    ),
+  );
+}).toList(),
+
+const SizedBox(height: 90),
+      ],
+    ),
+
+    // ✅ THIS IS THE CORRECT PLACE
+    Positioned(
+      right: 16,
+      bottom: 16,
+      child: ElevatedButton.icon(
+        onPressed: () => _addFriendDialog(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: NatterBrand.green,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          elevation: 8,
+        ),
+        icon: const Icon(Icons.person_add_alt_1_rounded),
+        label: const Text(
+          'Add Friend',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+    ),
+  ],
+);
 
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
