@@ -3977,100 +3977,100 @@ const SizedBox(height: 12),
             ),
           if (schoolFriends.isNotEmpty)
             const SizedBox(height: 12),
-          ...chats.map((c) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: BrandCard(
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                    child: Text(
-                      c.name.substring(0, 1),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+  ...chats.map((c) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: BrandCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+                  child: Text(
+                    c.name.substring(0, 1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  title: Builder(
-  builder: (context) {
-    final friend = state.getFriendByName(c.name);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              c.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            if (friend != null && friend.schoolName == state.schoolName) ...[
-              const SizedBox(width: 6),
-              Text(
-                '🏫',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withOpacity(0.85),
+                ),
+                title: Builder(
+                  builder: (context) {
+                    final friend = state.getFriendByName(c.name);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              c.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            if (friend != null &&
+                                friend.schoolName == state.schoolName) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '🏫',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withOpacity(0.85),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (friend != null)
+                          Text(
+                            'Friendship ${friend.stars}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.78),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        if (friend != null)
+                          Text(
+                            'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.68),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                subtitle: Text(
+                  c.last,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                trailing: c.unread
+                    ? Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: NatterBrand.green,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                      )
+                    : const Icon(Icons.chevron_right, color: Colors.white),
+                onTap: () => Navigator.push(
+                  context,
+                  calmRoute(ChatScreen(contactName: c.name)),
                 ),
               ),
-            ],
-          ],
-        ),
-        if (friend != null)
-          Text(
-            'Friendship ${friend.stars}',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.78),
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
             ),
-          ),
-        if (friend != null)
-          Text(
-            'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.68),
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
-          ),
-      ],
-    );
-  },
-),
-        subtitle: Text(
-          c.last,
-          style: const TextStyle(color: Colors.white),
-        ),
-        trailing: c.unread
-            ? Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: NatterBrand.green,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              )
-            : const Icon(Icons.chevron_right, color: Colors.white),
-        onTap: () => Navigator.push(
-          context,
-          calmRoute(ChatScreen(contactName: c.name)),
-        ),
-      ),
-    ),
-  );
-}).toList(),
+          );
+        }).toList(),
 
-const SizedBox(height: 90),
+        const SizedBox(height: 90),
       ],
     ),
 
-    // ✅ THIS IS THE CORRECT PLACE
     Positioned(
       right: 16,
       bottom: 16,
@@ -4096,8 +4096,8 @@ const SizedBox(height: 90),
       ),
     ),
   ],
-);
-
+),     
+              
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
 
