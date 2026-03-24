@@ -2,8 +2,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() => runApp(const NatterApp());
+Future<void> main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options:
+DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(const NatterApp());
+}
 
 Route<T> calmRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
@@ -833,7 +845,7 @@ int coachPrompts = 0;
   void recordRite({
     required String name,
     required List<String> promises,
-  }) {
+  }) async {
     lastName = name;
     lastPromises = List<String>.from(promises);
     lastBadge = badgeForPromises(promises.toSet());
@@ -856,6 +868,13 @@ hasSeenFirstReply = false;
     hasSeenAddFriendPrompt = false;
 hasSeenAddFriendSuccess = false;
     onboardingStep = 0;
+
+    await
+  FirebaseFirestore.instance.collection("users").add({
+    'name': name,
+    'promises': promises,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
 
     notifyListeners();
   }
