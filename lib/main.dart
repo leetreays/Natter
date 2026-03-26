@@ -842,42 +842,49 @@ int coachPrompts = 0;
   notifyListeners();
   }
 
-  void recordRite({
-    required String name,
-    required List<String> promises,
-  }) async {
-    lastName = name;
-    lastPromises = List<String>.from(promises);
-    lastBadge = badgeForPromises(promises.toSet());
-    currentLevel = NatterLevel.promiseKeeper;
-    kindnessRewrites = 0;
-    kindnessStreak = 0;
-    kindnessStars = 0;
-    celebrationMessage = null;
+  Future<void> recordRite({
+  required String name,
+  required List<String> promises,
+}) async {
+  print('recordRite started');
 
-    earnedBadges
-      ..clear()
-      ..add(lastBadge!);
+  lastName = name;
+  lastPromises = List<String>.from(promises);
+  lastBadge = badgeForPromises(promises.toSet());
+  currentLevel = NatterLevel.promiseKeeper;
+  kindnessRewrites = 0;
+  kindnessStreak = 0;
+  kindnessStars = 0;
+  celebrationMessage = null;
 
-    approvedContacts.removeWhere((f) => f.name == 'Ava');
-approvedContacts.insert(0, Friend(name: 'Ava', friendshipPoints: 0));
+  earnedBadges
+    ..clear()
+    ..add(lastBadge!);
 
-    hasSeenChirpWelcome = false;
-hasSentFirstMessage = false;
-hasSeenFirstReply = false;
-    hasSeenAddFriendPrompt = false;
-hasSeenAddFriendSuccess = false;
-    onboardingStep = 0;
+  approvedContacts.removeWhere((f) => f.name == 'Ava');
+  approvedContacts.insert(0, Friend(name: 'Ava', friendshipPoints: 0));
 
-    await
-  FirebaseFirestore.instance.collection("users").add({
+  hasSeenChirpWelcome = false;
+  hasSentFirstMessage = false;
+  hasSeenFirstReply = false;
+  hasSeenAddFriendPrompt = false;
+  hasSeenAddFriendSuccess = false;
+  onboardingStep = 0;
+
+  print('About to write to Firestore');
+
+  await FirebaseFirestore.instance.collection('users').add({
     'name': name,
     'promises': promises,
     'createdAt': FieldValue.serverTimestamp(),
   });
 
-    notifyListeners();
-  }
+  print('Firestore write complete');
+
+  notifyListeners();
+
+  print('recordRite finished');
+}
 
   void dismissCelebration() {
     celebrationTitle = null;
@@ -1653,7 +1660,7 @@ class PromiseScreen extends StatefulWidget {
 }
 
 class _PromiseScreenState extends State<PromiseScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final options = const [
     'Be kind',
     'No secrets from adults',
@@ -1702,13 +1709,24 @@ void dispose() {
 
   bool justCompletedPromiseSet = false;
 
-  void _seal() {
-    final promises = selected.toList();
+  Future<void> _seal() async {
+  final promises = selected.toList();
 
-    AppStateScope.of(context).recordRite(
+  print('SEAL tapped');
+  print('Name: ${widget.name}');
+  print('Promises: $promises');
+
+  try {
+    print('About to call recordRite');
+
+    await AppStateScope.of(context).recordRite(
       name: widget.name,
       promises: promises,
     );
+
+    print('recordRite completed successfully');
+
+    if (!mounted) return;
 
     Navigator.push(
       context,
@@ -1719,7 +1737,19 @@ void dispose() {
         ),
       ),
     );
+  } catch (e, st) {
+    print('SEAL ERROR: $e');
+    print(st);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not save your promises: $e'),
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
