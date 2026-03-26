@@ -7,27 +7,26 @@ version: 1.0.0+1
 environment:
   sdk: ^3.11.0
 
-  dependencies:
-    flutter:
-        sdk: flutter
-          cupertino_icons: ^1.0.8
-            firebase_core: ^4.1.1
-              cloud_firestore: ^6.0.1
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  firebase_core: ^4.1.1
+  cloud_firestore: ^6.0.1
 
-              dev_dependencies:
-                flutter_test:
-                    sdk: flutter
-                      flutter_lints: ^6.0.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
 
-                      flutter:
-                        uses-material-design: true
-
-                          assets:
-                              - assets/natter-logo-v2.png
-                                  - assets/chirp_welcome.png
-                                      - assets/chirp_prompt.png
-                                          - assets/chirp_reply.png
-                                              - assets/owliver_hello.png
-                                                  - assets/owliver_welldone.png
-                                                      - assets/owliver_thinking.png
-                                                          - assets/owliver_teaching.png
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/natter-logo-v2.png
+    - assets/chirp_welcome.png
+    - assets/chirp_prompt.png
+    - assets/chirp_reply.png
+    - assets/owliver_hello.png
+    - assets/owliver_welldone.png
+    - assets/owliver_thinking.png
+    - assets/owliver_teaching.png
