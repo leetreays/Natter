@@ -5,6 +5,16 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+Future<User> ensureSignedIn() async {
+  final auth = FirebaseAuth.instance;
+  final current = auth.currentUser;
+  if (current != null) return current;
+
+  final cred = await auth.signInAnonymously();
+  return cred.user!;
+}
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -846,8 +856,6 @@ int coachPrompts = 0;
   required String name,
   required List<String> promises,
 }) async {
-  print('recordRite started');
-
   lastName = name;
   lastPromises = List<String>.from(promises);
   lastBadge = badgeForPromises(promises.toSet());
@@ -871,19 +879,16 @@ int coachPrompts = 0;
   hasSeenAddFriendSuccess = false;
   onboardingStep = 0;
 
-  print('About to write to Firestore');
+  final user = await ensureSignedIn();
 
-  await FirebaseFirestore.instance.collection('users').add({
+  await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+    'uid': user.uid,
     'name': name,
     'promises': promises,
     'createdAt': FieldValue.serverTimestamp(),
   });
 
-  print('Firestore write complete');
-
   notifyListeners();
-
-  print('recordRite finished');
 }
 
   void dismissCelebration() {
