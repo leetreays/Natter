@@ -891,6 +891,114 @@ int coachPrompts = 0;
   notifyListeners();
 }
 
+String chatIdForFriend(String friendName) {
+  return friendName
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'_+'), '_')
+      .replaceAll(RegExp(r'^_|_$'), '');
+}
+
+  Stream<Map<String, dynamic>?> chatSummaryStream(String friendName) async* {
+  final uid = await currentUid();
+  final chatId = chatIdForFriend(friendName);
+
+  yield* FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('chats')
+      .doc(chatId)
+      .snapshots()
+      .map((doc) => doc.data());
+}
+
+Future<String> currentUid() async {
+  final user = await ensureSignedIn();
+  return user.uid;
+}
+
+Stream<List<Map<String, dynamic>>> messageStream(String friendName) async* {
+  final uid = await currentUid();
+  final chatId = chatIdForFriend(friendName);
+
+  yield* FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('createdAt')
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList());
+}
+
+Future<void> addFakeReply({
+  required String friendName,
+  required String text,
+}) async {
+  final uid = await currentUid();
+  final chatId = chatIdForFriend(friendName);
+
+  final chatRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('chats')
+      .doc(chatId);
+
+  await chatRef.set({
+    'friendName': friendName,
+    'updatedAt': FieldValue.serverTimestamp(),
+    'lastMessage': text,
+    'lastSenderUid': 'friend_$chatId',
+  }, SetOptions(merge: true));
+
+  await chatRef.collection('messages').add({
+    'text': text,
+    'senderUid': 'friend_$chatId',
+    'createdAt': FieldValue.serverTimestamp(),
+    'isFlagged': false,
+  });
+}
+
+Future<void> sendMessageToChat({
+  required String friendName,
+  required String text,
+  bool isFlagged = false,
+}) async {
+  final trimmed = text.trim();
+  if (trimmed.isEmpty) return;
+
+  final user = await ensureSignedIn();
+  final uid = user.uid;
+  final chatId = chatIdForFriend(friendName);
+
+  final chatRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('chats')
+      .doc(chatId);
+
+  final messagesRef = chatRef.collection('messages');
+
+  await chatRef.set({
+    'friendName': friendName,
+    'updatedAt': FieldValue.serverTimestamp(),
+    'lastMessage': trimmed,
+    'lastSenderUid': uid,
+  }, SetOptions(merge: true));
+
+  await messagesRef.add({
+  'text': trimmed,
+  'senderUid': uid,
+  'createdAt': FieldValue.serverTimestamp(),
+  'isFlagged': isFlagged,
+});
+}
+
   void dismissCelebration() {
     celebrationTitle = null;
     celebrationMessage = null;
@@ -4092,10 +4200,31 @@ Widget build(BuildContext context) {
                         );
                       },
                     ),
-                    subtitle: Text(
-                      c.last,
-                      style: const TextStyle(color: Colors.white),
-                    ),
+                    subtitle: StreamBuilder<Map<String, dynamic>?>(
+  stream: AppStateScope.of(context).chatSummaryStream(c.name),
+  builder: (context, snapshot) {
+    final data = snapshot.data;
+    final lastMessage = data?['lastMessage'] as String?;
+    final lastSenderUid = data?['lastSenderUid'] as String?;
+    final myUid = FirebaseAuth.instance.currentUser?.uid;
+
+    String previewText;
+    if (lastMessage == null || lastMessage.isEmpty) {
+      previewText = c.last; // fallback to your existing value
+    } else if (lastSenderUid == myUid) {
+      previewText = 'You: $lastMessage';
+    } else {
+      previewText = lastMessage;
+    }
+
+    return Text(
+      previewText,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(color: Colors.white),
+    );
+  },
+),
                     trailing: c.unread
                         ? Container(
                             width: 12,
@@ -4386,6 +4515,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _Msg(fromMe: false, text: 'Hey! 👋'),
     _Msg(fromMe: false, text: 'Wanna chat?'),
   ];
+  final ScrollController _scrollController = ScrollController();
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
@@ -4799,6 +4929,26 @@ void _revealFlaggedMessage(_Msg msg) {
     });
   }
 
+bool _didInitialChatScroll = false;
+
+void _scrollToBottom({bool animated = true}) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!_scrollController.hasClients) return;
+
+    final target = _scrollController.position.maxScrollExtent;
+
+    if (animated) {
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _scrollController.jumpTo(target);
+    }
+  });
+}
+
   void _startStallTimer() {
   _stallTimer?.cancel();
 
@@ -4808,15 +4958,15 @@ void _revealFlaggedMessage(_Msg msg) {
   });
   }
   
-void _sendMessageNow(String text, {bool flagged = false}) {
+Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
 
   final isFirstMessage = !state.hasSentFirstMessage;
-if (isFirstMessage) {
-  state.hasSentFirstMessage = true;
-  state.onboardingStep = 1;
-}
+  if (isFirstMessage) {
+    state.hasSentFirstMessage = true;
+    state.onboardingStep = 1;
+  }
 
   state.recordPositiveMessage();
   state.addFriendshipPoints(widget.contactName, 2);
@@ -4837,6 +4987,8 @@ if (isFirstMessage) {
   }
 
   if (state.lastQuestCelebrationFriend == widget.contactName) {
+    // Leave this for now if you still want local system messages,
+    // or move it to Firestore later.
     messages.insert(
       0,
       _Msg(
@@ -4852,75 +5004,72 @@ if (isFirstMessage) {
 
   setState(() {
     feedback = null;
-    messages.insert(
-      0,
-      _Msg(
-        fromMe: true,
-        text: text,
-        isFlagged: flagged,
-      ),
-    );
   });
 
+  await state.sendMessageToChat(
+  friendName: widget.contactName,
+  text: text,
+  isFlagged: flagged,
+);
+
   controller.clear();
+
+  _scrollToBottom();
 
   setState(() {
     _otherUserTyping = true;
   });
 
-  Future.delayed(const Duration(seconds: 2), () {
-    if (!mounted) return;
+  await Future.delayed(const Duration(seconds: 2));
+  if (!mounted) return;
 
-    setState(() {
-      _otherUserTyping = false;
-
-      messages.insert(
-        0,
-        _Msg(
-          fromMe: false,
-          text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
-          isFlagged: flagged,
-        ),
-      );
-    });
-
-    if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
-  state.hasSeenFirstReply = true;
-  state.onboardingStep = 2;
-
-      showDialog(
-        context: context,
-        builder: (dialogContext) => ChirpDialogCard(
-          imagePath: 'assets/chirp_reply.png',
-          message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-          buttonText: 'Continue',
-          onPressed: () {
-            Navigator.pop(dialogContext);
-
-            if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
-  state.hasSeenAddFriendPrompt = true;
-  state.onboardingStep = 3;
-
-              showDialog(
-                context: context,
-                builder: (nextDialogContext) => ChirpDialogCard(
-                  imagePath: 'assets/chirp_prompt.png',
-                  message: 'You’re doing great! Want to add another friend? 👋',
-                  buttonText: 'Add a friend',
-                  onPressed: () {
-  Navigator.pop(nextDialogContext);
-  const ChatsScreen()._addFriendDialog(context);
-},
-                ),
-              );
-            }
-          },
-        ),
-      );
-    }
-
-    _startStallTimer();
+  setState(() {
+    _otherUserTyping = false;
   });
+
+  await state.addFakeReply(
+    friendName: widget.contactName,
+    text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
+  );
+
+  _scrollToBottom();
+
+  if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
+    state.hasSeenFirstReply = true;
+    state.onboardingStep = 2;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ChirpDialogCard(
+        imagePath: 'assets/chirp_reply.png',
+        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+        buttonText: 'Continue',
+        onPressed: () {
+          Navigator.pop(dialogContext);
+
+          if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
+            state.hasSeenAddFriendPrompt = true;
+            state.onboardingStep = 3;
+
+            showDialog(
+              context: context,
+              builder: (nextDialogContext) => ChirpDialogCard(
+                imagePath: 'assets/chirp_prompt.png',
+                message: 'You’re doing great! Want to add another friend? 👋',
+                buttonText: 'Add a friend',
+                onPressed: () {
+                  Navigator.pop(nextDialogContext);
+                  const ChatsScreen()._addFriendDialog(context);
+                },
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  _startStallTimer();
 }
   
   void _send() async {
@@ -4997,7 +5146,7 @@ if (isFirstMessage) {
     ));
   }
 
-  _sendMessageNow(text, flagged: true);
+  await _sendMessageNow(text, flagged: true);
 } else {
   state.recordKindRewrite();
   state.addFriendshipPoints(widget.contactName, 3);
@@ -5008,11 +5157,12 @@ if (isFirstMessage) {
       return;
     }
 
-    _sendMessageNow(text);
+    await _sendMessageNow(text);
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _stallTimer?.cancel();
     controller.dispose();
     super.dispose();
@@ -5123,33 +5273,62 @@ if (isFirstMessage) {
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: _FriendshipQuestCard(friend: friend),
             ),
-          Expanded(
-  child: ListView.builder(
-    reverse: true,
-    padding: const EdgeInsets.all(14),
-    itemCount: messages.length + (_otherUserTyping ? 1 : 0),
-    itemBuilder: (_, i) {
-      if (_otherUserTyping && i == 0) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            '${widget.contactName} is typing…',
-            style: const TextStyle(
-              color: Colors.white70,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
+         Expanded(
+  child: StreamBuilder<List<Map<String, dynamic>>>(
+    stream: AppStateScope.of(context).messageStream(widget.contactName),
+    builder: (context, snapshot) {
+      if (!snapshot.hasData) {
+        return const Center(
+          child: CircularProgressIndicator(),
         );
       }
 
-      final msg = messages[_otherUserTyping ? i - 1 : i];
+      final firestoreMessages = snapshot.data!;
 
-      return _Bubble(
-        msg: msg,
-        onTap: () => _pickReaction(_otherUserTyping ? i - 1 : i),
-        onReveal: () => _revealFlaggedMessage(msg),
-        onHide: () => _hideFlaggedMessage(msg),
-        onBlock: () => _blockAfterFlaggedMessage(msg),
+      if (firestoreMessages.isNotEmpty && !_didInitialChatScroll) {
+  _didInitialChatScroll = true;
+  _scrollToBottom(animated: false);
+}
+
+      return ListView.builder(
+  controller: _scrollController,
+  reverse: false,
+        padding: const EdgeInsets.all(14),
+        itemCount: firestoreMessages.length + (_otherUserTyping ? 1 : 0),
+        itemBuilder: (_, i) {
+          if (_otherUserTyping && i == firestoreMessages.length) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 8),
+    child: Text(
+      '${widget.contactName} is typing…',
+      style: const TextStyle(
+        color: Colors.white70,
+        fontStyle: FontStyle.italic,
+      ),
+    ),
+  );
+}
+
+          final data = firestoreMessages[i];
+          final currentUser = FirebaseAuth.instance.currentUser;
+          final isMe = data['senderUid'] == currentUser?.uid;
+          final isFlagged = data['isFlagged'] == true;
+          final text = (data['text'] ?? '') as String;
+
+          final msg = _Msg(
+            fromMe: isMe,
+            text: text,
+            isFlagged: isFlagged,
+          );
+
+          return _Bubble(
+            msg: msg,
+            onTap: () {},
+            onReveal: () => _revealFlaggedMessage(msg),
+            onHide: () => _hideFlaggedMessage(msg),
+            onBlock: () => _blockAfterFlaggedMessage(msg),
+          );
+        },
       );
     },
   ),
