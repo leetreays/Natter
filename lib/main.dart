@@ -1357,6 +1357,52 @@ Friend? getFriendByName(String name) {
   return score;
   }
 
+  Future<User> signUpParent({
+  required String email,
+  required String password,
+  required String displayName,
+}) async {
+  final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+    email: email.trim(),
+    password: password,
+  );
+
+  final user = cred.user!;
+  await user.updateDisplayName(displayName.trim());
+
+  await FirebaseFirestore.instance.collection('parents').doc(user.uid).set({
+    'email': user.email,
+    'displayName': displayName.trim(),
+    'createdAt': FieldValue.serverTimestamp(),
+    'role': 'parent',
+  });
+
+  notifyListeners();
+  return user;
+}
+
+Future<User> signInParent({
+  required String email,
+  required String password,
+}) async {
+  final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
+    email: email.trim(),
+    password: password,
+  );
+
+  notifyListeners();
+  return cred.user!;
+}
+
+Future<void> signOutCurrentUser() async {
+  await FirebaseAuth.instance.signOut();
+  notifyListeners();
+}
+
+User? currentAuthUser() {
+  return FirebaseAuth.instance.currentUser;
+}
+
   void recordCoachedMessageSentAnyway() {
   coachedMessagesSentAnyway += 1;
   notifyListeners();
@@ -1453,7 +1499,7 @@ class NatterApp extends StatelessWidget {
             thickness: 1,
           ),
         ),
-        home: const HomeScreen(),
+        home: const GatewayScreen(),
       ),
     );
   }
@@ -1618,6 +1664,678 @@ class BrandedAppBarTitle extends StatelessWidget {
 }
 
 // ===== Screens =====
+class GatewayScreen extends StatelessWidget {
+  const GatewayScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      child: SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+                const SizedBox(height: 18),
+                Center(
+                  child: Image.asset(
+                    'assets/natter-logo-v2.png',
+                    height: 96,
+                  ),
+                ),
+                const SizedBox(height: 26),
+                const Text(
+                  'Welcome to Natter',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'A calm, safe place for children to grow in confidence — with trusted parent oversight.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    height: 1.45,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.12),
+                    ),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Choose your space',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Parents can set up accounts, manage safety settings and review progress. Children enter their own friendly Natter space.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        calmRoute(const ParentAuthScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0B80BB),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'I’m a Parent',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        calmRoute(HomeScreen()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white.withOpacity(0.7)),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'Child Space',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'This choice will become automatic later, based on the device and account in use.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+  }
+}
+
+class ParentAuthScreen extends StatefulWidget {
+  const ParentAuthScreen({super.key});
+
+  @override
+  State<ParentAuthScreen> createState() => _ParentAuthScreenState();
+}
+
+class _ParentAuthScreenState extends State<ParentAuthScreen> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _isSignUp = true;
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final state = AppStateScope.of(context);
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      if (_isSignUp) {
+        if (name.isEmpty) {
+          throw Exception('Please enter your name.');
+        }
+
+        await state.signUpParent(
+          email: email,
+          password: password,
+          displayName: name,
+        );
+      } else {
+        await state.signInParent(
+          email: email,
+          password: password,
+        );
+      }
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        calmRoute(const ParentHomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _error = e.message ?? 'Authentication failed.';
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.08),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white, width: 1.2),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      child: Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
+        child: Container(
+          width: 520,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.24),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Colors.white.withOpacity(0.12)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+                        const Text(
+                      'Parent Account',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      _isSignUp
+                          ? 'Create your parent account to manage safety, setup and child progress.'
+                          : 'Sign in to your parent account.',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    if (_isSignUp) ...[
+                      TextField(
+                        controller: _nameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _fieldDecoration('Your name'),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                    TextField(
+                      controller: _emailController,
+                      style: const TextStyle(color: Colors.white),
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: _fieldDecoration('Email address'),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: _fieldDecoration('Password'),
+                    ),
+                    const SizedBox(height: 18),
+                    if (_error != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.14),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.redAccent.withOpacity(0.35),
+                          ),
+                        ),
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF0B80BB),
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: Text(
+                          _loading
+                              ? 'Please wait...'
+                              : (_isSignUp
+                                  ? 'Create Parent Account'
+                                  : 'Sign In'),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: _loading
+                          ? null
+                          : () {
+                              setState(() {
+                                _isSignUp = !_isSignUp;
+                                _error = null;
+                              });
+                            },
+                      child: Text(
+                        _isSignUp
+                            ? 'Already have a parent account? Sign in'
+                            : 'Need a parent account? Create one',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    TextButton(
+                      onPressed: _loading
+                          ? null
+                          : () {
+                              Navigator.pop(context);
+                            },
+                      child: const Text(
+                        'Back',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+  }
+}
+
+class ParentHomeScreen extends StatelessWidget {
+  const ParentHomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName?.trim();
+    final greetingName =
+        (displayName != null && displayName.isNotEmpty) ? displayName : 'Parent';
+
+    return ParentBrandScaffold(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Icon(
+                        Icons.shield_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Parent Home',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Signed in as ${user?.email ?? 'unknown email'}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        await AppStateScope.of(context).signOutCurrentUser();
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          calmRoute(const GatewayScreen()),
+                          (_) => false,
+                        );
+                      },
+                      icon: const Icon(Icons.logout, color: Colors.white),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  padding: const EdgeInsets.all(22),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(26),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.12),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome, $greetingName',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Your parent account is now active. From here, you will be able to create child profiles, manage safety settings and oversee progress with confidence.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Next steps',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        '• Create child profiles\n'
+                        '• Set quiet hours and approvals\n'
+                        '• Review alerts and progress\n'
+                        '• Separate parent and child spaces cleanly',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          height: 1.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        calmRoute(const ParentDashboardScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF0B80BB),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'Open Parent Dashboard',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        calmRoute(const GatewayScreen()),
+                        (_) => false,
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white.withOpacity(0.7)),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      'Back to Welcome Screen',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+  }
+}
+
+class ParentSpaceBackground extends StatelessWidget {
+  final Widget child;
+
+  const ParentSpaceBackground({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF041A2F),
+            Color(0xFF0B2E4A),
+            Color(0xFF0A4A73),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 110,
+            left: 40,
+            child: _bubble(10, const Color(0x66C96CB3)),
+          ),
+          Positioned(
+            top: 140,
+            left: 90,
+            child: _bubble(18, const Color(0x44C96CB3)),
+          ),
+          Positioned(
+            top: 170,
+            left: 140,
+            child: _bubble(14, const Color(0x55E7C15A)),
+          ),
+          Positioned(
+            top: 220,
+            right: 60,
+            child: _bubble(26, const Color(0x334D86B8)),
+          ),
+          Positioned(
+            bottom: 180,
+            left: 36,
+            child: _bubble(22, const Color(0x44C96CB3)),
+          ),
+          Positioned(
+            bottom: 130,
+            left: 120,
+            child: _bubble(30, const Color(0x55C96CB3)),
+          ),
+          Positioned(
+            bottom: 80,
+            right: 30,
+            child: _bubble(28, const Color(0x335D6F8A)),
+          ),
+          SafeArea(child: child),
+        ],
+      ),
+    );
+  }
+
+  static Widget _bubble(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -3999,7 +4717,7 @@ Widget build(BuildContext context) {
             context,
             calmRoute(
               state.hasSeenParentOnboarding
-                  ? ParentHomeScreen()
+                  ? ParentDashboardScreen()
                   : ParentOnboardingScreen(),
             ),
           ),
@@ -5826,6 +6544,29 @@ class _KindnessScoreCard extends StatelessWidget {
   }
 }
 
+class ParentBrandScaffold extends StatelessWidget {
+  final PreferredSizeWidget? appBar;
+  final Widget child;
+
+  const ParentBrandScaffold({
+    super.key,
+    this.appBar,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: appBar,
+      body: ParentSpaceBackground(
+        child: child,
+      ),
+    );
+  }
+}
+
 class ParentOnboardingScreen extends StatefulWidget {
   const ParentOnboardingScreen({super.key});
 
@@ -5916,7 +6657,7 @@ class _ParentOnboardingScreenState extends State<ParentOnboardingScreen> {
 
                         Navigator.pushReplacement(
                           context,
-                          calmRoute(const ParentHomeScreen()),
+                          calmRoute(const ParentDashboardScreen()),
                         );
                       } else {
                         setState(() {
@@ -5986,8 +6727,8 @@ class _ParentIntroCard extends StatelessWidget {
   }
 }
 
-class ParentHomeScreen extends StatelessWidget {
-  const ParentHomeScreen({super.key});
+class ParentDashboardScreen extends StatelessWidget {
+  const ParentDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -5996,27 +6737,31 @@ class ParentHomeScreen extends StatelessWidget {
         state.lastPromises.isNotEmpty &&
         state.lastBadge != null;
 
-    return BrandScaffold(
+    return ParentBrandScaffold(
       appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Parent Controls'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+  backgroundColor: Colors.transparent,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  title: const BrandedAppBarTitle(title: 'Parent Controls'),
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back),
+    onPressed: () => Navigator.pop(context),
+  ),
+  actions: [
+    TextButton(
+      onPressed: () => state.clearAlerts(),
+      child: const Text(
+        'Clear Alerts',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => state.clearAlerts(),
-            child: const Text(
-              'Clear Alerts',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-        ],
       ),
+    ),
+    const SizedBox(width: 6),
+  ],
+),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
