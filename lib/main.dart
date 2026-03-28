@@ -1403,6 +1403,35 @@ User? currentAuthUser() {
   return FirebaseAuth.instance.currentUser;
 }
 
+Future<void> createChildProfile({
+  required String name,
+  String avatar = 'owl',
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    throw Exception('No signed-in parent found.');
+  }
+
+  final trimmedName = name.trim();
+  if (trimmedName.isEmpty) {
+    throw Exception('Please enter a child name.');
+  }
+
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(user.uid)
+      .collection('children')
+      .add({
+    'name': trimmedName,
+    'avatar': avatar,
+    'createdAt': FieldValue.serverTimestamp(),
+    'role': 'child',
+  });
+
+  notifyListeners();
+}
+
   void recordCoachedMessageSentAnyway() {
   coachedMessagesSentAnyway += 1;
   notifyListeners();
@@ -2197,6 +2226,35 @@ class ParentHomeScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        calmRoute(const CreateChildProfileScreen()),
+      );
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: NatterBrand.green,
+      foregroundColor: Colors.black,
+      elevation: 0,
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    ),
+    child: const Text(
+      'Create Child Profile',
+      style: TextStyle(
+        fontWeight: FontWeight.w900,
+        fontSize: 16,
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 12),
+
+                SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
@@ -2331,6 +2389,253 @@ class ParentSpaceBackground extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
+class CreateChildProfileScreen extends StatefulWidget {
+  const CreateChildProfileScreen({super.key});
+
+  @override
+  State<CreateChildProfileScreen> createState() =>
+      _CreateChildProfileScreenState();
+}
+
+class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
+  final _nameController = TextEditingController();
+
+  bool _loading = false;
+  String? _error;
+  String _selectedAvatar = 'owl';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final state = AppStateScope.of(context);
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      await state.createChildProfile(
+        name: _nameController.text,
+        avatar: _selectedAvatar,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Child profile created successfully'),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.08),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white, width: 1.2),
+      ),
+    );
+  }
+
+  Widget _avatarChoice(String value, String label, IconData icon) {
+    final selected = _selectedAvatar == value;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _selectedAvatar = value;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+          decoration: BoxDecoration(
+            color: selected
+                ? Colors.white.withOpacity(0.16)
+                : Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? Colors.white : Colors.white.withOpacity(0.10),
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: Colors.white,
+                size: 28,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Create Child Profile',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: SafeArea(
+        child: SizedBox.expand(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+            child: Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.22),
+                borderRadius: BorderRadius.circular(26),
+                border: Border.all(color: Colors.white.withOpacity(0.12)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Add a child',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Create a child profile to begin setting up their Natter experience.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 15,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: _fieldDecoration('Child name'),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Choose an avatar style',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _avatarChoice('owl', 'Owl', Icons.flutter_dash),
+                      const SizedBox(width: 10),
+                      _avatarChoice('star', 'Star', Icons.star_rounded),
+                      const SizedBox(width: 10),
+                      _avatarChoice('rocket', 'Rocket', Icons.rocket_launch),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  if (_error != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.redAccent.withOpacity(0.35),
+                        ),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  ElevatedButton(
+                    onPressed: _loading ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: NatterBrand.green,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: Text(
+                      _loading ? 'Saving...' : 'Create Child Profile',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
