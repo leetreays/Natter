@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -440,6 +441,80 @@ class AppState extends ChangeNotifier {
   return approvedContacts
       .where((f) => f.schoolName == schoolName)
       .toList();
+}
+
+String generateChildAccessCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  final random = Random();
+
+  return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
+}
+
+Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
+  final code = rawCode.trim().toUpperCase();
+
+  if (code.isEmpty) return null;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('child_access_codes')
+      .doc(code)
+      .get();
+
+  if (!doc.exists) return null;
+
+  final data = doc.data()!;
+
+  return {
+    'parentId': (data['parentId'] ?? '').toString(),
+    'childId': (data['childId'] ?? '').toString(),
+    'childName': (data['childName'] ?? '').toString(),
+    'avatar': (data['avatar'] ?? 'owl').toString(),
+  };
+}
+
+Future<void> rememberChildDevice({
+  required String parentId,
+  required String childId,
+  required String childName,
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('device_mode', 'child');
+  await prefs.setString('child_parent_id', parentId);
+  await prefs.setString('child_id', childId);
+  await prefs.setString('child_name', childName);
+}
+
+Future<void> rememberParentDevice() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('device_mode', 'parent');
+}
+
+Future<String?> getDeviceMode() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('device_mode');
+}
+
+Future<String?> getRememberedChildName() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('child_name');
+}
+
+Future<String?> getRememberedChildId() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('child_id');
+}
+
+Future<String?> getRememberedParentId() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('child_parent_id');
+}
+
+Future<void> clearRememberedDeviceMode() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('device_mode');
+  await prefs.remove('child_parent_id');
+  await prefs.remove('child_id');
+  await prefs.remove('child_name');
 }
 
   String? lastQuestCelebrationFriend;
@@ -1377,6 +1452,8 @@ Friend? getFriendByName(String name) {
     'role': 'parent',
   });
 
+  await rememberParentDevice();
+
   notifyListeners();
   return user;
 }
@@ -1390,12 +1467,15 @@ Future<User> signInParent({
     password: password,
   );
 
+  await rememberParentDevice();
+
   notifyListeners();
   return cred.user!;
 }
 
 Future<void> signOutCurrentUser() async {
   await FirebaseAuth.instance.signOut();
+  await clearRememberedDeviceMode();
   notifyListeners();
 }
 
@@ -1403,7 +1483,7 @@ User? currentAuthUser() {
   return FirebaseAuth.instance.currentUser;
 }
 
-Future<void> createChildProfile({
+Future<String> createChildProfile({
   required String name,
   String avatar = 'owl',
 }) async {
@@ -1418,7 +1498,9 @@ Future<void> createChildProfile({
     throw Exception('Please enter a child name.');
   }
 
-  await FirebaseFirestore.instance
+  final accessCode = generateChildAccessCode();
+
+  final childRef = await FirebaseFirestore.instance
       .collection('parents')
       .doc(user.uid)
       .collection('children')
@@ -1427,9 +1509,23 @@ Future<void> createChildProfile({
     'avatar': avatar,
     'createdAt': FieldValue.serverTimestamp(),
     'role': 'child',
+    'accessCode': accessCode,
+    'parentId': user.uid,
+  });
+
+  await FirebaseFirestore.instance
+      .collection('child_access_codes')
+      .doc(accessCode)
+      .set({
+    'parentId': user.uid,
+    'childId': childRef.id,
+    'childName': trimmedName,
+    'avatar': avatar,
+    'createdAt': FieldValue.serverTimestamp(),
   });
 
   notifyListeners();
+  return accessCode;
 }
 
   void recordCoachedMessageSentAnyway() {
@@ -1528,7 +1624,7 @@ class NatterApp extends StatelessWidget {
             thickness: 1,
           ),
         ),
-        home: const GatewayScreen(),
+        home: const StartupRouterScreen(),
       ),
     );
   }
@@ -1693,6 +1789,60 @@ class BrandedAppBarTitle extends StatelessWidget {
 }
 
 // ===== Screens =====
+class StartupRouterScreen extends StatefulWidget {
+  const StartupRouterScreen({super.key});
+
+  @override
+  State<StartupRouterScreen> createState() => _StartupRouterScreenState();
+}
+
+class _StartupRouterScreenState extends State<StartupRouterScreen> {
+  @override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    _route();
+  });
+}
+
+  Future<void> _route() async {
+    final state = AppStateScope.of(context);
+    final mode = await state.getDeviceMode();
+
+    if (!mounted) return;
+
+    if (mode == 'parent') {
+      Navigator.pushReplacement(
+        context,
+        calmRoute(const ParentHomeScreen()),
+      );
+      return;
+    }
+
+    if (mode == 'child') {
+      Navigator.pushReplacement(
+        context,
+        calmRoute(HomeScreen()),
+      );
+      return;
+    }
+
+    Navigator.pushReplacement(
+      context,
+      calmRoute(const GatewayScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
 class GatewayScreen extends StatelessWidget {
   const GatewayScreen({super.key});
 
@@ -1802,7 +1952,7 @@ class GatewayScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        calmRoute(HomeScreen()),
+                        calmRoute(const ChildAccessCodeScreen()),
                       );
                     },
                     style: OutlinedButton.styleFrom(
@@ -1837,6 +1987,112 @@ class GatewayScreen extends StatelessWidget {
           ),
         ),
       );
+  }
+}
+
+class ChirpWelcomeScreen extends StatelessWidget {
+  final String childName;
+
+  const ChirpWelcomeScreen({
+    super.key,
+    required this.childName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(),
+
+              // Chirp avatar placeholder (we’ll replace later)
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.flutter_dash, // placeholder
+                    size: 64,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              Text(
+                'Hi $childName 👋',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                "I'm Chirp. Welcome to Natter.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                "This is your space to chat, learn and grow kindly 💛",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+
+              const Spacer(),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    calmRoute(HomeScreen()),
+                    (_) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: NatterBrand.green,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: const Text(
+                  'Enter your space',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -2316,6 +2572,208 @@ const SizedBox(height: 12),
   }
 }
 
+class ChildAccessCodeScreen extends StatefulWidget {
+  const ChildAccessCodeScreen({super.key});
+
+  @override
+  State<ChildAccessCodeScreen> createState() => _ChildAccessCodeScreenState();
+}
+
+class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
+  final _codeController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continue() async {
+    final state = AppStateScope.of(context);
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final result = await state.findChildByAccessCode(_codeController.text);
+
+      if (result == null) {
+        throw Exception('That code was not recognised.');
+      }
+
+      await ensureSignedIn();
+
+      await state.rememberChildDevice(
+        parentId: result['parentId']!,
+        childId: result['childId']!,
+        childName: result['childName']!,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+  context,
+  calmRoute(
+    ChirpWelcomeScreen(
+      childName: result['childName']!,
+    ),
+  ),
+  (_) => false,
+);
+    } catch (e) {
+      setState(() {
+        _error = e.toString().replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.08),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.white, width: 1.2),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Child Access',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.22),
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: Colors.white.withOpacity(0.12)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Enter your code',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Ask your parent for your Natter access code and enter it here.',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                        height: 1.45,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    TextField(
+                      controller: _codeController,
+                      textCapitalization: TextCapitalization.characters,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        letterSpacing: 3,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
+                      decoration: _fieldDecoration('Access code'),
+                    ),
+                    const SizedBox(height: 18),
+                    if (_error != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.14),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.redAccent.withOpacity(0.35),
+                          ),
+                        ),
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    ElevatedButton(
+                      onPressed: _loading ? null : _continue,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: NatterBrand.green,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      child: Text(
+                        _loading ? 'Checking...' : 'Continue',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 class ParentSpaceBackground extends StatelessWidget {
   final Widget child;
 
@@ -2424,20 +2882,89 @@ class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
     });
 
     try {
-      await state.createChildProfile(
-        name: _nameController.text,
-        avatar: _selectedAvatar,
-      );
+      final accessCode = await state.createChildProfile(
+  name: _nameController.text,
+  avatar: _selectedAvatar,
+);
 
-      if (!mounted) return;
+if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Child profile created successfully'),
+await showDialog(
+  context: context,
+  builder: (context) {
+    return AlertDialog(
+      backgroundColor: const Color(0xFF10283A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+      ),
+      title: const Text(
+        'Child profile created',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
         ),
-      );
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Give this access code to your child:',
+            style: TextStyle(
+              color: Colors.white70,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.12),
+              ),
+            ),
+            child: Text(
+              accessCode,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 3,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Your child can enter this code on their device to open their Natter space.',
+            style: TextStyle(
+              color: Colors.white70,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Done',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    );
+  },
+);
 
-      Navigator.pop(context);
+if (!mounted) return;
+Navigator.pop(context);
     } catch (e) {
       setState(() {
         _error = e.toString().replaceFirst('Exception: ', '');
