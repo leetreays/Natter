@@ -425,6 +425,65 @@ class ChatPreview {
   });
 }
 
+class ChildSession {
+  final String parentId;
+  final String childId;
+  final String childName;
+  final String childAvatar;
+
+  const ChildSession({
+    required this.parentId,
+    required this.childId,
+    required this.childName,
+    required this.childAvatar,
+  });
+
+  ChildSession copyWith({
+    String? parentId,
+    String? childId,
+    String? childName,
+    String? childAvatar,
+  }) {
+    return ChildSession(
+      parentId: parentId ?? this.parentId,
+      childId: childId ?? this.childId,
+      childName: childName ?? this.childName,
+      childAvatar: childAvatar ?? this.childAvatar,
+    );
+  }
+
+  Map<String, String> toPrefsMap() {
+    return {
+      'device_mode': 'child',
+      'child_parent_id': parentId,
+      'child_id': childId,
+      'child_name': childName,
+      'child_avatar': childAvatar,
+    };
+  }
+
+  static ChildSession? fromPrefs(SharedPreferences prefs) {
+    final mode = prefs.getString('device_mode');
+    if (mode != 'child') return null;
+
+    final parentId = prefs.getString('child_parent_id');
+    final childId = prefs.getString('child_id');
+    final childName = prefs.getString('child_name');
+    final childAvatar = prefs.getString('child_avatar') ?? 'owl';
+
+    if (parentId == null || childId == null || childName == null) {
+      return null;
+    }
+
+    return ChildSession(
+      parentId: parentId,
+      childId: childId,
+      childName: childName,
+      childAvatar: childAvatar,
+    );
+  }
+}
+
 class AppState extends ChangeNotifier {
   final String myFriendCode = 'NAT-2048';
   final List<Friend> approvedContacts = [
@@ -442,6 +501,29 @@ class AppState extends ChangeNotifier {
       .where((f) => f.schoolName == schoolName)
       .toList();
 }
+
+  ChildSession? _childSession;
+
+  ChildSession? get childSession => _childSession;
+
+  bool get hasActiveChildSession => _childSession != null;
+
+  bool get isChildDeviceMode => _childSession != null;
+
+  String? get activeChildId => _childSession?.childId;
+  String? get activeParentId => _childSession?.parentId;
+  String? get activeChildName => _childSession?.childName;
+  String? get activeChildAvatar => _childSession?.childAvatar;
+
+  String get effectiveChildName =>
+      _childSession?.childName.trim().isNotEmpty == true
+          ? _childSession!.childName
+          : (lastName?.trim().isNotEmpty == true ? lastName! : 'Friend');
+
+  String get effectiveChildAvatar =>
+      _childSession?.childAvatar.trim().isNotEmpty == true
+          ? _childSession!.childAvatar
+          : 'owl';
 
 String generateChildAccessCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -476,12 +558,48 @@ Future<void> rememberChildDevice({
   required String parentId,
   required String childId,
   required String childName,
+  required String childAvatar,
 }) async {
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('device_mode', 'child');
-  await prefs.setString('child_parent_id', parentId);
-  await prefs.setString('child_id', childId);
-  await prefs.setString('child_name', childName);
+
+  final session = ChildSession(
+    parentId: parentId,
+    childId: childId,
+    childName: childName,
+    childAvatar: childAvatar,
+  );
+
+  final map = session.toPrefsMap();
+  for (final entry in map.entries) {
+    await prefs.setString(entry.key, entry.value);
+  }
+
+  _childSession = session;
+  notifyListeners();
+}
+
+Future<void> hydrateRememberedChildSession() async {
+  final prefs = await SharedPreferences.getInstance();
+  _childSession = ChildSession.fromPrefs(prefs);
+  notifyListeners();
+}
+
+Future<void> clearChildSession() async {
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.remove('device_mode');
+  await prefs.remove('child_parent_id');
+  await prefs.remove('child_id');
+  await prefs.remove('child_name');
+  await prefs.remove('child_avatar');
+
+  _childSession = null;
+  notifyListeners();
+}
+
+Future<ChildSession?> getRememberedChildSession() async {
+  final prefs = await SharedPreferences.getInstance();
+  return ChildSession.fromPrefs(prefs);
 }
 
 Future<void> rememberParentDevice() async {
@@ -495,26 +613,27 @@ Future<String?> getDeviceMode() async {
 }
 
 Future<String?> getRememberedChildName() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('child_name');
+  final session = await getRememberedChildSession();
+  return session?.childName;
 }
 
 Future<String?> getRememberedChildId() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('child_id');
+  final session = await getRememberedChildSession();
+  return session?.childId;
 }
 
 Future<String?> getRememberedParentId() async {
-  final prefs = await SharedPreferences.getInstance();
-  return prefs.getString('child_parent_id');
+  final session = await getRememberedChildSession();
+  return session?.parentId;
+}
+
+Future<String?> getRememberedChildAvatar() async {
+  final session = await getRememberedChildSession();
+  return session?.childAvatar;
 }
 
 Future<void> clearRememberedDeviceMode() async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove('device_mode');
-  await prefs.remove('child_parent_id');
-  await prefs.remove('child_id');
-  await prefs.remove('child_name');
+  await clearChildSession();
 }
 
   String? lastQuestCelebrationFriend;
@@ -974,15 +1093,38 @@ String chatIdForFriend(String friendName) {
       .replaceAll(RegExp(r'^_|_$'), '');
 }
 
-  Stream<Map<String, dynamic>?> chatSummaryStream(String friendName) async* {
-  final uid = await currentUid();
-  final chatId = chatIdForFriend(friendName);
+DocumentReference<Map<String, dynamic>> childDocRef() {
+  final session = childSession;
+  if (session == null) {
+    throw Exception('No active child session found.');
+  }
 
-  yield* FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('chats')
-      .doc(chatId)
+  return FirebaseFirestore.instance
+      .collection('parents')
+      .doc(session.parentId)
+      .collection('children')
+      .doc(session.childId);
+}
+
+CollectionReference<Map<String, dynamic>> childChatsRef() {
+  return childDocRef().collection('chats');
+}
+
+DocumentReference<Map<String, dynamic>> childChatRef(String friendName) {
+  return childChatsRef().doc(chatIdForFriend(friendName));
+}
+
+CollectionReference<Map<String, dynamic>> childMessagesRef(String friendName) {
+  return childChatRef(friendName).collection('messages');
+}
+
+  Stream<Map<String, dynamic>?> chatSummaryStream(String friendName) async* {
+  if (!hasActiveChildSession) {
+    yield null;
+    return;
+  }
+
+  yield* childChatRef(friendName)
       .snapshots()
       .map((doc) => doc.data());
 }
@@ -993,15 +1135,12 @@ Future<String> currentUid() async {
 }
 
 Stream<List<Map<String, dynamic>>> messageStream(String friendName) async* {
-  final uid = await currentUid();
-  final chatId = chatIdForFriend(friendName);
+  if (!hasActiveChildSession) {
+    yield [];
+    return;
+  }
 
-  yield* FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('chats')
-      .doc(chatId)
-      .collection('messages')
+  yield* childMessagesRef(friendName)
       .orderBy('createdAt')
       .snapshots()
       .map((snapshot) => snapshot.docs.map((doc) {
@@ -1015,23 +1154,21 @@ Future<void> addFakeReply({
   required String friendName,
   required String text,
 }) async {
-  final uid = await currentUid();
-  final chatId = chatIdForFriend(friendName);
+  if (!hasActiveChildSession) return;
 
-  final chatRef = FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('chats')
-      .doc(chatId);
+  final chatId = chatIdForFriend(friendName);
+  final chatRef = childChatRef(friendName);
 
   await chatRef.set({
     'friendName': friendName,
     'updatedAt': FieldValue.serverTimestamp(),
     'lastMessage': text,
     'lastSenderUid': 'friend_$chatId',
+    'childId': activeChildId,
+    'parentId': activeParentId,
   }, SetOptions(merge: true));
 
-  await chatRef.collection('messages').add({
+  await childMessagesRef(friendName).add({
     'text': text,
     'senderUid': 'friend_$chatId',
     'createdAt': FieldValue.serverTimestamp(),
@@ -1047,31 +1184,27 @@ Future<void> sendMessageToChat({
   final trimmed = text.trim();
   if (trimmed.isEmpty) return;
 
-  final user = await ensureSignedIn();
-  final uid = user.uid;
-  final chatId = chatIdForFriend(friendName);
+  if (!hasActiveChildSession) {
+    throw Exception('No active child session found.');
+  }
 
-  final chatRef = FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('chats')
-      .doc(chatId);
-
-  final messagesRef = chatRef.collection('messages');
+  final chatRef = childChatRef(friendName);
 
   await chatRef.set({
     'friendName': friendName,
     'updatedAt': FieldValue.serverTimestamp(),
     'lastMessage': trimmed,
-    'lastSenderUid': uid,
+    'lastSenderUid': activeChildId,
+    'childId': activeChildId,
+    'parentId': activeParentId,
   }, SetOptions(merge: true));
 
-  await messagesRef.add({
-  'text': trimmed,
-  'senderUid': uid,
-  'createdAt': FieldValue.serverTimestamp(),
-  'isFlagged': isFlagged,
-});
+  await childMessagesRef(friendName).add({
+    'text': trimmed,
+    'senderUid': activeChildId,
+    'createdAt': FieldValue.serverTimestamp(),
+    'isFlagged': isFlagged,
+  });
 }
 
   void dismissCelebration() {
@@ -1476,7 +1609,6 @@ Future<User> signInParent({
 Future<void> signOutCurrentUser() async {
   await FirebaseAuth.instance.signOut();
   await clearRememberedDeviceMode();
-  notifyListeners();
 }
 
 User? currentAuthUser() {
@@ -2007,22 +2139,10 @@ class ChirpWelcomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Spacer(),
-
-              // Chirp avatar placeholder (we’ll replace later)
               Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.flutter_dash, // placeholder
-                    size: 64,
-                    color: Colors.white,
-                  ),
+                child: Image.asset(
+                  'assets/chirp_welcome.png',
+                  height: 140,
                 ),
               ),
 
@@ -2068,7 +2188,7 @@ class ChirpWelcomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    calmRoute(HomeScreen()),
+                    calmRoute(const HomeScreen()),
                     (_) => false,
                   );
                 },
@@ -2608,10 +2728,11 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       await ensureSignedIn();
 
       await state.rememberChildDevice(
-        parentId: result['parentId']!,
-        childId: result['childId']!,
-        childName: result['childName']!,
-      );
+  parentId: result['parentId']!,
+  childId: result['childId']!,
+  childName: result['childName']!,
+  childAvatar: result['avatar'] ?? 'owl',
+);
 
       if (!mounted) return;
 
@@ -3205,14 +3326,24 @@ const BrandCard(
   ),
 ),
                 const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        Navigator.push(context, calmRoute(const RiteScreen())),
-                    child: const Text('Begin ✨'),
-                  ),
-                ),
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () {
+      final state = AppStateScope.of(context);
+
+      Navigator.push(
+        context,
+        calmRoute(
+          PromiseScreen(
+            name: state.effectiveChildName,
+          ),
+        ),
+      );
+    },
+    child: const Text('Enter Natter ✨'),
+  ),
+),
               ],
             ),
           ),
@@ -6860,8 +6991,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 }
 
           final data = firestoreMessages[i];
-          final currentUser = FirebaseAuth.instance.currentUser;
-          final isMe = data['senderUid'] == currentUser?.uid;
+          final state = AppStateScope.of(context);
+          final isMe = data['senderUid'] == state.activeChildId;
           final isFlagged = data['isFlagged'] == true;
           final text = (data['text'] ?? '') as String;
 
