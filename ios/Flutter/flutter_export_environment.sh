@@ -1,7 +1,8 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/workspaces/codespaces-blank/flutter"
-export "FLUTTER_APPLICATION_PATH=/workspaces/codespaces-blank/natter"
+export "FLUTTER_ROOT=/home/codespace/develop/flutter"
+export "FLUTTER_APPLICATION_PATH=/workspaces/Natter"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/workspaces/Natter/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
