@@ -3273,55 +3273,64 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     });
 
     try {
-      final childUser = await ensureSignedIn();
+  setState(() {
+    _error = 'Signing in...';
+  });
 
-      final result = await state.findChildByAccessCode(_codeController.text);
+  final childUser = await ensureSignedIn();
 
-      if (result == null) {
-        throw Exception('That code was not recognised.');
-      }
+  setState(() {
+    _error = 'Looking up code...';
+  });
 
-      await state.rememberChildDevice(
-  parentId: result['parentId']!,
-  childId: result['childId']!,
-  childName: result['childName']!,
-  childAvatar: result['avatar'] ?? 'owl',
-  childFriendCode: result['friendCode'] ?? '',
-);
+  final result = await state.findChildByAccessCode(_codeController.text);
 
-await FirebaseFirestore.instance
-          .collection('parents')
-          .doc(result['parentId']!)
-          .collection('children')
-          .doc(result['childId']!)
-          .set({
-        'linkedDevice': true,
-        'linkedAuthUid': childUser.uid,
-      }, SetOptions(merge: true));
-
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-  context,
-  calmRoute(
-    ChirpWelcomeScreen(
-      childName: result['childName']!,
-    ),
-  ),
-  (_) => false,
-);
-    } catch (e) {
-      setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
-    }
+  if (result == null) {
+    throw Exception('That code was not recognised.');
   }
+
+  setState(() {
+    _error = 'Remembering child...';
+  });
+
+  await state.rememberChildDevice(
+    parentId: result['parentId']!,
+    childId: result['childId']!,
+    childName: result['childName']!,
+    childAvatar: result['avatar'] ?? 'owl',
+    childFriendCode: result['friendCode'] ?? '',
+  );
+
+  setState(() {
+    _error = 'Linking device...';
+  });
+
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(result['parentId']!)
+      .collection('children')
+      .doc(result['childId']!)
+      .set({
+    'linkedDevice': true,
+    'linkedAuthUid': childUser.uid,
+  }, SetOptions(merge: true));
+
+  if (!mounted) return;
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    calmRoute(
+      ChirpWelcomeScreen(
+        childName: result['childName']!,
+      ),
+    ),
+    (_) => false,
+  );
+} catch (e) {
+  setState(() {
+    _error = e.toString().replaceFirst('Exception: ', '');
+  });
+    }
 
   InputDecoration _fieldDecoration(String label) {
     return InputDecoration(
