@@ -538,6 +538,30 @@ class ParentChildProfile {
   }
 }
 
+class ChildContactRequest {
+  final String id;
+  final String name;
+  final String status;
+
+  const ChildContactRequest({
+    required this.id,
+    required this.name,
+    required this.status,
+  });
+
+  factory ChildContactRequest.fromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? {};
+
+    return ChildContactRequest(
+      id: doc.id,
+      name: (data['name'] ?? '').toString(),
+      status: (data['status'] ?? 'pending').toString(),
+    );
+  }
+}
+
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
   final List<Friend> approvedContacts = [
@@ -3207,6 +3231,146 @@ class ParentChildDetailScreen extends StatelessWidget {
                   ],
                 ),
               ),
+          const SizedBox(height: 18),
+
+StreamBuilder<List<ChildContactRequest>>(
+  stream: AppStateScope.of(context).childContactRequestsStream(
+    parentId: FirebaseAuth.instance.currentUser!.uid,
+    childId: child.childId,
+    status: 'pending',
+  ),
+  builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.16),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.10),
+          ),
+        ),
+        child: Text(
+          'Could not load requests: ${snapshot.error}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.16),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.10),
+          ),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final requests = snapshot.data ?? [];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.10),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Pending requests',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (requests.isEmpty)
+            const Text(
+              'No pending requests.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w700,
+              ),
+            )
+          else
+            ...requests.map((request) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.10),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        request.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await AppStateScope.of(context).approveContactForChild(
+                          parentId: FirebaseAuth.instance.currentUser!.uid,
+                          childId: child.childId,
+                          request: request,
+                        );
+                      },
+                      child: const Text(
+                        'Approve',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await AppStateScope.of(context).blockContactForChild(
+                          parentId: FirebaseAuth.instance.currentUser!.uid,
+                          childId: child.childId,
+                          request: request,
+                        );
+                      },
+                      child: const Text(
+                        'Block',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  },
+),
               const SizedBox(height: 18),
               Container(
                 padding: const EdgeInsets.all(20),
