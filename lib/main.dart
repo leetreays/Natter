@@ -788,6 +788,8 @@ Future<void> markApprovedContactAsSeen(String contactId) async {
   await activeChildApprovedContactsRef().doc(contactId).set({
     'isNew': false,
   }, SetOptions(merge: true));
+}
+
 Future<void> saveChildOnboardingState() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('has_seen_chirp_welcome', hasSeenChirpWelcome);
@@ -1996,6 +1998,8 @@ Future<String> createChildProfile({
     'accessCode': accessCode,
     'friendCode': friendCode,
     'parentId': user.uid,
+    'linkedDevice': false,
+    'linkedAuthUid': null,
   });
 
 await FirebaseFirestore.instance
@@ -3567,13 +3571,12 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       _error = 'Signing in...';
     });
 
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && !currentUser.isAnonymous) {
+      await FirebaseAuth.instance.signOut();
+    }
+
     final childUser = await ensureSignedIn();
-    try {
-      final currentUser = FirebaseAuth.instance.currentUser;
-if (currentUser != null && !currentUser.isAnonymous) {
-  await FirebaseAuth.instance.signOut();
-}
-      final childUser = await ensureSignedIn();
 
     setState(() {
       _error = 'Looking up code...';
@@ -3616,9 +3619,7 @@ if (currentUser != null && !currentUser.isAnonymous) {
     Navigator.pushAndRemoveUntil(
       context,
       calmRoute(
-        ChirpWelcomeScreen(
-          childName: result['childName']!,
-        ),
+        const ChatsScreen(),
       ),
       (_) => false,
     );
@@ -3772,6 +3773,7 @@ if (currentUser != null && !currentUser.isAnonymous) {
     );
   }
 }
+
 class ParentSpaceBackground extends StatelessWidget {
   final Widget child;
 
@@ -6114,7 +6116,6 @@ await showDialog<void>(
 
                       await state.requestContact(
   targetName: friendName,
-  targetParentId: friendResult!['parentId']!,
   targetParentId: friendResult['parentId']!,
   targetChildId: friendResult['childId']!,
   targetFriendCode: friendResult['friendCode']!,
