@@ -488,11 +488,17 @@ class ChildContactRequest {
   final String id;
   final String name;
   final String status;
+  final String targetParentId;
+  final String targetChildId;
+  final String targetFriendCode;
 
   const ChildContactRequest({
     required this.id,
     required this.name,
     required this.status,
+    required this.targetParentId,
+    required this.targetChildId,
+    required this.targetFriendCode,
   });
 
   factory ChildContactRequest.fromDoc(
@@ -504,6 +510,9 @@ class ChildContactRequest {
       id: doc.id,
       name: (data['name'] ?? '').toString(),
       status: (data['status'] ?? 'pending').toString(),
+      targetParentId: (data['targetParentId'] ?? '').toString(),
+      targetChildId: (data['targetChildId'] ?? '').toString(),
+      targetFriendCode: (data['targetFriendCode'] ?? '').toString(),
     );
   }
 }
@@ -534,6 +543,39 @@ class ParentChildProfile {
       avatar: (data['avatar'] ?? 'owl').toString(),
       accessCode: (data['accessCode'] ?? '').toString(),
       linkedDevice: data['linkedDevice'] == true,
+    );
+  }
+}
+
+class ApprovedChildContact {
+  final String id;
+  final String name;
+  final String friendCode;
+  final String targetParentId;
+  final String targetChildId;
+  final bool isNew;
+
+  const ApprovedChildContact({
+    required this.id,
+    required this.name,
+    required this.friendCode,
+    required this.targetParentId,
+    required this.targetChildId,
+    required this.isNew,
+  });
+
+  factory ApprovedChildContact.fromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? {};
+
+    return ApprovedChildContact(
+      id: doc.id,
+      name: (data['name'] ?? '').toString(),
+      friendCode: (data['friendCode'] ?? '').toString(),
+      targetParentId: (data['targetParentId'] ?? '').toString(),
+      targetChildId: (data['targetChildId'] ?? '').toString(),
+      isNew: data['isNew'] == true,
     );
   }
 }
@@ -699,6 +741,53 @@ Stream<List<ChildContactRequest>> childContactRequestsStream({
             .map((doc) => ChildContactRequest.fromDoc(doc))
             .toList(),
       );
+}
+
+CollectionReference<Map<String, dynamic>> parentChildApprovedContactsRef({
+  required String parentId,
+  required String childId,
+}) {
+  return FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .collection('approved_contacts');
+}
+
+CollectionReference<Map<String, dynamic>> activeChildApprovedContactsRef() {
+  if (!hasActiveChildSession) {
+    throw Exception('No active child session found.');
+  }
+
+  return parentChildApprovedContactsRef(
+    parentId: activeParentId!,
+    childId: activeChildId!,
+  );
+}
+
+Stream<List<ApprovedChildContact>> activeChildApprovedContactsStream() async* {
+  if (!hasActiveChildSession) {
+    yield [];
+    return;
+  }
+
+  yield* activeChildApprovedContactsRef()
+      .orderBy('approvedAt', descending: true)
+      .snapshots()
+      .map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ApprovedChildContact.fromDoc(doc))
+            .toList(),
+      );
+}
+
+Future<void> markApprovedContactAsSeen(String contactId) async {
+  if (!hasActiveChildSession) return;
+
+  await activeChildApprovedContactsRef().doc(contactId).set({
+    'isNew': false,
+  }, SetOptions(merge: true));
 }
 
 Future<void> rememberChildDevice({
@@ -1119,8 +1208,13 @@ int coachPrompts = 0;
     notifyListeners();
   }
 
-  Future<void> requestContact(String name) async {
-  final trimmed = name.trim();
+Future<void> requestContact({
+  required String targetName,
+  required String targetParentId,
+  required String targetChildId,
+  required String targetFriendCode,
+}) async {
+  final trimmed = targetName.trim();
   if (trimmed.isEmpty) return;
   if (isApproved(trimmed) || isPending(trimmed)) return;
 
@@ -1134,6 +1228,9 @@ int coachPrompts = 0;
     ).add({
       'name': trimmed,
       'status': 'pending',
+      'targetParentId': targetParentId,
+      'targetChildId': targetChildId,
+      'targetFriendCode': targetFriendCode,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -1184,7 +1281,22 @@ Future<void> approveContactForChild({
   ).doc(request.id).set({
     'name': request.name,
     'status': 'approved',
+    'targetParentId': request.targetParentId,
+    'targetChildId': request.targetChildId,
+    'targetFriendCode': request.targetFriendCode,
     'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  await parentChildApprovedContactsRef(
+    parentId: parentId,
+    childId: childId,
+  ).doc(request.targetChildId).set({
+    'name': request.name,
+    'friendCode': request.targetFriendCode,
+    'targetParentId': request.targetParentId,
+    'targetChildId': request.targetChildId,
+    'approvedAt': FieldValue.serverTimestamp(),
+    'isNew': true,
   }, SetOptions(merge: true));
 }
 
@@ -5936,7 +6048,12 @@ await showDialog<void>(
                         return;
                       }
 
-                      await state.requestContact(friendName);
+                      await state.requestContact(
+  targetName: friendName,
+  targetParentId: friendResult!['parentId']!,
+  targetChildId: friendResult['childId']!,
+  targetFriendCode: friendResult['friendCode']!,
+);
 Navigator.pop(ctx);
 
 if (!state.hasSeenAddFriendSuccess) {
@@ -6516,6 +6633,89 @@ Widget build(BuildContext context) {
 
             _friendCodeCard(context, state),
             const SizedBox(height: 12),
+
+            StreamBuilder<List<ApprovedChildContact>>(
+  stream: state.activeChildApprovedContactsStream(),
+  builder: (context, snapshot) {
+    final approved = snapshot.data ?? [];
+
+    if (approved.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        ...approved.map((contact) {
+          final hasGlow = contact.isNew;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: BrandCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: hasGlow
+                        ? [
+                            BoxShadow(
+                              color: NatterBrand.green.withOpacity(0.45),
+                              blurRadius: 14,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: CircleAvatar(
+                    radius: 22,
+                    backgroundColor: hasGlow
+                        ? NatterBrand.green.withOpacity(0.25)
+                        : NatterBrand.yellow.withOpacity(0.35),
+                    child: Text(
+                      contact.name.substring(0, 1),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(
+                  contact.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                subtitle: Text(
+                  hasGlow
+                      ? 'Newly approved friend'
+                      : 'Ready to chat',
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white,
+                ),
+                onTap: () async {
+                  await state.markApprovedContactAsSeen(contact.id);
+
+                  if (!context.mounted) return;
+
+                  Navigator.push(
+                    context,
+                    calmRoute(ChatScreen(contactName: contact.name)),
+                  );
+                },
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
+      ],
+    );
+  },
+),
 
             if (schoolFriends.isNotEmpty) ...[
               BrandCard(
