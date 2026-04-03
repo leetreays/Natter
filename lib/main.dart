@@ -788,6 +788,41 @@ Future<void> markApprovedContactAsSeen(String contactId) async {
   await activeChildApprovedContactsRef().doc(contactId).set({
     'isNew': false,
   }, SetOptions(merge: true));
+Future<void> saveChildOnboardingState() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('has_seen_chirp_welcome', hasSeenChirpWelcome);
+  await prefs.setBool('has_sent_first_message', hasSentFirstMessage);
+  await prefs.setBool('has_seen_first_reply', hasSeenFirstReply);
+  await prefs.setBool('has_seen_add_friend_prompt', hasSeenAddFriendPrompt);
+  await prefs.setBool('has_seen_add_friend_success', hasSeenAddFriendSuccess);
+  await prefs.setInt('onboarding_step', onboardingStep);
+}
+
+Future<void> hydrateChildOnboardingState() async {
+  final prefs = await SharedPreferences.getInstance();
+  hasSeenChirpWelcome = prefs.getBool('has_seen_chirp_welcome') ?? false;
+  hasSentFirstMessage = prefs.getBool('has_sent_first_message') ?? false;
+  hasSeenFirstReply = prefs.getBool('has_seen_first_reply') ?? false;
+  hasSeenAddFriendPrompt = prefs.getBool('has_seen_add_friend_prompt') ?? false;
+  hasSeenAddFriendSuccess = prefs.getBool('has_seen_add_friend_success') ?? false;
+  onboardingStep = prefs.getInt('onboarding_step') ?? 0;
+}
+
+Future<void> clearChildOnboardingState() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('has_seen_chirp_welcome');
+  await prefs.remove('has_sent_first_message');
+  await prefs.remove('has_seen_first_reply');
+  await prefs.remove('has_seen_add_friend_prompt');
+  await prefs.remove('has_seen_add_friend_success');
+  await prefs.remove('onboarding_step');
+
+  hasSeenChirpWelcome = false;
+  hasSentFirstMessage = false;
+  hasSeenFirstReply = false;
+  hasSeenAddFriendPrompt = false;
+  hasSeenAddFriendSuccess = false;
+  onboardingStep = 0;
 }
 
 Future<void> rememberChildDevice({
@@ -822,6 +857,7 @@ Future<void> hydrateRememberedChildSession() async {
   final prefs = await SharedPreferences.getInstance();
   _childSession = ChildSession.fromPrefs(prefs);
   activeChildFriendCode = await getRememberedChildFriendCode();
+  await hydrateChildOnboardingState();
   notifyListeners();
 }
 
@@ -837,6 +873,7 @@ Future<void> clearChildSession() async {
 
   _childSession = null;
   activeChildFriendCode = null;
+  await clearChildOnboardingState();
   notifyListeners();
 }
 
@@ -877,6 +914,7 @@ Future<String?> getRememberedChildAvatar() async {
 
 Future<void> clearRememberedDeviceMode() async {
   await clearChildSession();
+  await FirebaseAuth.instance.signOut();
 }
 
 Future<String?> getRememberedChildFriendCode() async {
@@ -2281,7 +2319,7 @@ void initState() {
     if (mode == 'child') {
       Navigator.pushReplacement(
         context,
-        calmRoute(HomeScreen()),
+        calmRoute(ChatsScreen()),
       );
       return;
     }
@@ -2515,7 +2553,7 @@ class ChirpWelcomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(
                     context,
-                    calmRoute(const HomeScreen()),
+                    calmRoute(const ChatsScreen()),
                     (_) => false,
                   );
                 },
@@ -3530,6 +3568,12 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     });
 
     final childUser = await ensureSignedIn();
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+if (currentUser != null && !currentUser.isAnonymous) {
+  await FirebaseAuth.instance.signOut();
+}
+      final childUser = await ensureSignedIn();
 
     setState(() {
       _error = 'Looking up code...';
@@ -6012,6 +6056,26 @@ await showDialog<void>(
                       final friendResult = await state.findChildByFriendCode(code);
                       final friendName = friendResult?['name'];
 
+                        if (friendResult == null || friendName == null || friendName.isEmpty) {
+    Navigator.pop(ctx);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('That friend code was not recognised.'),
+      ),
+    );
+    return;
+  }
+
+  if (friendResult['childId'] == state.activeChildId) {
+    Navigator.pop(ctx);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('That is your own friend code.'),
+      ),
+    );
+    return;
+  }
+
                       if (friendName == null) {
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -6051,6 +6115,7 @@ await showDialog<void>(
                       await state.requestContact(
   targetName: friendName,
   targetParentId: friendResult!['parentId']!,
+  targetParentId: friendResult['parentId']!,
   targetChildId: friendResult['childId']!,
   targetFriendCode: friendResult['friendCode']!,
 );
@@ -6059,6 +6124,8 @@ Navigator.pop(ctx);
 if (!state.hasSeenAddFriendSuccess) {
   state.hasSeenAddFriendSuccess = true;
   state.onboardingStep = 4;
+  await state.saveChildOnboardingState();
+  state.notifyListeners();
   
                         showDialog(
                           context: context,
@@ -6469,6 +6536,8 @@ Widget build(BuildContext context) {
 
     if (!state.hasSeenChirpWelcome && state.isInOnboarding) {
       state.hasSeenChirpWelcome = true;
+      await state.saveChildOnboardingState();
+      state.notifyListeners();
 
       await showDialog(
         context: context,
@@ -6869,6 +6938,30 @@ Widget build(BuildContext context) {
               );
             }).toList(),
 
+                        const SizedBox(height: 12),
+            Center(
+              child: TextButton(
+                onPressed: () async {
+                  await AppStateScope.of(context).clearRememberedDeviceMode();
+
+                  if (!context.mounted) return;
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    calmRoute(const GatewayScreen()),
+                    (_) => false,
+                  );
+                },
+                child: const Text(
+                  'Reset this device',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 90),
           ],
         ),
@@ -6896,13 +6989,12 @@ Widget build(BuildContext context) {
               style: TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
-         ),
+        ),
       ],
     ),
   );
- }
 }
-    
+}
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
@@ -7588,6 +7680,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   if (isFirstMessage) {
     state.hasSentFirstMessage = true;
     state.onboardingStep = 1;
+    await state.saveChildOnboardingState();
+    state.notifyListeners();
   }
 
   state.recordPositiveMessage();
@@ -7659,6 +7753,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
     state.hasSeenFirstReply = true;
     state.onboardingStep = 2;
+    await state.saveChildOnboardingState();
+    state.notifyListeners();
 
     showDialog(
       context: context,
@@ -7666,12 +7762,14 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
         imagePath: 'assets/chirp_reply.png',
         message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
         buttonText: 'Continue',
-        onPressed: () {
+        onPressed: () async {
           Navigator.pop(dialogContext);
 
           if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
             state.hasSeenAddFriendPrompt = true;
             state.onboardingStep = 3;
+            await state.saveChildOnboardingState();
+            state.notifyListeners();
 
             showDialog(
               context: context,
