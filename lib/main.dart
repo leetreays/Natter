@@ -538,30 +538,6 @@ class ParentChildProfile {
   }
 }
 
-class ChildContactRequest {
-  final String id;
-  final String name;
-  final String status;
-
-  const ChildContactRequest({
-    required this.id,
-    required this.name,
-    required this.status,
-  });
-
-  factory ChildContactRequest.fromDoc(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
-    final data = doc.data() ?? {};
-
-    return ChildContactRequest(
-      id: doc.id,
-      name: (data['name'] ?? '').toString(),
-      status: (data['status'] ?? 'pending').toString(),
-    );
-  }
-}
-
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
   final List<Friend> approvedContacts = [
