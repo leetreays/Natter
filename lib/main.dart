@@ -3265,72 +3265,79 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
   }
 
   Future<void> _continue() async {
-    final state = AppStateScope.of(context);
+  final state = AppStateScope.of(context);
 
+  setState(() {
+    _loading = true;
+    _error = null;
+  });
+
+  try {
     setState(() {
-      _loading = true;
-      _error = null;
+      _error = 'Signing in...';
     });
 
-    try {
-  setState(() {
-    _error = 'Signing in...';
-  });
+    final childUser = await ensureSignedIn();
 
-  final childUser = await ensureSignedIn();
+    setState(() {
+      _error = 'Looking up code...';
+    });
 
-  setState(() {
-    _error = 'Looking up code...';
-  });
+    final result = await state.findChildByAccessCode(_codeController.text);
 
-  final result = await state.findChildByAccessCode(_codeController.text);
-
-  if (result == null) {
-    throw Exception('That code was not recognised.');
-  }
-
-  setState(() {
-    _error = 'Remembering child...';
-  });
-
-  await state.rememberChildDevice(
-    parentId: result['parentId']!,
-    childId: result['childId']!,
-    childName: result['childName']!,
-    childAvatar: result['avatar'] ?? 'owl',
-    childFriendCode: result['friendCode'] ?? '',
-  );
-
-  setState(() {
-    _error = 'Linking device...';
-  });
-
-  await FirebaseFirestore.instance
-      .collection('parents')
-      .doc(result['parentId']!)
-      .collection('children')
-      .doc(result['childId']!)
-      .set({
-    'linkedDevice': true,
-    'linkedAuthUid': childUser.uid,
-  }, SetOptions(merge: true));
-
-  if (!mounted) return;
-
-  Navigator.pushAndRemoveUntil(
-    context,
-    calmRoute(
-      ChirpWelcomeScreen(
-        childName: result['childName']!,
-      ),
-    ),
-    (_) => false,
-  );
-} catch (e) {
-  setState(() {
-    _error = e.toString().replaceFirst('Exception: ', '');
-  });
+    if (result == null) {
+      throw Exception('That code was not recognised.');
     }
+
+    setState(() {
+      _error = 'Remembering child...';
+    });
+
+    await state.rememberChildDevice(
+      parentId: result['parentId']!,
+      childId: result['childId']!,
+      childName: result['childName']!,
+      childAvatar: result['avatar'] ?? 'owl',
+      childFriendCode: result['friendCode'] ?? '',
+    );
+
+    setState(() {
+      _error = 'Linking device...';
+    });
+
+    await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(result['parentId']!)
+        .collection('children')
+        .doc(result['childId']!)
+        .set({
+      'linkedDevice': true,
+      'linkedAuthUid': childUser.uid,
+    }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(
+        ChirpWelcomeScreen(
+          childName: result['childName']!,
+        ),
+      ),
+      (_) => false,
+    );
+  } catch (e) {
+    setState(() {
+      _error = e.toString().replaceFirst('Exception: ', '');
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+}
 
   InputDecoration _fieldDecoration(String label) {
     return InputDecoration(
