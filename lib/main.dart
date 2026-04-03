@@ -539,7 +539,7 @@ class ParentChildProfile {
 }
 
 class AppState extends ChangeNotifier {
-  final String myFriendCode = 'NAT-2048';
+  String? activeChildFriendCode;
   final List<Friend> approvedContacts = [
     Friend(name: 'Dad', friendshipPoints: 40)
   ..friendshipMoments.add('⭐ You became friends'),
@@ -555,6 +555,8 @@ class AppState extends ChangeNotifier {
       .where((f) => f.schoolName == schoolName)
       .toList();
 }
+
+String get myFriendCode => activeChildFriendCode ?? 'NAT-0000';
 
   ChildSession? _childSession;
 
@@ -579,6 +581,24 @@ class AppState extends ChangeNotifier {
           ? _childSession!.childAvatar
           : 'owl';
 
+String generateChildFriendCode(String childName) {
+  final cleaned = childName
+      .trim()
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^A-Z]'), '');
+
+  final prefix = cleaned.isEmpty
+      ? 'NAT'
+      : cleaned.length >= 3
+          ? cleaned.substring(0, 3)
+          : cleaned.padRight(3, 'X');
+
+  final random = Random();
+  final number = 1000 + random.nextInt(9000);
+
+  return '$prefix-$number';
+}
+
 String generateChildAccessCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   final random = Random();
@@ -588,23 +608,43 @@ String generateChildAccessCode() {
 
 Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
   final code = rawCode.trim().toUpperCase();
-
   if (code.isEmpty) return null;
 
-  final doc = await FirebaseFirestore.instance
+  final lookupDoc = await FirebaseFirestore.instance
       .collection('child_access_codes')
       .doc(code)
       .get();
 
-  if (!doc.exists) return null;
+  if (!lookupDoc.exists) return null;
 
-  final data = doc.data()!;
+  final data = lookupDoc.data()!;
 
   return {
     'parentId': (data['parentId'] ?? '').toString(),
     'childId': (data['childId'] ?? '').toString(),
     'childName': (data['childName'] ?? '').toString(),
     'avatar': (data['avatar'] ?? 'owl').toString(),
+    'friendCode': (data['friendCode'] ?? '').toString(),
+  };
+}
+
+Future<Map<String, String>?> findChildByFriendCode(String rawCode) async {
+  final code = rawCode.trim().toUpperCase();
+  if (code.isEmpty) return null;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('child_friend_codes')
+      .doc(code)
+      .get();
+
+  if (!doc.exists) return null;
+
+  final data = doc.data()!;
+  return {
+    'parentId': (data['parentId'] ?? '').toString(),
+    'childId': (data['childId'] ?? '').toString(),
+    'name': (data['childName'] ?? '').toString(),
+    'friendCode': (data['friendCode'] ?? '').toString(),
   };
 }
 
@@ -666,6 +706,7 @@ Future<void> rememberChildDevice({
   required String childId,
   required String childName,
   required String childAvatar,
+  required String childFriendCode,
 }) async {
   final prefs = await SharedPreferences.getInstance();
 
@@ -681,13 +722,17 @@ Future<void> rememberChildDevice({
     await prefs.setString(entry.key, entry.value);
   }
 
+  await prefs.setString('child_friend_code', childFriendCode);
+
   _childSession = session;
+  activeChildFriendCode = childFriendCode;
   notifyListeners();
 }
 
 Future<void> hydrateRememberedChildSession() async {
   final prefs = await SharedPreferences.getInstance();
   _childSession = ChildSession.fromPrefs(prefs);
+  activeChildFriendCode = await getRememberedChildFriendCode();
   notifyListeners();
 }
 
@@ -699,8 +744,10 @@ Future<void> clearChildSession() async {
   await prefs.remove('child_id');
   await prefs.remove('child_name');
   await prefs.remove('child_avatar');
+  await prefs.remove('child_friend_code');
 
   _childSession = null;
+  activeChildFriendCode = null;
   notifyListeners();
 }
 
@@ -741,6 +788,11 @@ Future<String?> getRememberedChildAvatar() async {
 
 Future<void> clearRememberedDeviceMode() async {
   await clearChildSession();
+}
+
+Future<String?> getRememberedChildFriendCode() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString('child_friend_code');
 }
 
   String? lastQuestCelebrationFriend;
@@ -1120,6 +1172,36 @@ int coachPrompts = 0;
     pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
     notifyListeners();
   }
+
+Future<void> approveContactForChild({
+  required String parentId,
+  required String childId,
+  required ChildContactRequest request,
+}) async {
+  await parentChildContactRequestsRef(
+    parentId: parentId,
+    childId: childId,
+  ).doc(request.id).set({
+    'name': request.name,
+    'status': 'approved',
+    'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
+Future<void> blockContactForChild({
+  required String parentId,
+  required String childId,
+  required ChildContactRequest request,
+}) async {
+  await parentChildContactRequestsRef(
+    parentId: parentId,
+    childId: childId,
+  ).doc(request.id).set({
+    'name': request.name,
+    'status': 'blocked',
+    'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
 
   void setQuietEnabled(bool v) {
     quietHoursEnabled = v;
@@ -1750,6 +1832,8 @@ Future<String> createChildProfile({
 
   final accessCode = generateChildAccessCode();
 
+  final friendCode = generateChildFriendCode(trimmedName);
+
   final childRef = await FirebaseFirestore.instance
       .collection('parents')
       .doc(user.uid)
@@ -1760,17 +1844,30 @@ Future<String> createChildProfile({
     'createdAt': FieldValue.serverTimestamp(),
     'role': 'child',
     'accessCode': accessCode,
+    'friendCode': friendCode,
     'parentId': user.uid,
   });
 
-  await FirebaseFirestore.instance
-      .collection('child_access_codes')
-      .doc(accessCode)
+await FirebaseFirestore.instance
+    .collection('child_access_codes')
+    .doc(accessCode)
+    .set({
+  'parentId': user.uid,
+  'childId': childRef.id,
+  'childName': trimmedName,
+  'avatar': avatar,
+  'friendCode': friendCode,
+  'createdAt': FieldValue.serverTimestamp(),
+});
+
+    await FirebaseFirestore.instance
+      .collection('child_friend_codes')
+      .doc(friendCode)
       .set({
     'parentId': user.uid,
     'childId': childRef.id,
     'childName': trimmedName,
-    'avatar': avatar,
+    'friendCode': friendCode,
     'createdAt': FieldValue.serverTimestamp(),
   });
 
@@ -3176,19 +3273,20 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     });
 
     try {
+      final childUser = await ensureSignedIn();
+
       final result = await state.findChildByAccessCode(_codeController.text);
 
       if (result == null) {
         throw Exception('That code was not recognised.');
       }
 
-      final childUser = await ensureSignedIn();
-
       await state.rememberChildDevice(
   parentId: result['parentId']!,
   childId: result['childId']!,
   childName: result['childName']!,
   childAvatar: result['avatar'] ?? 'owl',
+  childFriendCode: result['friendCode'] ?? '',
 );
 
 await FirebaseFirestore.instance
@@ -5643,7 +5741,8 @@ await showDialog<void>(
                   child: ElevatedButton(
                     onPressed: () async {
                       final code = controller.text.trim().toUpperCase();
-                      final friendName = FriendDirectory.nameForCode(code);
+                      final friendResult = await state.findChildByFriendCode(code);
+                      final friendName = friendResult?['name'];
 
                       if (friendName == null) {
                         Navigator.pop(ctx);
@@ -6184,7 +6283,7 @@ Widget build(BuildContext context) {
     ),
     child: Stack(
       children: [
-        ListView(
+            ListView(
           padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
           children: [
             if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
@@ -6212,61 +6311,57 @@ Widget build(BuildContext context) {
               const SizedBox(height: 12),
             ],
 
-            if (!state.isInOnboarding) ...[
-              BrandCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Daily Spark',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
+            BrandCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Daily Spark',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.todaySpark,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontWeight: FontWeight.w700,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.todaySpark,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {
-                          state.recordConversationStarterUse();
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        state.recordConversationStarterUse();
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Nice start! 🌟'),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'Try it',
-                          style: TextStyle(
-                            color: NatterBrand.yellow,
-                            fontWeight: FontWeight.w900,
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Nice start! 🌟'),
                           ),
+                        );
+                      },
+                      child: const Text(
+                        'Try it',
+                        style: TextStyle(
+                          color: NatterBrand.yellow,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-            ],
+            ),
+            const SizedBox(height: 12),
 
-            if (!state.isInOnboarding) ...[
-              _friendCodeCard(context, state),
-              const SizedBox(height: 12),
-            ],
+            _friendCodeCard(context, state),
+            const SizedBox(height: 12),
 
-            if (!state.isInOnboarding && schoolFriends.isNotEmpty) ...[
+            if (schoolFriends.isNotEmpty) ...[
               BrandCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -6445,11 +6540,11 @@ Widget build(BuildContext context) {
               style: TextStyle(fontWeight: FontWeight.w900),
             ),
           ),
-        ),
+         ),
       ],
     ),
   );
-}
+ }
 }
     
               
