@@ -7803,44 +7803,34 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   _scrollToBottom();
 
   if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
-    state.hasSeenFirstReply = true;
-    state.onboardingStep = 2;
+  state.hasSeenFirstReply = true;
+  state.onboardingStep = 2;
+  await state.saveChildOnboardingState();
+  state.notifyListeners();
+
+  await showDialog(
+    context: context,
+    builder: (dialogContext) => ChirpDialogCard(
+      imagePath: 'assets/chirp_reply.png',
+      message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
+      buttonText: 'Continue',
+      onPressed: () {
+        Navigator.pop(dialogContext);
+      },
+    ),
+  );
+
+  if (!mounted) return;
+
+  if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
+    state.hasSeenAddFriendPrompt = true;
+    state.onboardingStep = 3;
     await state.saveChildOnboardingState();
     state.notifyListeners();
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => ChirpDialogCard(
-        imagePath: 'assets/chirp_reply.png',
-        message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-        buttonText: 'Continue',
-        onPressed: () async {
-          Navigator.pop(dialogContext);
-
-          if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
-            state.hasSeenAddFriendPrompt = true;
-            state.onboardingStep = 3;
-            await state.saveChildOnboardingState();
-            state.notifyListeners();
-
-            showDialog(
-              context: context,
-              builder: (nextDialogContext) => ChirpDialogCard(
-                imagePath: 'assets/chirp_prompt.png',
-                message: 'You’re doing great! Want to add another friend? 👋',
-                buttonText: 'Add a friend',
-                onPressed: () {
-                  Navigator.pop(nextDialogContext);
-                  const ChatsScreen()._addFriendDialog(context);
-                },
-              ),
-            );
-          }
-        },
-      ),
-    );
+    await const ChatsScreen()._addFriendDialog(context);
   }
-
+}
   _startStallTimer();
 }
   
