@@ -901,6 +901,20 @@ Future<ChildSession?> getRememberedChildSession() async {
   return ChildSession.fromPrefs(prefs);
 }
 
+Future<void> unlinkActiveChildDevice() async {
+  if (!hasActiveChildSession) return;
+
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(activeParentId!)
+      .collection('children')
+      .doc(activeChildId!)
+      .set({
+    'linkedDevice': false,
+    'linkedAuthUid': null,
+  }, SetOptions(merge: true));
+}
+
 Future<void> rememberParentDevice() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString('device_mode', 'parent');
@@ -932,6 +946,10 @@ Future<String?> getRememberedChildAvatar() async {
 }
 
 Future<void> clearRememberedDeviceMode() async {
+  if (hasActiveChildSession) {
+    await unlinkActiveChildDevice();
+  }
+
   await clearChildSession();
   await FirebaseAuth.instance.signOut();
 }
@@ -6653,11 +6671,20 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    child: Stack(
-      children: [
-            ListView(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
-          children: [
+    floatingActionButton: FloatingActionButton.extended(
+    onPressed: () => _addFriendDialog(context),
+    backgroundColor: NatterBrand.green,
+    foregroundColor: Colors.black,
+    icon: const Icon(Icons.person_add_alt_1_rounded),
+    label: const Text(
+      'Add Friend',
+      style: TextStyle(fontWeight: FontWeight.w900),
+    ),
+  ),
+  floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      child: ListView(
+    padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
+    children: [
             if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
               BrandCard(
                 child: Row(
@@ -7050,35 +7077,8 @@ Widget build(BuildContext context) {
 
             const SizedBox(height: 28),
           ],
-        ),
-
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: ElevatedButton.icon(
-            onPressed: () => _addFriendDialog(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: NatterBrand.green,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              elevation: 8,
-            ),
-            icon: const Icon(Icons.person_add_alt_1_rounded),
-            label: const Text(
-              'Add Friend',
-              style: TextStyle(fontWeight: FontWeight.w900),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+        ),        
+    );
 }
 }
               
