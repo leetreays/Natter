@@ -902,7 +902,9 @@ Future<ChildSession?> getRememberedChildSession() async {
 }
 
 Future<void> unlinkActiveChildDevice() async {
-  if (!hasActiveChildSession) return;
+  if (!hasActiveChildSession) {
+    throw Exception('No active child session found.');
+  }
 
   await FirebaseFirestore.instance
       .collection('parents')
@@ -946,10 +948,7 @@ Future<String?> getRememberedChildAvatar() async {
 }
 
 Future<void> clearRememberedDeviceMode() async {
-  if (hasActiveChildSession) {
-    await unlinkActiveChildDevice();
-  }
-
+  await unlinkActiveChildDevice();
   await clearChildSession();
   await FirebaseAuth.instance.signOut();
 }
@@ -6579,50 +6578,7 @@ Widget build(BuildContext context) {
           ))
       .toList();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    if (!context.mounted) return;
-
-    if (!state.hasSeenChirpWelcome && state.isInOnboarding) {
-      state.hasSeenChirpWelcome = true;
-      await state.saveChildOnboardingState();
-      state.notifyListeners();
-
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => ChirpDialogCard(
-          imagePath: 'assets/chirp_welcome.png',
-          message: "Hi, I’m Chirp! Let’s say hello to your first friend 👋",
-          buttonText: 'Let’s go',
-          onPressed: () => Navigator.pop(dialogContext),
-        ),
-      );
-    }
-
-    final title = state.celebrationTitle;
-    final message = state.celebrationMessage;
-
-    if (title != null && message != null) {
-      if (title == 'You’re Ready!') {
-        state.dismissCelebration();
-
-        Navigator.push(
-          context,
-          calmRoute(const GraduationScreen()),
-        );
-        return;
-      }
-
-      state.dismissCelebration();
-
-      await _showCelebrationCard(
-        context,
-        title: title,
-        message: message,
-      );
-    }
-  });
-
-  return BrandScaffold(
+    return BrandScaffold(
     appBar: AppBar(
       title: const BrandedAppBarTitle(title: 'Chats'),
       actions: [
@@ -7055,16 +7011,26 @@ Widget build(BuildContext context) {
             Center(
               child: TextButton(
                 onPressed: () async {
-                  await AppStateScope.of(context).clearRememberedDeviceMode();
+  try {
+    await AppStateScope.of(context).clearRememberedDeviceMode();
 
-                  if (!context.mounted) return;
+    if (!context.mounted) return;
 
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    calmRoute(const GatewayScreen()),
-                    (_) => false,
-                  );
-                },
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(const GatewayScreen()),
+      (_) => false,
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not reset this device: $e'),
+      ),
+    );
+  }
+},
                 child: const Text(
                   'Reset this device',
                   style: TextStyle(
