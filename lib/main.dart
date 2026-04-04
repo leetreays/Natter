@@ -836,6 +836,8 @@ Future<void> rememberChildDevice({
 }) async {
   final prefs = await SharedPreferences.getInstance();
 
+  await prefs.setString('device_mode', 'child');
+
   final session = ChildSession(
     parentId: parentId,
     childId: childId,
@@ -2321,12 +2323,24 @@ void initState() {
     }
 
     if (mode == 'child') {
-      Navigator.pushReplacement(
-        context,
-        calmRoute(ChatsScreen()),
-      );
-      return;
-    }
+  await state.hydrateRememberedChildSession();
+
+  if (!mounted) return;
+
+  if (!state.hasActiveChildSession) {
+    Navigator.pushReplacement(
+      context,
+      calmRoute(const GatewayScreen()),
+    );
+    return;
+  }
+
+  Navigator.pushReplacement(
+    context,
+    calmRoute(const ChatsScreen()),
+  );
+  return;
+}
 
     Navigator.pushReplacement(
       context,
@@ -5528,7 +5542,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final displayName = state.lastName ?? 'Natter User';
+    final displayName = state.effectiveChildName;
 
     return BrandScaffold(
       appBar: AppBar(
@@ -6339,7 +6353,7 @@ if (!state.hasSeenAddFriendSuccess) {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  state.lastName ?? 'Your profile',
+                  state.effectiveChildName,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -6963,7 +6977,7 @@ Widget build(BuildContext context) {
               ),
             ),
 
-            const SizedBox(height: 90),
+            const SizedBox(height: 28),
           ],
         ),
 
