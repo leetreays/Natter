@@ -948,9 +948,7 @@ Future<String?> getRememberedChildAvatar() async {
 }
 
 Future<void> clearRememberedDeviceMode() async {
-  await unlinkActiveChildDevice();
   await clearChildSession();
-  await FirebaseAuth.instance.signOut();
 }
 
 Future<String?> getRememberedChildFriendCode() async {
@@ -6173,18 +6171,17 @@ if (!state.hasSeenAddFriendSuccess) {
   state.onboardingStep = 4;
   await state.saveChildOnboardingState();
   state.notifyListeners();
-  
-                        showDialog(
-                          context: context,
-                          builder: (dialogContext) => ChirpDialogCard(
-                            imagePath: 'assets/chirp_reply.png',
-                            message:
-    'Nice work — your friend request is on its way 💛\nA parent will approve it soon.\n\nYou’re ready to keep going on your own.',
-                            buttonText: 'Continue',
-                            onPressed: () => Navigator.pop(dialogContext),
-                          ),
-                        );
-                      }
+}
+
+if (!context.mounted) return;
+
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text(
+      '$friendName is now waiting for parent approval ⏳',
+    ),
+  ),
+);
                     },
                     child: const Text('Request'),
                   ),
