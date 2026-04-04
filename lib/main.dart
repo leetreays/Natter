@@ -743,6 +743,21 @@ Stream<List<ChildContactRequest>> childContactRequestsStream({
       );
 }
 
+Stream<List<ChildContactRequest>> activeChildContactRequestsStream({
+  String? status,
+}) async* {
+  if (!hasActiveChildSession) {
+    yield [];
+    return;
+  }
+
+  yield* childContactRequestsStream(
+    parentId: activeParentId!,
+    childId: activeChildId!,
+    status: status,
+  );
+}
+
 CollectionReference<Map<String, dynamic>> parentChildApprovedContactsRef({
   required String parentId,
   required String childId,
@@ -6717,6 +6732,62 @@ Widget build(BuildContext context) {
 
             _friendCodeCard(context, state),
             const SizedBox(height: 12),
+
+            StreamBuilder<List<ChildContactRequest>>(
+  stream: state.activeChildContactRequestsStream(status: 'pending'),
+  builder: (context, snapshot) {
+    final pending = snapshot.data ?? [];
+
+    if (pending.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        ...pending.map((request) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: BrandCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.08),
+                  ),
+                  child: const CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.transparent,
+                    child: Icon(
+                      Icons.hourglass_top_rounded,
+                      color: NatterBrand.yellow,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  request.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Waiting for parent approval',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                trailing: const Icon(
+                  Icons.schedule_rounded,
+                  color: Colors.white70,
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 12),
+      ],
+    );
+  },
+),
 
             StreamBuilder<List<ApprovedChildContact>>(
   stream: state.activeChildApprovedContactsStream(),
