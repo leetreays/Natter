@@ -492,6 +492,11 @@ class ChildContactRequest {
   final String targetChildId;
   final String targetFriendCode;
 
+  final String requesterParentId;
+  final String requesterChildId;
+  final String requesterFriendCode;
+  final String requesterName;
+
   const ChildContactRequest({
     required this.id,
     required this.name,
@@ -499,6 +504,10 @@ class ChildContactRequest {
     required this.targetParentId,
     required this.targetChildId,
     required this.targetFriendCode,
+    required this.requesterParentId,
+    required this.requesterChildId,
+    required this.requesterFriendCode,
+    required this.requesterName,
   });
 
   factory ChildContactRequest.fromDoc(
@@ -513,6 +522,10 @@ class ChildContactRequest {
       targetParentId: (data['targetParentId'] ?? '').toString(),
       targetChildId: (data['targetChildId'] ?? '').toString(),
       targetFriendCode: (data['targetFriendCode'] ?? '').toString(),
+      requesterParentId: (data['requesterParentId'] ?? '').toString(),
+      requesterChildId: (data['requesterChildId'] ?? '').toString(),
+      requesterFriendCode: (data['requesterFriendCode'] ?? '').toString(),
+      requesterName: (data['requesterName'] ?? '').toString(),
     );
   }
 }
@@ -1295,14 +1308,21 @@ Future<void> requestContact({
 
   if (hasActiveChildSession) {
     await parentChildContactRequestsRef(
-      parentId: activeParentId!,
-      childId: activeChildId!,
+      parentId: targetParentId,
+      childId: targetChildId,
     ).add({
-      'name': trimmed,
+      'name': effectiveChildName,
       'status': 'pending',
+
       'targetParentId': targetParentId,
       'targetChildId': targetChildId,
       'targetFriendCode': targetFriendCode,
+
+      'requesterParentId': activeParentId,
+      'requesterChildId': activeChildId,
+      'requesterFriendCode': myFriendCode,
+      'requesterName': effectiveChildName,
+
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
@@ -1356,17 +1376,45 @@ Future<void> approveContactForChild({
     'targetParentId': request.targetParentId,
     'targetChildId': request.targetChildId,
     'targetFriendCode': request.targetFriendCode,
+    'requesterParentId': request.requesterParentId,
+    'requesterChildId': request.requesterChildId,
+    'requesterFriendCode': request.requesterFriendCode,
+    'requesterName': request.requesterName,
     'createdAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
+
+  final approvedChildDoc = await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .get();
+
+  final approvedChildData = approvedChildDoc.data() ?? {};
+  final approvedChildName = (approvedChildData['name'] ?? '').toString();
+  final approvedChildFriendCode =
+      (approvedChildData['friendCode'] ?? '').toString();
 
   await parentChildApprovedContactsRef(
     parentId: parentId,
     childId: childId,
-  ).doc(request.targetChildId).set({
-    'name': request.name,
-    'friendCode': request.targetFriendCode,
-    'targetParentId': request.targetParentId,
-    'targetChildId': request.targetChildId,
+  ).doc(request.requesterChildId).set({
+    'name': request.requesterName,
+    'friendCode': request.requesterFriendCode,
+    'targetParentId': request.requesterParentId,
+    'targetChildId': request.requesterChildId,
+    'approvedAt': FieldValue.serverTimestamp(),
+    'isNew': true,
+  }, SetOptions(merge: true));
+
+  await parentChildApprovedContactsRef(
+    parentId: request.requesterParentId,
+    childId: request.requesterChildId,
+  ).doc(childId).set({
+    'name': approvedChildName,
+    'friendCode': approvedChildFriendCode,
+    'targetParentId': parentId,
+    'targetChildId': childId,
     'approvedAt': FieldValue.serverTimestamp(),
     'isNew': true,
   }, SetOptions(merge: true));
@@ -3540,7 +3588,7 @@ StreamBuilder<List<ChildContactRequest>>(
                   children: [
                     Expanded(
                       child: Text(
-                        request.name,
+                        request.requesterName,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
