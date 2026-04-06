@@ -2275,7 +2275,6 @@ class BubblyBackground extends StatelessWidget {
             ),
           ),
         ),
-        Positioned.fill(child: CustomPaint(painter: _ConfettiPainter())),
         child,
       ],
     );
