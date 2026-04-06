@@ -7402,99 +7402,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return result ?? false;
   }
 
-    final selected = await showDialog<String?>(
-      context: context,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(24),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.82),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Choose a reaction',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.center,
-                  children: NatterReaction.allowed.map((emoji) {
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(999),
-                      onTap: () => Navigator.pop(ctx, emoji),
-                      child: Container(
-                        width: 54,
-                        height: 54,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.18),
-                          ),
-                        ),
-                        child: Text(
-                          emoji,
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx, '__remove__'),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.white.withOpacity(0.22)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Remove reaction',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (selected == null) return;
-
-    setState(() {
-      if (selected == '__remove__') {
-        msg.reaction = null;
-      } else if (msg.reaction == selected) {
-        msg.reaction = null;
-      } else {
-        msg.reaction = selected;
-      }
-    });
-  }
-
 Future<void> _pickStarter() async {
   final controllerText = await showDialog<String?>(
     context: context,
@@ -7743,17 +7650,10 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   }
 
   if (state.lastQuestCelebrationFriend == widget.contactName) {
-    // Leave this for now if you still want local system messages,
-    // or move it to Firestore later.
-    messages.insert(
-      0,
-      _Msg(
-        fromMe: false,
-        text:
-            '🎉 Quest Complete!\n\nYou and ${widget.contactName} completed:\n${state.lastQuestCelebrationTitle}\n\n+15 friendship points',
-        isSystem: true,
-      ),
-    );
+    setState(() {
+      feedback =
+          '🎉 Quest Complete! You and ${widget.contactName} completed a shared quest.';
+    });
 
     state.lastQuestCelebrationFriend = null;
   }
