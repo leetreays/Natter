@@ -2340,17 +2340,11 @@ class BrandCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.25),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
         border: Border.all(color: Colors.white.withOpacity(0.18)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       padding: const EdgeInsets.all(18),
       child: child,
@@ -6668,7 +6662,11 @@ Widget build(BuildContext context) {
 
     return BrandScaffold(
     appBar: AppBar(
-      title: const BrandedAppBarTitle(title: 'Chats'),
+  backgroundColor: Colors.transparent,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  title: const BrandedAppBarTitle(title: 'Chats'),
       actions: [
         IconButton(
           onPressed: () => Navigator.push(
