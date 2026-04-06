@@ -7274,16 +7274,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final controller = TextEditingController();
-  final List<_Msg> messages = [
-    _Msg(fromMe: false, text: 'Hey! 👋'),
-    _Msg(fromMe: false, text: 'Wanna chat?'),
-  ];
   final ScrollController _scrollController = ScrollController();
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
-  bool _otherUserTyping = false;
-  Future<bool> _showSafetyCoachDialog({
+    Future<bool> _showSafetyCoachDialog({
     required String suggestion,
     required String reason,
   }) async {
@@ -7406,10 +7401,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return result ?? false;
   }
-
-Future<void> _pickReaction(int index) async {
-    final msg = messages[index];
-    if (msg.fromMe) return;
 
     final selected = await showDialog<String?>(
       context: context,
@@ -8044,25 +8035,12 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   _scrollToBottom(animated: false);
 }
 
-      return ListView.builder(
-  controller: _scrollController,
-  reverse: false,
+            return ListView.builder(
+        controller: _scrollController,
+        reverse: false,
         padding: const EdgeInsets.all(14),
-        itemCount: firestoreMessages.length + (_otherUserTyping ? 1 : 0),
+        itemCount: firestoreMessages.length,
         itemBuilder: (_, i) {
-          if (_otherUserTyping && i == firestoreMessages.length) {
-  return Padding(
-    padding: const EdgeInsets.only(top: 8),
-    child: Text(
-      '${widget.contactName} is typing…',
-      style: const TextStyle(
-        color: Colors.white70,
-        fontStyle: FontStyle.italic,
-      ),
-    ),
-  );
-}
-
           final data = firestoreMessages[i];
           final state = AppStateScope.of(context);
           final isMe = data['senderUid'] == state.activeChildId;
