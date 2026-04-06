@@ -7028,6 +7028,11 @@ Widget build(BuildContext context) {
     ],
   ),
 ),
+const SizedBox(width: 10),
+const Icon(
+  Icons.chevron_right,
+  color: Colors.white,
+),
         ],
       ),
     ),
