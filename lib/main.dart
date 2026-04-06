@@ -6570,7 +6570,7 @@ Widget build(BuildContext context) {
   final chats = state.approvedContacts
       .map((f) => ChatPreview(
             name: f.name,
-            last: 'Tap to chat',
+            last: 'No messages yet',
             unread: false,
           ))
       .toList();
@@ -7672,35 +7672,35 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 
   _scrollToBottom();
 
-  if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
-  state.hasSeenFirstReply = true;
-  state.onboardingStep = 2;
-  await state.saveChildOnboardingState();
-  state.notifyListeners();
-
-  await showDialog(
-    context: context,
-    builder: (dialogContext) => ChirpDialogCard(
-      imagePath: 'assets/chirp_reply.png',
-      message: 'Nice start — that was kind 💛\nThat’s how friendships grow.',
-      buttonText: 'Continue',
-      onPressed: () {
-        Navigator.pop(dialogContext);
-      },
-    ),
-  );
-
-  if (!mounted) return;
-
-  if (!state.hasSeenAddFriendPrompt && state.isInOnboarding) {
-    state.hasSeenAddFriendPrompt = true;
-    state.onboardingStep = 3;
+  if (isFirstMessage && state.isInOnboarding) {
+    state.hasSeenFirstReply = true;
+    state.onboardingStep = 2;
     await state.saveChildOnboardingState();
     state.notifyListeners();
 
-    await const ChatsScreen()._addFriendDialog(context);
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => ChirpDialogCard(
+        imagePath: 'assets/chirp_reply.png',
+        message: 'Nice start — you sent your first message 💛\nThat’s how friendships begin.',
+        buttonText: 'Continue',
+        onPressed: () {
+          Navigator.pop(dialogContext);
+        },
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (!state.hasSeenAddFriendPrompt) {
+      state.hasSeenAddFriendPrompt = true;
+      state.onboardingStep = 3;
+      await state.saveChildOnboardingState();
+      state.notifyListeners();
+
+      await const ChatsScreen()._addFriendDialog(context);
+    }
   }
-}
   _startStallTimer();
 }
   
