@@ -6966,7 +6966,7 @@ Widget build(BuildContext context) {
               const SizedBox(height: 12),
             ],
 
-            ...chats.map((c) {
+...chats.map((c) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 12),
     child: Container(
@@ -6976,13 +6976,36 @@ Widget build(BuildContext context) {
         color: const Color(0xFF1E2D4D),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(
-        c.name,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-        ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: NatterBrand.yellow.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              c.name.substring(0, 1),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              c.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
       ),
     ),
   );
