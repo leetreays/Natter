@@ -7053,32 +7053,12 @@ Widget build(BuildContext context) {
                     },
                   ),
                   const SizedBox(height: 8),
-                  StreamBuilder<Map<String, dynamic>?>(
-                    stream: AppStateScope.of(context).chatSummaryStream(c.name),
-                    builder: (context, snapshot) {
-                      final data = snapshot.data;
-                      final lastMessage = data?['lastMessage'] as String?;
-                      final lastSenderUid = data?['lastSenderUid'] as String?;
-
-                      final myUid = state.activeChildId;
-
-                      String previewText;
-                      if (lastMessage == null || lastMessage.isEmpty) {
-                        previewText = c.last;
-                      } else if (lastSenderUid == myUid) {
-                        previewText = 'You: $lastMessage';
-                      } else {
-                        previewText = lastMessage;
-                      }
-
-                      return Text(
-                        previewText,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: Colors.white),
-                      );
-                    },
-                  ),
+                  Text(
+  c.last,
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+  style: const TextStyle(color: Colors.white),
+),
                 ],
               ),
             ),
