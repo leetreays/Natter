@@ -6996,15 +6996,38 @@ Widget build(BuildContext context) {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              c.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        c.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        'Friendship preview',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        'Shared Quest: 0/3',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.68),
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     ),
