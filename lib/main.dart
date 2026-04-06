@@ -6979,52 +6979,67 @@ Widget build(BuildContext context) {
             ],
 
             ...chats.map((c) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: BrandCard(
-                  child: ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: NatterBrand.yellow.withOpacity(0.35),
-                      child: Text(
-                        c.name.substring(0, 1),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    title: Builder(
-                      builder: (context) {
-                        final friend = state.getFriendByName(c.name);
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: BrandCard(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(NatterBrand.radius),
+        onTap: () => Navigator.push(
+          context,
+          calmRoute(ChatScreen(contactName: c.name)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: NatterBrand.yellow.withOpacity(0.35),
+              child: Text(
+                c.name.substring(0, 1),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Builder(
+                    builder: (context) {
+                      final friend = state.getFriendByName(c.name);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                c.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              if (friend != null &&
+                                  friend.schoolName == state.schoolName) ...[
+                                const SizedBox(width: 6),
                                 Text(
-                                  c.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
+                                  '🏫',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white.withOpacity(0.85),
                                   ),
                                 ),
-                                if (friend != null &&
-                                    friend.schoolName == state.schoolName) ...[
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '🏫',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white.withOpacity(0.85),
-                                    ),
-                                  ),
-                                ],
                               ],
-                            ),
-                            if (friend != null)
-                              Text(
+                            ],
+                          ),
+                          if (friend != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
                                 'Friendship ${friend.stars}',
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.78),
@@ -7032,8 +7047,11 @@ Widget build(BuildContext context) {
                                   fontSize: 12,
                                 ),
                               ),
-                            if (friend != null)
-                              Text(
+                            ),
+                          if (friend != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
                                 'Shared Quest: ${friend.activeQuestProgress}/${friend.activeQuestTarget}',
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.68),
@@ -7041,58 +7059,61 @@ Widget build(BuildContext context) {
                                   fontSize: 11,
                                 ),
                               ),
-                          ],
-                        );
-                      },
-                    ),
-                    subtitle: StreamBuilder<Map<String, dynamic>?>(
-  stream: AppStateScope.of(context).chatSummaryStream(c.name),
-  builder: (context, snapshot) {
-    final data = snapshot.data;
-    final lastMessage = data?['lastMessage'] as String?;
-    final lastSenderUid = data?['lastSenderUid'] as String?;
-
-    final state = AppStateScope.of(context);
-    final myUid = state.activeChildId;
-
-    String previewText;
-    if (lastMessage == null || lastMessage.isEmpty) {
-      previewText = c.last;
-    } else if (lastSenderUid == myUid) {
-      previewText = 'You: $lastMessage';
-    } else {
-      previewText = lastMessage;
-    }
-
-    return Text(
-      previewText,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: const TextStyle(color: Colors.white),
-    );
-  },
-),
-                    trailing: c.unread
-                        ? Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: NatterBrand.green,
-                              borderRadius: BorderRadius.circular(99),
                             ),
-                          )
-                        : const Icon(
-                            Icons.chevron_right,
-                            color: Colors.white,
-                          ),
-                    onTap: () => Navigator.push(
-                      context,
-                      calmRoute(ChatScreen(contactName: c.name)),
-                    ),
+                        ],
+                      );
+                    },
                   ),
-                ),
-              );
-            }).toList(),
+                  const SizedBox(height: 8),
+                  StreamBuilder<Map<String, dynamic>?>(
+                    stream: AppStateScope.of(context).chatSummaryStream(c.name),
+                    builder: (context, snapshot) {
+                      final data = snapshot.data;
+                      final lastMessage = data?['lastMessage'] as String?;
+                      final lastSenderUid = data?['lastSenderUid'] as String?;
+
+                      final myUid = state.activeChildId;
+
+                      String previewText;
+                      if (lastMessage == null || lastMessage.isEmpty) {
+                        previewText = c.last;
+                      } else if (lastSenderUid == myUid) {
+                        previewText = 'You: $lastMessage';
+                      } else {
+                        previewText = lastMessage;
+                      }
+
+                      return Text(
+                        previewText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Colors.white),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            c.unread
+                ? Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: NatterBrand.green,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  )
+                : const Icon(
+                    Icons.chevron_right,
+                    color: Colors.white,
+                  ),
+          ],
+        ),
+      ),
+    ),
+  );
+}).toList(),
 
                         const SizedBox(height: 12),
             Center(
