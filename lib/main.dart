@@ -6711,7 +6711,9 @@ Widget build(BuildContext context) {
     ),
   ),
   floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      child: ListView(
+      child: RepaintBoundary(
+  child: ListView(
+    physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
             if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
@@ -7137,9 +7139,10 @@ Widget build(BuildContext context) {
 
             const SizedBox(height: 28),
           ],
-        ),        
+        ),
+      ),
     );
-}
+  }
 }
               
 class _FriendshipQuestCard extends StatelessWidget {
