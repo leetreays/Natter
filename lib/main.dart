@@ -7781,24 +7781,6 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 
   _scrollToBottom();
 
-  setState(() {
-    _otherUserTyping = true;
-  });
-
-  await Future.delayed(const Duration(seconds: 2));
-  if (!mounted) return;
-
-  setState(() {
-    _otherUserTyping = false;
-  });
-
-  await state.addFakeReply(
-    friendName: widget.contactName,
-    text: flagged ? 'This message may be unkind.' : 'Nice! 😄',
-  );
-
-  _scrollToBottom();
-
   if (isFirstMessage && !state.hasSeenFirstReply && state.isInOnboarding) {
   state.hasSeenFirstReply = true;
   state.onboardingStep = 2;
