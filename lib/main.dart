@@ -2260,23 +2260,9 @@ class BubblyBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF2B7FFF),
-                Color(0xFF133A8A),
-                Color(0xFF06112E),
-              ],
-            ),
-          ),
-        ),
-        child,
-      ],
+    return ColoredBox(
+      color: Color(0xFF133A8A),
+      child: child,
     );
   }
 }
