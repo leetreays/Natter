@@ -2342,9 +2342,11 @@ class BrandCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.25),
+        color: const Color(0xFF4A556F),
         borderRadius: BorderRadius.circular(NatterBrand.radius),
-        border: Border.all(color: Colors.white.withOpacity(0.18)),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+        ),
       ),
       padding: const EdgeInsets.all(18),
       child: child,
