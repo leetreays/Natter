@@ -1502,6 +1502,47 @@ CollectionReference<Map<String, dynamic>> childMessagesRef(String friendName) {
   return childChatRef(friendName).collection('messages');
 }
 
+Future<void> revealFlaggedMessage({
+  required String friendName,
+  required String messageId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await childMessagesRef(friendName).doc(messageId).set({
+    'receiverAction': 'read',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
+Future<void> hideFlaggedMessage({
+  required String friendName,
+  required String messageId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await childMessagesRef(friendName).doc(messageId).set({
+    'receiverAction': 'not_now',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
+Future<void> blockAfterFlaggedMessage({
+  required String friendName,
+  required String messageId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await childMessagesRef(friendName).doc(messageId).set({
+    'receiverAction': 'blocked',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  addAlert(AlertEvent(
+    type: AlertType.contactRequest,
+    message: 'Contact blocked after flagged message: $friendName',
+  ));
+}
+
   Stream<Map<String, dynamic>?> chatSummaryStream(String friendName) async* {
   if (!hasActiveChildSession) {
     yield null;
@@ -1588,6 +1629,8 @@ Future<void> sendMessageToChat({
     'senderUid': activeChildId,
     'createdAt': FieldValue.serverTimestamp(),
     'isFlagged': isFlagged,
+    'receiverAction': isFlagged ? 'protected' : null,
+    'receiverActionAt': null,
   });
 }
 
@@ -7562,33 +7605,6 @@ void _showStallRescue() {
     },
   );
 }
-  
-void _revealFlaggedMessage(_Msg msg) {
-    setState(() {
-      msg.isRevealed = true;
-    });
-  }
-
-  void _hideFlaggedMessage(_Msg msg) {
-    setState(() {
-      msg.isHidden = true;
-    });
-  }
-
-  void _blockAfterFlaggedMessage(_Msg msg) {
-    final state = AppStateScope.of(context);
-
-    state.blockContact(widget.contactName);
-    state.addAlert(AlertEvent(
-      type: AlertType.contactRequest,
-      message: 'Contact blocked after flagged message: ${widget.contactName}',
-    ));
-
-    setState(() {
-      msg.isHidden = true;
-      feedback = '${widget.contactName} has been blocked.';
-    });
-  }
 
 bool _didInitialChatScroll = false;
 
@@ -7943,22 +7959,49 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
         itemBuilder: (_, i) {
           final data = firestoreMessages[i];
           final state = AppStateScope.of(context);
+          final messageId = (data['id'] ?? '') as String;
           final isMe = data['senderUid'] == state.activeChildId;
           final isFlagged = data['isFlagged'] == true;
           final text = (data['text'] ?? '') as String;
+          final receiverAction = (data['receiverAction'] ?? '') as String;
 
           final msg = _Msg(
             fromMe: isMe,
             text: text,
             isFlagged: isFlagged,
+            isRevealed: receiverAction == 'read',
+            isHidden:
+                receiverAction == 'not_now' || receiverAction == 'blocked',
           );
 
           return _Bubble(
             msg: msg,
             onTap: () {},
-            onReveal: () => _revealFlaggedMessage(msg),
-            onHide: () => _hideFlaggedMessage(msg),
-            onBlock: () => _blockAfterFlaggedMessage(msg),
+            onReveal: () async {
+              await state.revealFlaggedMessage(
+                friendName: widget.contactName,
+                messageId: messageId,
+              );
+            },
+            onHide: () async {
+              await state.hideFlaggedMessage(
+                friendName: widget.contactName,
+                messageId: messageId,
+              );
+            },
+            onBlock: () async {
+              await state.blockAfterFlaggedMessage(
+                friendName: widget.contactName,
+                messageId: messageId,
+              );
+              state.blockContact(widget.contactName);
+
+              if (!mounted) return;
+
+              setState(() {
+                feedback = '${widget.contactName} has been blocked.';
+              });
+            },
           );
         },
       );
