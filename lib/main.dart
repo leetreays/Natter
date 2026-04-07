@@ -6859,71 +6859,113 @@ Widget build(BuildContext context) {
     return Column(
       children: [
         ...approved.map((contact) {
-          final hasGlow = contact.isNew;
+  final hasGlow = contact.isNew;
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: BrandCard(
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: hasGlow
-                        ? [
-                            BoxShadow(
-                              color: NatterBrand.green.withOpacity(0.45),
-                              blurRadius: 14,
-                              spreadRadius: 2,
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: hasGlow
-                        ? NatterBrand.green.withOpacity(0.25)
-                        : NatterBrand.yellow.withOpacity(0.35),
-                    child: Text(
-                      contact.name.substring(0, 1),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () async {
+          await state.markApprovedContactAsSeen(contact.id);
+
+          if (!context.mounted) return;
+
+          Navigator.push(
+            context,
+            calmRoute(ChatScreen(contactName: contact.name)),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF223254),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: hasGlow
+                      ? NatterBrand.green.withOpacity(0.28)
+                      : NatterBrand.yellow.withOpacity(0.22),
+                  borderRadius: BorderRadius.circular(21),
                 ),
-                title: Text(
-                  contact.name,
+                alignment: Alignment.center,
+                child: Text(
+                  contact.name.substring(0, 1),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
+                    fontSize: 16,
                   ),
                 ),
-                subtitle: Text(
-                  hasGlow
-                      ? 'Newly approved friend'
-                      : 'Ready to chat',
-                  style: const TextStyle(color: Colors.white70),
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Colors.white,
-                ),
-                onTap: () async {
-                  await state.markApprovedContactAsSeen(contact.id);
-
-                  if (!context.mounted) return;
-
-                  Navigator.push(
-                    context,
-                    calmRoute(ChatScreen(contactName: contact.name)),
-                  );
-                },
               ),
-            ),
-          );
-        }),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      contact.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      hasGlow ? 'Newly approved friend' : 'Ready to chat',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              if (hasGlow)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NatterBrand.green.withOpacity(0.22),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'NEW',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white70,
+                ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}),
         const SizedBox(height: 12),
       ],
     );
