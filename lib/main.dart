@@ -2260,9 +2260,54 @@ class BubblyBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: Color(0xFF133A8A),
-      child: child,
+    return Stack(
+      children: [
+        // Base gradient (richer + more Natter)
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF3DA6F3), // brighter blue
+                Color(0xFF1C5ED6), // mid blue
+                Color(0xFF0A1F4D), // deep navy
+              ],
+            ),
+          ),
+        ),
+
+        // Soft radial glow (top)
+        Positioned(
+          top: -120,
+          left: -80,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.08),
+            ),
+          ),
+        ),
+
+        // Soft radial glow (bottom)
+        Positioned(
+          bottom: -140,
+          right: -100,
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.06),
+            ),
+          ),
+        ),
+
+        // Main content
+        child,
+      ],
     );
   }
 }
