@@ -6859,14 +6859,14 @@ Widget build(BuildContext context) {
     return Column(
       children: [
         ...approved.map((contact) {
-  final hasGlow = contact.isNew;
+  final isNew = contact.isNew;
 
   return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.only(bottom: 8),
     child: Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(14),
         onTap: () async {
           await state.markApprovedContactAsSeen(contact.id);
 
@@ -6878,25 +6878,22 @@ Widget build(BuildContext context) {
           );
         },
         child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF223254),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             children: [
+              // Avatar (clean + stronger)
               Container(
-                width: 42,
-                height: 42,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: hasGlow
-                      ? NatterBrand.green.withOpacity(0.28)
-                      : NatterBrand.yellow.withOpacity(0.22),
-                  borderRadius: BorderRadius.circular(21),
+                  color: isNew
+                      ? NatterBrand.green.withOpacity(0.3)
+                      : NatterBrand.yellow.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -6908,7 +6905,10 @@ Widget build(BuildContext context) {
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
+
+              // Main text block
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -6917,47 +6917,40 @@ Widget build(BuildContext context) {
                       contact.name,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 17,
+                        fontSize: 16,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      hasGlow ? 'Newly approved friend' : 'Ready to chat',
+                      isNew ? 'New friend' : 'Tap to start chatting',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.78),
+                        color: Colors.white.withOpacity(0.65),
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(width: 10),
-              if (hasGlow)
+
+              // Right-side indicator
+              if (isNew)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
+                  width: 10,
+                  height: 10,
                   decoration: BoxDecoration(
-                    color: NatterBrand.green.withOpacity(0.22),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Text(
-                    'NEW',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.4,
-                    ),
+                    color: NatterBrand.green,
+                    borderRadius: BorderRadius.circular(99),
                   ),
                 )
               else
                 const Icon(
                   Icons.chevron_right,
-                  color: Colors.white70,
+                  size: 20,
+                  color: Colors.white54,
                 ),
             ],
           ),
@@ -6965,7 +6958,7 @@ Widget build(BuildContext context) {
       ),
     ),
   );
-}),
+}).toList(),
         const SizedBox(height: 12),
       ],
     );
