@@ -2258,102 +2258,24 @@ class BubblyBackground extends StatelessWidget {
   final Widget child;
   const BubblyBackground({super.key, required this.child});
 
-  Widget bubble(double size, Color color) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-
-  Widget star(double size) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 🌈 Soft magical gradient
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF4DA6FF), // light sky blue
-                  Color(0xFF2B7FFF), // Natter blue
-                  Color(0xFF0A3D91), // deeper blue
-                ],
-              ),
-            ),
+        Positioned.fill(
+          child: Image.asset(
+            'assets/backgrounds/magical_sky.png',
+            fit: BoxFit.cover,
           ),
         ),
 
-        // ☁️ Soft haze layers (adds depth)
-        Positioned(
-          top: -60,
-          left: -40,
-          child: bubble(220, Colors.white.withOpacity(0.08)),
-        ),
-        Positioned(
-          top: 120,
-          right: -80,
-          child: bubble(260, Colors.white.withOpacity(0.05)),
-        ),
-        Positioned(
-          bottom: -100,
-          left: -60,
-          child: bubble(280, Colors.white.withOpacity(0.06)),
+        // Optional soft overlay for readability
+        Positioned.fill(
+          child: Container(
+            color: Colors.black.withOpacity(0.15),
+          ),
         ),
 
-        // ✨ Stars (tiny + scattered)
-        Positioned(top: 80, left: 40, child: star(3)),
-        Positioned(top: 140, left: 90, child: star(2)),
-        Positioned(top: 220, right: 60, child: star(3)),
-        Positioned(top: 300, right: 30, child: star(2)),
-        Positioned(bottom: 200, left: 60, child: star(3)),
-        Positioned(bottom: 140, right: 80, child: star(2)),
-
-        // 🫧 Soft coloured bubbles (playful accents)
-        Positioned(
-          top: 100,
-          left: 20,
-          child: bubble(14, const Color(0x66C96CB3)),
-        ),
-        Positioned(
-          top: 140,
-          left: 60,
-          child: bubble(24, const Color(0x55C96CB3)),
-        ),
-        Positioned(
-          top: 180,
-          left: 120,
-          child: bubble(18, const Color(0x66E7C15A)),
-        ),
-        Positioned(
-          bottom: 180,
-          left: 30,
-          child: bubble(26, const Color(0x55C96CB3)),
-        ),
-        Positioned(
-          bottom: 120,
-          right: 50,
-          child: bubble(20, const Color(0x44E7C15A)),
-        ),
-
-        // 🧩 Content
         child,
       ],
     );
