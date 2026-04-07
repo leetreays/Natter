@@ -2258,54 +2258,163 @@ class BubblyBackground extends StatelessWidget {
   final Widget child;
   const BubblyBackground({super.key, required this.child});
 
+  Widget _bubble({
+    required double size,
+    required double left,
+    required double top,
+    required Color color,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bubbleRight({
+    required double size,
+    required double right,
+    required double top,
+    required Color color,
+  }) {
+    return Positioned(
+      right: right,
+      top: top,
+      child: IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bubbleBottom({
+    required double size,
+    required double left,
+    required double bottom,
+    required Color color,
+  }) {
+    return Positioned(
+      left: left,
+      bottom: bottom,
+      child: IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bubbleBottomRight({
+    required double size,
+    required double right,
+    required double bottom,
+    required Color color,
+  }) {
+    return Positioned(
+      right: right,
+      bottom: bottom,
+      child: IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Base gradient (richer + more Natter)
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF3DA6F3), // brighter blue
-                Color(0xFF1C5ED6), // mid blue
-                Color(0xFF0A1F4D), // deep navy
-              ],
-            ),
-          ),
-        ),
-
-        // Soft radial glow (top)
-        Positioned(
-          top: -120,
-          left: -80,
-          child: Container(
-            width: 300,
-            height: 300,
+        const Positioned.fill(
+          child: DecoratedBox(
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.08),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1C7FD1),
+                  Color(0xFF0C4C86),
+                  Color(0xFF041B4A),
+                ],
+              ),
             ),
           ),
         ),
 
-        // Soft radial glow (bottom)
-        Positioned(
-          bottom: -140,
-          right: -100,
-          child: Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.06),
-            ),
-          ),
+        _bubble(
+          size: 12,
+          left: 18,
+          top: 78,
+          color: Color(0x66C96CB3),
+        ),
+        _bubble(
+          size: 26,
+          left: 54,
+          top: 118,
+          color: Color(0x55C96CB3),
+        ),
+        _bubble(
+          size: 18,
+          left: 116,
+          top: 156,
+          color: Color(0x66E7C15A),
+        ),
+        _bubbleBottom(
+          size: 28,
+          left: 14,
+          bottom: 208,
+          color: Color(0x55C96CB3),
+        ),
+        _bubbleBottom(
+          size: 22,
+          left: 126,
+          bottom: 156,
+          color: Color(0x44C96CB3),
+        ),
+        _bubbleBottomRight(
+          size: 20,
+          right: 24,
+          bottom: 96,
+          color: Color(0x44E7C15A),
+        ),
+        _bubbleRight(
+          size: 14,
+          right: 20,
+          top: 246,
+          color: Color(0x44E7C15A),
+        ),
+        _bubbleRight(
+          size: 24,
+          right: 42,
+          top: 322,
+          color: Color(0x335D6F8A),
         ),
 
-        // Main content
         child,
       ],
     );
