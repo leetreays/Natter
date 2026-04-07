@@ -2258,90 +2258,24 @@ class BubblyBackground extends StatelessWidget {
   final Widget child;
   const BubblyBackground({super.key, required this.child});
 
-  Widget _bubble({
-    required double size,
-    required double left,
-    required double top,
-    required Color color,
-  }) {
-    return Positioned(
-      left: left,
-      top: top,
-      child: IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
+  Widget bubble(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
       ),
     );
   }
 
-  Widget _bubbleRight({
-    required double size,
-    required double right,
-    required double top,
-    required Color color,
-  }) {
-    return Positioned(
-      right: right,
-      top: top,
-      child: IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _bubbleBottom({
-    required double size,
-    required double left,
-    required double bottom,
-    required Color color,
-  }) {
-    return Positioned(
-      left: left,
-      bottom: bottom,
-      child: IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _bubbleBottomRight({
-    required double size,
-    required double right,
-    required double bottom,
-    required Color color,
-  }) {
-    return Positioned(
-      right: right,
-      bottom: bottom,
-      child: IgnorePointer(
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
+  Widget star(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        shape: BoxShape.circle,
       ),
     );
   }
@@ -2350,6 +2284,7 @@ class BubblyBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // 🌈 Soft magical gradient
         const Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -2357,64 +2292,68 @@ class BubblyBackground extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF1C7FD1),
-                  Color(0xFF0C4C86),
-                  Color(0xFF041B4A),
+                  Color(0xFF4DA6FF), // light sky blue
+                  Color(0xFF2B7FFF), // Natter blue
+                  Color(0xFF0A3D91), // deeper blue
                 ],
               ),
             ),
           ),
         ),
 
-        _bubble(
-          size: 12,
-          left: 18,
-          top: 78,
-          color: Color(0x66C96CB3),
+        // ☁️ Soft haze layers (adds depth)
+        Positioned(
+          top: -60,
+          left: -40,
+          child: bubble(220, Colors.white.withOpacity(0.08)),
         ),
-        _bubble(
-          size: 26,
-          left: 54,
-          top: 118,
-          color: Color(0x55C96CB3),
+        Positioned(
+          top: 120,
+          right: -80,
+          child: bubble(260, Colors.white.withOpacity(0.05)),
         ),
-        _bubble(
-          size: 18,
-          left: 116,
-          top: 156,
-          color: Color(0x66E7C15A),
-        ),
-        _bubbleBottom(
-          size: 28,
-          left: 14,
-          bottom: 208,
-          color: Color(0x55C96CB3),
-        ),
-        _bubbleBottom(
-          size: 22,
-          left: 126,
-          bottom: 156,
-          color: Color(0x44C96CB3),
-        ),
-        _bubbleBottomRight(
-          size: 20,
-          right: 24,
-          bottom: 96,
-          color: Color(0x44E7C15A),
-        ),
-        _bubbleRight(
-          size: 14,
-          right: 20,
-          top: 246,
-          color: Color(0x44E7C15A),
-        ),
-        _bubbleRight(
-          size: 24,
-          right: 42,
-          top: 322,
-          color: Color(0x335D6F8A),
+        Positioned(
+          bottom: -100,
+          left: -60,
+          child: bubble(280, Colors.white.withOpacity(0.06)),
         ),
 
+        // ✨ Stars (tiny + scattered)
+        Positioned(top: 80, left: 40, child: star(3)),
+        Positioned(top: 140, left: 90, child: star(2)),
+        Positioned(top: 220, right: 60, child: star(3)),
+        Positioned(top: 300, right: 30, child: star(2)),
+        Positioned(bottom: 200, left: 60, child: star(3)),
+        Positioned(bottom: 140, right: 80, child: star(2)),
+
+        // 🫧 Soft coloured bubbles (playful accents)
+        Positioned(
+          top: 100,
+          left: 20,
+          child: bubble(14, const Color(0x66C96CB3)),
+        ),
+        Positioned(
+          top: 140,
+          left: 60,
+          child: bubble(24, const Color(0x55C96CB3)),
+        ),
+        Positioned(
+          top: 180,
+          left: 120,
+          child: bubble(18, const Color(0x66E7C15A)),
+        ),
+        Positioned(
+          bottom: 180,
+          left: 30,
+          child: bubble(26, const Color(0x55C96CB3)),
+        ),
+        Positioned(
+          bottom: 120,
+          right: 50,
+          child: bubble(20, const Color(0x44E7C15A)),
+        ),
+
+        // 🧩 Content
         child,
       ],
     );
