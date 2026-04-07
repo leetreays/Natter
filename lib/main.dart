@@ -1307,22 +1307,44 @@ Future<void> requestContact({
   weeklyFriendRequests += 1;
 
   if (hasActiveChildSession) {
-    await parentChildContactRequestsRef(
-      parentId: targetParentId,
-      childId: targetChildId,
-    ).add({
-      'name': effectiveChildName,
-      'status': 'pending',
+    final requestId = parentChildContactRequestsRef(
+      parentId: activeParentId!,
+      childId: activeChildId!,
+    ).doc().id;
 
+    // Outgoing request on the requesting child's side
+    await parentChildContactRequestsRef(
+      parentId: activeParentId!,
+      childId: activeChildId!,
+    ).doc(requestId).set({
+      'name': trimmed,
+      'status': 'pending',
+      'direction': 'outgoing',
       'targetParentId': targetParentId,
       'targetChildId': targetChildId,
       'targetFriendCode': targetFriendCode,
-
-      'requesterParentId': activeParentId,
-      'requesterChildId': activeChildId,
+      'requesterParentId': activeParentId!,
+      'requesterChildId': activeChildId!,
       'requesterFriendCode': myFriendCode,
       'requesterName': effectiveChildName,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
 
+    // Incoming request on the target child's side
+    await parentChildContactRequestsRef(
+      parentId: targetParentId,
+      childId: targetChildId,
+    ).doc(requestId).set({
+      'name': effectiveChildName,
+      'status': 'pending',
+      'direction': 'incoming',
+      'targetParentId': targetParentId,
+      'targetChildId': targetChildId,
+      'targetFriendCode': targetFriendCode,
+      'requesterParentId': activeParentId!,
+      'requesterChildId': activeChildId!,
+      'requesterFriendCode': myFriendCode,
+      'requesterName': effectiveChildName,
       'createdAt': FieldValue.serverTimestamp(),
     });
   }
