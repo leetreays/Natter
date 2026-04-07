@@ -2335,20 +2335,25 @@ class BrandScaffold extends StatelessWidget {
 
 class BrandCard extends StatelessWidget {
   final Widget child;
-  const BrandCard({super.key, required this.child});
+  final EdgeInsets padding;
+
+  const BrandCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      clipBehavior: Clip.antiAlias,
+      padding: padding,
       decoration: BoxDecoration(
-        color: const Color(0xFF4A556F),
-        borderRadius: BorderRadius.circular(NatterBrand.radius),
+        color: const Color(0xFF1C2A48), // SAME as contact rows
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withOpacity(0.12),
+          color: Colors.white.withOpacity(0.06),
         ),
       ),
-      padding: const EdgeInsets.all(18),
       child: child,
     );
   }
@@ -6895,9 +6900,26 @@ Widget build(BuildContext context) {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(14),
-          ),
+  color: const Color(0xFF1C2A48),
+  borderRadius: BorderRadius.circular(14),
+  border: Border.all(
+    color: Colors.white.withOpacity(0.05),
+  ),
+  boxShadow: [
+    if (isNew)
+      BoxShadow(
+        color: NatterBrand.green.withOpacity(0.25),
+        blurRadius: 16,
+        spreadRadius: 1,
+      )
+    else
+      BoxShadow(
+        color: Colors.black.withOpacity(0.25),
+        blurRadius: 10,
+        spreadRadius: 0,
+      ),
+  ],
+),
           child: Row(
             children: [
               // Avatar (clean + stronger)
