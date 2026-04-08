@@ -2507,10 +2507,19 @@ class StartupRouterScreen extends StatefulWidget {
 }
 
 class _StartupRouterScreenState extends State<StartupRouterScreen> {
+  double _opacity = 0;
+
   @override
-@override
-void initState() {
+  void initState() {
   super.initState();
+
+  Future.microtask(() {
+    if (!mounted) return;
+    setState(() {
+      _opacity = 1;
+    });
+  });
+
   WidgetsBinding.instance.addPostFrameCallback((_) {
     _start();
   });
@@ -2580,13 +2589,16 @@ Future<void> _start() async {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-  }
+Widget build(BuildContext context) {
+  return AnimatedOpacity(
+    opacity: _opacity,
+    duration: const Duration(milliseconds: 700),
+    curve: Curves.easeOut,
+    child: const Scaffold(
+      backgroundColor: Color(0xFF06112E),
+      body: SizedBox.expand(),
+    ),
+  );
 }
 
 class StartupSplashScreen extends StatefulWidget {
@@ -2608,18 +2620,18 @@ class _StartupSplashScreenState extends State<StartupSplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _fade = CurvedAnimation(
       parent: _controller,
-      curve: Curves.easeOut,
+      curve: const Interval(0.0, 0.55, curve: Curves.easeOut),
     );
 
-    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(
+    _scale = Tween<double>(begin: 0.86, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeOutBack,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
       ),
     );
 
@@ -2628,7 +2640,10 @@ class _StartupSplashScreenState extends State<StartupSplashScreen>
 
   Future<void> _play() async {
     await _controller.forward();
-    await Future.delayed(const Duration(milliseconds: 250));
+
+    // Hold the finished state for a moment so it feels intentional.
+    await Future.delayed(const Duration(milliseconds: 900));
+
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -2650,8 +2665,8 @@ class _StartupSplashScreenState extends State<StartupSplashScreen>
             scale: _scale,
             child: Image.asset(
               'assets/splash/natter_splash_icon.png',
-              width: 160,
-              height: 160,
+              width: 170,
+              height: 170,
             ),
           ),
         ),
