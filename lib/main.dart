@@ -2511,42 +2511,42 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   void initState() {
-  super.initState();
+    super.initState();
 
-  Future.microtask(() {
-    if (!mounted) return;
-    setState(() {
-      _opacity = 1;
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _opacity = 1;
+      });
     });
-  });
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _start();
-  });
-}
-
-Future<void> _start() async {
-  final prefs = await SharedPreferences.getInstance();
-  final seenStartupSplash = prefs.getBool('seen_startup_splash') ?? false;
-
-  if (!mounted) return;
-
-  if (!seenStartupSplash) {
-    await Navigator.push(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const StartupSplashScreen(),
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-      ),
-    );
-
-    await prefs.setBool('seen_startup_splash', true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _start();
+    });
   }
 
-  if (!mounted) return;
-  await _route();
-}
+  Future<void> _start() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seenStartupSplash = prefs.getBool('seen_startup_splash') ?? false;
+
+    if (!mounted) return;
+
+    if (!seenStartupSplash) {
+      await Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const StartupSplashScreen(),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
+
+      await prefs.setBool('seen_startup_splash', true);
+    }
+
+    if (!mounted) return;
+    await _route();
+  }
 
   Future<void> _route() async {
     final state = AppStateScope.of(context);
@@ -2563,24 +2563,24 @@ Future<void> _start() async {
     }
 
     if (mode == 'child') {
-  await state.hydrateRememberedChildSession();
+      await state.hydrateRememberedChildSession();
 
-  if (!mounted) return;
+      if (!mounted) return;
 
-  if (!state.hasActiveChildSession) {
-    Navigator.pushReplacement(
-      context,
-      calmRoute(const GatewayScreen()),
-    );
-    return;
-  }
+      if (!state.hasActiveChildSession) {
+        Navigator.pushReplacement(
+          context,
+          calmRoute(const GatewayScreen()),
+        );
+        return;
+      }
 
-  Navigator.pushReplacement(
-    context,
-    calmRoute(const ChatsScreen()),
-  );
-  return;
-}
+      Navigator.pushReplacement(
+        context,
+        calmRoute(const ChatsScreen()),
+      );
+      return;
+    }
 
     Navigator.pushReplacement(
       context,
@@ -2589,16 +2589,17 @@ Future<void> _start() async {
   }
 
   @override
-Widget build(BuildContext context) {
-  return AnimatedOpacity(
-    opacity: _opacity,
-    duration: const Duration(milliseconds: 700),
-    curve: Curves.easeOut,
-    child: const Scaffold(
-      backgroundColor: Color(0xFF06112E),
-      body: SizedBox.expand(),
-    ),
-  );
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      opacity: _opacity,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOut,
+      child: const Scaffold(
+        backgroundColor: Color(0xFF06112E),
+        body: SizedBox.expand(),
+      ),
+    );
+  }
 }
 
 class StartupSplashScreen extends StatefulWidget {
