@@ -20,6 +20,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
@@ -33,3 +34,14 @@ flutter:
     - assets/owliver_thinking.png
     - assets/owliver_teaching.png
     - assets/backgrounds/magical_sky.png
+    - assets/splash/natter_splash_icon.png
+
+flutter_native_splash:
+  color: "#06112E"
+  image: assets/splash/natter_splash_icon.png
+
+  android_12:
+    color: "#06112E"
+    image: assets/splash/natter_splash_icon.png
+
+  web: true
