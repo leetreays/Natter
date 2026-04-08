@@ -486,30 +486,29 @@ class ChildSession {
 
 class ChildContactRequest {
   final String id;
-  final String name;
   final String status;
-  final String targetParentId;
-  final String targetChildId;
-  final String targetFriendCode;
 
   final String requesterParentId;
   final String requesterChildId;
+  final String requesterChildName;
   final String requesterFriendCode;
-  final String requesterName;
-  final String direction;
+
+  final String recipientParentId;
+  final String recipientChildId;
+  final String recipientChildName;
+  final String recipientFriendCode;
 
   const ChildContactRequest({
     required this.id,
-    required this.name,
     required this.status,
-    required this.targetParentId,
-    required this.targetChildId,
-    required this.targetFriendCode,
     required this.requesterParentId,
     required this.requesterChildId,
+    required this.requesterChildName,
     required this.requesterFriendCode,
-    required this.requesterName,
-    required this.direction,
+    required this.recipientParentId,
+    required this.recipientChildId,
+    required this.recipientChildName,
+    required this.recipientFriendCode,
   });
 
   factory ChildContactRequest.fromDoc(
@@ -519,16 +518,15 @@ class ChildContactRequest {
 
     return ChildContactRequest(
       id: doc.id,
-      name: (data['name'] ?? '').toString(),
       status: (data['status'] ?? 'pending').toString(),
-      targetParentId: (data['targetParentId'] ?? '').toString(),
-      targetChildId: (data['targetChildId'] ?? '').toString(),
-      targetFriendCode: (data['targetFriendCode'] ?? '').toString(),
       requesterParentId: (data['requesterParentId'] ?? '').toString(),
       requesterChildId: (data['requesterChildId'] ?? '').toString(),
+      requesterChildName: (data['requesterChildName'] ?? '').toString(),
       requesterFriendCode: (data['requesterFriendCode'] ?? '').toString(),
-      requesterName: (data['requesterName'] ?? '').toString(),
-      direction: (data['direction'] ?? '').toString(),
+      recipientParentId: (data['recipientParentId'] ?? '').toString(),
+      recipientChildId: (data['recipientChildId'] ?? '').toString(),
+      recipientChildName: (data['recipientChildName'] ?? '').toString(),
+      recipientFriendCode: (data['recipientFriendCode'] ?? '').toString(),
     );
   }
 }
@@ -779,6 +777,50 @@ Stream<List<ChildContactRequest>> activeChildContactRequestsStream({
     status: status,
     direction: direction,
   );
+}
+
+Stream<List<ChildContactRequest>> friendRequestsForChildStream({
+  required String childId,
+  String? status,
+}) async* {
+  Query<Map<String, dynamic>> query = friendRequestsRef()
+      .where('participantChildIds', arrayContains: childId)
+      .orderBy('createdAt', descending: true);
+
+  if (status != null) {
+    query = query.where('status', isEqualTo: status);
+  }
+
+  yield* query.snapshots().map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ChildContactRequest.fromDoc(doc))
+            .toList(),
+      );
+}
+
+Stream<List<ChildContactRequest>> incomingFriendRequestsForParentChildStream({
+  required String parentId,
+  required String childId,
+  String? status,
+}) async* {
+  Query<Map<String, dynamic>> query = friendRequestsRef()
+      .where('recipientParentId', isEqualTo: parentId)
+      .where('recipientChildId', isEqualTo: childId)
+      .orderBy('createdAt', descending: true);
+
+  if (status != null) {
+    query = query.where('status', isEqualTo: status);
+  }
+
+  yield* query.snapshots().map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ChildContactRequest.fromDoc(doc))
+            .toList(),
+      );
+}
+
+CollectionReference<Map<String, dynamic>> friendRequestsRef() {
+  return FirebaseFirestore.instance.collection('friend_requests');
 }
 
 CollectionReference<Map<String, dynamic>> parentChildApprovedContactsRef({
@@ -1311,53 +1353,55 @@ Future<void> requestContact({
 }) async {
   final trimmed = targetName.trim();
   if (trimmed.isEmpty) return;
-  if (isApproved(trimmed) || isPending(trimmed)) return;
+  if (!hasActiveChildSession) return;
+  if (activeChildId == targetChildId) return;
 
-  pendingRequests.insert(0, trimmed);
-  weeklyFriendRequests += 1;
+  final existingPending = await friendRequestsRef()
+      .where('status', isEqualTo: 'pending')
+      .where('participantChildIds', arrayContains: activeChildId)
+      .get();
 
-  if (hasActiveChildSession) {
-    final requestId = parentChildContactRequestsRef(
-      parentId: activeParentId!,
-      childId: activeChildId!,
-    ).doc().id;
+  final alreadyPending = existingPending.docs.any((doc) {
+    final data = doc.data();
+    final ids = List<String>.from(data['participantChildIds'] ?? []);
+    return ids.contains(targetChildId);
+  });
 
-    // Outgoing request on the requesting child's side
-    await parentChildContactRequestsRef(
-      parentId: activeParentId!,
-      childId: activeChildId!,
-    ).doc(requestId).set({
-      'name': trimmed,
-      'status': 'pending',
-      'direction': 'outgoing',
-      'targetParentId': targetParentId,
-      'targetChildId': targetChildId,
-      'targetFriendCode': targetFriendCode,
-      'requesterParentId': activeParentId!,
-      'requesterChildId': activeChildId!,
-      'requesterFriendCode': myFriendCode,
-      'requesterName': effectiveChildName,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+  if (alreadyPending) return;
 
-    // Incoming request on the target child's side
-    await parentChildContactRequestsRef(
-      parentId: targetParentId,
-      childId: targetChildId,
-    ).doc(requestId).set({
-      'name': effectiveChildName,
-      'status': 'pending',
-      'direction': 'incoming',
-      'targetParentId': targetParentId,
-      'targetChildId': targetChildId,
-      'targetFriendCode': targetFriendCode,
-      'requesterParentId': activeParentId!,
-      'requesterChildId': activeChildId!,
-      'requesterFriendCode': myFriendCode,
-      'requesterName': effectiveChildName,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  }
+  final existingApproved = await friendRequestsRef()
+      .where('status', isEqualTo: 'approved')
+      .where('participantChildIds', arrayContains: activeChildId)
+      .get();
+
+  final alreadyApproved = existingApproved.docs.any((doc) {
+    final data = doc.data();
+    final ids = List<String>.from(data['participantChildIds'] ?? []);
+    return ids.contains(targetChildId);
+  });
+
+  if (alreadyApproved) return;
+
+  await friendRequestsRef().add({
+    'status': 'pending',
+
+    'requesterParentId': activeParentId!,
+    'requesterChildId': activeChildId!,
+    'requesterChildName': effectiveChildName,
+    'requesterFriendCode': myFriendCode,
+
+    'recipientParentId': targetParentId,
+    'recipientChildId': targetChildId,
+    'recipientChildName': trimmed,
+    'recipientFriendCode': targetFriendCode,
+
+    'participantChildIds': [activeChildId!, targetChildId],
+    'participantParentIds': [activeParentId!, targetParentId],
+
+    'createdAt': FieldValue.serverTimestamp(),
+    'respondedAt': null,
+    'respondedByParentId': null,
+  });
 
   if (alertsContactRequest) {
     addAlert(AlertEvent(
@@ -1399,83 +1443,11 @@ Future<void> approveContactForChild({
   required String childId,
   required ChildContactRequest request,
 }) async {
-  // Step 1: approve the incoming request on the recipient child's side
-  await parentChildContactRequestsRef(
-    parentId: parentId,
-    childId: childId,
-  ).doc(request.id).set({
-    'name': request.name,
+  await friendRequestsRef().doc(request.id).set({
     'status': 'approved',
-    'direction': 'incoming',
-    'targetParentId': request.targetParentId,
-    'targetChildId': request.targetChildId,
-    'targetFriendCode': request.targetFriendCode,
-    'requesterParentId': request.requesterParentId,
-    'requesterChildId': request.requesterChildId,
-    'requesterFriendCode': request.requesterFriendCode,
-    'requesterName': request.requesterName,
-    'createdAt': FieldValue.serverTimestamp(),
+    'respondedAt': FieldValue.serverTimestamp(),
+    'respondedByParentId': parentId,
   }, SetOptions(merge: true));
-
-  // Step 2: create approved contact for the recipient child
-  await parentChildApprovedContactsRef(
-    parentId: parentId,
-    childId: childId,
-  ).doc(request.requesterChildId).set({
-    'name': request.requesterName,
-    'friendCode': request.requesterFriendCode,
-    'targetParentId': request.requesterParentId,
-    'targetChildId': request.requesterChildId,
-    'approvedAt': FieldValue.serverTimestamp(),
-    'isNew': true,
-  }, SetOptions(merge: true));
-
-  // Step 3: fetch recipient child info so we can mirror it back
-  final approvedChildDoc = await FirebaseFirestore.instance
-      .collection('parents')
-      .doc(parentId)
-      .collection('children')
-      .doc(childId)
-      .get();
-
-  final approvedChildData = approvedChildDoc.data() ?? {};
-  final approvedChildName = (approvedChildData['name'] ?? '').toString();
-  final approvedChildFriendCode =
-      (approvedChildData['friendCode'] ?? '').toString();
-
-  // Step 4: try to update the requester's side too
-  try {
-    await parentChildContactRequestsRef(
-      parentId: request.requesterParentId,
-      childId: request.requesterChildId,
-    ).doc(request.id).set({
-      'name': request.name,
-      'status': 'approved',
-      'direction': 'outgoing',
-      'targetParentId': request.targetParentId,
-      'targetChildId': request.targetChildId,
-      'targetFriendCode': request.targetFriendCode,
-      'requesterParentId': request.requesterParentId,
-      'requesterChildId': request.requesterChildId,
-      'requesterFriendCode': request.requesterFriendCode,
-      'requesterName': request.requesterName,
-      'createdAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-
-    await parentChildApprovedContactsRef(
-      parentId: request.requesterParentId,
-      childId: request.requesterChildId,
-    ).doc(childId).set({
-      'name': approvedChildName,
-      'friendCode': approvedChildFriendCode,
-      'targetParentId': parentId,
-      'targetChildId': childId,
-      'approvedAt': FieldValue.serverTimestamp(),
-      'isNew': true,
-    }, SetOptions(merge: true));
-  } catch (e) {
-    debugPrint('Cross-parent mirror approval failed: $e');
-  }
 }
 
 Future<void> blockContactForChild({
@@ -1483,40 +1455,10 @@ Future<void> blockContactForChild({
   required String childId,
   required ChildContactRequest request,
 }) async {
-  // Block incoming request on the target child's side
-  await parentChildContactRequestsRef(
-    parentId: parentId,
-    childId: childId,
-  ).doc(request.id).set({
-    'name': request.name,
+  await friendRequestsRef().doc(request.id).set({
     'status': 'blocked',
-    'direction': 'incoming',
-    'targetParentId': request.targetParentId,
-    'targetChildId': request.targetChildId,
-    'targetFriendCode': request.targetFriendCode,
-    'requesterParentId': request.requesterParentId,
-    'requesterChildId': request.requesterChildId,
-    'requesterFriendCode': request.requesterFriendCode,
-    'requesterName': request.requesterName,
-    'createdAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  // Block outgoing mirror on the requesting child's side
-  await parentChildContactRequestsRef(
-    parentId: request.requesterParentId,
-    childId: request.requesterChildId,
-  ).doc(request.id).set({
-    'name': request.name,
-    'status': 'blocked',
-    'direction': 'outgoing',
-    'targetParentId': request.targetParentId,
-    'targetChildId': request.targetChildId,
-    'targetFriendCode': request.targetFriendCode,
-    'requesterParentId': request.requesterParentId,
-    'requesterChildId': request.requesterChildId,
-    'requesterFriendCode': request.requesterFriendCode,
-    'requesterName': request.requesterName,
-    'createdAt': FieldValue.serverTimestamp(),
+    'respondedAt': FieldValue.serverTimestamp(),
+    'respondedByParentId': parentId,
   }, SetOptions(merge: true));
 }
 
@@ -3603,11 +3545,10 @@ class ParentChildDetailScreen extends StatelessWidget {
           const SizedBox(height: 18),
 
 StreamBuilder<List<ChildContactRequest>>(
-  stream: AppStateScope.of(context).childContactRequestsStream(
+  stream: AppStateScope.of(context).incomingFriendRequestsForParentChildStream(
   parentId: FirebaseAuth.instance.currentUser!.uid,
   childId: child.childId,
   status: 'pending',
-  direction: 'incoming',
 ),
   builder: (context, snapshot) {
     if (snapshot.hasError) {
@@ -3679,63 +3620,77 @@ StreamBuilder<List<ChildContactRequest>>(
             )
           else
             ...requests.map((request) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                request.requesterChildName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        request.requesterName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await AppStateScope.of(context).approveContactForChild(
-                          parentId: FirebaseAuth.instance.currentUser!.uid,
-                          childId: child.childId,
-                          request: request,
-                        );
-                      },
-                      child: const Text(
-                        'Approve',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await AppStateScope.of(context).blockContactForChild(
-                          parentId: FirebaseAuth.instance.currentUser!.uid,
-                          childId: child.childId,
-                          request: request,
-                        );
-                      },
-                      child: const Text(
-                        'Block',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Wants to add this child as a friend',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
                 ),
-              );
-            }),
+              ),
+            ],
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            await AppStateScope.of(context).approveContactForChild(
+              parentId: FirebaseAuth.instance.currentUser!.uid,
+              childId: child.childId,
+              request: request,
+            );
+          },
+          child: const Text(
+            'Approve',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            await AppStateScope.of(context).blockContactForChild(
+              parentId: FirebaseAuth.instance.currentUser!.uid,
+              childId: child.childId,
+              request: request,
+            );
+          },
+          child: const Text(
+            'Block',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}),
         ],
       ),
     );
@@ -6916,7 +6871,10 @@ Widget build(BuildContext context) {
             const SizedBox(height: 12),
 
             StreamBuilder<List<ChildContactRequest>>(
-  stream: state.activeChildContactRequestsStream(status: 'pending'),
+  stream: state.friendRequestsForChildStream(
+  childId: state.activeChildId!,
+  status: 'pending',
+),
   builder: (context, snapshot) {
     final pending = snapshot.data ?? [];
 
@@ -6947,12 +6905,14 @@ Widget build(BuildContext context) {
                   ),
                 ),
                 title: Text(
-                  request.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+  request.requesterChildId == state.activeChildId
+      ? request.recipientChildName
+      : request.requesterChildName,
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+  ),
+),
                 subtitle: const Text(
                   'Waiting for parent approval',
                   style: TextStyle(color: Colors.white70),
