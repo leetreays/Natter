@@ -2504,11 +2504,35 @@ class StartupRouterScreen extends StatefulWidget {
 
 class _StartupRouterScreenState extends State<StartupRouterScreen> {
   @override
+@override
 void initState() {
   super.initState();
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    _route();
+    _start();
   });
+}
+
+Future<void> _start() async {
+  final prefs = await SharedPreferences.getInstance();
+  final seenStartupSplash = prefs.getBool('seen_startup_splash') ?? false;
+
+  if (!mounted) return;
+
+  if (!seenStartupSplash) {
+    await Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const StartupSplashScreen(),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+
+    await prefs.setBool('seen_startup_splash', true);
+  }
+
+  if (!mounted) return;
+  await _route();
 }
 
   Future<void> _route() async {
@@ -2556,6 +2580,77 @@ void initState() {
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+class StartupSplashScreen extends StatefulWidget {
+  const StartupSplashScreen({super.key});
+
+  @override
+  State<StartupSplashScreen> createState() => _StartupSplashScreenState();
+}
+
+class _StartupSplashScreenState extends State<StartupSplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    _fade = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    );
+
+    _scale = Tween<double>(begin: 0.92, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOutBack,
+      ),
+    );
+
+    _play();
+  }
+
+  Future<void> _play() async {
+    await _controller.forward();
+    await Future.delayed(const Duration(milliseconds: 250));
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF06112E),
+      body: Center(
+        child: FadeTransition(
+          opacity: _fade,
+          child: ScaleTransition(
+            scale: _scale,
+            child: Image.asset(
+              'assets/splash/natter_splash_icon.png',
+              width: 160,
+              height: 160,
+            ),
+          ),
+        ),
       ),
     );
   }
