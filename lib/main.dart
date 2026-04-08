@@ -1399,7 +1399,7 @@ Future<void> approveContactForChild({
   required String childId,
   required ChildContactRequest request,
 }) async {
-  // Approve incoming request on the target child's side
+  // Step 1: approve the incoming request on the recipient child's side
   await parentChildContactRequestsRef(
     parentId: parentId,
     childId: childId,
@@ -1417,37 +1417,7 @@ Future<void> approveContactForChild({
     'createdAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
-  // Approve outgoing mirror on the requesting child's side
-  await parentChildContactRequestsRef(
-    parentId: request.requesterParentId,
-    childId: request.requesterChildId,
-  ).doc(request.id).set({
-    'name': request.name,
-    'status': 'approved',
-    'direction': 'outgoing',
-    'targetParentId': request.targetParentId,
-    'targetChildId': request.targetChildId,
-    'targetFriendCode': request.targetFriendCode,
-    'requesterParentId': request.requesterParentId,
-    'requesterChildId': request.requesterChildId,
-    'requesterFriendCode': request.requesterFriendCode,
-    'requesterName': request.requesterName,
-    'createdAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  final approvedChildDoc = await FirebaseFirestore.instance
-      .collection('parents')
-      .doc(parentId)
-      .collection('children')
-      .doc(childId)
-      .get();
-
-  final approvedChildData = approvedChildDoc.data() ?? {};
-  final approvedChildName = (approvedChildData['name'] ?? '').toString();
-  final approvedChildFriendCode =
-      (approvedChildData['friendCode'] ?? '').toString();
-
-  // Approved contact for the target child
+  // Step 2: create approved contact for the recipient child
   await parentChildApprovedContactsRef(
     parentId: parentId,
     childId: childId,
@@ -1460,18 +1430,52 @@ Future<void> approveContactForChild({
     'isNew': true,
   }, SetOptions(merge: true));
 
-  // Reciprocal approved contact for the requesting child
-  await parentChildApprovedContactsRef(
-    parentId: request.requesterParentId,
-    childId: request.requesterChildId,
-  ).doc(childId).set({
-    'name': approvedChildName,
-    'friendCode': approvedChildFriendCode,
-    'targetParentId': parentId,
-    'targetChildId': childId,
-    'approvedAt': FieldValue.serverTimestamp(),
-    'isNew': true,
-  }, SetOptions(merge: true));
+  // Step 3: fetch recipient child info so we can mirror it back
+  final approvedChildDoc = await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .get();
+
+  final approvedChildData = approvedChildDoc.data() ?? {};
+  final approvedChildName = (approvedChildData['name'] ?? '').toString();
+  final approvedChildFriendCode =
+      (approvedChildData['friendCode'] ?? '').toString();
+
+  // Step 4: try to update the requester's side too
+  try {
+    await parentChildContactRequestsRef(
+      parentId: request.requesterParentId,
+      childId: request.requesterChildId,
+    ).doc(request.id).set({
+      'name': request.name,
+      'status': 'approved',
+      'direction': 'outgoing',
+      'targetParentId': request.targetParentId,
+      'targetChildId': request.targetChildId,
+      'targetFriendCode': request.targetFriendCode,
+      'requesterParentId': request.requesterParentId,
+      'requesterChildId': request.requesterChildId,
+      'requesterFriendCode': request.requesterFriendCode,
+      'requesterName': request.requesterName,
+      'createdAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    await parentChildApprovedContactsRef(
+      parentId: request.requesterParentId,
+      childId: request.requesterChildId,
+    ).doc(childId).set({
+      'name': approvedChildName,
+      'friendCode': approvedChildFriendCode,
+      'targetParentId': parentId,
+      'targetChildId': childId,
+      'approvedAt': FieldValue.serverTimestamp(),
+      'isNew': true,
+    }, SetOptions(merge: true));
+  } catch (e) {
+    debugPrint('Cross-parent mirror approval failed: $e');
+  }
 }
 
 Future<void> blockContactForChild({
