@@ -1,1 +1,0 @@
-{"inputs":["/workspaces/Natter/web/*/index.html","/workspaces/Natter/web/flutter_bootstrap.js","/home/codespace/develop/flutter/bin/cache/engine.stamp"],"outputs":["/workspaces/Natter/build/web/*/index.html","/workspaces/Natter/build/web/flutter_bootstrap.js"],"buildKey":"[{\"compileTarget\":\"dart2js\",\"renderer\":\"canvaskit\",\"mainJsPath\":\"main.dart.js\"},{}]"}
