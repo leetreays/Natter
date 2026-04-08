@@ -496,6 +496,7 @@ class ChildContactRequest {
   final String requesterChildId;
   final String requesterFriendCode;
   final String requesterName;
+  final String direction;
 
   const ChildContactRequest({
     required this.id,
@@ -508,6 +509,7 @@ class ChildContactRequest {
     required this.requesterChildId,
     required this.requesterFriendCode,
     required this.requesterName,
+    required this.direction,
   });
 
   factory ChildContactRequest.fromDoc(
@@ -526,6 +528,7 @@ class ChildContactRequest {
       requesterChildId: (data['requesterChildId'] ?? '').toString(),
       requesterFriendCode: (data['requesterFriendCode'] ?? '').toString(),
       requesterName: (data['requesterName'] ?? '').toString(),
+      direction: (data['direction'] ?? '').toString(),
     );
   }
 }
@@ -739,6 +742,7 @@ Stream<List<ChildContactRequest>> childContactRequestsStream({
   required String parentId,
   required String childId,
   String? status,
+  String? direction,
 }) async* {
   Query<Map<String, dynamic>> query = parentChildContactRequestsRef(
     parentId: parentId,
@@ -747,6 +751,10 @@ Stream<List<ChildContactRequest>> childContactRequestsStream({
 
   if (status != null) {
     query = query.where('status', isEqualTo: status);
+  }
+
+  if (direction != null) {
+    query = query.where('direction', isEqualTo: direction);
   }
 
   yield* query.snapshots().map(
@@ -758,6 +766,7 @@ Stream<List<ChildContactRequest>> childContactRequestsStream({
 
 Stream<List<ChildContactRequest>> activeChildContactRequestsStream({
   String? status,
+  String? direction,
 }) async* {
   if (!hasActiveChildSession) {
     yield [];
@@ -768,6 +777,7 @@ Stream<List<ChildContactRequest>> activeChildContactRequestsStream({
     parentId: activeParentId!,
     childId: activeChildId!,
     status: status,
+    direction: direction,
   );
 }
 
@@ -1389,12 +1399,32 @@ Future<void> approveContactForChild({
   required String childId,
   required ChildContactRequest request,
 }) async {
+  // Approve incoming request on the target child's side
   await parentChildContactRequestsRef(
     parentId: parentId,
     childId: childId,
   ).doc(request.id).set({
     'name': request.name,
     'status': 'approved',
+    'direction': 'incoming',
+    'targetParentId': request.targetParentId,
+    'targetChildId': request.targetChildId,
+    'targetFriendCode': request.targetFriendCode,
+    'requesterParentId': request.requesterParentId,
+    'requesterChildId': request.requesterChildId,
+    'requesterFriendCode': request.requesterFriendCode,
+    'requesterName': request.requesterName,
+    'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  // Approve outgoing mirror on the requesting child's side
+  await parentChildContactRequestsRef(
+    parentId: request.requesterParentId,
+    childId: request.requesterChildId,
+  ).doc(request.id).set({
+    'name': request.name,
+    'status': 'approved',
+    'direction': 'outgoing',
     'targetParentId': request.targetParentId,
     'targetChildId': request.targetChildId,
     'targetFriendCode': request.targetFriendCode,
@@ -1417,6 +1447,7 @@ Future<void> approveContactForChild({
   final approvedChildFriendCode =
       (approvedChildData['friendCode'] ?? '').toString();
 
+  // Approved contact for the target child
   await parentChildApprovedContactsRef(
     parentId: parentId,
     childId: childId,
@@ -1429,6 +1460,7 @@ Future<void> approveContactForChild({
     'isNew': true,
   }, SetOptions(merge: true));
 
+  // Reciprocal approved contact for the requesting child
   await parentChildApprovedContactsRef(
     parentId: request.requesterParentId,
     childId: request.requesterChildId,
@@ -1447,12 +1479,39 @@ Future<void> blockContactForChild({
   required String childId,
   required ChildContactRequest request,
 }) async {
+  // Block incoming request on the target child's side
   await parentChildContactRequestsRef(
     parentId: parentId,
     childId: childId,
   ).doc(request.id).set({
     'name': request.name,
     'status': 'blocked',
+    'direction': 'incoming',
+    'targetParentId': request.targetParentId,
+    'targetChildId': request.targetChildId,
+    'targetFriendCode': request.targetFriendCode,
+    'requesterParentId': request.requesterParentId,
+    'requesterChildId': request.requesterChildId,
+    'requesterFriendCode': request.requesterFriendCode,
+    'requesterName': request.requesterName,
+    'createdAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  // Block outgoing mirror on the requesting child's side
+  await parentChildContactRequestsRef(
+    parentId: request.requesterParentId,
+    childId: request.requesterChildId,
+  ).doc(request.id).set({
+    'name': request.name,
+    'status': 'blocked',
+    'direction': 'outgoing',
+    'targetParentId': request.targetParentId,
+    'targetChildId': request.targetChildId,
+    'targetFriendCode': request.targetFriendCode,
+    'requesterParentId': request.requesterParentId,
+    'requesterChildId': request.requesterChildId,
+    'requesterFriendCode': request.requesterFriendCode,
+    'requesterName': request.requesterName,
     'createdAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 }
@@ -3523,10 +3582,11 @@ class ParentChildDetailScreen extends StatelessWidget {
 
 StreamBuilder<List<ChildContactRequest>>(
   stream: AppStateScope.of(context).childContactRequestsStream(
-    parentId: FirebaseAuth.instance.currentUser!.uid,
-    childId: child.childId,
-    status: 'pending',
-  ),
+  parentId: FirebaseAuth.instance.currentUser!.uid,
+  childId: child.childId,
+  status: 'pending',
+  direction: 'incoming',
+),
   builder: (context, snapshot) {
     if (snapshot.hasError) {
       return Container(
