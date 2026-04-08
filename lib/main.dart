@@ -2525,28 +2525,9 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
     });
   }
 
-  Future<void> _start() async {
-    final prefs = await SharedPreferences.getInstance();
-    final seenStartupSplash = prefs.getBool('seen_startup_splash') ?? false;
-
-    if (!mounted) return;
-
-    if (!seenStartupSplash) {
-      await Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const StartupSplashScreen(),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ),
-      );
-
-      await prefs.setBool('seen_startup_splash', true);
-    }
-
-    if (!mounted) return;
-    await _route();
-  }
+Future<void> _start() async {
+  await _route();
+}
 
   Future<void> _route() async {
     final state = AppStateScope.of(context);
@@ -2597,80 +2578,6 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
       child: const Scaffold(
         backgroundColor: Color(0xFF06112E),
         body: SizedBox.expand(),
-      ),
-    );
-  }
-}
-
-class StartupSplashScreen extends StatefulWidget {
-  const StartupSplashScreen({super.key});
-
-  @override
-  State<StartupSplashScreen> createState() => _StartupSplashScreenState();
-}
-
-class _StartupSplashScreenState extends State<StartupSplashScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _fade;
-  late final Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-
-    _fade = CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.0, 0.55, curve: Curves.easeOut),
-    );
-
-    _scale = Tween<double>(begin: 0.86, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
-      ),
-    );
-
-    _play();
-  }
-
-  Future<void> _play() async {
-    await _controller.forward();
-
-    // Hold the finished state for a moment so it feels intentional.
-    await Future.delayed(const Duration(milliseconds: 900));
-
-    if (!mounted) return;
-    Navigator.pop(context);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF06112E),
-      body: Center(
-        child: FadeTransition(
-          opacity: _fade,
-          child: ScaleTransition(
-            scale: _scale,
-            child: Image.asset(
-              'assets/splash/natter_splash_icon.png',
-              width: 170,
-              height: 170,
-            ),
-          ),
-        ),
       ),
     );
   }
