@@ -819,6 +819,48 @@ Stream<List<ChildContactRequest>> incomingFriendRequestsForParentChildStream({
       );
 }
 
+Stream<List<ChildContactRequest>> outgoingFriendRequestsForChildStream({
+  required String parentId,
+  required String childId,
+  String? status,
+}) async* {
+  Query<Map<String, dynamic>> query = friendRequestsRef()
+      .where('requesterParentId', isEqualTo: parentId)
+      .where('requesterChildId', isEqualTo: childId)
+      .orderBy('createdAt', descending: true);
+
+  if (status != null) {
+    query = query.where('status', isEqualTo: status);
+  }
+
+  yield* query.snapshots().map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ChildContactRequest.fromDoc(doc))
+            .toList(),
+      );
+}
+
+Stream<List<ChildContactRequest>> incomingFriendRequestsForChildStream({
+  required String parentId,
+  required String childId,
+  String? status,
+}) async* {
+  Query<Map<String, dynamic>> query = friendRequestsRef()
+      .where('recipientParentId', isEqualTo: parentId)
+      .where('recipientChildId', isEqualTo: childId)
+      .orderBy('createdAt', descending: true);
+
+  if (status != null) {
+    query = query.where('status', isEqualTo: status);
+  }
+
+  yield* query.snapshots().map(
+        (snapshot) => snapshot.docs
+            .map((doc) => ChildContactRequest.fromDoc(doc))
+            .toList(),
+      );
+}
+
 CollectionReference<Map<String, dynamic>> friendRequestsRef() {
   return FirebaseFirestore.instance.collection('friend_requests');
 }
@@ -6855,144 +6897,242 @@ Widget build(BuildContext context) {
             _friendCodeCard(context, state),
             const SizedBox(height: 12),
 
-            StreamBuilder<List<ChildContactRequest>>(
-  stream: state.friendRequestsForChildStream(
-    childId: state.activeChildId!,
-    status: 'pending',
-  ),
-  builder: (context, snapshot) {
-    if (snapshot.hasError) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            'Could not load pending requests: ${snapshot.error}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const Padding(
-        padding: EdgeInsets.only(bottom: 12),
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    final pending = snapshot.data ?? [];
-
-    if (pending.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      children: pending.map((request) {
-        final isRequester =
-            request.requesterChildId == state.activeChildId;
-
-        final otherChildName = isRequester
-            ? request.recipientChildName
-            : request.requesterChildName;
-
-        final subtitle = isRequester
-            ? 'Waiting for parent approval'
-            : 'Friend request received';
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C2A48),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.06),
+            Column(
+  children: [
+    StreamBuilder<List<ChildContactRequest>>(
+      stream: state.outgoingFriendRequestsForChildStream(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
+        status: 'pending',
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2A48),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                'Could not load outgoing requests: ${snapshot.error}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.22),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    otherChildName.isNotEmpty
-                        ? otherChildName[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
+          );
+        }
+
+        final outgoing = snapshot.data ?? [];
+
+        return Column(
+          children: outgoing.map((request) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2A48),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.06),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        otherChildName,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.22),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        request.recipientChildName.isNotEmpty
+                            ? request.recipientChildName[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
-                          fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.7),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.22),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: const Text(
-                    'PENDING',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.4,
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            request.recipientChildName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Waiting for parent approval',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.22),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'PENDING',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    ),
+    StreamBuilder<List<ChildContactRequest>>(
+      stream: state.incomingFriendRequestsForChildStream(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
+        status: 'pending',
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2A48),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                'Could not load incoming requests: ${snapshot.error}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final incoming = snapshot.data ?? [];
+
+        return Column(
+          children: incoming.map((request) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2A48),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.06),
                   ),
                 ),
-              ],
-            ),
-          ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.22),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        request.requesterChildName.isNotEmpty
+                            ? request.requesterChildName[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            request.requesterChildName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Friend request received',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.22),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'PENDING',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
-    );
-  },
+      },
+    ),
+    const SizedBox(height: 12),
+  ],
 ),
 
             StreamBuilder<List<ApprovedChildContact>>(
