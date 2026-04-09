@@ -1356,31 +1356,25 @@ Future<void> requestContact({
   if (!hasActiveChildSession) return;
   if (activeChildId == targetChildId) return;
 
-  final existingPending = await friendRequestsRef()
-      .where('status', isEqualTo: 'pending')
-      .where('participantChildIds', arrayContains: activeChildId)
+  final existing = await friendRequestsRef()
+      .where('participantChildIds', arrayContains: activeChildId!)
       .get();
 
-  final alreadyPending = existingPending.docs.any((doc) {
+  bool alreadyPending = false;
+  bool alreadyApproved = false;
+
+  for (final doc in existing.docs) {
     final data = doc.data();
     final ids = List<String>.from(data['participantChildIds'] ?? []);
-    return ids.contains(targetChildId);
-  });
+    final status = (data['status'] ?? '').toString();
 
-  if (alreadyPending) return;
+    if (ids.contains(targetChildId)) {
+      if (status == 'pending') alreadyPending = true;
+      if (status == 'approved') alreadyApproved = true;
+    }
+  }
 
-  final existingApproved = await friendRequestsRef()
-      .where('status', isEqualTo: 'approved')
-      .where('participantChildIds', arrayContains: activeChildId)
-      .get();
-
-  final alreadyApproved = existingApproved.docs.any((doc) {
-    final data = doc.data();
-    final ids = List<String>.from(data['participantChildIds'] ?? []);
-    return ids.contains(targetChildId);
-  });
-
-  if (alreadyApproved) return;
+  if (alreadyPending || alreadyApproved) return;
 
   await friendRequestsRef().add({
     'status': 'pending',
@@ -6309,30 +6303,41 @@ await showDialog<void>(
                         return;
                       }
 
-                      await state.requestContact(
-  targetName: friendName,
-  targetParentId: friendResult['parentId']!,
-  targetChildId: friendResult['childId']!,
-  targetFriendCode: friendResult['friendCode']!,
-);
-Navigator.pop(ctx);
+                      try {
+  await state.requestContact(
+    targetName: friendName,
+    targetParentId: friendResult['parentId']!,
+    targetChildId: friendResult['childId']!,
+    targetFriendCode: friendResult['friendCode']!,
+  );
+
+  Navigator.pop(ctx);
 
 if (!state.hasSeenAddFriendSuccess) {
-  state.hasSeenAddFriendSuccess = true;
-  state.onboardingStep = 4;
-  await state.saveChildOnboardingState();
-  state.notifyListeners();
-}
+    state.hasSeenAddFriendSuccess = true;
+    state.onboardingStep = 4;
+    await state.saveChildOnboardingState();
+    state.notifyListeners();
+  }
 
-if (!context.mounted) return;
+  if (!context.mounted) return;
 
-ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: Text(
-      '$friendName is now waiting for parent approval ⏳',
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        '$friendName is now waiting for parent approval ⏳',
+      ),
     ),
-  ),
-);
+  );
+} catch (e) {
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Could not send request: $e'),
+    ),
+  );
+}
                     },
                     child: const Text('Request'),
                   ),
