@@ -1356,26 +1356,6 @@ Future<void> requestContact({
   if (!hasActiveChildSession) return;
   if (activeChildId == targetChildId) return;
 
-  final existing = await friendRequestsRef()
-      .where('participantChildIds', arrayContains: activeChildId!)
-      .get();
-
-  bool alreadyPending = false;
-  bool alreadyApproved = false;
-
-  for (final doc in existing.docs) {
-    final data = doc.data();
-    final ids = List<String>.from(data['participantChildIds'] ?? []);
-    final status = (data['status'] ?? '').toString();
-
-    if (ids.contains(targetChildId)) {
-      if (status == 'pending') alreadyPending = true;
-      if (status == 'approved') alreadyApproved = true;
-    }
-  }
-
-  if (alreadyPending || alreadyApproved) return;
-
   await friendRequestsRef().add({
     'status': 'pending',
 
