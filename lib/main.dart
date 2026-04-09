@@ -6857,10 +6857,40 @@ Widget build(BuildContext context) {
 
             StreamBuilder<List<ChildContactRequest>>(
   stream: state.friendRequestsForChildStream(
-  childId: state.activeChildId!,
-  status: 'pending',
-),
+    childId: state.activeChildId!,
+    status: 'pending',
+  ),
   builder: (context, snapshot) {
+    if (snapshot.hasError) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            'Could not load pending requests: ${snapshot.error}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Padding(
+        padding: EdgeInsets.only(bottom: 12),
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     final pending = snapshot.data ?? [];
 
     if (pending.isEmpty) {
@@ -6868,50 +6898,99 @@ Widget build(BuildContext context) {
     }
 
     return Column(
-      children: [
-        ...pending.map((request) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: BrandCard(
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Container(
+      children: pending.map((request) {
+        final isRequester =
+            request.requesterChildId == state.activeChildId;
+
+        final otherChildName = isRequester
+            ? request.recipientChildName
+            : request.requesterChildName;
+
+        final subtitle = isRequester
+            ? 'Waiting for parent approval'
+            : 'Friend request received';
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C2A48),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.06),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.08),
+                    color: Colors.orange.withOpacity(0.22),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const CircleAvatar(
-                    radius: 22,
-                    backgroundColor: Colors.transparent,
-                    child: Icon(
-                      Icons.hourglass_top_rounded,
-                      color: NatterBrand.yellow,
+                  alignment: Alignment.center,
+                  child: Text(
+                    otherChildName.isNotEmpty
+                        ? otherChildName[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
-                title: Text(
-  request.requesterChildId == state.activeChildId
-      ? request.recipientChildName
-      : request.requesterChildName,
-  style: const TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w900,
-  ),
-),
-                subtitle: const Text(
-                  'Waiting for parent approval',
-                  style: TextStyle(color: Colors.white70),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        otherChildName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                trailing: const Icon(
-                  Icons.schedule_rounded,
-                  color: Colors.white70,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.22),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: const Text(
+                    'PENDING',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          );
-        }),
-        const SizedBox(height: 12),
-      ],
+          ),
+        );
+      }).toList(),
     );
   },
 ),
