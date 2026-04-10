@@ -818,7 +818,7 @@ Stream<List<ChildContactRequest>> outgoingFriendRequestsForChildStream({
   });
 }
 
-Stream<List<ChildContactRequest>> incomingFriendRequestsForChildStream({
+Stream<List<ChildContactRequest>> incomingFriendRequestsForParentChildStream({
   required String parentId,
   required String childId,
   String? status,
@@ -838,7 +838,7 @@ Stream<List<ChildContactRequest>> incomingFriendRequestsForChildStream({
             .toList(),
       );
 }
-
+  
 CollectionReference<Map<String, dynamic>> friendRequestsRef() {
   return FirebaseFirestore.instance.collection('friend_requests');
 }
