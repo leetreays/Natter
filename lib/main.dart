@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -888,6 +889,39 @@ CollectionReference<Map<String, dynamic>> activeChildApprovedContactsRef() {
   );
 }
 
+FirebaseFunctions get functions =>
+    FirebaseFunctions.instanceFor(region: 'europe-west2');
+
+Future<void> createFriendRequestViaFunction({
+  required String targetFriendCode,
+}) async {
+  final callable = functions.httpsCallable('createFriendRequest');
+
+  await callable.call({
+    'targetFriendCode': targetFriendCode,
+  });
+}
+
+Future<void> approveFriendRequestViaFunction({
+  required String requestId,
+}) async {
+  final callable = functions.httpsCallable('approveFriendRequest');
+
+  await callable.call({
+    'requestId': requestId,
+  });
+}
+
+Future<void> blockFriendRequestViaFunction({
+  required String requestId,
+}) async {
+  final callable = functions.httpsCallable('blockFriendRequest');
+
+  await callable.call({
+    'requestId': requestId,
+  });
+}
+  
 Stream<List<ApprovedChildContact>> activeChildApprovedContactsStream() async* {
   if (!hasActiveChildSession) {
     yield [];
@@ -3673,11 +3707,9 @@ StreamBuilder<List<ChildContactRequest>>(
         ),
         TextButton(
           onPressed: () async {
-            await AppStateScope.of(context).approveContactForChild(
-              parentId: FirebaseAuth.instance.currentUser!.uid,
-              childId: child.childId,
-              request: request,
-            );
+            await AppStateScope.of(context).approveFriendRequestViaFunction(
+  requestId: request.id,
+);
           },
           child: const Text(
             'Approve',
@@ -3689,11 +3721,9 @@ StreamBuilder<List<ChildContactRequest>>(
         ),
         TextButton(
           onPressed: () async {
-            await AppStateScope.of(context).blockContactForChild(
-              parentId: FirebaseAuth.instance.currentUser!.uid,
-              childId: child.childId,
-              request: request,
-            );
+            await AppStateScope.of(context).blockFriendRequestViaFunction(
+  requestId: request.id,
+);
           },
           child: const Text(
             'Block',
@@ -6326,12 +6356,9 @@ await showDialog<void>(
                       }
 
                       try {
-  await state.requestContact(
-    targetName: friendName,
-    targetParentId: friendResult['parentId']!,
-    targetChildId: friendResult['childId']!,
-    targetFriendCode: friendResult['friendCode']!,
-  );
+  await state.createFriendRequestViaFunction(
+  targetFriendCode: friendCode,
+);
 
   Navigator.pop(ctx);
 
