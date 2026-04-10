@@ -6355,17 +6355,32 @@ if (!state.hasSeenAddFriendSuccess) {
       ),
     ),
   );
+} on FirebaseFunctionsException catch (e) {
+  if (!context.mounted) return;
+
+  debugPrint(
+    'CREATE FRIEND REQUEST ERROR '
+    'code=${e.code} message=${e.message} details=${e.details}',
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        'Could not send request: ${e.code} / ${e.message ?? 'no message'}',
+      ),
+    ),
+  );
 } catch (e) {
   if (!context.mounted) return;
 
-  debugPrint('CREATE FRIEND REQUEST ERROR: $e');
+  debugPrint('CREATE FRIEND REQUEST UNKNOWN ERROR: $e');
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text('Could not send request: $e'),
     ),
   );
-}
+                      }
                     },
                     child: const Text('Request'),
                   ),
