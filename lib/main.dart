@@ -6357,7 +6357,7 @@ await showDialog<void>(
 
                       try {
   await state.createFriendRequestViaFunction(
-  targetFriendCode: friendCode,
+  targetFriendCode: friendResult['friendCode']!,
 );
 
   Navigator.pop(ctx);
