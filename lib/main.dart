@@ -780,65 +780,42 @@ Stream<List<ChildContactRequest>> activeChildContactRequestsStream({
   );
 }
 
-Stream<List<ChildContactRequest>> friendRequestsForChildStream({
-  required String childId,
-  String? status,
-}) async* {
-  Query<Map<String, dynamic>> query = friendRequestsRef()
-      .where('participantChildIds', arrayContains: childId)
-      .orderBy('createdAt', descending: true);
-
-  if (status != null) {
-    query = query.where('status', isEqualTo: status);
-  }
-
-  yield* query.snapshots().map(
-        (snapshot) => snapshot.docs
-            .map((doc) => ChildContactRequest.fromDoc(doc))
-            .toList(),
-      );
-}
-
-Stream<List<ChildContactRequest>> incomingFriendRequestsForParentChildStream({
+Stream<List<ChildContactRequest>> incomingFriendRequestsForChildStream({
   required String parentId,
   required String childId,
-  String? status,
 }) async* {
-  Query<Map<String, dynamic>> query = friendRequestsRef()
+  yield* friendRequestsRef()
       .where('recipientParentId', isEqualTo: parentId)
       .where('recipientChildId', isEqualTo: childId)
-      .orderBy('createdAt', descending: true);
+      .snapshots()
+      .map((snapshot) {
+    final items = snapshot.docs
+        .map((doc) => ChildContactRequest.fromDoc(doc))
+        .where((request) => request.status == 'pending')
+        .toList();
 
-  if (status != null) {
-    query = query.where('status', isEqualTo: status);
-  }
-
-  yield* query.snapshots().map(
-        (snapshot) => snapshot.docs
-            .map((doc) => ChildContactRequest.fromDoc(doc))
-            .toList(),
-      );
+    items.sort((a, b) => b.id.compareTo(a.id));
+    return items;
+  });
 }
 
 Stream<List<ChildContactRequest>> outgoingFriendRequestsForChildStream({
   required String parentId,
   required String childId,
-  String? status,
 }) async* {
-  Query<Map<String, dynamic>> query = friendRequestsRef()
+  yield* friendRequestsRef()
       .where('requesterParentId', isEqualTo: parentId)
       .where('requesterChildId', isEqualTo: childId)
-      .orderBy('createdAt', descending: true);
+      .snapshots()
+      .map((snapshot) {
+    final items = snapshot.docs
+        .map((doc) => ChildContactRequest.fromDoc(doc))
+        .where((request) => request.status == 'pending')
+        .toList();
 
-  if (status != null) {
-    query = query.where('status', isEqualTo: status);
-  }
-
-  yield* query.snapshots().map(
-        (snapshot) => snapshot.docs
-            .map((doc) => ChildContactRequest.fromDoc(doc))
-            .toList(),
-      );
+    items.sort((a, b) => b.id.compareTo(a.id));
+    return items;
+  });
 }
 
 Stream<List<ChildContactRequest>> incomingFriendRequestsForChildStream({
@@ -6381,6 +6358,8 @@ if (!state.hasSeenAddFriendSuccess) {
 } catch (e) {
   if (!context.mounted) return;
 
+  debugPrint('CREATE FRIEND REQUEST ERROR: $e');
+
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text('Could not send request: $e'),
@@ -6928,10 +6907,9 @@ Widget build(BuildContext context) {
   children: [
     StreamBuilder<List<ChildContactRequest>>(
       stream: state.outgoingFriendRequestsForChildStream(
-        parentId: state.activeParentId!,
-        childId: state.activeChildId!,
-        status: 'pending',
-      ),
+  parentId: state.activeParentId!,
+  childId: state.activeChildId!,
+),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Padding(
@@ -7044,10 +7022,9 @@ Widget build(BuildContext context) {
     ),
     StreamBuilder<List<ChildContactRequest>>(
       stream: state.incomingFriendRequestsForChildStream(
-        parentId: state.activeParentId!,
-        childId: state.activeChildId!,
-        status: 'pending',
-      ),
+  parentId: state.activeParentId!,
+  childId: state.activeChildId!,
+),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Padding(
