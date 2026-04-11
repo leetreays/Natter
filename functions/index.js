@@ -97,22 +97,6 @@ async function getChildByFriendCode(friendCode) {
   };
 }
 
-async function findExistingActiveFriendship(requesterChildId, recipientChildId) {
-  const snap = await db
-      .collection('friendships')
-      .where('participantChildIds', 'array-contains', requesterChildId)
-      .get();
-
-  return snap.docs.find((doc) => {
-    const data = doc.data() || {};
-    const ids = Array.isArray(data.participantChildIds) ?
-                                data.participantChildIds :
-                                      [];
-    const status = data.status || '';
-    return ids.includes(recipientChildId) && status === 'active';
-  });
-}
-
 exports.createFriendRequest = onCall(async (request) => {
   try {
     console.log('STEP 1: callable entered');
@@ -164,7 +148,9 @@ exports.createFriendRequest = onCall(async (request) => {
     }
 
     console.log('STEP 8: before request write');
-    const requestRef = db.collection('friend_requests').doc();
+    const pair = [requester.childId, recipient.childId].sort();
+    const requestId = `${pair[0]}_${pair[1]}`;
+    const requestRef = db.collection('friend_requests').doc(requestId);
 
     await requestRef.set({
       status: 'pending',
@@ -185,7 +171,7 @@ exports.createFriendRequest = onCall(async (request) => {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       respondedAt: null,
       respondedByParentId: null,
-    });
+    }, {merge: false});
 
     console.log('STEP 9: request write complete');
 
@@ -205,88 +191,81 @@ exports.approveFriendRequest = onCall(async (request) => {
     throw new HttpsError('unauthenticated', 'You must be signed in.');
   }
 
-  const requestId = String(request.data && request.data.requestId || '').trim();
+  const requestId = String(
+      (request.data && request.data.requestId) || '',
+  ).trim();
 
   if (!requestId) {
-    throw new HttpsError('invalid-argument', 'requestId is required.');
-  }
-
-  const parentId = request.auth.uid;
-  const friendRequestRef = db.collection('friend_requests').doc(requestId);
-  const friendRequestSnap = await friendRequestRef.get();
-
-  if (!friendRequestSnap.exists) {
-    throw new HttpsError('not-found', 'Friend request not found.');
-  }
-
-  const fr = friendRequestSnap.data() || {};
-
-  if (fr.recipientParentId !== parentId) {
     throw new HttpsError(
-        'permission-denied',
-        'Only the recipient parent can approve this request.',
+        'invalid-argument',
+        'requestId is required.',
     );
   }
 
-  if (fr.status !== 'pending') {
+  const requestRef = db.collection('friend_requests').doc(requestId);
+  const requestSnap = await requestRef.get();
+
+  if (!requestSnap.exists) {
+    throw new HttpsError(
+        'not-found',
+        'Friend request not found.',
+    );
+  }
+
+  const data = requestSnap.data() || {};
+
+  if (data.status !== 'pending') {
     throw new HttpsError(
         'failed-precondition',
-        'This request is no longer pending.',
+        'Request is not pending.',
     );
   }
 
-  const existingFriendship = await findExistingActiveFriendship(
-      fr.requesterChildId,
-      fr.recipientChildId,
-  );
+  const {
+    requesterChildId,
+    requesterParentId,
+    requesterChildName,
+    recipientChildId,
+    recipientParentId,
+    recipientChildName,
+  } = data;
 
-  if (existingFriendship) {
-    throw new HttpsError(
-        'already-exists',
-        'An active friendship already exists for these children.',
-    );
-  }
+  // ✅ deterministic friendship id
+  const pair = [requesterChildId, recipientChildId].sort();
+  const friendshipId = `${pair[0]}_${pair[1]}`;
 
-  const friendshipRef = db.collection('friendships').doc();
+  const friendshipRef = db.collection('friendships').doc(friendshipId);
 
-  const batch = db.batch();
+  // 🔥 create friendship
+  await friendshipRef.set({
+    childIds: [requesterChildId, recipientChildId],
+    parentIds: [requesterParentId, recipientParentId],
 
-  batch.set(
-      friendRequestRef,
-      {
-        status: 'approved',
-        respondedAt: admin.firestore.FieldValue.serverTimestamp(),
-        respondedByParentId: parentId,
+    children: {
+      [requesterChildId]: {
+        parentId: requesterParentId,
+        name: requesterChildName,
       },
-      {merge: true},
-  );
+      [recipientChildId]: {
+        parentId: recipientParentId,
+        name: recipientChildName,
+      },
+    },
 
-  batch.set(friendshipRef, {
     status: 'active',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  }, {merge: false});
 
-    childAParentId: fr.requesterParentId,
-    childAId: fr.requesterChildId,
-    childAName: fr.requesterChildName,
-    childAFriendCode: fr.requesterFriendCode,
-
-    childBParentId: fr.recipientParentId,
-    childBId: fr.recipientChildId,
-    childBName: fr.recipientChildName,
-    childBFriendCode: fr.recipientFriendCode,
-
-    participantChildIds: [fr.requesterChildId, fr.recipientChildId],
-    participantParentIds: [fr.requesterParentId, fr.recipientParentId],
-
-    approvedAt: admin.firestore.FieldValue.serverTimestamp(),
-    approvedByParentId: parentId,
-    createdFromRequestId: requestId,
-  });
-
-  await batch.commit();
+  // ✅ mark request approved
+  await requestRef.set({
+    status: 'approved',
+    respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+    respondedByParentId: request.auth.uid,
+  }, {merge: true});
 
   return {
     ok: true,
-    friendshipId: friendshipRef.id,
+    friendshipId,
   };
 });
 

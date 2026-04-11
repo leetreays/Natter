@@ -6190,73 +6190,90 @@ await showDialog<void>(
             ),
             const SizedBox(height: 10),
             Text(
-              'Add a friend by code or pick a suggestion. A parent will approve it.',
+              'Enter a friend code. A parent will approve it.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.85),
                 fontWeight: FontWeight.w700,
               ),
             ),
-            if (suggestions.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Suggested friends',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: suggestions.map<Widget>((profile) {
-                  return ActionChip(
-                    backgroundColor: NatterBrand.blue.withOpacity(0.6),
-                    label: Text(
-                      '${profile.name} (${profile.code})',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    avatar: CircleAvatar(
-                      backgroundColor: NatterBrand.yellow,
-                      child: Text(
-                        profile.name.substring(0, 1),
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    onPressed: () {
-                      controller.text = profile.code;
-                      controller.selection = TextSelection.fromPosition(
-                        TextPosition(offset: controller.text.length),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-            ],
+            const SizedBox(height: 6),
+Text(
+  'Ask your friend for their code',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.6),
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+  ),
+),
             const SizedBox(height: 14),
             TextField(
-              controller: controller,
-              textAlign: TextAlign.center,
-              textCapitalization: TextCapitalization.characters,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.1,
-              ),
-              decoration: const InputDecoration(
-                hintText: 'e.g. AVA-4821',
-              ),
-            ),
+  controller: controller,
+  textCapitalization: TextCapitalization.characters,
+  autocorrect: false,
+  enableSuggestions: false,
+  maxLength: 8,
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 2.5,
+  ),
+  decoration: InputDecoration(
+    counterText: '',
+    hintText: 'ABC-1234',
+    hintStyle: TextStyle(
+      color: Colors.white.withOpacity(0.35),
+      fontWeight: FontWeight.w800,
+      letterSpacing: 2.5,
+    ),
+    filled: true,
+    fillColor: Colors.white.withOpacity(0.08),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 20,
+      vertical: 18,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: BorderSide(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(18),
+      borderSide: const BorderSide(
+        color: NatterBrand.yellow,
+        width: 2,
+      ),
+    ),
+  ),
+  onChanged: (value) {
+    final cleaned = value
+        .toUpperCase()
+        .replaceAll(RegExp(r'[^A-Z0-9]'), '');
+
+    String formatted = cleaned;
+
+    if (cleaned.length > 3) {
+      formatted =
+          '${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length.clamp(3, 7))}';
+    }
+
+    if (formatted != value) {
+      controller.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+  },
+),
             const SizedBox(height: 14),
             Row(
               children: [
