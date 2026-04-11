@@ -1073,6 +1073,12 @@ Future<String?> getRememberedChildAvatar() async {
 }
 
 Future<void> clearRememberedDeviceMode() async {
+  try {
+    await FirebaseAuth.instance.signOut();
+  } catch (_) {
+    // Ignore sign-out errors so local reset still completes.
+  }
+
   await clearChildSession();
 }
 
