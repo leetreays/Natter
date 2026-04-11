@@ -873,10 +873,16 @@ FirebaseFunctions get functions =>
 Future<void> createFriendRequestViaFunction({
   required String targetFriendCode,
 }) async {
+  if (!hasActiveChildSession) {
+    throw Exception('No active child session.');
+  }
+
   final callable = functions.httpsCallable('createFriendRequest');
 
   await callable.call({
     'targetFriendCode': targetFriendCode,
+    'requesterParentId': activeParentId,
+    'requesterChildId': activeChildId,
   });
 }
 
@@ -914,15 +920,6 @@ Stream<List<ApprovedChildContact>> activeChildApprovedContactsStream() async* {
             .map((doc) => ApprovedChildContact.fromDoc(doc))
             .toList(),
       );
-}
-
-  final callable = functions.httpsCallable('createFriendRequest');
-
-  await callable.call({
-    'targetFriendCode': targetFriendCode,
-    'requesterParentId': activeParentId,
-    'requesterChildId': activeChildId,
-  });
 }
 
 Future<void> markApprovedContactAsSeen(String contactId) async {
