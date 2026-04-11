@@ -3797,7 +3797,7 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     });
 
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null && !currentUser.isAnonymous) {
+    if (currentUser != null) {
       await FirebaseAuth.instance.signOut();
     }
 
