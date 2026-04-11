@@ -6615,11 +6615,6 @@ if (!state.hasSeenAddFriendSuccess) {
         );
       },
     );
-    lettersController.dispose();
-    numbersController.dispose();
-    lettersFocus.dispose();
-    numbersFocus.dispose();
-    controller.dispose();
   }
 
   Widget _levelCard(AppState state) {
