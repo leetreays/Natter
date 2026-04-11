@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -914,6 +915,46 @@ Stream<List<ApprovedChildContact>> activeChildApprovedContactsStream() async* {
             .toList(),
       );
 }
+
+FirebaseFunctions get functions =>
+    FirebaseFunctions.instanceFor(region: 'europe-west2');
+
+Future<void> createFriendRequestViaFunction({
+  required String targetFriendCode,
+}) async {
+  if (!hasActiveChildSession) {
+    throw Exception('No active child session.');
+  }
+
+  final callable = functions.httpsCallable('createFriendRequest');
+
+  await callable.call({
+    'targetFriendCode': targetFriendCode,
+    'requesterParentId': activeParentId,
+    'requesterChildId': activeChildId,
+  });
+}
+
+Future<void> approveFriendRequestViaFunction({
+  required String requestId,
+}) async {
+  final callable = functions.httpsCallable('approveFriendRequest');
+
+  await callable.call({
+    'requestId': requestId,
+  });
+}
+
+Future<void> blockFriendRequestViaFunction({
+  required String requestId,
+}) async {
+  final callable = functions.httpsCallable('blockFriendRequest');
+
+  await callable.call({
+    'requestId': requestId,
+  });
+}
+
 
 Future<void> markApprovedContactAsSeen(String contactId) async {
   if (!hasActiveChildSession) return;
