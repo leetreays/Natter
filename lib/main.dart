@@ -6162,7 +6162,35 @@ class ChatsScreen extends StatelessWidget {
   Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
-    final suggestions = FriendDirectory.profiles;
+final lettersController = TextEditingController();
+final numbersController = TextEditingController();
+
+final lettersFocus = FocusNode();
+final numbersFocus = FocusNode();
+
+void syncFriendCode() {
+  final letters = lettersController.text
+      .toUpperCase()
+      .replaceAll(RegExp(r'[^A-Z]'), '');
+  final numbers = numbersController.text
+      .replaceAll(RegExp(r'[^0-9]'), '');
+
+  lettersController.value = TextEditingValue(
+    text: letters,
+    selection: TextSelection.collapsed(offset: letters.length),
+  );
+
+  numbersController.value = TextEditingValue(
+    text: numbers,
+    selection: TextSelection.collapsed(offset: numbers.length),
+  );
+
+  controller.text = [
+    letters,
+    if (letters.isNotEmpty || numbers.isNotEmpty) '-',
+    numbers,
+  ].join();
+}
 
 await showDialog<void>(
   context: context,
@@ -6207,72 +6235,154 @@ Text(
               ),
             ),
             const SizedBox(height: 14),
-            TextField(
-  controller: controller,
-  textCapitalization: TextCapitalization.characters,
-  autocorrect: false,
-  enableSuggestions: false,
-  maxLength: 8,
-  textAlign: TextAlign.center,
-  style: const TextStyle(
-    color: Colors.white,
-    fontSize: 22,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 2.5,
-  ),
-  decoration: InputDecoration(
-    counterText: '',
-    hintText: 'ABC-1234',
-    hintStyle: TextStyle(
-      color: Colors.white.withOpacity(0.35),
-      fontWeight: FontWeight.w800,
-      letterSpacing: 2.5,
-    ),
-    filled: true,
-    fillColor: Colors.white.withOpacity(0.08),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 20,
-      vertical: 18,
-    ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: BorderSide(
-        color: Colors.white.withOpacity(0.10),
+            Row(
+  children: [
+    Expanded(
+      flex: 3,
+      child: TextField(
+        controller: lettersController,
+        focusNode: lettersFocus,
+        textCapitalization: TextCapitalization.characters,
+        autocorrect: false,
+        enableSuggestions: false,
+        maxLength: 3,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 2,
+        ),
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: 'ABC',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.35),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2,
+          ),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.08),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 18,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(18)),
+            borderSide: BorderSide(
+              color: NatterBrand.yellow,
+              width: 2,
+            ),
+          ),
+        ),
+        onChanged: (value) {
+          final cleaned = value
+              .toUpperCase()
+              .replaceAll(RegExp(r'[^A-Z]'), '');
+
+          if (cleaned != value) {
+            lettersController.value = TextEditingValue(
+              text: cleaned,
+              selection: TextSelection.collapsed(offset: cleaned.length),
+            );
+          }
+
+          syncFriendCode();
+
+          if (cleaned.length == 3) {
+            numbersFocus.requestFocus();
+          }
+        },
       ),
     ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: BorderSide(
-        color: Colors.white.withOpacity(0.10),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Text(
+        '-',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.85),
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(18),
-      borderSide: const BorderSide(
-        color: NatterBrand.yellow,
-        width: 2,
+    Expanded(
+      flex: 4,
+      child: TextField(
+        controller: numbersController,
+        focusNode: numbersFocus,
+        keyboardType: TextInputType.number,
+        autocorrect: false,
+        enableSuggestions: false,
+        maxLength: 4,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 2,
+        ),
+        decoration: InputDecoration(
+          counterText: '',
+          hintText: '1234',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.35),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2,
+          ),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.08),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 18,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(18)),
+            borderSide: BorderSide(
+              color: NatterBrand.yellow,
+              width: 2,
+            ),
+          ),
+        ),
+        onChanged: (value) {
+          final cleaned = value.replaceAll(RegExp(r'[^0-9]'), '');
+
+          if (cleaned != value) {
+            numbersController.value = TextEditingValue(
+              text: cleaned,
+              selection: TextSelection.collapsed(offset: cleaned.length),
+            );
+          }
+
+          syncFriendCode();
+        },
       ),
     ),
-  ),
-  onChanged: (value) {
-    final cleaned = value
-        .toUpperCase()
-        .replaceAll(RegExp(r'[^A-Z0-9]'), '');
-
-    String formatted = cleaned;
-
-    if (cleaned.length > 3) {
-      formatted =
-          '${cleaned.substring(0, 3)}-${cleaned.substring(3, cleaned.length.clamp(3, 7))}';
-    }
-
-    if (formatted != value) {
-      controller.value = TextEditingValue(
-        text: formatted,
-        selection: TextSelection.collapsed(offset: formatted.length),
-      );
-    }
-  },
+  ],
 ),
             const SizedBox(height: 14),
             Row(
@@ -6505,6 +6615,11 @@ if (!state.hasSeenAddFriendSuccess) {
         );
       },
     );
+    lettersController.dispose();
+    numbersController.dispose();
+    lettersFocus.dispose();
+    numbersFocus.dispose();
+    controller.dispose();
   }
 
   Widget _levelCard(AppState state) {
