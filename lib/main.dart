@@ -6188,15 +6188,6 @@ await showDialog<void>(
                 fontSize: 20,
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              'Enter a friend code. A parent will approve it.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
             const SizedBox(height: 6),
 Text(
   'Ask your friend for their code',
@@ -6206,6 +6197,15 @@ Text(
     fontWeight: FontWeight.w600,
   ),
 ),
+            const SizedBox(height: 10),
+            Text(
+              'Enter a friend code. A parent will approve it.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.85),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 14),
             TextField(
   controller: controller,
