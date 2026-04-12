@@ -533,6 +533,60 @@ class ChildContactRequest {
   }
 }
 
+class FriendshipRecord {
+  final String id;
+  final List<String> childIds;
+  final List<String> parentIds;
+  final Map<String, dynamic> children;
+  final String status;
+
+  const FriendshipRecord({
+    required this.id,
+    required this.childIds,
+    required this.parentIds,
+    required this.children,
+    required this.status,
+  });
+
+  factory FriendshipRecord.fromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? {};
+
+    return FriendshipRecord(
+      id: doc.id,
+      childIds: List<String>.from(data['childIds'] ?? const []),
+      parentIds: List<String>.from(data['parentIds'] ?? const []),
+      children: Map<String, dynamic>.from(data['children'] ?? const {}),
+      status: (data['status'] ?? '').toString(),
+    );
+  }
+
+  String otherChildName(String activeChildId) {
+    for (final entry in children.entries) {
+      if (entry.key != activeChildId) {
+        final value = Map<String, dynamic>.from(entry.value as Map);
+        return (value['name'] ?? '').toString();
+      }
+    }
+    return '';
+  }
+
+  String otherChildId(String activeChildId) {
+    for (final id in childIds) {
+      if (id != activeChildId) return id;
+    }
+    return '';
+  }
+
+  String otherParentId(String activeParentId) {
+    for (final id in parentIds) {
+      if (id != activeParentId) return id;
+    }
+    return '';
+  }
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
@@ -839,7 +893,27 @@ Stream<List<ChildContactRequest>> incomingFriendRequestsForParentChildStream({
             .toList(),
       );
 }
-  
+
+CollectionReference<Map<String, dynamic>> friendshipsRef() {
+  return FirebaseFirestore.instance.collection('friendships');
+}
+
+Stream<List<FriendshipRecord>> friendshipsForChildStream({
+  required String childId,
+}) async* {
+  yield* friendshipsRef()
+      .where('childIds', arrayContains: childId)
+      .snapshots()
+      .map((snapshot) {
+    final items = snapshot.docs
+        .map((doc) => FriendshipRecord.fromDoc(doc))
+        .where((friendship) => friendship.status == 'active')
+        .toList();
+
+    return items;
+  });
+}
+
 CollectionReference<Map<String, dynamic>> friendRequestsRef() {
   return FirebaseFirestore.instance.collection('friend_requests');
 }
@@ -7353,135 +7427,156 @@ Widget build(BuildContext context) {
   ],
 ),
 
-            StreamBuilder<List<ApprovedChildContact>>(
-  stream: state.activeChildApprovedContactsStream(),
+            StreamBuilder<List<FriendshipRecord>>(
+  stream: state.friendshipsForChildStream(
+    childId: state.activeChildId!,
+  ),
   builder: (context, snapshot) {
-    final approved = snapshot.data ?? [];
+    if (snapshot.hasError) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            'Could not load friendships: ${snapshot.error}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+    }
 
-    if (approved.isEmpty) {
+    final friendships = snapshot.data ?? [];
+
+    if (friendships.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return Column(
       children: [
-        ...approved.map((contact) {
-  final isNew = contact.isNew;
+        ...friendships.map((friendship) {
+          final otherChildName =
+              friendship.otherChildName(state.activeChildId!);
 
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () async {
-          await state.markApprovedContactAsSeen(contact.id);
-
-          if (!context.mounted) return;
-
-          Navigator.push(
-            context,
-            calmRoute(ChatScreen(contactName: contact.name)),
-          );
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-  color: const Color(0xFF1C2A48),
-  borderRadius: BorderRadius.circular(14),
-  border: Border.all(
-    color: Colors.white.withOpacity(0.05),
-  ),
-  boxShadow: [
-    if (isNew)
-      BoxShadow(
-        color: NatterBrand.green.withOpacity(0.25),
-        blurRadius: 16,
-        spreadRadius: 1,
-      )
-    else
-      BoxShadow(
-        color: Colors.black.withOpacity(0.25),
-        blurRadius: 10,
-        spreadRadius: 0,
-      ),
-  ],
-),
-          child: Row(
-            children: [
-              // Avatar (clean + stronger)
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isNew
-                      ? NatterBrand.green.withOpacity(0.3)
-                      : NatterBrand.yellow.withOpacity(0.25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  contact.name.substring(0, 1),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    calmRoute(ChatScreen(contactName: otherChildName)),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
                   ),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Main text block
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      contact.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isNew ? 'New friend' : 'Tap to start chatting',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.65),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              // Right-side indicator
-              if (isNew)
-                Container(
-                  width: 10,
-                  height: 10,
                   decoration: BoxDecoration(
-                    color: NatterBrand.green,
-                    borderRadius: BorderRadius.circular(99),
+                    color: const Color(0xFF1C2A48),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.05),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.25),
+                        blurRadius: 10,
+                        spreadRadius: 0,
+                      ),
+                    ],
                   ),
-                )
-              else
-                const Icon(
-                  Icons.chevron_right,
-                  size: 20,
-                  color: Colors.white54,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: NatterBrand.yellow.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          otherChildName.isNotEmpty
+                              ? otherChildName.substring(0, 1)
+                              : '?',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: StreamBuilder<Map<String, dynamic>?>(
+                          stream: AppStateScope.of(context)
+                              .chatSummaryStream(otherChildName),
+                          builder: (context, snapshot) {
+                            final data = snapshot.data;
+                            final lastMessage =
+                                data?['lastMessage'] as String?;
+                            final lastSenderUid =
+                                data?['lastSenderUid'] as String?;
+                            final myUid = state.activeChildId;
+
+                            String previewText;
+                            if (lastMessage == null || lastMessage.isEmpty) {
+                              previewText = 'Tap to start chatting';
+                            } else if (lastSenderUid == myUid) {
+                              previewText = 'You: $lastMessage';
+                            } else {
+                              previewText = lastMessage;
+                            }
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  otherChildName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  previewText,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.65),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: Colors.white54,
+                      ),
+                    ],
+                  ),
                 ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}).toList(),
+              ),
+            ),
+          );
+        }).toList(),
         const SizedBox(height: 12),
       ],
     );
