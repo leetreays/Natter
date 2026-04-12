@@ -1020,18 +1020,58 @@ Future<void> sendMessageToConversation({
   if (!hasActiveChildSession) return;
 
   await conversationMessagesRef(conversationId).add({
-    'text': trimmed,
-    'senderUid': activeChildId,
-    'senderParentId': activeParentId,
-    'senderChildName': effectiveChildName,
-    'createdAt': FieldValue.serverTimestamp(),
-    'isFlagged': isFlagged,
-  });
+  'text': trimmed,
+  'senderUid': activeChildId,
+  'senderParentId': activeParentId,
+  'senderChildName': effectiveChildName,
+  'createdAt': FieldValue.serverTimestamp(),
+  'isFlagged': isFlagged,
+  'receiverAction': '',
+  'receiverActionAt': null,
+  'receiverActionByChildId': null,
+});
 
   await conversationsRef().doc(conversationId).set({
     'lastMessage': trimmed,
     'lastMessageSenderChildId': activeChildId,
     'lastMessageAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
+Future<void> revealFlaggedConversationMessage({
+  required String conversationId,
+  required String messageId,
+}) async {
+  await conversationMessagesRef(conversationId).doc(messageId).set({
+    'receiverAction': 'read',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+    'receiverActionByChildId': activeChildId,
+  }, SetOptions(merge: true));
+}
+
+Future<void> hideFlaggedConversationMessage({
+  required String conversationId,
+  required String messageId,
+}) async {
+  await conversationMessagesRef(conversationId).doc(messageId).set({
+    'receiverAction': 'not_now',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+    'receiverActionByChildId': activeChildId,
+  }, SetOptions(merge: true));
+}
+
+Future<void> blockAfterFlaggedConversationMessage({
+  required String conversationId,
+  required String messageId,
+}) async {
+  await conversationMessagesRef(conversationId).doc(messageId).set({
+    'receiverAction': 'blocked',
+    'receiverActionAt': FieldValue.serverTimestamp(),
+    'receiverActionByChildId': activeChildId,
+  }, SetOptions(merge: true));
+
+  await conversationsRef().doc(conversationId).set({
+    'status': 'blocked',
   }, SetOptions(merge: true));
 }
 
@@ -8677,12 +8717,33 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
                 receiverAction == 'not_now' || receiverAction == 'blocked',
           );
 
-          return _Bubble(
+          rreturn _Bubble(
   msg: msg,
   onTap: () {},
-  onReveal: () async {},
-  onHide: () async {},
-  onBlock: () async {},
+  onReveal: () async {
+    await state.revealFlaggedConversationMessage(
+      conversationId: widget.conversationId,
+      messageId: messageId,
+    );
+  },
+  onHide: () async {
+    await state.hideFlaggedConversationMessage(
+      conversationId: widget.conversationId,
+      messageId: messageId,
+    );
+  },
+  onBlock: () async {
+    await state.blockAfterFlaggedConversationMessage(
+      conversationId: widget.conversationId,
+      messageId: messageId,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      feedback = '${widget.contactName} has been blocked.';
+    });
+  },
 );
         },
       );
