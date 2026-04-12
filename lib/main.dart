@@ -987,6 +987,54 @@ Stream<List<ConversationRecord>> conversationsForChildStream({
   });
 }
 
+CollectionReference<Map<String, dynamic>> conversationMessagesRef(
+  String conversationId,
+) {
+  return conversationsRef().doc(conversationId).collection('messages');
+}
+
+Stream<List<Map<String, dynamic>>> conversationMessagesStream(
+  String conversationId,
+) async* {
+  yield* conversationMessagesRef(conversationId)
+      .orderBy('createdAt')
+      .snapshots()
+      .map(
+        (snapshot) => snapshot.docs.map((doc) {
+          final data = doc.data();
+          return {
+            'id': doc.id,
+            ...data,
+          };
+        }).toList(),
+      );
+}
+
+Future<void> sendMessageToConversation({
+  required String conversationId,
+  required String text,
+  bool isFlagged = false,
+}) async {
+  final trimmed = text.trim();
+  if (trimmed.isEmpty) return;
+  if (!hasActiveChildSession) return;
+
+  await conversationMessagesRef(conversationId).add({
+    'text': trimmed,
+    'senderUid': activeChildId,
+    'senderParentId': activeParentId,
+    'senderChildName': effectiveChildName,
+    'createdAt': FieldValue.serverTimestamp(),
+    'isFlagged': isFlagged,
+  });
+
+  await conversationsRef().doc(conversationId).set({
+    'lastMessage': trimmed,
+    'lastMessageSenderChildId': activeChildId,
+    'lastMessageAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
 CollectionReference<Map<String, dynamic>> friendRequestsRef() {
   return FirebaseFirestore.instance.collection('friend_requests');
 }
@@ -7565,11 +7613,16 @@ Widget build(BuildContext context) {
               child: InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    calmRoute(ChatScreen(contactName: otherChildName)),
-                  );
-                },
+  Navigator.push(
+    context,
+    calmRoute(
+      ChatScreen(
+        contactName: otherChildName,
+        conversationId: conversation.id,
+      ),
+    ),
+  );
+},
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -8037,7 +8090,13 @@ class _GraduationPoint extends StatelessWidget {
 
 class ChatScreen extends StatefulWidget {
   final String contactName;
-  const ChatScreen({super.key, required this.contactName});
+  final String conversationId;
+
+  const ChatScreen({
+    super.key,
+    required this.contactName,
+    required this.conversationId,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -8406,8 +8465,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     feedback = null;
   });
 
-  await state.sendMessageToChat(
-  friendName: widget.contactName,
+  await state.sendMessageToConversation(
+  conversationId: widget.conversationId,
   text: text,
   isFlagged: flagged,
 );
@@ -8651,7 +8710,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
             ),
          Expanded(
   child: StreamBuilder<List<Map<String, dynamic>>>(
-    stream: AppStateScope.of(context).messageStream(widget.contactName),
+    stream: AppStateScope.of(context)
+    .conversationMessagesStream(widget.conversationId),
     builder: (context, snapshot) {
   if (snapshot.hasError) {
     return Center(
@@ -8703,34 +8763,12 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
           );
 
           return _Bubble(
-            msg: msg,
-            onTap: () {},
-            onReveal: () async {
-              await state.revealFlaggedMessage(
-                friendName: widget.contactName,
-                messageId: messageId,
-              );
-            },
-            onHide: () async {
-              await state.hideFlaggedMessage(
-                friendName: widget.contactName,
-                messageId: messageId,
-              );
-            },
-            onBlock: () async {
-              await state.blockAfterFlaggedMessage(
-                friendName: widget.contactName,
-                messageId: messageId,
-              );
-              state.blockContact(widget.contactName);
-
-              if (!mounted) return;
-
-              setState(() {
-                feedback = '${widget.contactName} has been blocked.';
-              });
-            },
-          );
+  msg: msg,
+  onTap: () {},
+  onReveal: () async {},
+  onHide: () async {},
+  onBlock: () async {},
+);
         },
       );
     },
