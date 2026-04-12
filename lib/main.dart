@@ -1032,10 +1032,11 @@ Future<void> sendMessageToConversation({
 });
 
   await conversationsRef().doc(conversationId).set({
-    'lastMessage': trimmed,
-    'lastMessageSenderChildId': activeChildId,
-    'lastMessageAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+  'lastMessage': isFlagged ? 'This message may be unkind' : trimmed,
+  'lastMessageSenderChildId': activeChildId,
+  'lastMessageAt': FieldValue.serverTimestamp(),
+  'lastMessageIsFlagged': isFlagged,
+}, SetOptions(merge: true));
 }
 
 Future<void> revealFlaggedConversationMessage({
