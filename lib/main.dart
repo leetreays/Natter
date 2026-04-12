@@ -587,6 +587,59 @@ class FriendshipRecord {
   }
 }
 
+class ConversationRecord {
+  final String id;
+  final String friendshipId;
+  final List<String> participantChildIds;
+  final List<String> participantParentIds;
+  final List<String> participantNames;
+  final String status;
+  final String lastMessage;
+  final String? lastMessageSenderChildId;
+
+  const ConversationRecord({
+    required this.id,
+    required this.friendshipId,
+    required this.participantChildIds,
+    required this.participantParentIds,
+    required this.participantNames,
+    required this.status,
+    required this.lastMessage,
+    required this.lastMessageSenderChildId,
+  });
+
+  factory ConversationRecord.fromDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) {
+    final data = doc.data() ?? {};
+
+    return ConversationRecord(
+      id: doc.id,
+      friendshipId: (data['friendshipId'] ?? '').toString(),
+      participantChildIds:
+          List<String>.from(data['participantChildIds'] ?? const []),
+      participantParentIds:
+          List<String>.from(data['participantParentIds'] ?? const []),
+      participantNames:
+          List<String>.from(data['participantNames'] ?? const []),
+      status: (data['status'] ?? '').toString(),
+      lastMessage: (data['lastMessage'] ?? '').toString(),
+      lastMessageSenderChildId:
+          data['lastMessageSenderChildId']?.toString(),
+    );
+  }
+
+  String otherParticipantName(String activeChildId, Map<String, dynamic> children) {
+    for (final entry in children.entries) {
+      if (entry.key != activeChildId) {
+        final value = Map<String, dynamic>.from(entry.value as Map);
+        return (value['name'] ?? '').toString();
+      }
+    }
+    return '';
+  }
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
@@ -908,6 +961,26 @@ Stream<List<FriendshipRecord>> friendshipsForChildStream({
     final items = snapshot.docs
         .map((doc) => FriendshipRecord.fromDoc(doc))
         .where((friendship) => friendship.status == 'active')
+        .toList();
+
+    return items;
+  });
+}
+
+CollectionReference<Map<String, dynamic>> conversationsRef() {
+  return FirebaseFirestore.instance.collection('conversations');
+}
+
+Stream<List<ConversationRecord>> conversationsForChildStream({
+  required String childId,
+}) async* {
+  yield* conversationsRef()
+      .where('participantChildIds', arrayContains: childId)
+      .snapshots()
+      .map((snapshot) {
+    final items = snapshot.docs
+        .map((doc) => ConversationRecord.fromDoc(doc))
+        .where((conversation) => conversation.status == 'active')
         .toList();
 
     return items;
@@ -7427,8 +7500,8 @@ Widget build(BuildContext context) {
   ],
 ),
 
-            StreamBuilder<List<FriendshipRecord>>(
-  stream: state.friendshipsForChildStream(
+            StreamBuilder<List<ConversationRecord>>(
+  stream: state.conversationsForChildStream(
     childId: state.activeChildId!,
   ),
   builder: (context, snapshot) {
@@ -7443,7 +7516,7 @@ Widget build(BuildContext context) {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            'Could not load friendships: ${snapshot.error}',
+            'Could not load conversations: ${snapshot.error}',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
@@ -7453,17 +7526,37 @@ Widget build(BuildContext context) {
       );
     }
 
-    final friendships = snapshot.data ?? [];
+    final conversations = snapshot.data ?? [];
 
-    if (friendships.isEmpty) {
+    if (conversations.isEmpty) {
       return const SizedBox.shrink();
     }
 
     return Column(
       children: [
-        ...friendships.map((friendship) {
-          final otherChildName =
-              friendship.otherChildName(state.activeChildId!);
+        ...conversations.map((conversation) {
+          String otherChildName = '';
+
+          for (final name in conversation.participantNames) {
+            if (name != state.effectiveChildName) {
+              otherChildName = name;
+              break;
+            }
+          }
+
+          if (otherChildName.isEmpty && conversation.participantNames.isNotEmpty) {
+            otherChildName = conversation.participantNames.first;
+          }
+
+          String previewText;
+          if (conversation.lastMessage.isEmpty) {
+            previewText = 'Tap to start chatting';
+          } else if (conversation.lastMessageSenderChildId ==
+              state.activeChildId) {
+            previewText = 'You: ${conversation.lastMessage}';
+          } else {
+            previewText = conversation.lastMessage;
+          }
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -7519,49 +7612,27 @@ Widget build(BuildContext context) {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: StreamBuilder<Map<String, dynamic>?>(
-                          stream: AppStateScope.of(context)
-                              .chatSummaryStream(otherChildName),
-                          builder: (context, snapshot) {
-                            final data = snapshot.data;
-                            final lastMessage =
-                                data?['lastMessage'] as String?;
-                            final lastSenderUid =
-                                data?['lastSenderUid'] as String?;
-                            final myUid = state.activeChildId;
-
-                            String previewText;
-                            if (lastMessage == null || lastMessage.isEmpty) {
-                              previewText = 'Tap to start chatting';
-                            } else if (lastSenderUid == myUid) {
-                              previewText = 'You: $lastMessage';
-                            } else {
-                              previewText = lastMessage;
-                            }
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  otherChildName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  previewText,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.65),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              otherChildName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              previewText,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.65),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -7582,7 +7653,6 @@ Widget build(BuildContext context) {
     );
   },
 ),
-
             if (schoolFriends.isNotEmpty) ...[
               BrandCard(
                 child: Column(

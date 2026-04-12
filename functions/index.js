@@ -225,19 +225,23 @@ exports.approveFriendRequest = onCall(async (request) => {
     requesterChildId,
     requesterParentId,
     requesterChildName,
+    requesterFriendCode,
     recipientChildId,
     recipientParentId,
     recipientChildName,
+    recipientFriendCode,
   } = data;
 
-  // ✅ deterministic friendship id
   const pair = [requesterChildId, recipientChildId].sort();
   const friendshipId = `${pair[0]}_${pair[1]}`;
+  const conversationId = friendshipId;
 
   const friendshipRef = db.collection('friendships').doc(friendshipId);
+  const conversationRef = db.collection('conversations').doc(conversationId);
 
-  // 🔥 create friendship
-  await friendshipRef.set({
+  const batch = db.batch();
+
+  batch.set(friendshipRef, {
     childIds: [requesterChildId, recipientChildId],
     parentIds: [requesterParentId, recipientParentId],
 
@@ -245,10 +249,12 @@ exports.approveFriendRequest = onCall(async (request) => {
       [requesterChildId]: {
         parentId: requesterParentId,
         name: requesterChildName,
+        friendCode: requesterFriendCode,
       },
       [recipientChildId]: {
         parentId: recipientParentId,
         name: recipientChildName,
+        friendCode: recipientFriendCode,
       },
     },
 
@@ -256,16 +262,30 @@ exports.approveFriendRequest = onCall(async (request) => {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: false});
 
-  // ✅ mark request approved
-  await requestRef.set({
+  batch.set(conversationRef, {
+    friendshipId: friendshipId,
+    participantChildIds: [requesterChildId, recipientChildId],
+    participantParentIds: [requesterParentId, recipientParentId],
+    participantNames: [requesterChildName, recipientChildName],
+    status: 'active',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastMessage: '',
+    lastMessageSenderChildId: null,
+    lastMessageAt: null,
+  }, {merge: false});
+
+  batch.set(requestRef, {
     status: 'approved',
     respondedAt: admin.firestore.FieldValue.serverTimestamp(),
     respondedByParentId: request.auth.uid,
   }, {merge: true});
 
+  await batch.commit();
+
   return {
     ok: true,
     friendshipId,
+    conversationId,
   };
 });
 
