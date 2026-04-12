@@ -6162,11 +6162,13 @@ class ChatsScreen extends StatelessWidget {
   Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
-final lettersController = TextEditingController();
-final numbersController = TextEditingController();
+    final lettersController = TextEditingController();
+    final numbersController = TextEditingController();
 
-final lettersFocus = FocusNode();
-final numbersFocus = FocusNode();
+    final lettersFocus = FocusNode();
+    final numbersFocus = FocusNode();
+
+    final submitting = ValueNotifier<bool>(false);
 
 void syncFriendCode() {
   final letters = lettersController.text
@@ -6195,345 +6197,401 @@ void syncFriendCode() {
 await showDialog<void>(
   context: context,
   builder: (ctx) {
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(18),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.72),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.18)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Add a friend',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 20,
-              ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: submitting,
+      builder: (context, isSubmitting, _) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(18),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.72),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
             ),
-            const SizedBox(height: 6),
-Text(
-  'Ask your friend for their code',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.6),
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
-  ),
-),
-            const SizedBox(height: 10),
-            Text(
-              'Enter a friend code. A parent will approve it.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-  children: [
-    Expanded(
-      flex: 3,
-      child: TextField(
-        controller: lettersController,
-        focusNode: lettersFocus,
-        textCapitalization: TextCapitalization.characters,
-        autocorrect: false,
-        enableSuggestions: false,
-        maxLength: 3,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 2,
-        ),
-        decoration: InputDecoration(
-          counterText: '',
-          hintText: 'ABC',
-          hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.35),
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2,
-          ),
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.08),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 18,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.10),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.10),
-            ),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(18)),
-            borderSide: BorderSide(
-              color: NatterBrand.yellow,
-              width: 2,
-            ),
-          ),
-        ),
-        onChanged: (value) {
-          final cleaned = value
-              .toUpperCase()
-              .replaceAll(RegExp(r'[^A-Z]'), '');
-
-          if (cleaned != value) {
-            lettersController.value = TextEditingValue(
-              text: cleaned,
-              selection: TextSelection.collapsed(offset: cleaned.length),
-            );
-          }
-
-          syncFriendCode();
-
-          if (cleaned.length == 3) {
-            numbersFocus.requestFocus();
-          }
-        },
-      ),
-    ),
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Text(
-        '-',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.85),
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    ),
-    Expanded(
-      flex: 4,
-      child: TextField(
-        controller: numbersController,
-        focusNode: numbersFocus,
-        keyboardType: TextInputType.number,
-        autocorrect: false,
-        enableSuggestions: false,
-        maxLength: 4,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 2,
-        ),
-        decoration: InputDecoration(
-          counterText: '',
-          hintText: '1234',
-          hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.35),
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2,
-          ),
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.08),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 18,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.10),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.10),
-            ),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(18)),
-            borderSide: BorderSide(
-              color: NatterBrand.yellow,
-              width: 2,
-            ),
-          ),
-        ),
-        onChanged: (value) {
-          final cleaned = value.replaceAll(RegExp(r'[^0-9]'), '');
-
-          if (cleaned != value) {
-            numbersController.value = TextEditingValue(
-              text: cleaned,
-              selection: TextSelection.collapsed(offset: cleaned.length),
-            );
-          }
-
-          syncFriendCode();
-        },
-      ),
-    ),
-  ],
-),
-            const SizedBox(height: 14),
-            Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                        color: Colors.white.withOpacity(0.22),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
+                const Text(
+                  'Add a friend',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 20,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final code = controller.text.trim().toUpperCase();
-                      final friendResult = await state.findChildByFriendCode(code);
-                      final friendName = friendResult?['name'];
-
-                        if (friendResult == null || friendName == null || friendName.isEmpty) {
-    Navigator.pop(ctx);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('That friend code was not recognised.'),
-      ),
-    );
-    return;
-  }
-
-  if (friendResult['childId'] == state.activeChildId) {
-    Navigator.pop(ctx);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('That is your own friend code.'),
-      ),
-    );
-    return;
-  }
-
-                      if (friendName == null) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'That friend code was not recognised.',
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (state.isApproved(friendName)) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '$friendName is already in your chats 🙂',
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      if (state.isPending(friendName)) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '$friendName is already waiting for approval ⏳',
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-
-                      try {
-  await state.createFriendRequestViaFunction(
-  targetFriendCode: friendResult['friendCode']!,
-);
-
-  Navigator.pop(ctx);
-
-if (!state.hasSeenAddFriendSuccess) {
-    state.hasSeenAddFriendSuccess = true;
-    state.onboardingStep = 4;
-    await state.saveChildOnboardingState();
-    state.notifyListeners();
-  }
-
-  if (!context.mounted) return;
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        '$friendName is now waiting for parent approval ⏳',
-      ),
-    ),
-  );
-} on FirebaseFunctionsException catch (e) {
-  if (!context.mounted) return;
-
-  debugPrint(
-    'CREATE FRIEND REQUEST ERROR '
-    'code=${e.code} message=${e.message} details=${e.details}',
-  );
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(
-        'Could not send request: ${e.code} / ${e.message ?? 'no message'}',
-      ),
-    ),
-  );
-} catch (e) {
-  if (!context.mounted) return;
-
-  debugPrint('CREATE FRIEND REQUEST UNKNOWN ERROR: $e');
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('Could not send request: $e'),
-    ),
-  );
-                      }
-                    },
-                    child: const Text('Request'),
+                const SizedBox(height: 6),
+                Text(
+                  'Ask your friend for their code',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Enter a friend code. A parent will approve it.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (isSubmitting) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: NatterBrand.yellow,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Sending request...',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: lettersController,
+                        enabled: !isSubmitting,
+                        focusNode: lettersFocus,
+                        textCapitalization: TextCapitalization.characters,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        maxLength: 3,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: 'ABC',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withOpacity(0.35),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.08),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 18,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.10),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.10),
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(18)),
+                            borderSide: BorderSide(
+                              color: NatterBrand.yellow,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          final cleaned = value
+                              .toUpperCase()
+                              .replaceAll(RegExp(r'[^A-Z]'), '');
+
+                          if (cleaned != value) {
+                            lettersController.value = TextEditingValue(
+                              text: cleaned,
+                              selection: TextSelection.collapsed(
+                                offset: cleaned.length,
+                              ),
+                            );
+                          }
+
+                          syncFriendCode();
+
+                          if (cleaned.length == 3) {
+                            numbersFocus.requestFocus();
+                          }
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        '-',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.85),
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: TextField(
+                        controller: numbersController,
+                        enabled: !isSubmitting,
+                        focusNode: numbersFocus,
+                        keyboardType: TextInputType.number,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        maxLength: 4,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: '1234',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withOpacity(0.35),
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.08),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 18,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.10),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide(
+                              color: Colors.white.withOpacity(0.10),
+                            ),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(18)),
+                            borderSide: BorderSide(
+                              color: NatterBrand.yellow,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          final cleaned =
+                              value.replaceAll(RegExp(r'[^0-9]'), '');
+
+                          if (cleaned != value) {
+                            numbersController.value = TextEditingValue(
+                              text: cleaned,
+                              selection: TextSelection.collapsed(
+                                offset: cleaned.length,
+                              ),
+                            );
+                          }
+
+                          syncFriendCode();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed:
+                            isSubmitting ? null : () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.white.withOpacity(0.22),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: isSubmitting
+                            ? null
+                            : () async {
+                                final code =
+                                    controller.text.trim().toUpperCase();
+                                final friendResult =
+                                    await state.findChildByFriendCode(code);
+                                final friendName = friendResult?['name'];
+
+                                if (friendResult == null ||
+                                    friendName == null ||
+                                    friendName.isEmpty) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'That friend code was not recognised.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (friendResult['childId'] ==
+                                    state.activeChildId) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'That is your own friend code.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (friendName == null) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'That friend code was not recognised.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (state.isApproved(friendName)) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '$friendName is already in your chats 🙂',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                if (state.isPending(friendName)) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '$friendName is already waiting for approval ⏳',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                submitting.value = true;
+
+                                try {
+                                  await state.createFriendRequestViaFunction(
+                                    targetFriendCode:
+                                        friendResult['friendCode']!,
+                                  );
+
+                                  Navigator.pop(ctx);
+
+                                  if (!state.hasSeenAddFriendSuccess) {
+                                    state.hasSeenAddFriendSuccess = true;
+                                    state.onboardingStep = 4;
+                                    await state.saveChildOnboardingState();
+                                    state.notifyListeners();
+                                  }
+
+                                  if (!context.mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '$friendName is now waiting for parent approval ⏳',
+                                      ),
+                                    ),
+                                  );
+                                } on FirebaseFunctionsException catch (e) {
+                                  if (!context.mounted) return;
+
+                                  debugPrint(
+                                    'CREATE FRIEND REQUEST ERROR '
+                                    'code=${e.code} message=${e.message} details=${e.details}',
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Could not send request: ${e.code} / ${e.message ?? 'no message'}',
+                                      ),
+                                    ),
+                                  );
+                                } catch (e) {
+                                  if (!context.mounted) return;
+
+                                  debugPrint(
+                                    'CREATE FRIEND REQUEST UNKNOWN ERROR: $e',
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Could not send request: $e',
+                                      ),
+                                    ),
+                                  );
+                                } finally {
+                                  submitting.value = false;
+                                }
+                              },
+                        child: Text(isSubmitting ? 'Sending...' : 'Request'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   },
 );
-  }
 
   Future<void> _showCelebrationCard(
     BuildContext context, {
