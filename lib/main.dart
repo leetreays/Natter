@@ -8717,7 +8717,7 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
                 receiverAction == 'not_now' || receiverAction == 'blocked',
           );
 
-          rreturn _Bubble(
+          return _Bubble(
   msg: msg,
   onTap: () {},
   onReveal: () async {
