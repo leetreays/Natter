@@ -8558,6 +8558,39 @@ if (!delivered) {
   
   void _send() async {
     final state = AppStateScope.of(context);
+    final conversationSnap = await state
+    .conversationsRef()
+    .doc(widget.conversationId)
+    .get();
+
+final conversationData = conversationSnap.data() ?? {};
+final blockedByChildIds = List<String>.from(
+  conversationData['blockedByChildIds'] ?? const [],
+);
+
+String otherChildId = '';
+final participantChildIds = List<String>.from(
+  conversationData['participantChildIds'] ?? const [],
+);
+for (final id in participantChildIds) {
+  if (id != state.activeChildId) {
+    otherChildId = id;
+    break;
+  }
+}
+
+final isBlockedByMe = blockedByChildIds.contains(state.activeChildId);
+final isBlockedByOther =
+    otherChildId.isNotEmpty && blockedByChildIds.contains(otherChildId);
+
+if (isBlockedByMe || isBlockedByOther) {
+  setState(() {
+    feedback = isBlockedByMe
+        ? 'Unblock to continue chatting.'
+        : 'This conversation is unavailable right now.';
+  });
+  return;
+}
     final text = controller.text.trim();
     if (text.isEmpty) return;
 
