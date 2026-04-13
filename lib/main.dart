@@ -8872,33 +8872,33 @@ if (!delivered) {
           );
 
           return _Bubble(
-  msg: msg,
-  onTap: () {},
-  onReveal: () async {
-    await state.revealFlaggedConversationMessage(
-      conversationId: widget.conversationId,
-      messageId: messageId,
-    );
-  },
-  onHide: () async {
-    await state.hideFlaggedConversationMessage(
-      conversationId: widget.conversationId,
-      messageId: messageId,
-    );
-  },
-  onBlock: () async {
-  await state.blockFriendship(
-    friendshipId: widget.friendshipId,
-    conversationId: widget.conversationId,
-  );
+            msg: msg,
+            onTap: () {},
+            onReveal: () async {
+              await state.revealFlaggedConversationMessage(
+                conversationId: widget.conversationId,
+                messageId: messageId,
+              );
+            },
+            onHide: () async {
+              await state.hideFlaggedConversationMessage(
+                conversationId: widget.conversationId,
+                messageId: messageId,
+              );
+            },
+            onBlock: () async {
+              await state.blockFriendship(
+                friendshipId: widget.friendshipId,
+                conversationId: widget.conversationId,
+              );
 
-  if (!mounted) return;
+              if (!mounted) return;
 
-  setState(() {
-    feedback = '${widget.contactName} has been blocked.';
-  });
-},
-);
+              setState(() {
+                feedback = '${widget.contactName} has been blocked.';
+              });
+            },
+          );
         },
       );
     },
@@ -8907,39 +8907,42 @@ if (!delivered) {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
             child: Row(
-  children: [
-    IconButton(
-      icon: const Icon(
-        Icons.lightbulb_outline,
-        color: NatterBrand.yellow,
-      ),
-      onPressed: _pickStarter,
-      tooltip: "Conversation Starter",
-    ),
-    Expanded(
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        decoration: const InputDecoration(
-          hintText: 'Type a message',
-        ),
-        onSubmitted: (_) {
-  if (!isBlocked) _send();
-},
-      ),
-    ),
-    const SizedBox(width: 10),
-    ElevatedButton(
-  onPressed: isBlocked ? null : _send,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: NatterBrand.green,
-        foregroundColor: Colors.black,
-      ),
-      child: const Text('Send'),
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.lightbulb_outline,
+                    color: NatterBrand.yellow,
+                  ),
+                  onPressed: _pickStarter,
+                  tooltip: 'Conversation Starter',
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message',
+                    ),
+                    onSubmitted: (_) {
+                      if (!isBlocked) _send();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: isBlocked ? null : _send,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Send'),
+                ),
+              ],
+            ),
           ),
         ],
       );
