@@ -8097,7 +8097,6 @@ class _GraduationPoint extends StatelessWidget {
 }
 
 class ChatScreen extends StatefulWidget {
-  class ChatScreen extends StatefulWidget {
   final String contactName;
   final String conversationId;
   final String friendshipId;
