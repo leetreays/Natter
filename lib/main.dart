@@ -8686,10 +8686,25 @@ if (!delivered) {
   stream: state.conversationDocStream(widget.conversationId),
   builder: (context, conversationSnapshot) {
     final conversationData = conversationSnapshot.data?.data() ?? {};
-    final blockedByChildIds = List<String>.from(
-      conversationData['blockedByChildIds'] ?? const [],
-    );
-    final isBlocked = blockedByChildIds.contains(state.activeChildId);
+final blockedByChildIds = List<String>.from(
+  conversationData['blockedByChildIds'] ?? const [],
+);
+
+final isBlockedByMe = blockedByChildIds.contains(state.activeChildId);
+
+String otherChildId = '';
+final participantChildIds = List<String>.from(
+  conversationData['participantChildIds'] ?? const [],
+);
+for (final id in participantChildIds) {
+  if (id != state.activeChildId) {
+    otherChildId = id;
+    break;
+  }
+}
+
+final isBlockedByOther =
+    otherChildId.isNotEmpty && blockedByChildIds.contains(otherChildId);
 
     return Column(
       children: [
@@ -8731,7 +8746,7 @@ if (!delivered) {
                 ),
               ),
             ),
-            if (isBlocked)
+            if (isBlockedByMe)
             Container(
               width: double.infinity,
               margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -8778,6 +8793,41 @@ if (!delivered) {
                       });
                     },
                     child: const Text('Unblock'),
+                  ),
+                ],
+              ),
+            ),
+          if (isBlockedByOther)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'This conversation is unavailable right now',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'You cannot send messages in this chat at the moment.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.72),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -8919,6 +8969,7 @@ if (!delivered) {
                 Expanded(
                   child: TextField(
                     controller: controller,
+                    enabled: !isBlockedByMe && !isBlockedByOther,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -8928,13 +8979,13 @@ if (!delivered) {
                       hintText: 'Type a message',
                     ),
                     onSubmitted: (_) {
-                      if (!isBlocked) _send();
-                    },
+  if (!isBlockedByMe && !isBlockedByOther) _send();
+},
                   ),
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: isBlocked ? null : _send,
+                  onPressed: (isBlockedByMe || isBlockedByOther) ? null : _send,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: NatterBrand.green,
                     foregroundColor: Colors.black,
