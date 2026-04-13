@@ -1134,10 +1134,6 @@ Future<void> blockAfterFlaggedConversationMessage({
     'receiverActionAt': FieldValue.serverTimestamp(),
     'receiverActionByChildId': activeChildId,
   }, SetOptions(merge: true));
-
-  await conversationsRef().doc(conversationId).set({
-    'status': 'blocked',
-  }, SetOptions(merge: true));
 }
 
 CollectionReference<Map<String, dynamic>> friendRequestsRef() {
