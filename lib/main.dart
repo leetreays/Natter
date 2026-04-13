@@ -1739,11 +1739,6 @@ Future<void> requestContact({
     notifyListeners();
   }
 
-  void blockContact(String name) {
-    pendingRequests.removeWhere((p) => p.toLowerCase() == name.toLowerCase());
-    notifyListeners();
-  }
-
 Future<void> approveContactForChild({
   required String parentId,
   required String childId,
@@ -8788,17 +8783,17 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     );
   },
   onBlock: () async {
-    await state.blockAfterFlaggedConversationMessage(
-      conversationId: widget.conversationId,
-      messageId: messageId,
-    );
+  await state.blockFriendship(
+    friendshipId: widget.friendshipId,
+    conversationId: widget.conversationId,
+  );
 
-    if (!mounted) return;
+  if (!mounted) return;
 
-    setState(() {
-      feedback = '${widget.contactName} has been blocked.';
-    });
-  },
+  setState(() {
+    feedback = '${widget.contactName} has been blocked.';
+  });
+},
 );
         },
       );
