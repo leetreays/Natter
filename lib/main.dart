@@ -1008,33 +1008,61 @@ Stream<List<Map<String, dynamic>>> conversationMessagesStream(
       );
 }
 
-Future<void> sendMessageToConversation({
+Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
   bool isFlagged = false,
 }) async {
   final trimmed = text.trim();
-  if (trimmed.isEmpty) return;
-  if (!hasActiveChildSession) return;
+  if (trimmed.isEmpty) return false;
+  if (!hasActiveChildSession) return false;
+
+  final conversationSnap = await conversationsRef().doc(conversationId).get();
+  final conversationData = conversationSnap.data() ?? {};
+
+  final participantChildIds = List<String>.from(
+    conversationData['participantChildIds'] ?? const [],
+  );
+  final blockedByChildIds = List<String>.from(
+    conversationData['blockedByChildIds'] ?? const [],
+  );
+
+  String otherChildId = '';
+  for (final id in participantChildIds) {
+    if (id != activeChildId) {
+      otherChildId = id;
+      break;
+    }
+  }
+
+  final blockedByRecipient = otherChildId.isNotEmpty &&
+      blockedByChildIds.contains(otherChildId);
+
+  if (blockedByRecipient) {
+    return false;
+  }
 
   await conversationMessagesRef(conversationId).add({
-  'text': trimmed,
-  'senderUid': activeChildId,
-  'senderParentId': activeParentId,
-  'senderChildName': effectiveChildName,
-  'createdAt': FieldValue.serverTimestamp(),
-  'isFlagged': isFlagged,
-  'receiverAction': '',
-  'receiverActionAt': null,
-  'receiverActionByChildId': null,
-});
+    'text': trimmed,
+    'senderUid': activeChildId,
+    'senderParentId': activeParentId,
+    'senderChildName': effectiveChildName,
+    'createdAt': FieldValue.serverTimestamp(),
+    'isFlagged': isFlagged,
+    'receiverAction': '',
+    'receiverActionAt': null,
+    'receiverActionByChildId': null,
+  });
+
+  final previewText = isFlagged ? 'Message needs review' : trimmed;
 
   await conversationsRef().doc(conversationId).set({
-  'lastMessage': isFlagged ? 'This message may be unkind' : trimmed,
-  'lastMessageSenderChildId': activeChildId,
-  'lastMessageAt': FieldValue.serverTimestamp(),
-  'lastMessageIsFlagged': isFlagged,
-}, SetOptions(merge: true));
+    'lastMessage': previewText,
+    'lastMessageSenderChildId': activeChildId,
+    'lastMessageAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  return true;
 }
 
 Future<void> blockFriendship({
@@ -8470,11 +8498,21 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     feedback = null;
   });
 
-  await state.sendMessageToConversation(
+  final delivered = await state.sendMessageToConversation(
   conversationId: widget.conversationId,
   text: text,
   isFlagged: flagged,
 );
+
+if (!delivered) {
+  if (!mounted) return;
+
+  setState(() {
+    feedback = 'Message not delivered.';
+  });
+
+  return;
+}
 
   controller.clear();
 
