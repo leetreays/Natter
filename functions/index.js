@@ -259,6 +259,9 @@ exports.approveFriendRequest = onCall(async (request) => {
     },
 
     status: 'active',
+    blockedByChildIds: [],
+    blockedAtByChildId: {},
+
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: false});
 
@@ -267,7 +270,10 @@ exports.approveFriendRequest = onCall(async (request) => {
     participantChildIds: [requesterChildId, recipientChildId],
     participantParentIds: [requesterParentId, recipientParentId],
     participantNames: [requesterChildName, recipientChildName],
+
     status: 'active',
+    blockedByChildIds: [],
+
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     lastMessage: '',
     lastMessageSenderChildId: null,

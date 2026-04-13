@@ -593,6 +593,7 @@ class ConversationRecord {
   final List<String> participantChildIds;
   final List<String> participantParentIds;
   final List<String> participantNames;
+  final List<String> blockedByChildIds;
   final String status;
   final String lastMessage;
   final String? lastMessageSenderChildId;
@@ -603,6 +604,7 @@ class ConversationRecord {
     required this.participantChildIds,
     required this.participantParentIds,
     required this.participantNames,
+    required this.blockedByChildIds,
     required this.status,
     required this.lastMessage,
     required this.lastMessageSenderChildId,
@@ -622,6 +624,8 @@ class ConversationRecord {
           List<String>.from(data['participantParentIds'] ?? const []),
       participantNames:
           List<String>.from(data['participantNames'] ?? const []),
+      blockedByChildIds:
+          List<String>.from(data['blockedByChildIds'] ?? const []),
       status: (data['status'] ?? '').toString(),
       lastMessage: (data['lastMessage'] ?? '').toString(),
       lastMessageSenderChildId:
@@ -629,14 +633,8 @@ class ConversationRecord {
     );
   }
 
-  String otherParticipantName(String activeChildId, Map<String, dynamic> children) {
-    for (final entry in children.entries) {
-      if (entry.key != activeChildId) {
-        final value = Map<String, dynamic>.from(entry.value as Map);
-        return (value['name'] ?? '').toString();
-      }
-    }
-    return '';
+  bool isBlockedFor(String childId) {
+    return blockedByChildIds.contains(childId);
   }
 }
 
@@ -1037,6 +1035,38 @@ Future<void> sendMessageToConversation({
   'lastMessageAt': FieldValue.serverTimestamp(),
   'lastMessageIsFlagged': isFlagged,
 }, SetOptions(merge: true));
+}
+
+Future<void> blockFriendship({
+  required String friendshipId,
+  required String conversationId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await friendshipsRef().doc(friendshipId).set({
+    'blockedByChildIds': FieldValue.arrayUnion([activeChildId]),
+    'blockedAtByChildId.$activeChildId': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  await conversationsRef().doc(conversationId).set({
+    'blockedByChildIds': FieldValue.arrayUnion([activeChildId]),
+  }, SetOptions(merge: true));
+}
+
+Future<void> unblockFriendship({
+  required String friendshipId,
+  required String conversationId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await friendshipsRef().doc(friendshipId).set({
+    'blockedByChildIds': FieldValue.arrayRemove([activeChildId]),
+    'blockedAtByChildId.$activeChildId': FieldValue.delete(),
+  }, SetOptions(merge: true));
+
+  await conversationsRef().doc(conversationId).set({
+    'blockedByChildIds': FieldValue.arrayRemove([activeChildId]),
+  }, SetOptions(merge: true));
 }
 
 Future<void> revealFlaggedConversationMessage({
@@ -7637,15 +7667,19 @@ Widget build(BuildContext context) {
             otherChildName = conversation.participantNames.first;
           }
 
+          final isBlocked = conversation.isBlockedFor(state.activeChildId!);
+
           String previewText;
-          if (conversation.lastMessage.isEmpty) {
-            previewText = 'Tap to start chatting';
-          } else if (conversation.lastMessageSenderChildId ==
-              state.activeChildId) {
-            previewText = 'You: ${conversation.lastMessage}';
-          } else {
-            previewText = conversation.lastMessage;
-          }
+if (isBlocked) {
+  previewText = 'Blocked';
+} else if (conversation.lastMessage.isEmpty) {
+  previewText = 'Tap to start chatting';
+} else if (conversation.lastMessageSenderChildId ==
+    state.activeChildId) {
+  previewText = 'You: ${conversation.lastMessage}';
+} else {
+  previewText = conversation.lastMessage;
+}
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -7658,9 +7692,10 @@ Widget build(BuildContext context) {
     context,
     calmRoute(
       ChatScreen(
-        contactName: otherChildName,
-        conversationId: conversation.id,
-      ),
+  contactName: otherChildName,
+  conversationId: conversation.id,
+  friendshipId: conversation.friendshipId,
+),
     ),
   );
 },
@@ -7730,10 +7765,29 @@ Widget build(BuildContext context) {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Icon(
-                        Icons.chevron_right,
-                        size: 20,
-                        color: Colors.white54,
+if (isBlocked)
+  Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.10),
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: const Text(
+      'BLOCKED',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 10,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.4,
+      ),
+    ),
+  )
+else
+  const Icon(
+    Icons.chevron_right,
+    size: 20,
+    color: Colors.white54,
+  ),
                       ),
                     ],
                   ),
@@ -8047,6 +8101,7 @@ class _GraduationPoint extends StatelessWidget {
 class ChatScreen extends StatefulWidget {
   final String contactName;
   final String conversationId;
+  final String friendshipId;
 
   const ChatScreen({
     super.key,
