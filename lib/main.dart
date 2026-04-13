@@ -10060,24 +10060,6 @@ class ParentContactsScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            TextButton(
-                              onPressed: () {
-                                state.blockContact(name);
-                                if (state.alertsContactRequest) {
-                                  state.addAlert(AlertEvent(
-                                    type: AlertType.contactRequest,
-                                    message: 'Blocked contact request: $name',
-                                  ));
-                                }
-                              },
-                              child: const Text(
-                                'Block',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
