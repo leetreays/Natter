@@ -7692,10 +7692,10 @@ if (isBlocked) {
     context,
     calmRoute(
       ChatScreen(
-  contactName: otherChildName,
-  conversationId: conversation.id,
-  friendshipId: conversation.friendshipId,
-),
+        contactName: otherChildName,
+        conversationId: conversation.id,
+        friendshipId: conversation.friendshipId,
+      ),
     ),
   );
 },
@@ -7765,29 +7765,27 @@ if (isBlocked) {
                         ),
                       ),
                       const SizedBox(width: 10),
-if (isBlocked)
-  Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.10),
-      borderRadius: BorderRadius.circular(999),
-    ),
-    child: const Text(
-      'BLOCKED',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 10,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 0.4,
-      ),
-    ),
-  )
-else
-  const Icon(
-    Icons.chevron_right,
-    size: 20,
-    color: Colors.white54,
-  ),
+isBlocked
+    ? Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: const Text(
+          'BLOCKED',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.4,
+          ),
+        ),
+      )
+    : const Icon(
+        Icons.chevron_right,
+        size: 20,
+        color: Colors.white54,
                       ),
                     ],
                   ),
@@ -8099,6 +8097,7 @@ class _GraduationPoint extends StatelessWidget {
 }
 
 class ChatScreen extends StatefulWidget {
+  class ChatScreen extends StatefulWidget {
   final String contactName;
   final String conversationId;
   final String friendshipId;
@@ -8107,6 +8106,7 @@ class ChatScreen extends StatefulWidget {
     super.key,
     required this.contactName,
     required this.conversationId,
+    required this.friendshipId,
   });
 
   @override
