@@ -8970,17 +8970,22 @@ final isBlockedByOther =
               );
             },
             onBlock: () async {
-              await state.blockFriendship(
-                friendshipId: widget.friendshipId,
-                conversationId: widget.conversationId,
-              );
+  await state.blockAfterFlaggedConversationMessage(
+    conversationId: widget.conversationId,
+    messageId: messageId,
+  );
 
-              if (!mounted) return;
+  await state.blockFriendship(
+    friendshipId: widget.friendshipId,
+    conversationId: widget.conversationId,
+  );
 
-              setState(() {
-                feedback = '${widget.contactName} has been blocked.';
-              });
-            },
+  if (!mounted) return;
+
+  setState(() {
+    feedback = '${widget.contactName} has been blocked.';
+  });
+},
           );
         },
       );
