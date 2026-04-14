@@ -1949,17 +1949,6 @@ Future<void> blockAfterFlaggedMessage({
   ));
 }
 
-  Stream<Map<String, dynamic>?> chatSummaryStream(String friendName) async* {
-  if (!hasActiveChildSession) {
-    yield null;
-    return;
-  }
-
-  yield* childChatRef(friendName)
-      .snapshots()
-      .map((doc) => doc.data());
-}
-
 Future<String> currentUid() async {
   final user = await ensureSignedIn();
   return user.uid;
