@@ -3423,8 +3423,155 @@ class ParentChildDetailScreen extends StatelessWidget {
     required this.child,
   });
 
+String _signalTitle(AlertEvent event) {
+  switch (event.type) {
+    case AlertType.contactRequest:
+      return 'Connection moment';
+    case AlertType.quietHours:
+      return 'Quiet hours';
+    case AlertType.blockedWord:
+      return 'Tricky message';
+  }
+}
+
+IconData _signalIcon(AlertEvent event) {
+  switch (event.type) {
+    case AlertType.contactRequest:
+      return Icons.people_alt_rounded;
+    case AlertType.quietHours:
+      return Icons.nightlight_round;
+    case AlertType.blockedWord:
+      return Icons.favorite_rounded;
+  }
+}
+
+String _signalMessage(AlertEvent event) {
+  final raw = event.message.toLowerCase();
+
+  if (event.type == AlertType.quietHours) {
+    return 'Your child tried to use Natter during quiet hours.';
+  }
+
+  if (raw.contains('blocked') && raw.contains('conversation')) {
+    return 'Your child chose to block a conversation.';
+  }
+
+  if (event.type == AlertType.blockedWord) {
+    return 'Your child came across a message that needed extra care.';
+  }
+
+  if (event.type == AlertType.contactRequest) {
+    return 'A friendship step happened that may need your attention.';
+  }
+
+  return 'A gentle signal was recorded for your child.';
+}
+
+String _softWhen(AlertEvent event) {
+  final now = DateTime.now();
+  final difference = now.difference(event.timestamp);
+
+  if (difference.inDays == 0) return 'Today';
+  if (difference.inDays == 1) return 'Yesterday';
+  if (difference.inDays < 7) return 'This week';
+  return 'Earlier';
+}
+
+List<AlertEvent> _signalsForChild(AppState state) {
+  return state.alerts
+      .where((event) {
+        final msg = event.message.toLowerCase();
+        final childName = child.name.toLowerCase();
+
+        if (msg.contains(childName)) return true;
+
+        // Keep quiet-hours and message-care style signals visible at child level
+        // even when older events were logged without child names.
+        return event.type == AlertType.quietHours ||
+            event.type == AlertType.blockedWord;
+      })
+      .toList()
+      .reversed
+      .toList();
+}
+
+List<String> _patternsForChild(List<AlertEvent> signals) {
+  final quietHoursCount =
+      signals.where((s) => s.type == AlertType.quietHours).length;
+  final trickyMessageCount =
+      signals.where((s) => s.type == AlertType.blockedWord).length;
+  final connectionCount =
+      signals.where((s) => s.type == AlertType.contactRequest).length;
+
+  final items = <String>[];
+
+  if (quietHoursCount > 0) {
+    items.add(
+      quietHoursCount == 1
+          ? 'A quiet-hours moment came up this week.'
+          : 'A few quiet-hours moments came up this week.',
+    );
+  }
+
+  if (trickyMessageCount > 0) {
+    items.add(
+      trickyMessageCount == 1
+          ? 'Your child is learning how to handle a tricky message.'
+          : 'Your child is learning how to handle tricky messages.',
+    );
+  }
+
+  if (connectionCount > 0) {
+    items.add(
+      connectionCount == 1
+          ? 'A friendship step happened recently.'
+          : 'A few friendship steps happened recently.',
+    );
+  }
+
+  if (items.isEmpty) {
+    items.add('Things have been calm recently.');
+  }
+
+  return items;
+}
+
+List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
+  final quietHoursCount =
+      signals.where((s) => s.type == AlertType.quietHours).length;
+  final trickyMessageCount =
+      signals.where((s) => s.type == AlertType.blockedWord).length;
+
+  final suggestions = <String>[];
+
+  if (quietHoursCount > 0) {
+    suggestions.add(
+      'You might want to talk about winding down before bed.',
+    );
+  }
+
+  if (trickyMessageCount > 0) {
+    suggestions.add(
+      'Your child may be learning how to handle difficult messages online.',
+    );
+  }
+
+  if (suggestions.isEmpty) {
+    suggestions.add(
+      'Things seem steady right now — a quiet check-in may still be helpful.',
+    );
+  }
+
+  return suggestions;
+}
+
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    final signals = _signalsForChild(state);
+    final patterns = _patternsForChild(signals);
+    final suggestions = _supportSuggestionsForChild(signals);
+
     return ParentBrandScaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -3498,6 +3645,41 @@ class ParentChildDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.10),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${child.name}’s journey',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Natter shows gentle signals to help you support your child — not to monitor them.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.16),
@@ -3510,7 +3692,7 @@ class ParentChildDetailScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Child details',
+                      'Recent signals',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -3518,32 +3700,199 @@ class ParentChildDetailScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      'Avatar: ${child.avatar}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Access code: ${child.accessCode}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Device status: ${child.linkedDevice ? 'Linked' : 'Not linked'}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    if (signals.isEmpty)
+                      Text(
+                        'No gentle signals have been logged recently.',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.72),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    else
+                      ...signals.take(5).map((signal) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.10),
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: NatterBrand.yellow.withOpacity(0.18),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  _signalIcon(signal),
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _signalTitle(signal),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _signalMessage(signal),
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.78),
+                                        fontWeight: FontWeight.w700,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      _softWhen(signal),
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.52),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                   ],
                 ),
               ),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.10),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Patterns',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...patterns.map((pattern) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '• ',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            Expanded(
+                              child: Text(
+                                pattern,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.78),
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.10),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Support ideas',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...suggestions.map((suggestion) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: NatterBrand.yellow.withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: NatterBrand.yellow.withOpacity(0.32),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(top: 1),
+                              child: Icon(
+                                Icons.lightbulb_rounded,
+                                color: NatterBrand.yellow,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                suggestion,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),             
           const SizedBox(height: 18),
 
 StreamBuilder<List<ChildContactRequest>>(
@@ -3622,113 +3971,82 @@ StreamBuilder<List<ChildContactRequest>>(
             )
           else
             ...requests.map((request) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.08),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.10),
-      ),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                request.requesterChildName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.10),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Wants to add this child as a friend',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            request.requesterChildName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Wants to add this child as a friend',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await AppStateScope.of(context)
+                            .approveFriendRequestViaFunction(
+                          requestId: request.id,
+                        );
+                      },
+                      child: const Text(
+                        'Approve',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await AppStateScope.of(context)
+                            .blockFriendRequestViaFunction(
+                          requestId: request.id,
+                        );
+                      },
+                      child: const Text(
+                        'Block',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            await AppStateScope.of(context).approveFriendRequestViaFunction(
-  requestId: request.id,
-);
-          },
-          child: const Text(
-            'Approve',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        TextButton(
-          onPressed: () async {
-            await AppStateScope.of(context).blockFriendRequestViaFunction(
-  requestId: request.id,
-);
-          },
-          child: const Text(
-            'Block',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}),
+              );
+            }),
         ],
       ),
     );
   },
 ),
-              const SizedBox(height: 18),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Coming soon',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'This screen will become the child-specific parent control area for approvals, safety settings, and progress.',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w700,
-                        height: 1.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        ],
+      ),
     );
   }
 }
