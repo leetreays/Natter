@@ -1591,48 +1591,6 @@ int coachPrompts = 0;
     notifyListeners();
   }
 
-Future<void> requestContact({
-  required String targetName,
-  required String targetParentId,
-  required String targetChildId,
-  required String targetFriendCode,
-}) async {
-  final trimmed = targetName.trim();
-  if (trimmed.isEmpty) return;
-  if (!hasActiveChildSession) return;
-  if (activeChildId == targetChildId) return;
-
-  await friendRequestsRef().add({
-    'status': 'pending',
-
-    'requesterParentId': activeParentId!,
-    'requesterChildId': activeChildId!,
-    'requesterChildName': effectiveChildName,
-    'requesterFriendCode': myFriendCode,
-
-    'recipientParentId': targetParentId,
-    'recipientChildId': targetChildId,
-    'recipientChildName': trimmed,
-    'recipientFriendCode': targetFriendCode,
-
-    'participantChildIds': [activeChildId!, targetChildId],
-    'participantParentIds': [activeParentId!, targetParentId],
-
-    'createdAt': FieldValue.serverTimestamp(),
-    'respondedAt': null,
-    'respondedByParentId': null,
-  });
-
-  if (alertsContactRequest) {
-    addAlert(AlertEvent(
-      type: AlertType.contactRequest,
-      message: 'New contact request: $trimmed',
-    ));
-  }
-
-  notifyListeners();
-}
-
   void addAlert(AlertEvent e) {
     alerts.insert(0, e);
     notifyListeners();
