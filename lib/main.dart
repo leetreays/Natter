@@ -2007,39 +2007,6 @@ Future<void> addFakeReply({
   });
 }
 
-Future<void> sendMessageToChat({
-  required String friendName,
-  required String text,
-  bool isFlagged = false,
-}) async {
-  final trimmed = text.trim();
-  if (trimmed.isEmpty) return;
-
-  if (!hasActiveChildSession) {
-    throw Exception('No active child session found.');
-  }
-
-  final chatRef = childChatRef(friendName);
-
-  await chatRef.set({
-    'friendName': friendName,
-    'updatedAt': FieldValue.serverTimestamp(),
-    'lastMessage': trimmed,
-    'lastSenderUid': activeChildId,
-    'childId': activeChildId,
-    'parentId': activeParentId,
-  }, SetOptions(merge: true));
-
-  await childMessagesRef(friendName).add({
-    'text': trimmed,
-    'senderUid': activeChildId,
-    'createdAt': FieldValue.serverTimestamp(),
-    'isFlagged': isFlagged,
-    'receiverAction': isFlagged ? 'protected' : null,
-    'receiverActionAt': null,
-  });
-}
-
   void dismissCelebration() {
     celebrationTitle = null;
     celebrationMessage = null;
