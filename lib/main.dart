@@ -1611,30 +1611,6 @@ int coachPrompts = 0;
     notifyListeners();
   }
 
-Future<void> approveContactForChild({
-  required String parentId,
-  required String childId,
-  required ChildContactRequest request,
-}) async {
-  await friendRequestsRef().doc(request.id).set({
-    'status': 'approved',
-    'respondedAt': FieldValue.serverTimestamp(),
-    'respondedByParentId': parentId,
-  }, SetOptions(merge: true));
-}
-
-Future<void> blockContactForChild({
-  required String parentId,
-  required String childId,
-  required ChildContactRequest request,
-}) async {
-  await friendRequestsRef().doc(request.id).set({
-    'status': 'blocked',
-    'respondedAt': FieldValue.serverTimestamp(),
-    'respondedByParentId': parentId,
-  }, SetOptions(merge: true));
-}
-
   void setQuietEnabled(bool v) {
     quietHoursEnabled = v;
     notifyListeners();
