@@ -1900,14 +1900,6 @@ CollectionReference<Map<String, dynamic>> childChatsRef() {
   return childDocRef().collection('chats');
 }
 
-DocumentReference<Map<String, dynamic>> childChatRef(String friendName) {
-  return childChatsRef().doc(chatIdForFriend(friendName));
-}
-
-CollectionReference<Map<String, dynamic>> childMessagesRef(String friendName) {
-  return childChatRef(friendName).collection('messages');
-}
-
 Future<void> revealFlaggedMessage({
   required String friendName,
   required String messageId,
