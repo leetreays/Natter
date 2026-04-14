@@ -1896,51 +1896,6 @@ DocumentReference<Map<String, dynamic>> childDocRef() {
       .doc(session.childId);
 }
 
-CollectionReference<Map<String, dynamic>> childChatsRef() {
-  return childDocRef().collection('chats');
-}
-
-Future<void> revealFlaggedMessage({
-  required String friendName,
-  required String messageId,
-}) async {
-  if (!hasActiveChildSession) return;
-
-  await childMessagesRef(friendName).doc(messageId).set({
-    'receiverAction': 'read',
-    'receiverActionAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-}
-
-Future<void> hideFlaggedMessage({
-  required String friendName,
-  required String messageId,
-}) async {
-  if (!hasActiveChildSession) return;
-
-  await childMessagesRef(friendName).doc(messageId).set({
-    'receiverAction': 'not_now',
-    'receiverActionAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-}
-
-Future<void> blockAfterFlaggedMessage({
-  required String friendName,
-  required String messageId,
-}) async {
-  if (!hasActiveChildSession) return;
-
-  await childMessagesRef(friendName).doc(messageId).set({
-    'receiverAction': 'blocked',
-    'receiverActionAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  addAlert(AlertEvent(
-    type: AlertType.contactRequest,
-    message: 'Contact blocked after flagged message: $friendName',
-  ));
-}
-
 Future<String> currentUid() async {
   final user = await ensureSignedIn();
   return user.uid;
