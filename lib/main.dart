@@ -1965,22 +1965,6 @@ Future<String> currentUid() async {
   return user.uid;
 }
 
-Stream<List<Map<String, dynamic>>> messageStream(String friendName) async* {
-  if (!hasActiveChildSession) {
-    yield [];
-    return;
-  }
-
-  yield* childMessagesRef(friendName)
-      .orderBy('createdAt')
-      .snapshots()
-      .map((snapshot) => snapshot.docs.map((doc) {
-            final data = doc.data();
-            data['id'] = doc.id;
-            return data;
-          }).toList());
-}
-
 Future<void> addFakeReply({
   required String friendName,
   required String text,
