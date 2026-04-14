@@ -150,32 +150,6 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
-class FriendProfile {
-  final String name;
-  final String code;
-
-  const FriendProfile(this.name, this.code);
-}
-
-class FriendDirectory {
-  static const List<FriendProfile> profiles = [
-    FriendProfile('Ava', 'AVA-4821'),
-    FriendProfile('Leo', 'LEO-7314'),
-    FriendProfile('Zoe', 'ZOE-1942'),
-    FriendProfile('Max', 'MAX-5508'),
-  ];
-
-  static String? nameForCode(String code) {
-    try {
-      return profiles
-          .firstWhere((p) => p.code == code.trim().toUpperCase())
-          .name;
-    } catch (_) {
-      return null;
-    }
-  }
-}
-
 class Friend {
   final String name;
   final String schoolName;
@@ -1339,16 +1313,6 @@ List<Friend> get sameYearFriends {
           f.yearGroup == yearGroup)
       .toList();
 }
-
-  List<String> get suggestedFriendNames {
-  return FriendDirectory.profiles
-      .map((profile) => profile.name)
-      .where((name) =>
-          !isApproved(name) &&
-          !isPending(name))
-      .take(3)
-      .toList();
-  }
 
   final List<String> dailySparks = [
   "Ask someone what made them smile today 😊",
