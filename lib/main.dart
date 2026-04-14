@@ -668,39 +668,6 @@ class ParentChildProfile {
   }
 }
 
-class ApprovedChildContact {
-  final String id;
-  final String name;
-  final String friendCode;
-  final String targetParentId;
-  final String targetChildId;
-  final bool isNew;
-
-  const ApprovedChildContact({
-    required this.id,
-    required this.name,
-    required this.friendCode,
-    required this.targetParentId,
-    required this.targetChildId,
-    required this.isNew,
-  });
-
-  factory ApprovedChildContact.fromDoc(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
-    final data = doc.data() ?? {};
-
-    return ApprovedChildContact(
-      id: doc.id,
-      name: (data['name'] ?? '').toString(),
-      friendCode: (data['friendCode'] ?? '').toString(),
-      targetParentId: (data['targetParentId'] ?? '').toString(),
-      targetChildId: (data['targetChildId'] ?? '').toString(),
-      isNew: data['isNew'] == true,
-    );
-  }
-}
-
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
   final List<Friend> approvedContacts = [
@@ -1140,29 +1107,6 @@ CollectionReference<Map<String, dynamic>> friendRequestsRef() {
   return FirebaseFirestore.instance.collection('friend_requests');
 }
 
-CollectionReference<Map<String, dynamic>> parentChildApprovedContactsRef({
-  required String parentId,
-  required String childId,
-}) {
-  return FirebaseFirestore.instance
-      .collection('parents')
-      .doc(parentId)
-      .collection('children')
-      .doc(childId)
-      .collection('approved_contacts');
-}
-
-CollectionReference<Map<String, dynamic>> activeChildApprovedContactsRef() {
-  if (!hasActiveChildSession) {
-    throw Exception('No active child session found.');
-  }
-
-  return parentChildApprovedContactsRef(
-    parentId: activeParentId!,
-    childId: activeChildId!,
-  );
-}
-
 FirebaseFunctions get functions =>
     FirebaseFunctions.instanceFor(region: 'europe-west2');
 
@@ -1202,30 +1146,6 @@ Future<void> blockFriendRequestViaFunction({
   });
 }
   
-Stream<List<ApprovedChildContact>> activeChildApprovedContactsStream() async* {
-  if (!hasActiveChildSession) {
-    yield [];
-    return;
-  }
-
-  yield* activeChildApprovedContactsRef()
-      .orderBy('approvedAt', descending: true)
-      .snapshots()
-      .map(
-        (snapshot) => snapshot.docs
-            .map((doc) => ApprovedChildContact.fromDoc(doc))
-            .toList(),
-      );
-}
-
-Future<void> markApprovedContactAsSeen(String contactId) async {
-  if (!hasActiveChildSession) return;
-
-  await activeChildApprovedContactsRef().doc(contactId).set({
-    'isNew': false,
-  }, SetOptions(merge: true));
-}
-
 Future<void> saveChildOnboardingState() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('has_seen_chirp_welcome', hasSeenChirpWelcome);
