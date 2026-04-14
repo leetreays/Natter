@@ -1965,32 +1965,6 @@ Future<String> currentUid() async {
   return user.uid;
 }
 
-Future<void> addFakeReply({
-  required String friendName,
-  required String text,
-}) async {
-  if (!hasActiveChildSession) return;
-
-  final chatId = chatIdForFriend(friendName);
-  final chatRef = childChatRef(friendName);
-
-  await chatRef.set({
-    'friendName': friendName,
-    'updatedAt': FieldValue.serverTimestamp(),
-    'lastMessage': text,
-    'lastSenderUid': 'friend_$chatId',
-    'childId': activeChildId,
-    'parentId': activeParentId,
-  }, SetOptions(merge: true));
-
-  await childMessagesRef(friendName).add({
-    'text': text,
-    'senderUid': 'friend_$chatId',
-    'createdAt': FieldValue.serverTimestamp(),
-    'isFlagged': false,
-  });
-}
-
   void dismissCelebration() {
     celebrationTitle = null;
     celebrationMessage = null;
