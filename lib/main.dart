@@ -3431,6 +3431,8 @@ String _signalTitle(AlertEvent event) {
       return 'Quiet hours';
     case AlertType.blockedWord:
       return 'Tricky message';
+    case AlertType.safetyCoach:
+      return 'Gentle guidance';
   }
 }
 
@@ -3442,6 +3444,8 @@ IconData _signalIcon(AlertEvent event) {
       return Icons.nightlight_round;
     case AlertType.blockedWord:
       return Icons.favorite_rounded;
+    case AlertType.safetyCoach:
+      return Icons.lightbulb_rounded;
   }
 }
 
@@ -3464,17 +3468,15 @@ String _signalMessage(AlertEvent event) {
     return 'A friendship step happened that may need your attention.';
   }
 
+  if (event.type == AlertType.safetyCoach) {
+    return 'Your child was gently guided to rethink a message.';
+  }
+
   return 'A gentle signal was recorded for your child.';
 }
 
 String _softWhen(AlertEvent event) {
-  final now = DateTime.now();
-  final difference = now.difference(event.timestamp);
-
-  if (difference.inDays == 0) return 'Today';
-  if (difference.inDays == 1) return 'Yesterday';
-  if (difference.inDays < 7) return 'This week';
-  return 'Earlier';
+  return 'Recently';
 }
 
 List<AlertEvent> _signalsForChild(AppState state) {
