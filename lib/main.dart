@@ -1875,14 +1875,6 @@ Future<void> blockContactForChild({
   notifyListeners();
 }
 
-String chatIdForFriend(String friendName) {
-  return friendName
-      .toLowerCase()
-      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
-      .replaceAll(RegExp(r'_+'), '_')
-      .replaceAll(RegExp(r'^_|_$'), '');
-}
-
 DocumentReference<Map<String, dynamic>> childDocRef() {
   final session = childSession;
   if (session == null) {
