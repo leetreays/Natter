@@ -3570,17 +3570,21 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
 Widget _glanceCard({
   required String label,
   required String value,
-  required Color tint,
+  required Color color,
 }) {
   return Container(
-    width: 150,
+    width: 165,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: tint.withOpacity(0.18),
+      color: color,
       borderRadius: BorderRadius.circular(22),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.12),
-      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.18),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3588,7 +3592,7 @@ Widget _glanceCard({
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.82),
+            color: Colors.white.withOpacity(0.88),
             fontWeight: FontWeight.w800,
             fontSize: 13,
           ),
@@ -3723,10 +3727,11 @@ Widget _glanceCard({
   ),
 ),
               const SizedBox(height: 18),
-              SizedBox(
-  height: 122,
-  child: ListView(
-    scrollDirection: Axis.horizontal,
+              Center(
+  child: Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 12,
+    runSpacing: 12,
     children: [
       StreamBuilder<List<ConversationRecord>>(
         stream: state.conversationsForChildStream(
@@ -3737,33 +3742,29 @@ Widget _glanceCard({
           return _glanceCard(
             label: 'Connections',
             value: '${conversations.length}',
-            tint: NatterBrand.green,
+            color: const Color(0xFF7FB34D),
           );
         },
       ),
-      const SizedBox(width: 12),
       _glanceCard(
         label: 'Pending',
         value: '$pendingCount',
-        tint: NatterBrand.yellow,
+        color: const Color(0xFF95C85A),
       ),
-      const SizedBox(width: 12),
       _glanceCard(
         label: 'Quiet Time',
         value: quietTimeOn ? 'ON' : 'OFF',
-        tint: NatterBrand.blue,
+        color: const Color(0xFF4599DD),
       ),
-      const SizedBox(width: 12),
       _glanceCard(
         label: 'Signals',
         value: '$signalCount',
-        tint: NatterBrand.pink,
+        color: const Color(0xFFA4CF58),
       ),
-      const SizedBox(width: 12),
       _glanceCard(
         label: 'Level',
         value: 'Promise\nKeeper',
-        tint: const Color(0xFF6D7FA8),
+        color: const Color(0xFF6F9F44),
       ),
     ],
   ),
@@ -4108,7 +4109,7 @@ Container(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Rules & quiet time',
+                    'Rules & Quiet Time',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -5786,157 +5787,217 @@ class DigitalReadinessReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
 
-    return BrandScaffold(
+    return ParentBrandScaffold(
       appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Digital Readiness'),
-      ),
+  backgroundColor: Colors.transparent,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  title: const Text(
+    'Digital Readiness',
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () => Navigator.pop(context),
+  ),
+),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.school_rounded,
-                      color: NatterBrand.yellow,
-                      size: 28,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        state.isGraduated
-                            ? 'Natter Graduate'
-                            : 'Digital Readiness Journey',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  state.isGraduated
-                      ? '${state.lastName ?? 'Your child'} has successfully completed the Natter journey.'
-                      : '${state.lastName ?? 'Your child'} is developing strong digital communication habits.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
-                  ),
-                ),
-              ],
+          Container(
+  padding: const EdgeInsets.all(22),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [
+        const Color(0xFF243761),
+        const Color(0xFF1B2D52),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: NatterBrand.green.withOpacity(0.10),
+        blurRadius: 16,
+        offset: const Offset(0, 6),
+      ),
+    ],
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          const Icon(
+            Icons.school_rounded,
+            color: NatterBrand.yellow,
+            size: 28,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              state.isGraduated
+                  ? 'Natter Graduate'
+                  : 'Digital Readiness Journey',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+              ),
             ),
           ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      Text(
+        state.isGraduated
+            ? '${state.lastName ?? 'Your child'} has successfully completed the Natter journey.'
+            : '${state.lastName ?? 'Your child'} is developing strong digital communication habits.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.9),
+          fontWeight: FontWeight.w700,
+          height: 1.35,
+        ),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Strengths Shown',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...state.digitalReadinessStrengths.map(
-                  (strength) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      strength,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+          Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Strengths Shown',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+      ...state.digitalReadinessStrengths.map(
+        (strength) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Text(
+            strength,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
             ),
           ),
+        ),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Progress Highlights',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '💛 Positive messages: ${state.positiveMessages}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '🌱 Kindness rewrites: ${state.kindnessRewrites}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '🤝 Shared quests completed: ${state.completedSharedQuests}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '💬 Conversation starters used: ${state.conversationStartersUsed}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Progress Highlights',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        '💛 Positive messages: ${state.positiveMessages}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '🌱 Kindness rewrites: ${state.kindnessRewrites}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '🤝 Shared quests completed: ${state.completedSharedQuests}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        '💬 Conversation starters used: ${state.conversationStartersUsed}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'What This Means',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  state.isGraduated
-                      ? 'Your child has demonstrated kind communication, safe message choices, and the ability to build positive digital friendships.'
-                      : 'Your child is building the skills needed to communicate kindly, handle messages safely, and grow positive online friendships.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'What This Means',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        state.isGraduated
+            ? 'Your child has demonstrated kind communication, safe message choices, and the ability to build positive digital friendships.'
+            : 'Your child is building the skills needed to communicate kindly, handle messages safely, and grow positive online friendships.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.9),
+          fontWeight: FontWeight.w700,
+          height: 1.35,
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     );
@@ -10554,157 +10615,183 @@ class ParentRulesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
 
-    return BrandScaffold(
+    return ParentBrandScaffold(
       appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Rules & Alerts'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+  backgroundColor: Colors.transparent,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  title: const Text(
+    'Rules and Quiet Time',
+    style: TextStyle(
+      color: Colors.white,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+  leading: IconButton(
+    icon: const Icon(Icons.arrow_back, color: Colors.white),
+    onPressed: () => Navigator.pop(context),
+  ),
+),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Quiet Hours',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  value: state.quietHoursEnabled,
-                  onChanged: state.setQuietEnabled,
-                  title: const Text(
-                    'Enable Quiet Hours',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Kids can’t send messages during this time.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _TimeButton(
-                        label: 'Start',
-                        time: state.quietStart,
-                        onPick: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: state.quietStart,
-                          );
-                          if (picked != null) state.setQuietStart(picked);
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _TimeButton(
-                        label: 'End',
-                        time: state.quietEnd,
-                        onPick: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: state.quietEnd,
-                          );
-                          if (picked != null) state.setQuietEnd(picked);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Quiet Hours',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+      SwitchListTile(
+        value: state.quietHoursEnabled,
+        onChanged: state.setQuietEnabled,
+        title: const Text(
+          'Enable Quiet Hours',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          'Kids can’t send messages during this time.',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          Expanded(
+            child: _TimeButton(
+              label: 'Start',
+              time: state.quietStart,
+              onPick: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: state.quietStart,
+                );
+                if (picked != null) state.setQuietStart(picked);
+              },
             ),
           ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _TimeButton(
+              label: 'End',
+              time: state.quietEnd,
+              onPick: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: state.quietEnd,
+                );
+                if (picked != null) state.setQuietEnd(picked);
+              },
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Alerts',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  value: state.alertsBlockedWord,
-                  onChanged: (v) => state.setAlerts(blockedWord: v),
-                  title: const Text(
-                    'Blocked-word attempts',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Parents get an alert when a message is blocked.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                  ),
-                ),
-                SwitchListTile(
-                  value: state.alertsQuietHours,
-                  onChanged: (v) => state.setAlerts(quietHours: v),
-                  title: const Text(
-                    'Quiet Hours attempts',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Parents get an alert if kids try to message during Quiet Hours.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                  ),
-                ),
-                SwitchListTile(
-                  value: state.alertsContactRequest,
-                  onChanged: (v) => state.setAlerts(contactRequest: v),
-                  title: const Text(
-                    'Contact events',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Alerts when a request is made, approved, or blocked.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                  ),
-                ),
-                SwitchListTile(
-                  value: state.alertsSafetyCoach,
-                  onChanged: (v) => state.setAlerts(safetyCoach: v),
-                  title: const Text(
-                    'Kindness coach prompts',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Parents get a signal when Natter coaches a message, without seeing the message itself.',
-                    style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                  ),
-                ),
-              ],
-            ),
+          Container(
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Signals',
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 18,
+        ),
+      ),
+      const SizedBox(height: 12),
+      SwitchListTile(
+        value: state.alertsBlockedWord,
+        onChanged: (v) => state.setAlerts(blockedWord: v),
+        title: const Text(
+          'Tricky message signals',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
           ),
+        ),
+        subtitle: Text(
+          'Log when a message needs extra care.',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
+      ),
+      SwitchListTile(
+        value: state.alertsQuietHours,
+        onChanged: (v) => state.setAlerts(quietHours: v),
+        title: const Text(
+          'Quiet Time signals',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          'Log when Natter is used during Quiet Time.',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
+      ),
+      SwitchListTile(
+        value: state.alertsContactRequest,
+        onChanged: (v) => state.setAlerts(contactRequest: v),
+        title: const Text(
+          'Connection signals',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          'Log friendship requests and decisions.',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
+      ),
+      SwitchListTile(
+        value: state.alertsSafetyCoach,
+        onChanged: (v) => state.setAlerts(safetyCoach: v),
+        title: const Text(
+          'Gentle guidance signals',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          'Log when Natter coaches a message, without showing the message itself.',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     );
