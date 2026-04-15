@@ -3574,6 +3574,7 @@ Widget _glanceCard({
 }) {
   return Container(
     width: 165,
+    height: 120,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       color: color,
@@ -3587,10 +3588,11 @@ Widget _glanceCard({
       ],
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           label,
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: Colors.white.withOpacity(0.88),
             fontWeight: FontWeight.w800,
@@ -3600,6 +3602,9 @@ Widget _glanceCard({
         const SizedBox(height: 10),
         Text(
           value,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
@@ -3645,17 +3650,19 @@ Widget _glanceCard({
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-        children: [
+      child: Container(
+  color: const Color(0xFF0A3554),
+  child: ListView(
+    padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+    children: [
               Container(
-  padding: const EdgeInsets.all(24),
-  decoration: BoxDecoration(
-    gradient: LinearGradient(
-      colors: [
-        const Color(0xFF243761),
-        const Color(0xFF1B2D52),
-      ],
+                 padding: const EdgeInsets.all(24),
+                 decoration: BoxDecoration(
+                 gradient: LinearGradient(
+                 colors: [
+                   const Color(0xFF243761),
+                   const Color(0xFF1B2D52),
+                   ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
@@ -3762,10 +3769,10 @@ Widget _glanceCard({
         color: const Color(0xFFA4CF58),
       ),
       _glanceCard(
-        label: 'Level',
-        value: 'Promise\nKeeper',
-        color: const Color(0xFF6F9F44),
-      ),
+  label: 'Level',
+  value: 'Promise Keeper',
+  color: const Color(0xFF6F9F44),
+),
     ],
   ),
 ),
