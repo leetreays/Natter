@@ -4097,7 +4097,6 @@ Container(
           ],
         ),
       ),
-    ),
       const SizedBox(height: 10),
       Container(
         padding: const EdgeInsets.all(16),
@@ -4117,7 +4116,7 @@ Container(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Rules & Quiet Time',
+                    'Rules and Quiet Time',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
