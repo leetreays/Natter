@@ -4081,7 +4081,7 @@ Container(
               onPressed: () {
                 Navigator.push(
                   context,
-                  calmRoute(const DigitalReadinessScreen()),
+                  calmRoute(const DigitalReadinessReportScreen()),
                 );
               },
               child: const Text('Open'),
