@@ -3567,12 +3567,61 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   return suggestions;
 }
 
+Widget _glanceCard({
+  required String label,
+  required String value,
+  required Color tint,
+}) {
+  return Container(
+    width: 150,
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: tint.withOpacity(0.18),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.12),
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.82),
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
+            height: 1.1,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final signals = _signalsForChild(state);
     final patterns = _patternsForChild(signals);
     final suggestions = _supportSuggestionsForChild(signals);
+
+    final pendingCount = signals
+    .where((s) => s.type == AlertType.contactRequest)
+    .length;
+
+    final signalCount = signals.length;
+
+    final quietTimeOn = state.quietHoursEnabled;
 
     return ParentBrandScaffold(
       appBar: AppBar(
@@ -3596,66 +3645,140 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
         children: [
               Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.12),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 32,
-                      backgroundColor: Colors.white.withOpacity(0.14),
-                      child: Text(
-                        child.name.isNotEmpty
-                            ? child.name[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      child.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      child.linkedDevice
-                          ? 'This child has linked a device.'
-                          : 'This child has not linked a device yet.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: child.linkedDevice
-                            ? NatterBrand.green
-                            : Colors.white70,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+  padding: const EdgeInsets.all(24),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [
+        const Color(0xFF243761),
+        const Color(0xFF1B2D52),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(28),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.12),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: NatterBrand.green.withOpacity(0.10),
+        blurRadius: 18,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  ),
+  child: Column(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: NatterBrand.green.withOpacity(0.75),
+            width: 3,
+          ),
+        ),
+        child: CircleAvatar(
+          radius: 32,
+          backgroundColor: Colors.white.withOpacity(0.14),
+          child: Text(
+            child.name.isNotEmpty ? child.name[0].toUpperCase() : '?',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 14),
+      Text(
+        child.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'Growing confidence online 🌱',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: NatterBrand.green,
+          fontWeight: FontWeight.w800,
+          fontSize: 16,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'A gentle view of how things are going.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(height: 18),
+              SizedBox(
+  height: 122,
+  child: ListView(
+    scrollDirection: Axis.horizontal,
+    children: [
+      StreamBuilder<List<ConversationRecord>>(
+        stream: state.conversationsForChildStream(
+          childId: child.childId,
+        ),
+        builder: (context, snapshot) {
+          final conversations = snapshot.data ?? [];
+          return _glanceCard(
+            label: 'Connections',
+            value: '${conversations.length}',
+            tint: NatterBrand.green,
+          );
+        },
+      ),
+      const SizedBox(width: 12),
+      _glanceCard(
+        label: 'Pending',
+        value: '$pendingCount',
+        tint: NatterBrand.yellow,
+      ),
+      const SizedBox(width: 12),
+      _glanceCard(
+        label: 'Quiet Time',
+        value: quietTimeOn ? 'ON' : 'OFF',
+        tint: NatterBrand.blue,
+      ),
+      const SizedBox(width: 12),
+      _glanceCard(
+        label: 'Signals',
+        value: '$signalCount',
+        tint: NatterBrand.pink,
+      ),
+      const SizedBox(width: 12),
+      _glanceCard(
+        label: 'Level',
+        value: 'Promise\nKeeper',
+        tint: const Color(0xFF6D7FA8),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 18),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
-                ),
+  color: const Color(0xFF21345C),
+  borderRadius: BorderRadius.circular(24),
+  border: Border.all(
+    color: Colors.white.withOpacity(0.10),
+  ),
+),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -3896,6 +4019,127 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
                 ),
               ),             
           const SizedBox(height: 18),
+          const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Support tools',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 14),
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.description_rounded,
+              color: NatterBrand.yellow,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Digital Readiness Report',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'See how your child is developing over time.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  calmRoute(const DigitalReadinessScreen()),
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 10),
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.settings_rounded,
+              color: NatterBrand.blue,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Rules & quiet time',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Review family settings and gentle safeguards.',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  calmRoute(const ParentRulesScreen()),
+                );
+              },
+              child: const Text('Open'),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
 
 StreamBuilder<List<ChildContactRequest>>(
   stream: AppStateScope.of(context).incomingFriendRequestsForParentChildStream(
