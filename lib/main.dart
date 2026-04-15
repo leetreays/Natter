@@ -4301,9 +4301,10 @@ StreamBuilder<List<ChildContactRequest>>(
 ),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
+
 
 class ChildAccessCodeScreen extends StatefulWidget {
   const ChildAccessCodeScreen({super.key});
