@@ -3415,6 +3415,107 @@ class ParentHomeScreen extends StatelessWidget {
   }
 }
 
+class _InsightDonutPainter extends CustomPainter {
+  final double positiveFraction;
+  final double guidanceFraction;
+  final double quietFraction;
+
+  const _InsightDonutPainter({
+    required this.positiveFraction,
+    required this.guidanceFraction,
+    required this.quietFraction,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokeWidth = size.width * 0.16;
+    final rect = Offset.zero & size;
+    const startAngle = -1.5708;
+
+    final backgroundPaint = Paint()
+      ..color = const Color(0xFF2A426E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      rect.deflate(strokeWidth / 2),
+      0,
+      6.28318,
+      false,
+      backgroundPaint,
+    );
+
+    double currentAngle = startAngle;
+
+    void drawSegment(double fraction, Color color) {
+      if (fraction <= 0) return;
+      final paint = Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      final sweep = 6.28318 * fraction;
+      canvas.drawArc(
+        rect.deflate(strokeWidth / 2),
+        currentAngle,
+        sweep,
+        false,
+        paint,
+      );
+      currentAngle += sweep;
+    }
+
+    drawSegment(positiveFraction, const Color(0xFF7FB34D));
+    drawSegment(guidanceFraction, const Color(0xFFE7C15A));
+    drawSegment(quietFraction, const Color(0xFF4599DD));
+  }
+
+  @override
+  bool shouldRepaint(covariant _InsightDonutPainter oldDelegate) {
+    return oldDelegate.positiveFraction != positiveFraction ||
+        oldDelegate.guidanceFraction != guidanceFraction ||
+        oldDelegate.quietFraction != quietFraction;
+  }
+}
+
+class _InsightKeyDot extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _InsightKeyDot({
+    required this.color,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class ParentChildDetailScreen extends StatelessWidget {
   final ParentChildProfile child;
 
@@ -3617,12 +3718,63 @@ Widget _glanceCard({
   );
 }
 
+Map<String, double> _insightFractions(List<AlertEvent> signals) {
+  final quietCount =
+      signals.where((s) => s.type == AlertType.quietHours).length.toDouble();
+  final guidanceCount = signals
+      .where((s) =>
+          s.type == AlertType.blockedWord || s.type == AlertType.safetyCoach)
+      .length
+      .toDouble();
+
+  double positiveCount = 1.0;
+
+  if (signals.isEmpty) {
+    positiveCount = 3.0;
+  } else {
+    positiveCount = (signals.length * 0.8).clamp(1, 6).toDouble();
+  }
+
+  final total = positiveCount + guidanceCount + quietCount;
+
+  return {
+    'positive': positiveCount / total,
+    'guidance': guidanceCount / total,
+    'quiet': quietCount / total,
+  };
+}
+
+String _insightHeadline(List<AlertEvent> signals) {
+  final quietCount =
+      signals.where((s) => s.type == AlertType.quietHours).length;
+  final guidanceCount = signals
+      .where((s) =>
+          s.type == AlertType.blockedWord || s.type == AlertType.safetyCoach)
+      .length;
+
+  if (quietCount == 0 && guidanceCount == 0) {
+    return 'Things have felt calm this week.';
+  }
+
+  if (guidanceCount > 0 && quietCount == 0) {
+    return 'Mostly positive, with a few guidance moments.';
+  }
+
+  if (quietCount > 0 && guidanceCount == 0) {
+    return 'Mostly steady, with a few quiet-time moments.';
+  }
+
+  return 'A mix of positive moments and gentle guidance.';
+}
+  
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final signals = _signalsForChild(state);
     final patterns = _patternsForChild(signals);
     final suggestions = _supportSuggestionsForChild(signals);
+    final insight = _insightFractions(signals);
+    final insightHeadline = _insightHeadline(signals);
 
     final pendingCount = signals
     .where((s) => s.type == AlertType.contactRequest)
@@ -3736,6 +3888,88 @@ Widget _glanceCard({
   ),
 ),
     const SizedBox(height: 18),
+        Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(22),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.14),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  child: Row(
+    children: [
+      SizedBox(
+        width: 110,
+        height: 110,
+        child: CustomPaint(
+          painter: _InsightDonutPainter(
+            positiveFraction: insight['positive']!,
+            guidanceFraction: insight['guidance']!,
+            quietFraction: insight['quiet']!,
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.insights_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(width: 18),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'This week',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              insightHeadline,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              children: const [
+                _InsightKeyDot(
+                  color: Color(0xFF7FB34D),
+                  label: 'Positive moments',
+                ),
+                _InsightKeyDot(
+                  color: Color(0xFFE7C15A),
+                  label: 'Guidance moments',
+                ),
+                _InsightKeyDot(
+                  color: Color(0xFF4599DD),
+                  label: 'Quiet-time moments',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 18),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
