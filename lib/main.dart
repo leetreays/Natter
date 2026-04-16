@@ -4519,56 +4519,8 @@ class ParentSpaceBackground extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 110,
-            left: 40,
-            child: _bubble(10, const Color(0x66C96CB3)),
-          ),
-          Positioned(
-            top: 140,
-            left: 90,
-            child: _bubble(18, const Color(0x44C96CB3)),
-          ),
-          Positioned(
-            top: 170,
-            left: 140,
-            child: _bubble(14, const Color(0x55E7C15A)),
-          ),
-          Positioned(
-            top: 220,
-            right: 60,
-            child: _bubble(26, const Color(0x334D86B8)),
-          ),
-          Positioned(
-            bottom: 180,
-            left: 36,
-            child: _bubble(22, const Color(0x44C96CB3)),
-          ),
-          Positioned(
-            bottom: 130,
-            left: 120,
-            child: _bubble(30, const Color(0x55C96CB3)),
-          ),
-          Positioned(
-            bottom: 80,
-            right: 30,
-            child: _bubble(28, const Color(0x335D6F8A)),
-          ),
-          SafeArea(child: child),
-        ],
-      ),
-    );
-  }
-
-  static Widget _bubble(double size, Color color) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
+      child: SafeArea(
+        child: child,
       ),
     );
   }
