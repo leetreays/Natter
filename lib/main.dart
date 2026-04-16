@@ -9759,8 +9759,8 @@ class ParentBrandScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFF0A3554),
+      extendBodyBehindAppBar: false,
       appBar: appBar,
       body: ParentSpaceBackground(
         child: child,
