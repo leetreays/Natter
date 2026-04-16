@@ -3810,31 +3810,6 @@ String _insightHeadline(List<AlertEvent> signals) {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
               Container(
-                 padding: const EdgeInsets.all(24),
-                 decoration: BoxDecoration(
-                 gradient: LinearGradient(
-                 colors: [
-                   const Color(0xFF243761),
-                   const Color(0xFF1B2D52),
-                   ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(28),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.12),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: NatterBrand.green.withOpacity(0.10),
-        blurRadius: 18,
-        offset: const Offset(0, 8),
-      ),
-    ],
-  ),
-  child: Column(
-    children: [
-Container(
   padding: const EdgeInsets.all(26),
   decoration: BoxDecoration(
     gradient: const LinearGradient(
@@ -4214,7 +4189,6 @@ Container(
     ],
   ),
 ),
-              const SizedBox(height: 18),
             const SizedBox(height: 18),
 Container(
   width: double.infinity,
