@@ -3674,8 +3674,8 @@ Widget _glanceCard({
   required Color color,
 }) {
   return Container(
-    width: 165,
-    height: 120,
+    width: 150,
+    height: 104,
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       color: color,
@@ -3709,7 +3709,7 @@ Widget _glanceCard({
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
-            fontSize: 18,
+            fontSize: 17,
             height: 1.1,
           ),
         ),
@@ -3834,61 +3834,121 @@ String _insightHeadline(List<AlertEvent> signals) {
   ),
   child: Column(
     children: [
-      Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: NatterBrand.green.withOpacity(0.75),
-            width: 3,
+Container(
+  padding: const EdgeInsets.all(26),
+  decoration: BoxDecoration(
+    gradient: const LinearGradient(
+      colors: [
+        Color(0xFF29406F),
+        Color(0xFF1C325D),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    borderRadius: BorderRadius.circular(28),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.14),
+        blurRadius: 16,
+        offset: const Offset(0, 6),
+      ),
+    ],
+  ),
+  child: Stack(
+    children: [
+      Positioned(
+        top: -18,
+        right: -8,
+        child: Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: NatterBrand.green.withOpacity(0.08),
           ),
         ),
-        child: CircleAvatar(
-          radius: 32,
-          backgroundColor: Colors.white.withOpacity(0.14),
-          child: Text(
-            child.name.isNotEmpty ? child.name[0].toUpperCase() : '?',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 24,
+      ),
+      Column(
+        children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF3F5F3A),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: const Text(
+                'Growing well',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      const SizedBox(height: 14),
-      Text(
-        child.name,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'Growing confidence online 🌱',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: NatterBrand.green,
-          fontWeight: FontWeight.w800,
-          fontSize: 16,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'A gentle view of how things are going.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.78),
-          fontWeight: FontWeight.w700,
-        ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: NatterBrand.green.withOpacity(0.80),
+                width: 3,
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 32,
+              backgroundColor: const Color(0xFF445A87),
+              child: Text(
+                child.name.isNotEmpty ? child.name[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Digital journey',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Growing confidence online 🌱',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: NatterBrand.green,
+              fontWeight: FontWeight.w800,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'A gentle view of how things are going.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.78),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     ],
   ),
 ),
-    const SizedBox(height: 18),
-        Container(
+const SizedBox(height: 18),
+Container(
   width: double.infinity,
   padding: const EdgeInsets.all(22),
   decoration: BoxDecoration(
@@ -3896,114 +3956,122 @@ String _insightHeadline(List<AlertEvent> signals) {
     borderRadius: BorderRadius.circular(24),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.14),
+        color: Colors.black.withOpacity(0.12),
         blurRadius: 10,
         offset: const Offset(0, 4),
       ),
     ],
   ),
-  child: Row(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      SizedBox(
-        width: 110,
-        height: 110,
-        child: CustomPaint(
-          painter: _InsightDonutPainter(
-            positiveFraction: insight['positive']!,
-            guidanceFraction: insight['guidance']!,
-            quietFraction: insight['quiet']!,
-          ),
-          child: const Center(
-            child: Icon(
-              Icons.insights_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
+      const Text(
+        'At a glance',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
         ),
       ),
-      const SizedBox(width: 18),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'This week',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
+      const SizedBox(height: 8),
+      Text(
+        insightHeadline,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.w700,
+          height: 1.4,
+        ),
+      ),
+      const SizedBox(height: 18),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            height: 120,
+            child: CustomPaint(
+              painter: _InsightDonutPainter(
+                positiveFraction: insight['positive']!,
+                guidanceFraction: insight['guidance']!,
+                quietFraction: insight['quiet']!,
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.insights_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              insightHeadline,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.w700,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              children: const [
-                _InsightKeyDot(
-                  color: Color(0xFF7FB34D),
-                  label: 'Positive moments',
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                StreamBuilder<List<ConversationRecord>>(
+                  stream: state.conversationsForChildStream(
+                    childId: child.childId,
+                  ),
+                  builder: (context, snapshot) {
+                    final conversations = snapshot.data ?? [];
+                    return _glanceCard(
+                      label: 'Connections',
+                      value: '${conversations.length}',
+                      color: const Color(0xFF7FB34D),
+                    );
+                  },
                 ),
-                _InsightKeyDot(
-                  color: Color(0xFFE7C15A),
-                  label: 'Guidance moments',
+                _glanceCard(
+                  label: 'Pending',
+                  value: '$pendingCount',
+                  color: const Color(0xFF95C85A),
                 ),
-                _InsightKeyDot(
-                  color: Color(0xFF4599DD),
-                  label: 'Quiet-time moments',
+                _glanceCard(
+                  label: 'Quiet Time',
+                  value: quietTimeOn ? 'ON' : 'OFF',
+                  color: const Color(0xFF4599DD),
+                ),
+                _glanceCard(
+                  label: 'Signals',
+                  value: '$signalCount',
+                  color: const Color(0xFFA4CF58),
+                ),
+                _glanceCard(
+                  label: 'Level',
+                  value: 'Promise Keeper',
+                  color: const Color(0xFF6F9F44),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      Wrap(
+        spacing: 10,
+        runSpacing: 8,
+        children: const [
+          _InsightKeyDot(
+            color: Color(0xFF7FB34D),
+            label: 'Positive moments',
+          ),
+          _InsightKeyDot(
+            color: Color(0xFFE7C15A),
+            label: 'Guidance moments',
+          ),
+          _InsightKeyDot(
+            color: Color(0xFF4599DD),
+            label: 'Quiet-time moments',
+          ),
+        ],
       ),
     ],
   ),
 ),
 const SizedBox(height: 18),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-  color: const Color(0xFF21345C),
-  borderRadius: BorderRadius.circular(24),
-  border: Border.all(
-    color: Colors.white.withOpacity(0.10),
-  ),
-),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${child.name}’s journey',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Natter shows gentle signals to help you support your child — not to monitor them.',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.78),
-                        fontWeight: FontWeight.w700,
-                        height: 1.45,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),Container(
+      Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
