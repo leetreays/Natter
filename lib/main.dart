@@ -3733,50 +3733,7 @@ Widget _glanceCard({
     ],
   ),
 ),
-              const SizedBox(height: 18),
-              Center(
-  child: Wrap(
-    alignment: WrapAlignment.center,
-    spacing: 12,
-    runSpacing: 12,
-    children: [
-      StreamBuilder<List<ConversationRecord>>(
-        stream: state.conversationsForChildStream(
-          childId: child.childId,
-        ),
-        builder: (context, snapshot) {
-          final conversations = snapshot.data ?? [];
-          return _glanceCard(
-            label: 'Connections',
-            value: '${conversations.length}',
-            color: const Color(0xFF7FB34D),
-          );
-        },
-      ),
-      _glanceCard(
-        label: 'Pending',
-        value: '$pendingCount',
-        color: const Color(0xFF95C85A),
-      ),
-      _glanceCard(
-        label: 'Quiet Time',
-        value: quietTimeOn ? 'ON' : 'OFF',
-        color: const Color(0xFF4599DD),
-      ),
-      _glanceCard(
-        label: 'Signals',
-        value: '$signalCount',
-        color: const Color(0xFFA4CF58),
-      ),
-      _glanceCard(
-  label: 'Level',
-  value: 'Promise Keeper',
-  color: const Color(0xFF6F9F44),
-),
-    ],
-  ),
-),
-const SizedBox(height: 18),
+    const SizedBox(height: 18),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
