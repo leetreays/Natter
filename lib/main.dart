@@ -3652,10 +3652,11 @@ Widget _glanceCard({
       ),
       child: Container(
   color: const Color(0xFF0A3554),
-  child: ListView(
-    physics: const ClampingScrollPhysics(),
+  child: SingleChildScrollView(
     padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-    children: [
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
               Container(
                  padding: const EdgeInsets.all(24),
                  decoration: BoxDecoration(
@@ -4241,7 +4242,8 @@ StreamBuilder<List<ChildContactRequest>>(
         ],
       ),
     ),
-  );
+  ),
+);
 }
 }
 
