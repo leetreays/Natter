@@ -3862,131 +3862,120 @@ Widget _glanceCard({
   ),
 ),
 const SizedBox(height: 18),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Patterns',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...patterns.map((pattern) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '• ',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.85),
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            Expanded(
-                              child: Text(
-                                pattern,
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.78),
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Support ideas',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...suggestions.map((suggestion) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: NatterBrand.yellow.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: NatterBrand.yellow.withOpacity(0.32),
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(top: 1),
-                              child: Icon(
-                                Icons.lightbulb_rounded,
-                                color: NatterBrand.yellow,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                suggestion,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.45,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),             
-          const SizedBox(height: 18),
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
     color: const Color(0xFF21345C),
     borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Patterns',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 12),
+      ...patterns.map((pattern) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '• ',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  pattern,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    ],
+  ),
+),
+              const SizedBox(height: 18),
+            const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Support ideas',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 12),
+      ...suggestions.map((suggestion) {
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A426E),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(top: 1),
+                child: Icon(
+                  Icons.lightbulb_rounded,
+                  color: NatterBrand.yellow,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  suggestion,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w700,
+                    height: 1.45,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    ],
+  ),
+),
+const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: BoxDecoration(
+    color: const Color(0xFF21345C),
+    borderRadius: BorderRadius.circular(24),
   ),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -4003,7 +3992,7 @@ Container(
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: const Color(0xFF2A426E),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -4051,7 +4040,7 @@ Container(
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
+          color: const Color(0xFF2A426E),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -4098,7 +4087,7 @@ Container(
     ],
   ),
 ),
-
+      
 StreamBuilder<List<ChildContactRequest>>(
   stream: AppStateScope.of(context).incomingFriendRequestsForParentChildStream(
   parentId: FirebaseAuth.instance.currentUser!.uid,
