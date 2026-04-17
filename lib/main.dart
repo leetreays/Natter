@@ -3908,7 +3908,7 @@ Positioned(
       color: const Color(0xFF4599DD).withOpacity(0.04),
     ),
   ),
-)
+),
       Column(
         children: [
           Align(
