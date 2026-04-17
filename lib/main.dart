@@ -3688,15 +3688,15 @@ Widget _glanceCard({
         ),
       ],
     ),
-    Icon(
-  Icons.circle,
-  size: 10,
-  color: Colors.white.withOpacity(0.6),
-),
-const SizedBox(height: 6),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        Icon(
+          Icons.circle,
+          size: 10,
+          color: Colors.white.withOpacity(0.6),
+        ),
+        const SizedBox(height: 6),
         Text(
           label,
           textAlign: TextAlign.center,
@@ -3723,7 +3723,7 @@ const SizedBox(height: 6),
     ),
   );
 }
-
+  
 Map<String, double> _insightFractions(List<AlertEvent> signals) {
   final quietCount =
       signals.where((s) => s.type == AlertType.quietHours).length.toDouble();
