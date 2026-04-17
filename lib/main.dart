@@ -3787,6 +3787,30 @@ Widget _heroBadge({
     ),
   );
 }
+
+BoxDecoration _outerSectionDecoration() {
+  return BoxDecoration(
+    color: Colors.white.withOpacity(0.08),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+      width: 1,
+    ),
+  );
+}
+
+BoxDecoration _innerCardDecoration({
+  Color color = const Color(0xFF2A426E),
+}) {
+  return BoxDecoration(
+    color: color,
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.06),
+      width: 1,
+    ),
+  );
+}
   
  @override
   Widget build(BuildContext context) {
@@ -3957,9 +3981,7 @@ const SizedBox(height: 18),
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(22),
-  decoration: BoxDecoration(
-    color: const Color(0xFF243A66),
-    borderRadius: BorderRadius.circular(24),
+  decoration: _outerSectionDecoration(),
     boxShadow: [
       BoxShadow(
         color: Colors.black.withOpacity(0.12),
@@ -4076,10 +4098,7 @@ const SizedBox(height: 18),
       Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF223A66),
-    borderRadius: BorderRadius.circular(24),
-  ),
+  decoration: _outerSectionDecoration(),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -4106,20 +4125,18 @@ const SizedBox(height: 18),
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF304A78),
-              borderRadius: BorderRadius.circular(18),
-            ),
+            decoration: _innerCardDecoration(
+  color: const Color(0xFF304A78),
+),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 38,
                   height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF476792),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  decoration: _innerCardDecoration(
+  color: const Color(0xFF304A78),
+),
                   alignment: Alignment.center,
                   child: Icon(
                     _signalIcon(signal),
@@ -4171,10 +4188,7 @@ const SizedBox(height: 18),
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF1F3A61),
-    borderRadius: BorderRadius.circular(24),
-  ),
+  decoration: _outerSectionDecoration(),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -4222,10 +4236,7 @@ Container(
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF24385F),
-    borderRadius: BorderRadius.circular(24),
-  ),
+  decoration: _outerSectionDecoration(),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -4243,20 +4254,18 @@ Container(
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF32486A),
-            borderRadius: BorderRadius.circular(18),
-          ),
+          decoration: _innerCardDecoration(
+  color: const Color(0xFF32486A),
+),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
   width: 30,
   height: 30,
-  decoration: BoxDecoration(
-    color: const Color(0xFF5A5A2C),
-    borderRadius: BorderRadius.circular(999),
-  ),
+  decoration: _innerCardDecoration(
+  color: const Color(0xFF32486A),
+),
   alignment: Alignment.center,
   child: const Icon(
     Icons.lightbulb_rounded,
@@ -4286,10 +4295,7 @@ const SizedBox(height: 18),
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF20385F),
-    borderRadius: BorderRadius.circular(24),
-  ),
+  decoration: _outerSectionDecoration(),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -4305,10 +4311,9 @@ Container(
       const SizedBox(height: 14),
       Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C466F),
-          borderRadius: BorderRadius.circular(18),
-        ),
+        decoration: _innerCardDecoration(
+  color: const Color(0xFF2D466F),
+),
         child: Row(
           children: [
             const Icon(
@@ -4360,10 +4365,9 @@ Container(
       const SizedBox(height: 10),
       Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2C466F),
-          borderRadius: BorderRadius.circular(18),
-        ),
+        decoration: _innerCardDecoration(
+  color: const Color(0xFF2D466F),
+),
         child: Row(
           children: [
             const Icon(
@@ -4822,16 +4826,17 @@ class ParentSpaceBackground extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF041A2F),
-            Color(0xFF0B2E4A),
-            Color(0xFF0A4A73),
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+  gradient: LinearGradient(
+    colors: [
+      Color(0xFF061C31),
+      Color(0xFF0B2E4A),
+      Color(0xFF0D4970),
+      Color(0xFF0A3554),
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  ),
+),
       child: SafeArea(
         child: child,
       ),
