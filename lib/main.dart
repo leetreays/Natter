@@ -3854,14 +3854,26 @@ Widget _heroBadge({
   child: Stack(
     children: [
       Positioned(
-  top: -40,
-  right: -30,
+  top: -70,
+  right: -60,
   child: Container(
-    width: 220,
-    height: 220,
+    width: 260,
+    height: 260,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: const Color(0xFF9BCB58).withOpacity(0.06),
+      color: const Color(0xFF9BCB58).withOpacity(0.045),
+    ),
+  ),
+),
+Positioned(
+  bottom: -55,
+  left: -45,
+  child: Container(
+    width: 150,
+    height: 150,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: const Color(0xFF4599DD).withOpacity(0.05),
     ),
   ),
 ),
@@ -4403,6 +4415,7 @@ Container(
     ],
   ),
 ),
+const SizedBox(height: 18),        
       
 StreamBuilder<List<ChildContactRequest>>(
   stream: AppStateScope.of(context).incomingFriendRequestsForParentChildStream(
