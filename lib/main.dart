@@ -3859,26 +3859,25 @@ BoxDecoration _innerCardDecoration({
       children: [
               Container(
   padding: const EdgeInsets.all(26),
-  decoration: BoxDecoration(
-    gradient: const LinearGradient(
-  colors: [
-    Color(0xFF2D4678),
-    Color(0xFF1F3766),
-    Color(0xFF1B3159),
-  ],
-  begin: Alignment.topLeft,
-  end: Alignment.bottomRight,
-),
-    borderRadius: BorderRadius.circular(28),
-     [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.14),
-        blurRadius: 16,
-        offset: const Offset(0, 6),
-      ),
+ decoration: BoxDecoration(
+  gradient: const LinearGradient(
+    colors: [
+      Color(0xFF2D4678),
+      Color(0xFF1F3766),
+      Color(0xFF1B3159),
     ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   ),
-  child: Stack(
+  borderRadius: BorderRadius.circular(28),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.14),
+      blurRadius: 16,
+      offset: const Offset(0, 6),
+    ),
+  ],
+),  child: Stack(
     children: [
       Positioned(
   top: -70,
@@ -5487,17 +5486,17 @@ Expanded(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOut,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                 isOn
-                    ? [
-                        BoxShadow(
-                          color: NatterBrand.yellow.withOpacity(0.35),
-                          blurRadius: 16,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : [],
-              ),
+  borderRadius: BorderRadius.circular(16),
+  boxShadow: isOn
+      ? [
+          BoxShadow(
+            color: NatterBrand.yellow.withOpacity(0.35),
+            blurRadius: 16,
+            spreadRadius: 1,
+          ),
+        ]
+      : [],
+),
               child: ChoiceChip(
                 label: Text(
                   t,
@@ -5605,17 +5604,17 @@ AnimatedSwitcher(
   },
   child: Container(
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(999),
-       canContinue
-          ? [
-              BoxShadow(
-                color: NatterBrand.green.withOpacity(0.45),
-                blurRadius: 18,
-                spreadRadius: 1,
-              ),
-            ]
-          : [],
-    ),
+  borderRadius: BorderRadius.circular(999),
+  boxShadow: canContinue
+      ? [
+          BoxShadow(
+            color: NatterBrand.green.withOpacity(0.45),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+        ]
+      : [],
+),
     child: ElevatedButton(
       onPressed: canContinue ? _seal : null,
       style: ElevatedButton.styleFrom(
