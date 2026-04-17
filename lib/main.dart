@@ -3870,7 +3870,7 @@ BoxDecoration _innerCardDecoration({
   end: Alignment.bottomRight,
 ),
     borderRadius: BorderRadius.circular(28),
-    boxShadow: [
+     [
       BoxShadow(
         color: Colors.black.withOpacity(0.14),
         blurRadius: 16,
@@ -3985,15 +3985,7 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(22),
   decoration: _outerSectionDecoration(),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.12),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-  child: Column(
+    child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
@@ -5496,7 +5488,7 @@ Expanded(
               curve: Curves.easeOut,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: isOn
+                 isOn
                     ? [
                         BoxShadow(
                           color: NatterBrand.yellow.withOpacity(0.35),
@@ -5614,7 +5606,7 @@ AnimatedSwitcher(
   child: Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(999),
-      boxShadow: canContinue
+       canContinue
           ? [
               BoxShadow(
                 color: NatterBrand.green.withOpacity(0.45),
