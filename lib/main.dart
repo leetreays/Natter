@@ -3675,16 +3675,16 @@ Widget _glanceCard({
 }) {
   return Container(
     width: 150,
-    height: 104,
-    padding: const EdgeInsets.all(18),
+    height: 96,
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     decoration: BoxDecoration(
       color: color,
       borderRadius: BorderRadius.circular(22),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.18),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+          color: Colors.black.withOpacity(0.14),
+          blurRadius: 8,
+          offset: const Offset(0, 3),
         ),
       ],
     ),
@@ -3695,12 +3695,12 @@ Widget _glanceCard({
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.88),
+            color: Colors.white.withOpacity(0.92),
             fontWeight: FontWeight.w800,
-            fontSize: 13,
+            fontSize: 12,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         Text(
           value,
           textAlign: TextAlign.center,
@@ -3709,7 +3709,7 @@ Widget _glanceCard({
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
-            fontSize: 17,
+            fontSize: 16,
             height: 1.1,
           ),
         ),
@@ -3766,8 +3766,29 @@ String _insightHeadline(List<AlertEvent> signals) {
 
   return 'A mix of positive moments and gentle guidance.';
 }
+
+Widget _heroBadge({
+  required String text,
+  required Color color,
+}) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w800,
+        fontSize: 12,
+      ),
+    ),
+  );
+}
   
-  @override
+ @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     final signals = _signalsForChild(state);
@@ -3846,26 +3867,23 @@ String _insightHeadline(List<AlertEvent> signals) {
       Column(
         children: [
           Align(
-            alignment: Alignment.topCenter,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3F5F3A),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: const Text(
-                'Growing well',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ),
+  alignment: Alignment.topCenter,
+  child: Wrap(
+    alignment: WrapAlignment.center,
+    spacing: 10,
+    runSpacing: 8,
+    children: [
+      _heroBadge(
+        text: 'Growing well',
+        color: const Color(0xFF3F5F3A),
+      ),
+      _heroBadge(
+        text: 'Promise Keeper',
+        color: const Color(0xFF6F9F44),
+      ),
+    ],
+  ),
+),
           const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(4),
@@ -3958,72 +3976,90 @@ Container(
         ),
       ),
       const SizedBox(height: 18),
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            height: 120,
-            child: CustomPaint(
-              painter: _InsightDonutPainter(
-                positiveFraction: insight['positive']!,
-                guidanceFraction: insight['guidance']!,
-                quietFraction: insight['quiet']!,
-              ),
-              child: const Center(
-                child: Icon(
-                  Icons.insights_rounded,
-                  color: Colors.white,
-                  size: 30,
-                ),
+      Center(
+        child: SizedBox(
+          width: 150,
+          height: 150,
+          child: CustomPaint(
+            painter: _InsightDonutPainter(
+              positiveFraction: insight['positive']!,
+              guidanceFraction: insight['guidance']!,
+              quietFraction: insight['quiet']!,
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.insights_rounded,
+                color: Colors.white,
+                size: 34,
               ),
             ),
           ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                StreamBuilder<List<ConversationRecord>>(
-                  stream: state.conversationsForChildStream(
-                    childId: child.childId,
-                  ),
-                  builder: (context, snapshot) {
-                    final conversations = snapshot.data ?? [];
-                    return _glanceCard(
-                      label: 'Connections',
-                      value: '${conversations.length}',
-                      color: const Color(0xFF7FB34D),
-                    );
-                  },
-                ),
-                _glanceCard(
-                  label: 'Pending',
-                  value: '$pendingCount',
-                  color: const Color(0xFF95C85A),
-                ),
-                _glanceCard(
-                  label: 'Quiet Time',
-                  value: quietTimeOn ? 'ON' : 'OFF',
-                  color: const Color(0xFF4599DD),
-                ),
-                _glanceCard(
-                  label: 'Signals',
-                  value: '$signalCount',
-                  color: const Color(0xFFA4CF58),
-                ),
-                _glanceCard(
-                  label: 'Level',
-                  value: 'Promise Keeper',
-                  color: const Color(0xFF6F9F44),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 14),
+      Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 8,
+          children: const [
+            _InsightKeyDot(
+              color: Color(0xFF7FB34D),
+              label: 'Positive moments',
+            ),
+            _InsightKeyDot(
+              color: Color(0xFFE7C15A),
+              label: 'Guidance moments',
+            ),
+            _InsightKeyDot(
+              color: Color(0xFF4599DD),
+              label: 'Quiet-time moments',
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 18),
+      Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            StreamBuilder<List<ConversationRecord>>(
+              stream: state.conversationsForChildStream(
+                childId: child.childId,
+              ),
+              builder: (context, snapshot) {
+                final conversations = snapshot.data ?? [];
+                return _glanceCard(
+                  label: 'Connections',
+                  value: '${conversations.length}',
+                  color: const Color(0xFF7FB34D),
+                );
+              },
+            ),
+            _glanceCard(
+              label: 'Pending',
+              value: '$pendingCount',
+              color: const Color(0xFF95C85A),
+            ),
+            _glanceCard(
+              label: 'Quiet Time',
+              value: quietTimeOn ? 'ON' : 'OFF',
+              color: const Color(0xFF4599DD),
+            ),
+            _glanceCard(
+              label: 'Signals',
+              value: '$signalCount',
+              color: const Color(0xFFA4CF58),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 18),
       Wrap(
         spacing: 10,
         runSpacing: 8,
