@@ -3788,7 +3788,9 @@ Widget _heroBadge({
   );
 }
 
-BoxDecoration _outerSectionDecoration() {
+BoxDecoration _outerSectionDecoration({
+  List<BoxShadow>? boxShadow,
+}) {
   return BoxDecoration(
     color: Colors.white.withOpacity(0.08),
     borderRadius: BorderRadius.circular(24),
@@ -3796,6 +3798,7 @@ BoxDecoration _outerSectionDecoration() {
       color: Colors.white.withOpacity(0.10),
       width: 1,
     ),
+    boxShadow: boxShadow,
   );
 }
 
