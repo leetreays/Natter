@@ -4060,29 +4060,6 @@ Container(
   ),
 ),
 const SizedBox(height: 18),
-      
-      Wrap(
-        spacing: 10,
-        runSpacing: 8,
-        children: const [
-          _InsightKeyDot(
-            color: Color(0xFF7FB34D),
-            label: 'Positive moments',
-          ),
-          _InsightKeyDot(
-            color: Color(0xFFE7C15A),
-            label: 'Guidance moments',
-          ),
-          _InsightKeyDot(
-            color: Color(0xFF4599DD),
-            label: 'Quiet-time moments',
-          ),
-        ],
-      ),
-    ],
-  ),
-),
-const SizedBox(height: 18),
       Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
