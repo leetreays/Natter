@@ -3688,6 +3688,12 @@ Widget _glanceCard({
         ),
       ],
     ),
+    Icon(
+  Icons.circle,
+  size: 10,
+  color: Colors.white.withOpacity(0.6),
+),
+const SizedBox(height: 6),
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -3880,29 +3886,29 @@ BoxDecoration _innerCardDecoration({
 ),  child: Stack(
     children: [
       Positioned(
-  top: -70,
-  right: -60,
+  top: -90,
+  right: -80,
   child: Container(
-    width: 260,
-    height: 260,
+    width: 320,
+    height: 320,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: const Color(0xFF9BCB58).withOpacity(0.045),
+      color: const Color(0xFF9BCB58).withOpacity(0.035),
     ),
   ),
 ),
 Positioned(
-  bottom: -55,
-  left: -45,
+  bottom: -70,
+  left: -60,
   child: Container(
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: const Color(0xFF4599DD).withOpacity(0.05),
+      color: const Color(0xFF4599DD).withOpacity(0.04),
     ),
   ),
-),
+)
       Column(
         children: [
           Align(
@@ -4004,7 +4010,7 @@ Container(
           height: 1.4,
         ),
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: 16),
       Center(
         child: SizedBox(
           width: 150,
@@ -4047,7 +4053,7 @@ Container(
           ],
         ),
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: 16),
       Center(
         child: Wrap(
           alignment: WrapAlignment.center,
