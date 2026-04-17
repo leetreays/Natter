@@ -3834,13 +3834,14 @@ Widget _heroBadge({
   padding: const EdgeInsets.all(26),
   decoration: BoxDecoration(
     gradient: const LinearGradient(
-      colors: [
-        Color(0xFF29406F),
-        Color(0xFF1C325D),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
+  colors: [
+    Color(0xFF2D4678),
+    Color(0xFF1F3766),
+    Color(0xFF1B3159),
+  ],
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+),
     borderRadius: BorderRadius.circular(28),
     boxShadow: [
       BoxShadow(
@@ -3853,17 +3854,17 @@ Widget _heroBadge({
   child: Stack(
     children: [
       Positioned(
-        top: -18,
-        right: -8,
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: NatterBrand.green.withOpacity(0.08),
-          ),
-        ),
-      ),
+  top: -40,
+  right: -30,
+  child: Container(
+    width: 220,
+    height: 220,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: const Color(0xFF9BCB58).withOpacity(0.06),
+    ),
+  ),
+),
       Column(
         children: [
           Align(
@@ -3945,7 +3946,7 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(22),
   decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
+    color: const Color(0xFF243A66),
     borderRadius: BorderRadius.circular(24),
     boxShadow: [
       BoxShadow(
@@ -4064,7 +4065,7 @@ const SizedBox(height: 18),
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
+    color: const Color(0xFF223A66),
     borderRadius: BorderRadius.circular(24),
   ),
   child: Column(
@@ -4073,10 +4074,11 @@ const SizedBox(height: 18),
       const Text(
         'Recent signals',
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
+  color: Colors.white,
+  fontSize: 20,
+  fontWeight: FontWeight.w900,
+  letterSpacing: 0.2,
+),
       ),
       const SizedBox(height: 12),
       if (signals.isEmpty)
@@ -4093,7 +4095,7 @@ const SizedBox(height: 18),
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF2A426E),
+              color: const Color(0xFF304A78),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Row(
@@ -4103,7 +4105,7 @@ const SizedBox(height: 18),
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4A6D9B),
+                    color: const Color(0xFF476792),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   alignment: Alignment.center,
@@ -4158,7 +4160,7 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
+    color: const Color(0xFF1F3A61),
     borderRadius: BorderRadius.circular(24),
   ),
   child: Column(
@@ -4167,10 +4169,11 @@ Container(
       const Text(
         'Patterns',
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
+  color: Colors.white,
+  fontSize: 20,
+  fontWeight: FontWeight.w900,
+  letterSpacing: 0.2,
+),
       ),
       const SizedBox(height: 12),
       ...patterns.map((pattern) {
@@ -4208,7 +4211,7 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
+    color: const Color(0xFF24385F),
     borderRadius: BorderRadius.circular(24),
   ),
   child: Column(
@@ -4217,10 +4220,11 @@ Container(
       const Text(
         'Support ideas',
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
+  color: Colors.white,
+  fontSize: 20,
+  fontWeight: FontWeight.w900,
+  letterSpacing: 0.2,
+),
       ),
       const SizedBox(height: 12),
       ...suggestions.map((suggestion) {
@@ -4228,23 +4232,29 @@ Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF2A426E),
+            color: const Color(0xFF32486A),
             borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(top: 1),
-                child: Icon(
-                  Icons.lightbulb_rounded,
-                  color: NatterBrand.yellow,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
+              Container(
+  width: 30,
+  height: 30,
+  decoration: BoxDecoration(
+    color: const Color(0xFF5A5A2C),
+    borderRadius: BorderRadius.circular(999),
+  ),
+  alignment: Alignment.center,
+  child: const Icon(
+    Icons.lightbulb_rounded,
+    color: NatterBrand.yellow,
+    size: 16,
+  ),
+),
+const SizedBox(width: 10),
+Expanded(
+  child: Text(
                   suggestion,
                   style: const TextStyle(
                     color: Colors.white70,
@@ -4265,7 +4275,7 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
+    color: const Color(0xFF20385F),
     borderRadius: BorderRadius.circular(24),
   ),
   child: Column(
@@ -4274,16 +4284,17 @@ Container(
       const Text(
         'Support tools',
         style: TextStyle(
-          color: Colors.white,
-          fontSize: 20,
-          fontWeight: FontWeight.w900,
-        ),
+  color: Colors.white,
+  fontSize: 20,
+  fontWeight: FontWeight.w900,
+  letterSpacing: 0.2,
+),
       ),
       const SizedBox(height: 14),
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A426E),
+          color: const Color(0xFF2C466F),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -4322,7 +4333,14 @@ Container(
                   calmRoute(const DigitalReadinessReportScreen()),
                 );
               },
-              child: const Text('Open'),
+              child: const Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Text('Open'),
+    SizedBox(width: 4),
+    Icon(Icons.chevron_right, size: 18),
+  ],
+),
             ),
           ],
         ),
@@ -4331,7 +4349,7 @@ Container(
       Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2A426E),
+          color: const Color(0xFF2C466F),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -4370,7 +4388,14 @@ Container(
                   calmRoute(const ParentRulesScreen()),
                 );
               },
-              child: const Text('Open'),
+              child: const Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    Text('Open'),
+    SizedBox(width: 4),
+    Icon(Icons.chevron_right, size: 18),
+  ],
+),
             ),
           ],
         ),
