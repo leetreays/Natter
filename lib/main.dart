@@ -3668,6 +3668,24 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   return suggestions;
 }
 
+String _weeklyTone({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  final total = quiet + guidance + connection;
+
+  if (total == 0) return 'calm';
+
+  if (quiet > guidance && quiet >= 2) return 'restless';
+
+  if (guidance >= 2) return 'learning';
+
+  if (connection >= 2 && guidance == 0 && quiet == 0) return 'positive';
+
+  return 'mixed';
+}
+
 Widget _glanceCard({
   required String label,
   required String value,
@@ -3751,27 +3769,34 @@ Map<String, double> _insightFractions(List<AlertEvent> signals) {
   };
 }
 
-String _insightHeadline(List<AlertEvent> signals) {
-  final quietCount =
-      signals.where((s) => s.type == AlertType.quietHours).length;
-  final guidanceCount = signals
-      .where((s) =>
-          s.type == AlertType.blockedWord || s.type == AlertType.safetyCoach)
-      .length;
+String _insightHeadline({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  final tone = _weeklyTone(
+    quiet: quiet,
+    guidance: guidance,
+    connection: connection,
+  );
 
-  if (quietCount == 0 && guidanceCount == 0) {
-    return 'Things have felt calm this week.';
+  switch (tone) {
+    case 'calm':
+      return 'Things have felt calm this week.';
+
+    case 'positive':
+      return 'Lots of positive connection moments this week.';
+
+    case 'learning':
+      return 'A few moments of learning and guidance came up.';
+
+    case 'restless':
+      return 'A slightly unsettled rhythm this week.';
+
+    case 'mixed':
+    default:
+      return 'A mix of different moments this week.';
   }
-
-  if (guidanceCount > 0 && quietCount == 0) {
-    return 'Mostly positive, with a few guidance moments.';
-  }
-
-  if (quietCount > 0 && guidanceCount == 0) {
-    return 'Mostly steady, with a few quiet-time moments.';
-  }
-
-  return 'A mix of positive moments and gentle guidance.';
 }
 
 Widget _heroBadge({
@@ -3793,6 +3818,93 @@ Widget _heroBadge({
       ),
     ),
   );
+}
+
+String _weeklyTone({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  final total = quiet + guidance + connection;
+
+  if (total == 0) return 'calm';
+
+  if (quiet > guidance && quiet >= 2) return 'restless';
+
+  if (guidance >= 2) return 'learning';
+
+  if (connection >= 2 && guidance == 0 && quiet == 0) return 'positive';
+
+  return 'mixed';
+}
+
+String _insightHeadline({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  final tone = _weeklyTone(
+    quiet: quiet,
+    guidance: guidance,
+    connection: connection,
+  );
+
+  switch (tone) {
+    case 'calm':
+      return 'Things have felt calm this week.';
+    case 'positive':
+      return 'Lots of positive connection moments this week.';
+    case 'learning':
+      return 'A few moments of learning and guidance came up.';
+    case 'restless':
+      return 'A slightly unsettled rhythm this week.';
+    case 'mixed':
+    default:
+      return 'A mix of different moments this week.';
+  }
+}
+
+Map<String, double> _buildInsightFractions({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  final total = quiet + guidance + connection;
+
+  if (total == 0) {
+    return {
+      'positive': 1,
+      'guidance': 0,
+      'quiet': 0,
+    };
+  }
+
+  return {
+    'positive': connection / total,
+    'guidance': guidance / total,
+    'quiet': quiet / total,
+  };
+}
+
+List<String> _supportIdeas({
+  required int quiet,
+  required int guidance,
+}) {
+  final ideas = <String>[];
+
+  if (quiet > 0) {
+    ideas.add('You might talk together about winding down before bed.');
+  }
+
+  if (guidance > 0) {
+    ideas.add('Your child may be learning how to handle tricky messages.');
+  }
+
+  if (ideas.isEmpty) {
+    ideas.add('Things seem steady — a gentle check-in can still help.');
+  }
+
+  return ideas;
 }
 
 BoxDecoration _outerSectionDecoration({
@@ -3825,19 +3937,41 @@ BoxDecoration _innerCardDecoration({
  @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final signals = _signalsForChild(state);
-    final patterns = _patternsForChild(signals);
-    final suggestions = _supportSuggestionsForChild(signals);
-    final insight = _insightFractions(signals);
-    final insightHeadline = _insightHeadline(signals);
+final signals = _signalsForChild(state);
 
-    final pendingCount = signals
-    .where((s) => s.type == AlertType.contactRequest)
-    .length;
+final quietCount =
+    signals.where((s) => s.type == AlertType.quietHours).length;
+final guidanceCount =
+    signals.where((s) => s.type == AlertType.blockedWord).length;
+final connectionCount =
+    signals.where((s) => s.type == AlertType.contactRequest).length;
 
-    final signalCount = signals.length;
+final patterns = _patternsForChild(signals);
 
-    final quietTimeOn = state.quietHoursEnabled;
+final insightHeadline = _insightHeadline(
+  quiet: quietCount,
+  guidance: guidanceCount,
+  connection: connectionCount,
+);
+
+final insight = _buildInsightFractions(
+  quiet: quietCount,
+  guidance: guidanceCount,
+  connection: connectionCount,
+);
+
+final suggestions = _supportIdeas(
+  quiet: quietCount,
+  guidance: guidanceCount,
+);
+
+final pendingCount = connectionCount;
+final signalCount = signals.length;
+final quietTimeOn = state.quietHoursEnabled;
+
+    final pendingCount = connectionCount;
+final signalCount = signals.length;
+final quietTimeOn = state.quietHoursEnabled;
 
     return ParentBrandScaffold(
       appBar: AppBar(
