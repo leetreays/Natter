@@ -4014,7 +4014,7 @@ Container(
       const SizedBox(height: 8),
       Text(
         insightHeadline,
-        style: const TextStyle(
+        style: TextStyle(
           color: Colors.white.withOpacity(0.78),
           fontWeight: FontWeight.w700,
           height: 1.4,
@@ -4127,7 +4127,7 @@ const SizedBox(height: 18),
       ),
       const SizedBox(height: 12),
       if (signals.isEmpty)
-        const Text(
+       Text(
           'No gentle signals have been logged recently.',
           style: TextStyle(
             color: Colors.white.withOpacity(0.78),
@@ -4173,7 +4173,7 @@ const SizedBox(height: 18),
                       const SizedBox(height: 4),
                       Text(
                         _signalMessage(signal),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white.withOpacity(0.78),
                           fontWeight: FontWeight.w700,
                           height: 1.4,
@@ -4222,7 +4222,7 @@ Container(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+             Text(
                 '• ',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.78),
@@ -4232,7 +4232,7 @@ Container(
               Expanded(
                 child: Text(
                   pattern,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white.withOpacity(0.78),
                     fontWeight: FontWeight.w700,
                     height: 1.4,
@@ -4291,7 +4291,7 @@ const SizedBox(width: 10),
 Expanded(
   child: Text(
                   suggestion,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white.withOpacity(0.78),
                     fontWeight: FontWeight.w700,
                     height: 1.45,
@@ -4535,7 +4535,7 @@ StreamBuilder<List<ChildContactRequest>>(
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                         Text(
                             'Wants to add this child as a friend',
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.78),
@@ -4568,7 +4568,7 @@ StreamBuilder<List<ChildContactRequest>>(
                           requestId: request.id,
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         'Block',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.78),
