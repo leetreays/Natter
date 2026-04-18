@@ -3602,8 +3602,11 @@ List<AlertEvent> _signalsForChild(AppState state) {
 List<String> _patternsForChild(List<AlertEvent> signals) {
   final quietHoursCount =
       signals.where((s) => s.type == AlertType.quietHours).length;
-  final trickyMessageCount =
-      signals.where((s) => s.type == AlertType.blockedWord).length;
+  final trickyMessageCount = signals
+    .where((s) =>
+        s.type == AlertType.blockedWord ||
+        s.type == AlertType.safetyCoach)
+    .length;
   final connectionCount =
       signals.where((s) => s.type == AlertType.contactRequest).length;
 
@@ -3643,8 +3646,11 @@ List<String> _patternsForChild(List<AlertEvent> signals) {
 List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   final quietHoursCount =
       signals.where((s) => s.type == AlertType.quietHours).length;
-  final trickyMessageCount =
-      signals.where((s) => s.type == AlertType.blockedWord).length;
+  final trickyMessageCount = signals
+    .where((s) =>
+        s.type == AlertType.blockedWord ||
+        s.type == AlertType.safetyCoach)
+    .length;
 
   final suggestions = <String>[];
 
