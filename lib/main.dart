@@ -3857,13 +3857,11 @@ BoxDecoration _innerCardDecoration({
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      child: Container(
-  color: const Color(0xFF0A3554),
-  child: SingleChildScrollView(
-    padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+      child: SingleChildScrollView(
+  padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
               Container(
   padding: const EdgeInsets.all(26),
  decoration: BoxDecoration(
