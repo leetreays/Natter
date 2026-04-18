@@ -3591,7 +3591,8 @@ List<AlertEvent> _signalsForChild(AppState state) {
         // Keep quiet-hours and message-care style signals visible at child level
         // even when older events were logged without child names.
         return event.type == AlertType.quietHours ||
-            event.type == AlertType.blockedWord;
+    event.type == AlertType.blockedWord ||
+    event.type == AlertType.safetyCoach;
       })
       .toList()
       .reversed
@@ -3893,8 +3894,11 @@ final signals = _signalsForChild(state);
 
 final quietCount =
     signals.where((s) => s.type == AlertType.quietHours).length;
-final guidanceCount =
-    signals.where((s) => s.type == AlertType.blockedWord).length;
+final guidanceCount = signals
+    .where((s) =>
+        s.type == AlertType.blockedWord ||
+        s.type == AlertType.safetyCoach)
+    .length;
 final connectionCount =
     signals.where((s) => s.type == AlertType.contactRequest).length;
 
