@@ -3668,24 +3668,6 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   return suggestions;
 }
 
-String _weeklyTone({
-  required int quiet,
-  required int guidance,
-  required int connection,
-}) {
-  final total = quiet + guidance + connection;
-
-  if (total == 0) return 'calm';
-
-  if (quiet > guidance && quiet >= 2) return 'restless';
-
-  if (guidance >= 2) return 'learning';
-
-  if (connection >= 2 && guidance == 0 && quiet == 0) return 'positive';
-
-  return 'mixed';
-}
-
 Widget _glanceCard({
   required String label,
   required String value,
@@ -3767,36 +3749,6 @@ Map<String, double> _insightFractions(List<AlertEvent> signals) {
     'guidance': guidanceCount / total,
     'quiet': quietCount / total,
   };
-}
-
-String _insightHeadline({
-  required int quiet,
-  required int guidance,
-  required int connection,
-}) {
-  final tone = _weeklyTone(
-    quiet: quiet,
-    guidance: guidance,
-    connection: connection,
-  );
-
-  switch (tone) {
-    case 'calm':
-      return 'Things have felt calm this week.';
-
-    case 'positive':
-      return 'Lots of positive connection moments this week.';
-
-    case 'learning':
-      return 'A few moments of learning and guidance came up.';
-
-    case 'restless':
-      return 'A slightly unsettled rhythm this week.';
-
-    case 'mixed':
-    default:
-      return 'A mix of different moments this week.';
-  }
 }
 
 Widget _heroBadge({
@@ -3966,10 +3918,6 @@ final suggestions = _supportIdeas(
 );
 
 final pendingCount = connectionCount;
-final signalCount = signals.length;
-final quietTimeOn = state.quietHoursEnabled;
-
-    final pendingCount = connectionCount;
 final signalCount = signals.length;
 final quietTimeOn = state.quietHoursEnabled;
 
