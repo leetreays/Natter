@@ -4335,7 +4335,7 @@ Container(
               color: NatterBrand.yellow,
             ),
             const SizedBox(width: 12),
-            const Expanded(
+           Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -4389,7 +4389,7 @@ Container(
               color: NatterBrand.blue,
             ),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
