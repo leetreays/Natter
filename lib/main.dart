@@ -3672,6 +3672,7 @@ Widget _glanceCard({
   required String label,
   required String value,
   required Color color,
+  required IconData icon,
 }) {
   return Container(
     width: 150,
@@ -3692,7 +3693,7 @@ Widget _glanceCard({
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          Icons.circle,
+          icon,
           size: 10,
           color: Colors.white.withOpacity(0.6),
         ),
@@ -3952,6 +3953,15 @@ Positioned(
               ),
             ),
           ),
+          const SizedBox(height: 6),
+Text(
+  'A gentle view of progress and behaviour',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.65),
+    fontWeight: FontWeight.w600,
+    fontSize: 13,
+  ),
+),
           const SizedBox(height: 14),
           const Text(
             'Digital journey',
@@ -4005,7 +4015,7 @@ Container(
       Text(
         insightHeadline,
         style: const TextStyle(
-          color: Colors.white70,
+          color: Colors.white.withOpacity(0.78),
           fontWeight: FontWeight.w700,
           height: 1.4,
         ),
@@ -4070,6 +4080,7 @@ Container(
                   label: 'Connections',
                   value: '${conversations.length}',
                   color: const Color(0xFF7FB34D),
+                  icon: Icons.people_alt_rounded,
                 );
               },
             ),
@@ -4077,16 +4088,19 @@ Container(
               label: 'Pending',
               value: '$pendingCount',
               color: const Color(0xFF95C85A),
+              icon: Icons.hourglass_top_rounded,
             ),
             _glanceCard(
               label: 'Quiet Time',
               value: quietTimeOn ? 'ON' : 'OFF',
               color: const Color(0xFF4599DD),
+              icon: Icons.nightlight_round
             ),
             _glanceCard(
               label: 'Signals',
               value: '$signalCount',
               color: const Color(0xFFA4CF58),
+              icon: Icons.insights_rounded,
             ),
           ],
         ),
@@ -4116,7 +4130,7 @@ const SizedBox(height: 18),
         const Text(
           'No gentle signals have been logged recently.',
           style: TextStyle(
-            color: Colors.white70,
+            color: Colors.white.withOpacity(0.78),
             fontWeight: FontWeight.w700,
           ),
         )
@@ -4160,7 +4174,7 @@ const SizedBox(height: 18),
                       Text(
                         _signalMessage(signal),
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white.withOpacity(0.78),
                           fontWeight: FontWeight.w700,
                           height: 1.4,
                         ),
@@ -4211,7 +4225,7 @@ Container(
               const Text(
                 '• ',
                 style: TextStyle(
-                  color: Colors.white70,
+                  color: Colors.white.withOpacity(0.78),
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -4219,7 +4233,7 @@ Container(
                 child: Text(
                   pattern,
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white.withOpacity(0.78),
                     fontWeight: FontWeight.w700,
                     height: 1.4,
                   ),
@@ -4278,7 +4292,7 @@ Expanded(
   child: Text(
                   suggestion,
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white.withOpacity(0.78),
                     fontWeight: FontWeight.w700,
                     height: 1.45,
                   ),
@@ -4336,7 +4350,7 @@ Container(
                   Text(
                     'See how your child is developing over time.',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Colors.white.withOpacity(0.78),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -4390,7 +4404,7 @@ Container(
                   Text(
                     'Review family settings and gentle safeguards.',
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: Colors.white.withOpacity(0.78),
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -4524,7 +4538,7 @@ StreamBuilder<List<ChildContactRequest>>(
                           const Text(
                             'Wants to add this child as a friend',
                             style: TextStyle(
-                              color: Colors.white70,
+                              color: Colors.white.withOpacity(0.78),
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
                             ),
@@ -4557,7 +4571,7 @@ StreamBuilder<List<ChildContactRequest>>(
                       child: const Text(
                         'Block',
                         style: TextStyle(
-                          color: Colors.white70,
+                          color: Colors.white.withOpacity(0.78),
                           fontWeight: FontWeight.w800,
                         ),
                       ),
