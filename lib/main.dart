@@ -4584,7 +4584,6 @@ StreamBuilder<List<ChildContactRequest>>(
   },
 ),
         ],
-      ),
     ),
   ),
 );
