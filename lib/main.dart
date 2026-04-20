@@ -9088,21 +9088,19 @@ void _showStallRescue() {
 bool _didInitialChatScroll = false;
 
 void _scrollToBottom({bool animated = true}) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!_scrollController.hasClients) return;
+  if (!_scrollController.hasClients) return;
 
-    final target = _scrollController.position.maxScrollExtent;
+  final target = _scrollController.position.maxScrollExtent;
 
-    if (animated) {
-      _scrollController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    } else {
-      _scrollController.jumpTo(target);
-    }
-  });
+  if (animated) {
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+    );
+  } else {
+    _scrollController.jumpTo(target);
+  }
 }
 
   void _startStallTimer() {
@@ -9317,11 +9315,7 @@ if (isBlockedByMe || isBlockedByOther) {
         }
 
         await _sendMessageNow(text, flagged: true);
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          _scrollToBottom();
-        });
+        
       } else {
         state.recordKindRewrite();
         state.addFriendshipPoints(widget.contactName, 3);
@@ -9333,11 +9327,6 @@ if (isBlockedByMe || isBlockedByOther) {
     }
 
     await _sendMessageNow(text);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _scrollToBottom();
-    });
   }
 
   @override
@@ -9367,6 +9356,15 @@ if (isBlockedByMe || isBlockedByOther) {
     }
     return null;
   }
+
+  bool _isNearBottom() {
+  if (!_scrollController.hasClients) return true;
+
+  final position = _scrollController.position;
+  final distanceFromBottom = position.maxScrollExtent - position.pixels;
+
+  return distanceFromBottom < 80;
+}
   
   @override
   Widget build(BuildContext context) {
@@ -9587,19 +9585,28 @@ final isBlockedByOther =
     );
   }
 
-  final firestoreMessages = snapshot.data ?? [];
+ final firestoreMessages = snapshot.data ?? [];
 
 final hasNewMessage = firestoreMessages.length != _lastMessageCount;
 
-if (firestoreMessages.isNotEmpty && (!_didInitialChatScroll || hasNewMessage)) {
+if (firestoreMessages.isNotEmpty && !_didInitialChatScroll) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || !_scrollController.hasClients) return;
-    _scrollToBottom(animated: _didInitialChatScroll);
+    _scrollToBottom(animated: false);
     _didInitialChatScroll = true;
     _lastMessageCount = firestoreMessages.length;
   });
-}
+} else if (firestoreMessages.isNotEmpty && hasNewMessage) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted || !_scrollController.hasClients) return;
 
+    if (_isNearBottom()) {
+      _scrollToBottom(animated: false);
+    }
+
+    _lastMessageCount = firestoreMessages.length;
+  });
+}
             return ListView.builder(
         controller: _scrollController,
         reverse: false,
