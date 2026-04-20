@@ -3577,7 +3577,30 @@ String _signalMessage(AlertEvent event) {
 }
 
 String _softWhen(AlertEvent event) {
-  return 'Recently';
+  final now = DateTime.now();
+  final difference = now.difference(event.time);
+
+  if (difference.inMinutes < 5) {
+    return 'Just now';
+  }
+
+  if (difference.inMinutes < 60) {
+    return 'Earlier today';
+  }
+
+  if (difference.inHours < 24) {
+    return 'Today';
+  }
+
+  if (difference.inHours < 48) {
+    return 'Yesterday';
+  }
+
+  if (difference.inDays < 7) {
+    return 'Recently';
+  }
+
+  return 'Last week';
 }
 
 List<AlertEvent> _signalsForChild(AppState state) {
