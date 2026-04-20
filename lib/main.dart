@@ -8799,6 +8799,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
+  int _lastMessageCount = 0;
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
     required String reason,
@@ -9299,34 +9300,44 @@ if (isBlockedByMe || isBlockedByOther) {
       if (!mounted) return;
 
       if (sendAnyway) {
-  state.recordCoachedMessageSentAnyway();
+        state.recordCoachedMessageSentAnyway();
 
-  if (state.alertsSafetyCoach) {
-    state.addAlert(AlertEvent(
-      type: AlertType.safetyCoach,
-      message:
-          'A coached message was sent anyway to ${widget.contactName}.',
-    ));
+        if (state.alertsSafetyCoach) {
+          state.addAlert(AlertEvent(
+            type: AlertType.safetyCoach,
+            message:
+                'A coached message was sent anyway to ${widget.contactName}.',
+          ));
 
-    state.addAlert(AlertEvent(
-      type: AlertType.safetyCoach,
-      message:
-          '${widget.contactName} received a potentially unkind message.',
-    ));
-  }
+          state.addAlert(AlertEvent(
+            type: AlertType.safetyCoach,
+            message:
+                '${widget.contactName} received a potentially unkind message.',
+          ));
+        }
 
-  await _sendMessageNow(text, flagged: true);
-} else {
-  state.recordKindRewrite();
-  state.addFriendshipPoints(widget.contactName, 3);
-  setState(() {
-    feedback = 'Nice pause. Try rewriting your message kindly 💛';
-  });
+        await _sendMessageNow(text, flagged: true);
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _scrollToBottom();
+        });
+      } else {
+        state.recordKindRewrite();
+        state.addFriendshipPoints(widget.contactName, 3);
+        setState(() {
+          feedback = 'Nice pause. Try rewriting your message kindly 💛';
+        });
       }
       return;
     }
 
     await _sendMessageNow(text);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scrollToBottom();
+    });
   }
 
   @override
@@ -9578,9 +9589,15 @@ final isBlockedByOther =
 
   final firestoreMessages = snapshot.data ?? [];
 
-      if (firestoreMessages.isNotEmpty && !_didInitialChatScroll) {
-  _didInitialChatScroll = true;
-  _scrollToBottom(animated: false);
+final hasNewMessage = firestoreMessages.length != _lastMessageCount;
+
+if (firestoreMessages.isNotEmpty && (!_didInitialChatScroll || hasNewMessage)) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted || !_scrollController.hasClients) return;
+    _scrollToBottom(animated: _didInitialChatScroll);
+    _didInitialChatScroll = true;
+    _lastMessageCount = firestoreMessages.length;
+  });
 }
 
             return ListView.builder(
