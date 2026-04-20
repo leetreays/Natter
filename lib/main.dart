@@ -942,7 +942,7 @@ Stream<List<Map<String, dynamic>>> conversationMessagesStream(
   String conversationId,
 ) async* {
   yield* conversationMessagesRef(conversationId)
-      .orderBy('createdAt')
+      .orderBy('createdAt', descending: true)
       .snapshots()
       .map(
         (snapshot) => snapshot.docs.map((doc) {
@@ -8799,7 +8799,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
-  int _lastMessageCount = 0;
+ 
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
     required String reason,
@@ -9085,23 +9085,6 @@ void _showStallRescue() {
   );
 }
 
-bool _didInitialChatScroll = false;
-
-void _scrollToBottom({bool animated = true}) {
-  if (!_scrollController.hasClients) return;
-
-  final target = _scrollController.position.maxScrollExtent;
-
-  if (animated) {
-    _scrollController.animateTo(
-      target,
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
-    );
-  } else {
-    _scrollController.jumpTo(target);
-  }
-}
 
   void _startStallTimer() {
   _stallTimer?.cancel();
@@ -9587,31 +9570,11 @@ final isBlockedByOther =
 
  final firestoreMessages = snapshot.data ?? [];
 
-final hasNewMessage = firestoreMessages.length != _lastMessageCount;
-
-if (firestoreMessages.isNotEmpty && !_didInitialChatScroll) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted || !_scrollController.hasClients) return;
-    _scrollToBottom(animated: false);
-    _didInitialChatScroll = true;
-    _lastMessageCount = firestoreMessages.length;
-  });
-} else if (firestoreMessages.isNotEmpty && hasNewMessage) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted || !_scrollController.hasClients) return;
-
-    if (_isNearBottom()) {
-      _scrollToBottom(animated: false);
-    }
-
-    _lastMessageCount = firestoreMessages.length;
-  });
-}
             return ListView.builder(
-        controller: _scrollController,
-        reverse: false,
-        padding: const EdgeInsets.all(14),
-        itemCount: firestoreMessages.length,
+  controller: _scrollController,
+  reverse: true,
+  padding: const EdgeInsets.all(14),
+  itemCount: firestoreMessages.length,
         itemBuilder: (_, i) {
           final data = firestoreMessages[i];
           final state = AppStateScope.of(context);
