@@ -9156,8 +9156,6 @@ if (!delivered) {
 
   controller.clear();
 
-  _scrollToBottom();
-
   if (isFirstMessage && state.isInOnboarding) {
     state.hasSeenFirstReply = true;
     state.onboardingStep = 2;
