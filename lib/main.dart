@@ -942,7 +942,7 @@ Stream<List<Map<String, dynamic>>> conversationMessagesStream(
   String conversationId,
 ) async* {
   yield* conversationMessagesRef(conversationId)
-      .orderBy('createdAt', descending: true)
+      .orderBy('createdAtMs', descending: true)
       .snapshots()
       .map(
         (snapshot) => snapshot.docs.map((doc) {
@@ -995,6 +995,7 @@ Future<bool> sendMessageToConversation({
     'senderParentId': activeParentId,
     'senderChildName': effectiveChildName,
     'createdAt': FieldValue.serverTimestamp(),
+    'createdAtMs': DateTime.now().millisecondsSinceEpoch,
     'isFlagged': isFlagged,
     'receiverAction': '',
     'receiverActionAt': null,
@@ -9591,39 +9592,42 @@ final isBlockedByOther =
                 receiverAction == 'not_now' || receiverAction == 'blocked',
           );
 
-          return _Bubble(
-            msg: msg,
-            onTap: () {},
-            onReveal: () async {
-              await state.revealFlaggedConversationMessage(
-                conversationId: widget.conversationId,
-                messageId: messageId,
-              );
-            },
-            onHide: () async {
-              await state.hideFlaggedConversationMessage(
-                conversationId: widget.conversationId,
-                messageId: messageId,
-              );
-            },
-            onBlock: () async {
-  await state.blockAfterFlaggedConversationMessage(
-    conversationId: widget.conversationId,
-    messageId: messageId,
-  );
+          return KeyedSubtree(
+  key: ValueKey(messageId),
+  child: _Bubble(
+    msg: msg,
+    onTap: () {},
+    onReveal: () async {
+      await state.revealFlaggedConversationMessage(
+        conversationId: widget.conversationId,
+        messageId: messageId,
+      );
+    },
+    onHide: () async {
+      await state.hideFlaggedConversationMessage(
+        conversationId: widget.conversationId,
+        messageId: messageId,
+      );
+    },
+    onBlock: () async {
+      await state.blockAfterFlaggedConversationMessage(
+        conversationId: widget.conversationId,
+        messageId: messageId,
+      );
 
-  await state.blockFriendship(
-    friendshipId: widget.friendshipId,
-    conversationId: widget.conversationId,
-  );
+      await state.blockFriendship(
+        friendshipId: widget.friendshipId,
+        conversationId: widget.conversationId,
+      );
 
-  if (!mounted) return;
+      if (!mounted) return;
 
-  setState(() {
-    feedback = '${widget.contactName} has been blocked.';
-  });
-},
-          );
+      setState(() {
+        feedback = '${widget.contactName} has been blocked.';
+      });
+    },
+  ),
+);
         },
       );
     },
