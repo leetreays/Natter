@@ -11091,7 +11091,7 @@ class ParentRulesScreen extends StatelessWidget {
     ],
   ),
 ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           Container(
   padding: const EdgeInsets.all(20),
   decoration: BoxDecoration(
