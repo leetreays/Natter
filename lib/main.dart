@@ -9138,21 +9138,25 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     if (!mounted) return;
 
-    if (isFirstMessage) {
-      state.hasSentFirstMessage = true;
-      state.onboardingStep = 1;
-      await state.saveChildOnboardingState();
-      state.notifyListeners();
-    }
+/*
+if (isFirstMessage) {
+  state.hasSentFirstMessage = true;
+  state.onboardingStep = 1;
+  await state.saveChildOnboardingState();
+  state.notifyListeners();
+}
+*/
 
-    state.recordPositiveMessage();
-    state.addFriendshipPoints(widget.contactName, 2);
+/*
+state.recordPositiveMessage();
+state.addFriendshipPoints(widget.contactName, 2);
 
-    if (shouldProgressQuest) {
-      state.progressFriendQuest(widget.contactName);
-    }
+if (shouldProgressQuest) {
+  state.progressFriendQuest(widget.contactName);
+}
 
-    friend?.friendshipMoments.add('💛 You sent a kind message');
+friend?.friendshipMoments.add('💛 You sent a kind message');
+*/
 
     if (shouldShowAlmostThere && mounted) {
       setState(() {
@@ -9168,7 +9172,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 
       state.lastQuestCelebrationFriend = null;
     }
-
+    
+    /*
     if (isFirstMessage && state.isInOnboarding) {
       state.hasSeenFirstReply = true;
       state.onboardingStep = 2;
@@ -9203,6 +9208,7 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     _startStallTimer();
   });
 }
+*/
   
   void _send() async {
     final state = AppStateScope.of(context);
