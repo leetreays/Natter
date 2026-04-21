@@ -9100,18 +9100,6 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
 
-  final isFirstMessage = !state.hasSentFirstMessage;
-
-  final friend = state.getFriendByName(widget.contactName);
-  final shouldProgressQuest =
-      friend != null && friend.activeQuestTitle.contains('Send');
-  final shouldShowAlmostThere = friend != null &&
-      friend.activeQuestTitle.contains('Send') &&
-      friend.activeQuestProgress == friend.activeQuestTarget - 1;
-
-  final shouldShowQuestComplete =
-      state.lastQuestCelebrationFriend == widget.contactName;
-
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
     text: text,
@@ -9135,80 +9123,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     });
   }
 
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    if (!mounted) return;
-
-/*
-if (isFirstMessage) {
-  state.hasSentFirstMessage = true;
-  state.onboardingStep = 1;
-  await state.saveChildOnboardingState();
-  state.notifyListeners();
+  _startStallTimer();
 }
-*/
-
-/*
-state.recordPositiveMessage();
-state.addFriendshipPoints(widget.contactName, 2);
-
-if (shouldProgressQuest) {
-  state.progressFriendQuest(widget.contactName);
-}
-
-friend?.friendshipMoments.add('💛 You sent a kind message');
-*/
-
-    if (shouldShowAlmostThere && mounted) {
-      setState(() {
-        feedback = '🌟 Almost there! One more to complete your quest.';
-      });
-    }
-
-    if (shouldShowQuestComplete && mounted) {
-      setState(() {
-        feedback =
-            '🎉 Quest Complete! You and ${widget.contactName} completed a shared quest.';
-      });
-
-      state.lastQuestCelebrationFriend = null;
-    }
-    
-    /*
-    if (isFirstMessage && state.isInOnboarding) {
-      state.hasSeenFirstReply = true;
-      state.onboardingStep = 2;
-      await state.saveChildOnboardingState();
-      state.notifyListeners();
-
-      await showDialog(
-        context: context,
-        builder: (dialogContext) => ChirpDialogCard(
-          imagePath: 'assets/chirp_reply.png',
-          message:
-              'Nice start — you sent your first message 💛\nThat’s how friendships begin.',
-          buttonText: 'Continue',
-          onPressed: () {
-            Navigator.pop(dialogContext);
-          },
-        ),
-      );
-
-      if (!mounted) return;
-
-      if (!state.hasSeenAddFriendPrompt) {
-        state.hasSeenAddFriendPrompt = true;
-        state.onboardingStep = 3;
-        await state.saveChildOnboardingState();
-        state.notifyListeners();
-
-        await const ChatsScreen()._addFriendDialog(context);
-      }
-    }
-
-    _startStallTimer();
-  });
-}
-*/
   
   void _send() async {
     final state = AppStateScope.of(context);
