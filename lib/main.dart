@@ -994,7 +994,7 @@ Future<bool> sendMessageToConversation({
     'senderUid': activeChildId,
     'senderParentId': activeParentId,
     'senderChildName': effectiveChildName,
-    'createdAt': FieldValue.serverTimestamp(),
+    'createdAt': Timestamp.now(),
     'createdAtMs': DateTime.now().millisecondsSinceEpoch,
     'isFlagged': isFlagged,
     'receiverAction': '',
