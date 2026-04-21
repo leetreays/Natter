@@ -9569,10 +9569,11 @@ final isBlockedByOther =
 
  final firestoreMessages = snapshot.data ?? [];
 
-            return ListView.builder(
+  return ListView.builder(
   controller: _scrollController,
   reverse: true,
   padding: const EdgeInsets.all(14),
+  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
   itemCount: firestoreMessages.length,
         itemBuilder: (_, i) {
           final data = firestoreMessages[i];
