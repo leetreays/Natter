@@ -9719,48 +9719,7 @@ if (isBlockedByMe || isBlockedByOther) {
     },
   ),
 ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.lightbulb_outline,
-                    color: NatterBrand.yellow,
-                  ),
-                  onPressed: _pickStarter,
-                  tooltip: 'Conversation Starter',
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    enabled: !isBlockedByMe && !isBlockedByOther,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message',
-                    ),
-                    onSubmitted: (_) {
-  if (!isBlockedByMe && !isBlockedByOther) _send();
-},
-                  ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: (isBlockedByMe || isBlockedByOther) ? null : _send,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: NatterBrand.green,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text('Send'),
-                  ),
-                ],
-              ),
-            );
-          },
+                    },
         ),
       ],
     ),
