@@ -9291,7 +9291,7 @@ if (isBlockedByMe || isBlockedByOther) {
     final quiet = state.isQuietNow();
     final friend = state.getFriendByName(widget.contactName);
 
-return Scaffold(
+  return Scaffold(
   backgroundColor: const Color(0xFF0A3554),
   appBar: AppBar(
     backgroundColor: Colors.transparent,
@@ -9301,198 +9301,355 @@ return Scaffold(
     title: BrandedAppBarTitle(title: widget.contactName),
   ),
   body: SafeArea(
-    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: state.conversationDocStream(widget.conversationId),
-      builder: (context, conversationSnapshot) {
-        final conversationData = conversationSnapshot.data?.data() ?? {};
-        final blockedByChildIds = List<String>.from(
-          conversationData['blockedByChildIds'] ?? const [],
-        );
-
-        final isBlockedByMe =
-            blockedByChildIds.contains(state.activeChildId);
-
-        String otherChildId = '';
-        final participantChildIds = List<String>.from(
-          conversationData['participantChildIds'] ?? const [],
-        );
-        for (final id in participantChildIds) {
-          if (id != state.activeChildId) {
-            otherChildId = id;
-            break;
-          }
-        }
-
-        final isBlockedByOther = otherChildId.isNotEmpty &&
-            blockedByChildIds.contains(otherChildId);
-
-        return Column(
-          children: [
-            if (quiet)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF20385F),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  'Quiet Hours are ON (${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)})',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+    child: Column(
+      children: [
+        if (quiet)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF20385F),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              'Quiet Hours are ON (${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)})',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
               ),
-            if (feedback != null)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF20385F),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  feedback!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+            ),
+          ),
+        if (feedback != null)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF20385F),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              feedback!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
               ),
-            if (isBlockedByMe)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF20385F),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'This conversation is blocked',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+            ),
+          ),
+
+        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: state.conversationDocStream(widget.conversationId),
+          builder: (context, conversationSnapshot) {
+            final conversationData = conversationSnapshot.data?.data() ?? {};
+            final blockedByChildIds = List<String>.from(
+              conversationData['blockedByChildIds'] ?? const [],
+            );
+
+            final isBlockedByMe =
+                blockedByChildIds.contains(state.activeChildId);
+
+            String otherChildId = '';
+            final participantChildIds = List<String>.from(
+              conversationData['participantChildIds'] ?? const [],
+            );
+            for (final id in participantChildIds) {
+              if (id != state.activeChildId) {
+                otherChildId = id;
+                break;
+              }
+            }
+
+            final isBlockedByOther = otherChildId.isNotEmpty &&
+                blockedByChildIds.contains(otherChildId);
+
+            return Column(
+              children: [
+                if (isBlockedByMe)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF20385F),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'You can unblock to continue chatting.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.72),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        await state.unblockFriendship(
-                          friendshipId: widget.friendshipId,
-                          conversationId: widget.conversationId,
-                        );
-
-                        if (!mounted) return;
-
-                        setState(() {
-                          feedback =
-                              '${widget.contactName} has been unblocked.';
-                        });
-                      },
-                      child: const Text('Unblock'),
-                    ),
-                  ],
-                ),
-              ),
-            if (isBlockedByOther)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF20385F),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'This conversation is unavailable right now',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'You cannot send messages in this chat at the moment.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.72),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (_kindnessStreakMessage(state) != null)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF32486A),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  _kindnessStreakMessage(state)!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            if (friend != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                child: _FriendshipQuestCard(friend: friend),
-              ),
-            Expanded(
-              child: StreamBuilder<List<Map<String, dynamic>>>(
-                stream: AppStateScope.of(context)
-                    .conversationMessagesStream(widget.conversationId),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          'Chat error: ${snapshot.error}',
+                    child: Column(
+                      children: [
+                        const Text(
+                          'This conversation is blocked',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'You can unblock to continue chatting.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.72),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await state.unblockFriendship(
+                              friendshipId: widget.friendshipId,
+                              conversationId: widget.conversationId,
+                            );
+
+                            if (!mounted) return;
+
+                            setState(() {
+                              feedback =
+                                  '${widget.contactName} has been unblocked.';
+                            });
+                          },
+                          child: const Text('Unblock'),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (isBlockedByOther)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF20385F),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'This conversation is unavailable right now',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'You cannot send messages in this chat at the moment.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.72),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+
+        if (_kindnessStreakMessage(state) != null)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF32486A),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              _kindnessStreakMessage(state)!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
+          ),
+
+        if (friend != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: _FriendshipQuestCard(friend: friend),
+          ),
+
+        Expanded(
+          child: StreamBuilder<List<Map<String, dynamic>>>(
+            stream: AppStateScope.of(context)
+                .conversationMessagesStream(widget.conversationId),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      'Chat error: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                );
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final firestoreMessages = snapshot.data ?? [];
+
+              return ListView.builder(
+                controller: _scrollController,
+                reverse: true,
+                padding: const EdgeInsets.all(14),
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                itemCount: firestoreMessages.length,
+                itemBuilder: (_, i) {
+                  final data = firestoreMessages[i];
+                  final state = AppStateScope.of(context);
+                  final messageId = (data['id'] ?? '') as String;
+                  final isMe = data['senderUid'] == state.activeChildId;
+                  final isFlagged = data['isFlagged'] == true;
+                  final text = (data['text'] ?? '') as String;
+                  final receiverAction =
+                      (data['receiverAction'] ?? '') as String;
+
+                  final msg = _Msg(
+                    fromMe: isMe,
+                    text: text,
+                    isFlagged: isFlagged,
+                    isRevealed: receiverAction == 'read',
+                    isHidden: receiverAction == 'not_now' ||
+                        receiverAction == 'blocked',
+                  );
+
+                  return RepaintBoundary(
+                    child: KeyedSubtree(
+                      key: ValueKey(messageId),
+                      child: _Bubble(
+                        msg: msg,
+                        onTap: () {},
+                        onReveal: () async {
+                          await state.revealFlaggedConversationMessage(
+                            conversationId: widget.conversationId,
+                            messageId: messageId,
+                          );
+                        },
+                        onHide: () async {
+                          await state.hideFlaggedConversationMessage(
+                            conversationId: widget.conversationId,
+                            messageId: messageId,
+                          );
+                        },
+                        onBlock: () async {
+                          await state.blockAfterFlaggedConversationMessage(
+                            conversationId: widget.conversationId,
+                            messageId: messageId,
+                          );
+
+                          await state.blockFriendship(
+                            friendshipId: widget.friendshipId,
+                            conversationId: widget.conversationId,
+                          );
+
+                          if (!mounted) return;
+
+                          setState(() {
+                            feedback =
+                                '${widget.contactName} has been blocked.';
+                          });
+                        },
                       ),
-                    );
-                  }
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
 
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
+        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: state.conversationDocStream(widget.conversationId),
+          builder: (context, conversationSnapshot) {
+            final conversationData = conversationSnapshot.data?.data() ?? {};
+            final blockedByChildIds = List<String>.from(
+              conversationData['blockedByChildIds'] ?? const [],
+            );
 
+            final isBlockedByMe =
+                blockedByChildIds.contains(state.activeChildId);
+
+            String otherChildId = '';
+            final participantChildIds = List<String>.from(
+              conversationData['participantChildIds'] ?? const [],
+            );
+            for (final id in participantChildIds) {
+              if (id != state.activeChildId) {
+                otherChildId = id;
+                break;
+              }
+            }
+
+            final isBlockedByOther = otherChildId.isNotEmpty &&
+                blockedByChildIds.contains(otherChildId);
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.lightbulb_outline,
+                      color: NatterBrand.yellow,
+                    ),
+                    onPressed: _pickStarter,
+                    tooltip: 'Conversation Starter',
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      enabled: !isBlockedByMe && !isBlockedByOther,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message',
+                      ),
+                      onSubmitted: (_) {
+                        if (!isBlockedByMe && !isBlockedByOther) _send();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed:
+                        (isBlockedByMe || isBlockedByOther) ? null : _send,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: NatterBrand.green,
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('Send'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  ),
+);
+    
                   final firestoreMessages = snapshot.data ?? [];
 
   return ListView.builder(
