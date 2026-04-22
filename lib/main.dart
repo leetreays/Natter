@@ -9694,32 +9694,101 @@ if (isBlockedByMe || isBlockedByOther) {
           messageId: messageId,
         );
       },
-      onBlock: () async {
-        await state.blockAfterFlaggedConversationMessage(
-          conversationId: widget.conversationId,
-          messageId: messageId,
-        );
+                        onBlock: () async {
+                          await state.blockAfterFlaggedConversationMessage(
+                            conversationId: widget.conversationId,
+                            messageId: messageId,
+                          );
 
-        await state.blockFriendship(
-          friendshipId: widget.friendshipId,
-          conversationId: widget.conversationId,
-        );
+                          await state.blockFriendship(
+                            friendshipId: widget.friendshipId,
+                            conversationId: widget.conversationId,
+                          );
 
-        if (!mounted) return;
+                          if (!mounted) return;
 
-        setState(() {
-          feedback = '${widget.contactName} has been blocked.';
-        });
-      },
-    ),
-  ),
-);
-        },
-      );
-    },
-  ),
-),
-                    },
+                          setState(() {
+                            feedback =
+                                '${widget.contactName} has been blocked.';
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+
+        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: state.conversationDocStream(widget.conversationId),
+          builder: (context, conversationSnapshot) {
+            final conversationData = conversationSnapshot.data?.data() ?? {};
+            final blockedByChildIds = List<String>.from(
+              conversationData['blockedByChildIds'] ?? const [],
+            );
+
+            final isBlockedByMe =
+                blockedByChildIds.contains(state.activeChildId);
+
+            String otherChildId = '';
+            final participantChildIds = List<String>.from(
+              conversationData['participantChildIds'] ?? const [],
+            );
+            for (final id in participantChildIds) {
+              if (id != state.activeChildId) {
+                otherChildId = id;
+                break;
+              }
+            }
+
+            final isBlockedByOther = otherChildId.isNotEmpty &&
+                blockedByChildIds.contains(otherChildId);
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.lightbulb_outline,
+                      color: NatterBrand.yellow,
+                    ),
+                    onPressed: _pickStarter,
+                    tooltip: 'Conversation Starter',
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      enabled: !isBlockedByMe && !isBlockedByOther,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      decoration: const InputDecoration(
+                        hintText: 'Type a message',
+                      ),
+                      onSubmitted: (_) {
+                        if (!isBlockedByMe && !isBlockedByOther) _send();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed:
+                        (isBlockedByMe || isBlockedByOther) ? null : _send,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: NatterBrand.green,
+                      foregroundColor: Colors.black,
+                    ),
+                    child: const Text('Send'),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
     ),
