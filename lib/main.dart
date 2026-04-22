@@ -9756,15 +9756,11 @@ if (isBlockedByMe || isBlockedByOther) {
                     foregroundColor: Colors.black,
                   ),
                   child: const Text('Send'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    },
+          },
+        ),
+      ],
+    ),
   ),
-),
 );
   }
 }
