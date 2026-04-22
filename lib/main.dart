@@ -9530,40 +9530,42 @@ final isBlockedByOther =
                 receiverAction == 'not_now' || receiverAction == 'blocked',
           );
 
-          return KeyedSubtree(
-  key: ValueKey(messageId),
-  child: _Bubble(
-    msg: msg,
-    onTap: () {},
-    onReveal: () async {
-      await state.revealFlaggedConversationMessage(
-        conversationId: widget.conversationId,
-        messageId: messageId,
-      );
-    },
-    onHide: () async {
-      await state.hideFlaggedConversationMessage(
-        conversationId: widget.conversationId,
-        messageId: messageId,
-      );
-    },
-    onBlock: () async {
-      await state.blockAfterFlaggedConversationMessage(
-        conversationId: widget.conversationId,
-        messageId: messageId,
-      );
+          return RepaintBoundary(
+  child: KeyedSubtree(
+    key: ValueKey(messageId),
+    child: _Bubble(
+      msg: msg,
+      onTap: () {},
+      onReveal: () async {
+        await state.revealFlaggedConversationMessage(
+          conversationId: widget.conversationId,
+          messageId: messageId,
+        );
+      },
+      onHide: () async {
+        await state.hideFlaggedConversationMessage(
+          conversationId: widget.conversationId,
+          messageId: messageId,
+        );
+      },
+      onBlock: () async {
+        await state.blockAfterFlaggedConversationMessage(
+          conversationId: widget.conversationId,
+          messageId: messageId,
+        );
 
-      await state.blockFriendship(
-        friendshipId: widget.friendshipId,
-        conversationId: widget.conversationId,
-      );
+        await state.blockFriendship(
+          friendshipId: widget.friendshipId,
+          conversationId: widget.conversationId,
+        );
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      setState(() {
-        feedback = '${widget.contactName} has been blocked.';
-      });
-    },
+        setState(() {
+          feedback = '${widget.contactName} has been blocked.';
+        });
+      },
+    ),
   ),
 );
         },
