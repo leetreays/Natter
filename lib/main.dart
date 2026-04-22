@@ -9662,8 +9662,8 @@ class _Bubble extends StatelessWidget {
     final align =
         msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
     final color = msg.fromMe
-        ? NatterBrand.blue.withOpacity(0.95)
-        : Colors.white.withOpacity(0.20);
+    ? const Color(0xFF3F6FAE)
+    : const Color(0xFF314A74);
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -9708,7 +9708,7 @@ class _Bubble extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               constraints: const BoxConstraints(maxWidth: 520),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.45),
+                color: const Color(0xFF20385F),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: NatterBrand.yellow, width: 1.6),
               ),
@@ -9846,9 +9846,9 @@ Text(
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
+                  color: const Color(0xFF2D466F),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withOpacity(0.14)),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                 ),
                 child: Text(
                   msg.reaction!,
