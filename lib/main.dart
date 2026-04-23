@@ -4126,15 +4126,6 @@ Positioned(
             ),
           ),
           const SizedBox(height: 6),
-Text(
-  'A gentle view of progress and behaviour',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.65),
-    fontWeight: FontWeight.w600,
-    fontSize: 13,
-  ),
-),
-          const SizedBox(height: 14),
           const Text(
             'Digital journey',
             style: TextStyle(
