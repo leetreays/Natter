@@ -3916,6 +3916,68 @@ BoxDecoration _innerCardDecoration({
     ),
   );
 }
+
+String _weeklyReflection({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  if (quiet == 0 && guidance == 0 && connection == 0) {
+    return 'This week has felt calm overall. Nothing in particular seems to need attention right now.';
+  }
+
+  final parts = <String>[];
+
+  if (connection > 0) {
+    parts.add(
+      connection == 1
+          ? 'There was a positive connection moment this week.'
+          : 'There were a few positive connection moments this week.',
+    );
+  }
+
+  if (guidance > 0) {
+    parts.add(
+      guidance == 1
+          ? 'A gentle guidance moment came up too.'
+          : 'A few gentle guidance moments came up too.',
+    );
+  }
+
+  if (quiet > 0) {
+    parts.add(
+      quiet == 1
+          ? 'There was also a quiet-time moment.'
+          : 'There were also a few quiet-time moments.',
+    );
+  }
+
+  return parts.join(' ');
+}
+
+String _weeklyReflectionSuggestion({
+  required int quiet,
+  required int guidance,
+  required int connection,
+}) {
+  if (quiet >= 2) {
+    return 'A short conversation about winding down before bed may help this week.';
+  }
+
+  if (guidance >= 2) {
+    return 'Your child may be practising how to pause and rethink messages before sending.';
+  }
+
+  if (connection >= 2 && guidance == 0 && quiet == 0) {
+    return 'Things seem to be going steadily — encouragement and gentle interest will go a long way.';
+  }
+
+  if (quiet > 0 || guidance > 0) {
+    return 'A calm check-in together could help your child reflect on how things are going online.';
+  }
+
+  return 'Things seem steady right now — a gentle check-in can still help.';
+}
   
  @override
   Widget build(BuildContext context) {
@@ -3955,6 +4017,18 @@ final pendingCount = connectionCount;
 final signalCount = signals.length;
 final quietTimeOn = state.quietHoursEnabled;
 
+final weeklyReflection = _weeklyReflection(
+  quiet: quietCount,
+  guidance: guidanceCount,
+  connection: connectionCount,
+);
+
+final weeklyReflectionSuggestion = _weeklyReflectionSuggestion(
+  quiet: quietCount,
+  guidance: guidanceCount,
+  connection: connectionCount,
+);
+    
     return ParentBrandScaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -4215,6 +4289,72 @@ Container(
               value: '$signalCount',
               color: const Color(0xFFA4CF58),
               icon: Icons.insights_rounded,
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: _outerSectionDecoration(),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Weekly reflection',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.2,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        weeklyReflection,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontWeight: FontWeight.w700,
+          height: 1.45,
+        ),
+      ),
+      const SizedBox(height: 14),
+      Container(
+        padding: const EdgeInsets.all(14),
+        decoration: _innerCardDecoration(
+          color: const Color(0xFF32486A),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: const Color(0xFF5A5A2C),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                Icons.lightbulb_rounded,
+                color: NatterBrand.yellow,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                weeklyReflectionSuggestion,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.78),
+                  fontWeight: FontWeight.w700,
+                  height: 1.45,
+                ),
+              ),
             ),
           ],
         ),
