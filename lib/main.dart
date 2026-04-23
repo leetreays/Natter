@@ -3936,7 +3936,11 @@ DateTime _mostRecentSundayEvening() {
 }
 
 bool _shouldShowWeeklyNote() {
-  return true; // TEMP TEST
+  final now = DateTime.now();
+  final release = _mostRecentSundayEvening();
+  final expiry = release.add(const Duration(days: 2));
+
+  return now.isAfter(release) && now.isBefore(expiry);
 }
 
 String _weeklyNoteText({
