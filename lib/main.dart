@@ -4189,12 +4189,19 @@ if (showWeeklyNote) ...[
     width: double.infinity,
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     decoration: BoxDecoration(
-      color: const Color(0xFF32486A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.08),
-      ),
+  color: const Color(0xFF32486A),
+  borderRadius: BorderRadius.circular(16),
+  border: Border.all(
+    color: Colors.white.withOpacity(0.08),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.yellow.withOpacity(0.08),
+      blurRadius: 14,
+      offset: const Offset(0, 4),
     ),
+  ],
+),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
