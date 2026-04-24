@@ -9857,8 +9857,8 @@ class _Bubble extends StatelessWidget {
     final align =
         msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
     final bubbleColor = msg.fromMe
-    ? const Color(0xFF3A72C4)
-    : const Color(0xFF2A446F); 
+    ? const Color(0xFF3F7AE0) // brighter, more “alive”
+    : Colors.white.withOpacity(0.14); // much lighter
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -9904,22 +9904,27 @@ class _Bubble extends StatelessWidget {
               constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
   color: bubbleColor,
-  borderRadius: BorderRadius.circular(20),
+  borderRadius: BorderRadius.only(
+  topLeft: const Radius.circular(20),
+  topRight: const Radius.circular(20),
+  bottomLeft: Radius.circular(msg.fromMe ? 20 : 6),
+  bottomRight: Radius.circular(msg.fromMe ? 6 : 20),
+),
   border: msg.isFlagged
-      ? Border.all(
-          color: NatterBrand.yellow.withOpacity(0.9),
-          width: 1.5,
-        )
-      : null,
+    ? Border.all(
+        color: NatterBrand.yellow.withOpacity(0.85),
+        width: 1.6,
+      )
+    : null,
   boxShadow: msg.fromMe
-      ? [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.18),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ]
-      : [],
+    ? [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.28),
+          blurRadius: 14,
+          offset: const Offset(0, 6),
+        ),
+      ]
+    : [],
 ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
