@@ -10011,7 +10011,7 @@ Text(
                 padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                 constraints: const BoxConstraints(maxWidth: 520),
                 decoration: BoxDecoration(
-                  color: color,
+                  color: bubbleColor,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: msg.isFlagged
