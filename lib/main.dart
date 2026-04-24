@@ -9716,47 +9716,109 @@ if (isBlockedByMe || isBlockedByOther) {
                 blockedByChildIds.contains(otherChildId);
 
             return Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.lightbulb_outline,
-                      color: NatterBrand.yellow,
-                    ),
-                    onPressed: _pickStarter,
-                    tooltip: 'Conversation Starter',
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: controller,
-                      enabled: !isBlockedByMe && !isBlockedByOther,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: const InputDecoration(
-                        hintText: 'Type a message',
-                      ),
-                      onSubmitted: (_) {
-                        if (!isBlockedByMe && !isBlockedByOther) _send();
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed:
-                        (isBlockedByMe || isBlockedByOther) ? null : _send,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: NatterBrand.green,
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('Send'),
-                  ),
-                ],
+  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    decoration: BoxDecoration(
+      color: const Color(0xFF1B3354),
+      borderRadius: BorderRadius.circular(28),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.25),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // 💡 Starter button (now a chip)
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A4A78),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.lightbulb_rounded,
+              color: NatterBrand.yellow,
+              size: 20,
+            ),
+            onPressed: _pickStarter,
+            tooltip: 'Conversation Starter',
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        // ✍️ Input field (pill style)
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF243F6B),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: TextField(
+              controller: controller,
+              enabled: !isBlockedByMe && !isBlockedByOther,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-            );
+              decoration: const InputDecoration(
+                hintText: 'Type a message',
+                hintStyle: TextStyle(
+                  color: Colors.white54,
+                  fontWeight: FontWeight.w600,
+                ),
+                border: InputBorder.none,
+              ),
+              onSubmitted: (_) {
+                if (!isBlockedByMe && !isBlockedByOther) _send();
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        // 🚀 Send button (pill + more intentional)
+        GestureDetector(
+          onTap: (isBlockedByMe || isBlockedByOther) ? null : _send,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: (isBlockedByMe || isBlockedByOther)
+                  ? Colors.grey.shade700
+                  : NatterBrand.green,
+              borderRadius: BorderRadius.circular(999),
+              boxShadow: (isBlockedByMe || isBlockedByOther)
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: NatterBrand.green.withOpacity(0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+            ),
+            child: const Icon(
+              Icons.send_rounded,
+              color: Colors.black,
+              size: 18,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
           },
         ),
       ],
