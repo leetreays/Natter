@@ -9854,38 +9854,38 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final align =
-        msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
+    final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
+
     final bubbleColor = msg.fromMe
-    ? const Color(0xFF3F7AE0) // brighter, more “alive”
-    : Colors.white.withOpacity(0.14); // much lighter
+        ? const Color(0xFF3F7AE0)
+        : Colors.white.withOpacity(0.14);
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
     }
-    
+
     if (msg.isSystem) {
-  return Center(
-    child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: NatterBrand.yellow.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterBrand.yellow.withOpacity(0.35),
+      return Center(
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: NatterBrand.yellow.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: NatterBrand.yellow.withOpacity(0.35),
+            ),
+          ),
+          child: Text(
+            msg.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ),
-      ),
-      child: Text(
-        msg.text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    ),
-  );
+      );
     }
 
     final showProtectedCard =
@@ -9899,73 +9899,62 @@ class _Bubble extends StatelessWidget {
         children: [
           if (showProtectedCard)
             Container(
-              margin: const EdgeInsets.symmetric(vertical: 4),
+              margin: const EdgeInsets.symmetric(vertical: 6),
               padding: const EdgeInsets.all(14),
               constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
-  color: bubbleColor,
-  borderRadius: BorderRadius.only(
-  topLeft: const Radius.circular(20),
-  topRight: const Radius.circular(20),
-  bottomLeft: Radius.circular(msg.fromMe ? 20 : 6),
-  bottomRight: Radius.circular(msg.fromMe ? 6 : 20),
-),
-  border: msg.isFlagged
-    ? Border.all(
-        color: NatterBrand.yellow.withOpacity(0.85),
-        width: 1.6,
-      )
-    : null,
-  boxShadow: msg.fromMe
-    ? [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.28),
-          blurRadius: 14,
-          offset: const Offset(0, 6),
-        ),
-      ]
-    : [],
-),
+                color: const Color(0xFF2C3E5F),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: NatterBrand.yellow.withOpacity(0.5),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.22),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-  Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(
-      color: NatterBrand.yellow.withOpacity(0.18),
-      borderRadius: BorderRadius.circular(999),
-      border: Border.all(color: NatterBrand.yellow.withOpacity(0.6)),
-    ),
-    child: const Text(
-      'Protected delivery',
-      style: TextStyle(
-        color: NatterBrand.yellow,
-        fontWeight: FontWeight.w900,
-        fontSize: 12,
-        letterSpacing: 0.4,
-      ),
-    ),
-  ),
-
-  const Text(
-    'This message might not feel kind.',
-  style: TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w900,
-    fontSize: 16,
-  ),
-),
-const SizedBox(height: 8),
-Text(
-  'You are in control. Choose what feels best for you.',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.85),
-    fontWeight: FontWeight.w700,
-    height: 1.3,
-  ),
-),
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: NatterBrand.yellow.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      'Protected delivery',
+                      style: TextStyle(
+                        color: NatterBrand.yellow,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'This message might not feel kind.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'You are in control. Choose what feels best for you.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -9976,6 +9965,14 @@ Text(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: NatterBrand.yellow,
                           foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         child: const Text('Read it'),
                       ),
@@ -9983,7 +9980,14 @@ Text(
                         onPressed: onHide,
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                            color: Colors.white.withOpacity(0.24),
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: const Text(
@@ -9995,7 +9999,14 @@ Text(
                         onPressed: onBlock,
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(
-                            color: Colors.white.withOpacity(0.24),
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: const Text(
@@ -10012,17 +10023,33 @@ Text(
             GestureDetector(
               onTap: msg.fromMe ? null : onTap,
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-                constraints: const BoxConstraints(maxWidth: 520),
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+                constraints: const BoxConstraints(maxWidth: 420),
                 decoration: BoxDecoration(
                   color: bubbleColor,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: msg.isFlagged
-                        ? NatterBrand.yellow.withOpacity(0.9)
-                        : Colors.white.withOpacity(0.12),
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(20),
+                    topRight: const Radius.circular(20),
+                    bottomLeft: Radius.circular(msg.fromMe ? 20 : 6),
+                    bottomRight: Radius.circular(msg.fromMe ? 6 : 20),
                   ),
+                  border: msg.isFlagged
+                      ? Border.all(
+                          color: NatterBrand.yellow.withOpacity(0.85),
+                          width: 1.6,
+                        )
+                      : null,
+                  boxShadow: msg.fromMe
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.28),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -10044,8 +10071,8 @@ Text(
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
-fontWeight: FontWeight.w600,
-height: 1.35,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
                       ),
                     ),
                   ],
@@ -10056,14 +10083,14 @@ height: 1.35,
             Padding(
               padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF2D466F),
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.08),
+                  ),
                 ),
                 child: Text(
                   msg.reaction!,
