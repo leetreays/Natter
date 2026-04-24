@@ -9856,9 +9856,9 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final align =
         msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
-    final color = msg.fromMe
-    ? const Color(0xFF3F6FAE)
-    : const Color(0xFF314A74);
+    final bubbleColor = msg.fromMe
+    ? const Color(0xFF3A72C4)
+    : const Color(0xFF2A446F); 
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -9899,14 +9899,28 @@ class _Bubble extends StatelessWidget {
         children: [
           if (showProtectedCard)
             Container(
-              margin: const EdgeInsets.symmetric(vertical: 6),
+              margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.all(14),
-              constraints: const BoxConstraints(maxWidth: 520),
+              constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
-                color: const Color(0xFF20385F),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: NatterBrand.yellow, width: 1.6),
-              ),
+  color: bubbleColor,
+  borderRadius: BorderRadius.circular(20),
+  border: msg.isFlagged
+      ? Border.all(
+          color: NatterBrand.yellow.withOpacity(0.9),
+          width: 1.5,
+        )
+      : null,
+  boxShadow: msg.fromMe
+      ? [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.18),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ]
+      : [],
+),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -10025,7 +10039,8 @@ Text(
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
-                        fontWeight: FontWeight.w700,
+fontWeight: FontWeight.w600,
+height: 1.35,
                       ),
                     ),
                   ],
