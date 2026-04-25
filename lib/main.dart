@@ -8503,6 +8503,7 @@ Widget build(BuildContext context) {
 final hasUnread = unreadCount > 0;
 
           String previewText;
+
 if (isBlocked) {
   previewText = 'Blocked';
 } else if (conversation.lastMessage.isEmpty) {
@@ -8511,7 +8512,7 @@ if (isBlocked) {
     state.activeChildId) {
   previewText = 'You: ${conversation.lastMessage}';
 } else {
-  previewText = conversation.lastMessage;
+  previewText = '($unreadCount) ${conversation.lastMessage}';
 }
 
           return Padding(
