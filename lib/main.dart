@@ -571,6 +571,7 @@ class ConversationRecord {
   final String status;
   final String lastMessage;
   final String? lastMessageSenderChildId;
+  final Map<String, dynamic> unreadCounts;
 
   const ConversationRecord({
     required this.id,
@@ -582,6 +583,7 @@ class ConversationRecord {
     required this.status,
     required this.lastMessage,
     required this.lastMessageSenderChildId,
+    required this.unreadCounts,
   });
 
   factory ConversationRecord.fromDoc(
@@ -604,9 +606,21 @@ class ConversationRecord {
       lastMessage: (data['lastMessage'] ?? '').toString(),
       lastMessageSenderChildId:
           data['lastMessageSenderChildId']?.toString(),
+      unreadCounts: Map<String, dynamic>.from(
+  data['unreadCounts'] ?? const {},
+),
     );
   }
+  
+int unreadCountFor(String childId) {
+  final value = unreadCounts[childId];
 
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+
+  return 0;
+}
+  
   bool isBlockedFor(String childId) {
     return blockedByChildIds.contains(childId);
   }
@@ -1004,13 +1018,32 @@ Future<bool> sendMessageToConversation({
 
   final previewText = isFlagged ? 'Message needs review' : trimmed;
 
-  await conversationsRef().doc(conversationId).set({
-    'lastMessage': previewText,
-    'lastMessageSenderChildId': activeChildId,
-    'lastMessageAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+final updateData = <String, dynamic>{
+  'lastMessage': previewText,
+  'lastMessageSenderChildId': activeChildId,
+  'lastMessageAt': FieldValue.serverTimestamp(),
+  'unreadCounts.$activeChildId': 0,
+};
+
+if (otherChildId.isNotEmpty) {
+  updateData['unreadCounts.$otherChildId'] = FieldValue.increment(1);
+}
+
+await conversationsRef().doc(conversationId).set(
+  updateData,
+  SetOptions(merge: true),
+);
 
   return true;
+}
+
+Future<void> markConversationRead(String conversationId) async {
+  if (!hasActiveChildSession) return;
+
+  await conversationsRef().doc(conversationId).set({
+    'unreadCounts.$activeChildId': 0,
+    'lastReadAtByChildId.$activeChildId': Timestamp.now(),
+  }, SetOptions(merge: true));
 }
 
 Future<void> blockFriendship({
@@ -6804,6 +6837,7 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
     );
   }
 }
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -8465,6 +8499,9 @@ Widget build(BuildContext context) {
 
           final isBlocked = conversation.isBlockedFor(state.activeChildId!);
 
+          final unreadCount = conversation.unreadCountFor(state.activeChildId!);
+final hasUnread = unreadCount > 0;
+
           String previewText;
 if (isBlocked) {
   previewText = 'Blocked';
@@ -8501,19 +8538,32 @@ if (isBlocked) {
                     vertical: 12,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C2A48),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.05),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
-                        blurRadius: 10,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
+  color: hasUnread
+      ? const Color(0xFF284A72)
+      : const Color(0xFF1C2A48),
+  borderRadius: BorderRadius.circular(14),
+  border: Border.all(
+    color: hasUnread
+        ? NatterBrand.green.withOpacity(0.75)
+        : Colors.white.withOpacity(0.05),
+    width: hasUnread ? 1.5 : 1,
+  ),
+  boxShadow: hasUnread
+      ? [
+          BoxShadow(
+            color: NatterBrand.green.withOpacity(0.22),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ]
+      : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.25),
+            blurRadius: 10,
+            spreadRadius: 0,
+          ),
+        ],
+),
                   child: Row(
                     children: [
                       Container(
@@ -8561,6 +8611,23 @@ if (isBlocked) {
                         ),
                       ),
                       const SizedBox(width: 10),
+                      if (hasUnread)
+  Container(
+    margin: const EdgeInsets.only(right: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: NatterBrand.green,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Text(
+      unreadCount > 9 ? '9+' : '$unreadCount',
+      style: const TextStyle(
+        color: Colors.black,
+        fontWeight: FontWeight.w900,
+        fontSize: 12,
+      ),
+    ),
+  ),
 isBlocked
     ? Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -9238,6 +9305,16 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   }
 
   _startStallTimer();
+}
+
+@override
+void initState() {
+  super.initState();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    AppStateScope.of(context).markConversationRead(widget.conversationId);
+  });
 }
   
   void _send() async {
