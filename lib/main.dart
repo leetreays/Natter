@@ -8502,6 +8502,9 @@ Widget build(BuildContext context) {
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
 final hasUnread = unreadCount > 0;
 
+          print('Active child: ${state.activeChildId}');
+print('Unread map: ${conversation.unreadCounts}');
+
           String previewText;
 
 if (isBlocked) {
