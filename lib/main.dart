@@ -1029,6 +1029,12 @@ if (otherChildId.isNotEmpty) {
   updateData['unreadCounts.$otherChildId'] = FieldValue.increment(1);
 }
 
+debugPrint('--- DEBUG UNREAD WRITE ---');
+debugPrint('Conversation write id: $conversationId');
+debugPrint('Active childId: $activeChildId');
+debugPrint('Other childId: $otherChildId');
+debugPrint('Update data: $updateData');
+
 await conversationsRef().doc(conversationId).set(
   updateData,
   SetOptions(merge: true),
@@ -8501,6 +8507,12 @@ Widget build(BuildContext context) {
 
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
 final hasUnread = unreadCount > 0;
+
+debugPrint('--- DEBUG UNREAD READ ---');
+debugPrint('Conversation read id: ${conversation.id}');
+debugPrint('Active childId: ${state.activeChildId}');
+debugPrint('Participant childIds: ${conversation.participantChildIds}');
+debugPrint('Unread map: ${conversation.unreadCounts}');
 
           print('Active child: ${state.activeChildId}');
 print('Unread map: ${conversation.unreadCounts}');
