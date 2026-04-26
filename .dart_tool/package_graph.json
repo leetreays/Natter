@@ -8,6 +8,7 @@
       "version": "1.0.0+1",
       "dependencies": [
         "cloud_firestore",
+        "cloud_functions",
         "cupertino_icons",
         "firebase_auth",
         "firebase_core",
@@ -624,6 +625,39 @@
       "dependencies": [
         "meta",
         "path"
+      ]
+    },
+    {
+      "name": "cloud_functions",
+      "version": "6.1.0",
+      "dependencies": [
+        "cloud_functions_platform_interface",
+        "cloud_functions_web",
+        "firebase_core",
+        "firebase_core_platform_interface",
+        "flutter"
+      ]
+    },
+    {
+      "name": "cloud_functions_web",
+      "version": "5.1.4",
+      "dependencies": [
+        "cloud_functions_platform_interface",
+        "firebase_core",
+        "firebase_core_web",
+        "flutter",
+        "flutter_web_plugins",
+        "web"
+      ]
+    },
+    {
+      "name": "cloud_functions_platform_interface",
+      "version": "5.8.11",
+      "dependencies": [
+        "firebase_core",
+        "flutter",
+        "meta",
+        "plugin_platform_interface"
       ]
     }
   ],

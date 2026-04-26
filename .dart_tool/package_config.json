@@ -68,6 +68,24 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "cloud_functions",
+      "rootUri": "file:///home/codespace/.pub-cache/hosted/pub.dev/cloud_functions-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "cloud_functions_platform_interface",
+      "rootUri": "file:///home/codespace/.pub-cache/hosted/pub.dev/cloud_functions_platform_interface-5.8.11",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
+    },
+    {
+      "name": "cloud_functions_web",
+      "rootUri": "file:///home/codespace/.pub-cache/hosted/pub.dev/cloud_functions_web-5.1.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
       "name": "collection",
       "rootUri": "file:///home/codespace/.pub-cache/hosted/pub.dev/collection-1.19.1",
       "packageUri": "lib/",
