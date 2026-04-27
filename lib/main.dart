@@ -10113,78 +10113,77 @@ class _Bubble extends StatelessWidget {
                 ],
               ),
             )
-          else
-            GestureDetector(
-              onTap: msg.fromMe ? null : onTap,
-child: Stack(
-  clipBehavior: Clip.none,
-  children: [
-    Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-      constraints: const BoxConstraints(maxWidth: 520),
-      decoration: BoxDecoration(
-        color: bubbleColor,
-        borderRadius: BorderRadius.only(
-          topLeft: const Radius.circular(22),
-          topRight: const Radius.circular(22),
-          bottomLeft: Radius.circular(msg.fromMe ? 22 : 10),
-          bottomRight: Radius.circular(msg.fromMe ? 10 : 22),
-        ),
-        border: Border.all(
-          color: msg.isFlagged
-              ? NatterBrand.yellow.withOpacity(0.9)
-              : Colors.white.withOpacity(0.12),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (msg.isFlagged && !msg.fromMe)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                'Flagged message',
-                style: TextStyle(
-                  color: NatterBrand.yellow.withOpacity(0.95),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          Text(
-            msg.text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              height: 1.35,
-            ),
-          ),
-        ],
-      ),
-    ),
-
-    // 👇 subtle tail
-    Positioned(
-      bottom: 8,
-      right: msg.fromMe ? -4 : null,
-      left: msg.fromMe ? null : -4,
-      child: Transform.rotate(
-        angle: msg.fromMe ? 0.3 : -0.3,
-        child: Container(
-          width: 10,
-          height: 10,
+else
+  GestureDetector(
+    onTap: msg.fromMe ? null : onTap,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+          constraints: const BoxConstraints(maxWidth: 520),
           decoration: BoxDecoration(
             color: bubbleColor,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(22),
+              topRight: const Radius.circular(22),
+              bottomLeft: Radius.circular(msg.fromMe ? 22 : 10),
+              bottomRight: Radius.circular(msg.fromMe ? 10 : 22),
+            ),
+            border: Border.all(
+              color: msg.isFlagged
+                  ? NatterBrand.yellow.withOpacity(0.9)
+                  : Colors.white.withOpacity(0.12),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (msg.isFlagged && !msg.fromMe)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    'Flagged message',
+                    style: TextStyle(
+                      color: NatterBrand.yellow.withOpacity(0.95),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              Text(
+                msg.text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-    ),
-  ],
-),,
+
+        Positioned(
+          bottom: 8,
+          right: msg.fromMe ? -4 : null,
+          left: msg.fromMe ? null : -4,
+          child: Transform.rotate(
+            angle: msg.fromMe ? 0.3 : -0.3,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                color: bubbleColor,
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
+          ),
+        ),
+      ],
+    ),
+  ),
           if (msg.reaction != null && !showProtectedCard)
             Padding(
               padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
