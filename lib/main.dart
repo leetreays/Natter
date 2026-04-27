@@ -974,6 +974,10 @@ Future<bool> sendMessageToConversation({
   required String text,
   bool isFlagged = false,
 }) async {
+  debugPrint('--- DEBUG SEND METHOD HIT ---');
+  debugPrint('sendMessageToConversation id: $conversationId');
+  debugPrint('sendMessageToConversation activeChildId: $activeChildId');
+  
   final trimmed = text.trim();
   if (trimmed.isEmpty) return false;
   if (!hasActiveChildSession) return false;
@@ -9296,6 +9300,9 @@ void _showStallRescue() {
 Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
+
+  debugPrint('--- DEBUG SEND BUTTON HIT ---');
+  debugPrint('ChatScreen conversationId: ${widget.conversationId}');
 
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
