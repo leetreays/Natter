@@ -1022,38 +1022,36 @@ Future<bool> sendMessageToConversation({
 
   final previewText = isFlagged ? 'Message needs review' : trimmed;
 
-final updateData = <String, dynamic>{
+final conversationUpdate = <Object, Object?>{
   'lastMessage': previewText,
   'lastMessageSenderChildId': activeChildId,
   'lastMessageAt': FieldValue.serverTimestamp(),
-  'unreadCounts.$activeChildId': 0,
+  FieldPath(['unreadCounts', activeChildId!]): 0,
 };
 
 if (otherChildId.isNotEmpty) {
-  updateData['unreadCounts.$otherChildId'] = FieldValue.increment(1);
+  conversationUpdate[FieldPath(['unreadCounts', otherChildId])] =
+      FieldValue.increment(1);
 }
 
 debugPrint('--- DEBUG UNREAD WRITE ---');
 debugPrint('Conversation write id: $conversationId');
 debugPrint('Active childId: $activeChildId');
 debugPrint('Other childId: $otherChildId');
-debugPrint('Update data: $updateData');
+debugPrint('Update data: $conversationUpdate');
 
-await conversationsRef().doc(conversationId).set(
-  updateData,
-  SetOptions(merge: true),
-);
-
+await conversationsRef().doc(conversationId).update(conversationUpdate);
+  
   return true;
 }
 
 Future<void> markConversationRead(String conversationId) async {
   if (!hasActiveChildSession) return;
 
-  await conversationsRef().doc(conversationId).set({
-    'unreadCounts.$activeChildId': 0,
-    'lastReadAtByChildId.$activeChildId': Timestamp.now(),
-  }, SetOptions(merge: true));
+await conversationsRef().doc(conversationId).update({
+  FieldPath(['unreadCounts', activeChildId!]): 0,
+  FieldPath(['lastReadAtByChildId', activeChildId!]): Timestamp.now(),
+});
 }
 
 Future<void> blockFriendship({
