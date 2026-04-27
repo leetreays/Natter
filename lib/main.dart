@@ -8519,7 +8519,7 @@ debugPrint('Unread map: ${conversation.unreadCounts}');
           print('Active child: ${state.activeChildId}');
 print('Unread map: ${conversation.unreadCounts}');
 
-          String previewText;
+String previewText;
 
 if (isBlocked) {
   previewText = 'Blocked';
@@ -8529,7 +8529,7 @@ if (isBlocked) {
     state.activeChildId) {
   previewText = 'You: ${conversation.lastMessage}';
 } else {
-  previewText = '($unreadCount) ${conversation.lastMessage}';
+  previewText = conversation.lastMessage;
 }
 
           return Padding(
