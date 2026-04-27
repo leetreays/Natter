@@ -974,9 +974,6 @@ Future<bool> sendMessageToConversation({
   required String text,
   bool isFlagged = false,
 }) async {
-  debugPrint('--- DEBUG SEND METHOD HIT ---');
-  debugPrint('sendMessageToConversation id: $conversationId');
-  debugPrint('sendMessageToConversation activeChildId: $activeChildId');
   
   final trimmed = text.trim();
   if (trimmed.isEmpty) return false;
@@ -1033,12 +1030,6 @@ if (otherChildId.isNotEmpty) {
   conversationUpdate[FieldPath(['unreadCounts', otherChildId])] =
       FieldValue.increment(1);
 }
-
-debugPrint('--- DEBUG UNREAD WRITE ---');
-debugPrint('Conversation write id: $conversationId');
-debugPrint('Active childId: $activeChildId');
-debugPrint('Other childId: $otherChildId');
-debugPrint('Update data: $conversationUpdate');
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
   
@@ -8510,13 +8501,7 @@ Widget build(BuildContext context) {
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
 final hasUnread = unreadCount > 0;
 
-debugPrint('--- DEBUG UNREAD READ ---');
-debugPrint('Conversation read id: ${conversation.id}');
-debugPrint('Active childId: ${state.activeChildId}');
-debugPrint('Participant childIds: ${conversation.participantChildIds}');
-debugPrint('Unread map: ${conversation.unreadCounts}');
-
-          print('Active child: ${state.activeChildId}');
+print('Active child: ${state.activeChildId}');
 print('Unread map: ${conversation.unreadCounts}');
 
 String previewText;
@@ -8569,9 +8554,9 @@ if (isBlocked) {
   boxShadow: hasUnread
       ? [
           BoxShadow(
-            color: NatterBrand.green.withOpacity(0.22),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+            color: NatterBrand.green.withOpacity(0.24),
+            blurRadius: 16,
+            offset: const Offset(0, 5),
           ),
         ]
       : [
@@ -8609,22 +8594,27 @@ if (isBlocked) {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              otherChildName,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
+  otherChildName,
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: hasUnread ? FontWeight.w900 : FontWeight.w800,
+    letterSpacing: hasUnread ? 0.2 : 0,
+  ),
+),
                             const SizedBox(height: 2),
                             Text(
-                              previewText,
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.65),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+  previewText,
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+  style: TextStyle(
+    color: hasUnread
+        ? Colors.white.withOpacity(0.86)
+        : Colors.white.withOpacity(0.65),
+    fontSize: 12,
+    fontWeight: hasUnread ? FontWeight.w800 : FontWeight.w600,
+  ),
+),
                           ],
                         ),
                       ),
@@ -8632,11 +8622,20 @@ if (isBlocked) {
                       if (hasUnread)
   Container(
     margin: const EdgeInsets.only(right: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    width: 28,
+    height: 28,
     decoration: BoxDecoration(
       color: NatterBrand.green,
-      borderRadius: BorderRadius.circular(999),
+      shape: BoxShape.circle,
+      boxShadow: [
+        BoxShadow(
+          color: NatterBrand.green.withOpacity(0.45),
+          blurRadius: 10,
+          offset: const Offset(0, 3),
+        ),
+      ],
     ),
+    alignment: Alignment.center,
     child: Text(
       unreadCount > 9 ? '9+' : '$unreadCount',
       style: const TextStyle(
@@ -9298,9 +9297,6 @@ void _showStallRescue() {
 Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
-
-  debugPrint('--- DEBUG SEND BUTTON HIT ---');
-  debugPrint('ChatScreen conversationId: ${widget.conversationId}');
 
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
