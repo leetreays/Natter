@@ -3658,11 +3658,13 @@ List<AlertEvent> _signalsForChild(AppState state) {
 List<String> _patternsForChild(List<AlertEvent> signals) {
   final quietHoursCount =
       signals.where((s) => s.type == AlertType.quietHours).length;
-  final trickyMessageCount = signals
-    .where((s) =>
-        s.type == AlertType.blockedWord ||
-        s.type == AlertType.safetyCoach)
-    .length;
+
+  final guidanceCount = signals
+      .where((s) =>
+          s.type == AlertType.blockedWord ||
+          s.type == AlertType.safetyCoach)
+      .length;
+
   final connectionCount =
       signals.where((s) => s.type == AlertType.contactRequest).length;
 
@@ -3671,34 +3673,34 @@ List<String> _patternsForChild(List<AlertEvent> signals) {
   if (quietHoursCount > 0) {
     items.add(
       quietHoursCount == 1
-          ? 'A quiet-hours moment came up this week.'
-          : 'A few quiet-hours moments came up this week.',
+          ? 'Evening habits: one reminder came up recently.'
+          : 'Evening habits: a few reminders came up recently.',
     );
   }
 
-  if (trickyMessageCount > 0) {
+  if (guidanceCount > 0) {
     items.add(
-      trickyMessageCount == 1
-          ? 'Your child is learning how to handle a tricky message.'
-          : 'Your child is learning how to handle tricky messages.',
+      guidanceCount == 1
+          ? 'Message guidance: Natter helped with one tricky moment.'
+          : 'Message guidance: Natter helped with a few tricky moments.',
     );
   }
 
   if (connectionCount > 0) {
     items.add(
       connectionCount == 1
-          ? 'A friendship step happened recently.'
-          : 'A few friendship steps happened recently.',
+          ? 'Connection: one friendship step happened recently.'
+          : 'Connection: friendship activity is developing.',
     );
   }
 
   if (items.isEmpty) {
-    items.add('Things have been calm recently.');
+    items.add('Overall rhythm: things have felt calm recently.');
   }
 
   return items;
 }
-
+  
 List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   final quietHoursCount =
       signals.where((s) => s.type == AlertType.quietHours).length;
