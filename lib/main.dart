@@ -1036,6 +1036,27 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   return true;
 }
 
+Future<void> setTyping({
+  required String conversationId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await conversationsRef().doc(conversationId).set({
+    'typingChildId': activeChildId,
+    'typingAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
+Future<void> clearTyping({
+  required String conversationId,
+}) async {
+  if (!hasActiveChildSession) return;
+
+  await conversationsRef().doc(conversationId).set({
+    'typingChildId': null,
+  }, SetOptions(merge: true));
+}
+  
 Future<void> markConversationRead(String conversationId) async {
   if (!hasActiveChildSession) return;
 
@@ -9300,6 +9321,10 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
 
+  await state.clearTyping(
+  conversationId: widget.conversationId,
+);
+
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
     text: text,
@@ -9465,6 +9490,31 @@ if (isBlockedByMe || isBlockedByOther) {
     controller.dispose();
     super.dispose();
   }
+
+  Timer? _typingTimer;
+bool _isTyping = false;
+
+  Future<void> _handleTyping() async {
+  final state = AppStateScope.of(context);
+
+  if (!_isTyping) {
+    _isTyping = true;
+
+    await state.setTyping(
+      conversationId: widget.conversationId,
+    );
+  }
+
+  _typingTimer?.cancel();
+
+  _typingTimer = Timer(const Duration(seconds: 2), () async {
+    _isTyping = false;
+
+    await state.clearTyping(
+      conversationId: widget.conversationId,
+    );
+  });
+}
 
   String _formatTime(TimeOfDay t) {
     final h = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
@@ -9794,6 +9844,10 @@ if (isBlockedByMe || isBlockedByOther) {
               conversationData['blockedByChildIds'] ?? const [],
             );
 
+            final typingChildId = conversationData['typingChildId'];
+            final isOtherTyping =
+                typingChildId != null && typingChildId != state.activeChildId;
+
             final isBlockedByMe =
                 blockedByChildIds.contains(state.activeChildId);
 
@@ -9812,8 +9866,23 @@ if (isBlockedByMe || isBlockedByOther) {
                 blockedByChildIds.contains(otherChildId);
 
 return Padding(
-  padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-  child: Row(
+  padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      if (isOtherTyping)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            '${widget.contactName} is thinking of a reply…',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      Row(
     children: [
       Container(
         decoration: BoxDecoration(
@@ -9868,6 +9937,7 @@ return Padding(
               ),
             ),
           ),
+          onChanged: (_) => _handleTyping(),
           onSubmitted: (_) {
             if (!isBlockedByMe && !isBlockedByOther) _send();
           },
@@ -9903,6 +9973,7 @@ return Padding(
       ),
     ],
   ),
+),
 );
           },
         ),
