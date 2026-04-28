@@ -9360,6 +9360,7 @@ Future.delayed(const Duration(milliseconds: 700), () {
 });
 
 _startStallTimer();
+}
 
 @override
 void initState() {
