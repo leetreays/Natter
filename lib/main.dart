@@ -9320,6 +9320,7 @@ void _showStallRescue() {
 Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
+  if (!_canSend) return;
 
   await state.clearTyping(
   conversationId: widget.conversationId,
@@ -9342,14 +9343,23 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 
   controller.clear();
 
-  if (mounted && feedback != null) {
-    setState(() {
-      feedback = null;
-    });
-  }
+if (!mounted) return;
 
-  _startStallTimer();
-}
+setState(() {
+  _canSend = false;
+  feedback = 'Sent 💛';
+});
+
+Future.delayed(const Duration(milliseconds: 700), () {
+  if (!mounted) return;
+
+  setState(() {
+    _canSend = true;
+    feedback = null;
+  });
+});
+
+_startStallTimer();
 
 @override
 void initState() {
@@ -9544,6 +9554,8 @@ bool _isTyping = false;
 
   return distanceFromBottom < 80;
 }
+
+bool _canSend = true;
   
   @override
   Widget build(BuildContext context) {
@@ -9945,12 +9957,14 @@ return Padding(
       ),
       const SizedBox(width: 8),
       GestureDetector(
-        onTap: (isBlockedByMe || isBlockedByOther) ? null : _send,
+        onTap: (isBlockedByMe || isBlockedByOther || !_canSend)
+    ? null
+    : _send,
         child: Container(
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: (isBlockedByMe || isBlockedByOther)
+            color: (isBlockedByMe || isBlockedByOther || !_canSend)
                 ? Colors.grey.shade700
                 : NatterBrand.green,
             shape: BoxShape.circle,
