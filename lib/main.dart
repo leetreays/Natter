@@ -4967,7 +4967,7 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         calmRoute(
-            const PromiseScreen(),
+            const _PromiseScreenState(),
         ),
         (_) =>false,
     );
