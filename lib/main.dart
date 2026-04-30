@@ -1181,6 +1181,7 @@ Future<void> saveChildOnboardingState() async {
   await prefs.setBool('has_seen_first_reply', hasSeenFirstReply);
   await prefs.setBool('has_seen_add_friend_prompt', hasSeenAddFriendPrompt);
   await prefs.setBool('has_seen_add_friend_success', hasSeenAddFriendSuccess);
+  await prefs.setBool('has_completed_child_rite', hasCompletedChildRite);
   await prefs.setInt('onboarding_step', onboardingStep);
 }
 
@@ -1191,6 +1192,7 @@ Future<void> hydrateChildOnboardingState() async {
   hasSeenFirstReply = prefs.getBool('has_seen_first_reply') ?? false;
   hasSeenAddFriendPrompt = prefs.getBool('has_seen_add_friend_prompt') ?? false;
   hasSeenAddFriendSuccess = prefs.getBool('has_seen_add_friend_success') ?? false;
+  hasCompletedChildRite = prefs.getBool('has_completed_child_rite') ?? false;
   onboardingStep = prefs.getInt('onboarding_step') ?? 0;
 }
 
@@ -1201,6 +1203,7 @@ Future<void> clearChildOnboardingState() async {
   await prefs.remove('has_seen_first_reply');
   await prefs.remove('has_seen_add_friend_prompt');
   await prefs.remove('has_seen_add_friend_success');
+  await prefs.remove('has_completed_child_rite');
   await prefs.remove('onboarding_step');
 
   hasSeenChirpWelcome = false;
@@ -1208,6 +1211,7 @@ Future<void> clearChildOnboardingState() async {
   hasSeenFirstReply = false;
   hasSeenAddFriendPrompt = false;
   hasSeenAddFriendSuccess = false;
+  hasCompletedChildRite = false;
   onboardingStep = 0;
 }
 
@@ -1411,6 +1415,7 @@ int coachPrompts = 0;
   String? celebrationTitle;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
+  hasCompletedChildRite = true;
 
   bool isGraduated = false;
   bool readyForGraduation = false;
@@ -1743,6 +1748,8 @@ int coachPrompts = 0;
     'promises': promises,
     'createdAt': FieldValue.serverTimestamp(),
   });
+
+  await saveChildOnboardingState()
 
   notifyListeners();
 }
@@ -4927,6 +4934,8 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       _error = 'Remembering child...';
     });
 
+    await state.clearChildOnboardingState();
+
     await state.rememberChildDevice(
       parentId: result['parentId']!,
       childId: result['childId']!,
@@ -4951,10 +4960,21 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
 
     if (!mounted) return;
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      calmRoute(
-        const ChatsScreen(),
+    await state.hydrateChildOnboardingState();
+    
+    if (!state.hasCompletedChildRite){
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+            const PromiseScreen(),
+        ),
+        (_) =>false,
+    );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          const ChatsScreen(),
       ),
       (_) => false,
     );
