@@ -4934,12 +4934,17 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     setState(() {
       _error = 'Remembering child...';
     });
+    
+  final previousChildId = state.activeChildId;
+  final incomingChildId = result['childId']!;
 
+  if (previousChildId != null && previousChildId ! = incomingChildId){
     await state.clearChildOnboardingState();
+  }
 
     await state.rememberChildDevice(
       parentId: result['parentId']!,
-      childId: result['childId']!,
+      childId: incomingChildId,
       childName: result['childName']!,
       childAvatar: result['avatar'] ?? 'owl',
       childFriendCode: result['friendCode'] ?? '',
