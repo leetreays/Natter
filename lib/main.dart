@@ -5131,6 +5131,7 @@ if (!state.hasCompletedChildRite) {
     );
   }
 }
+}
 
 class ParentSpaceBackground extends StatelessWidget {
   final Widget child;
