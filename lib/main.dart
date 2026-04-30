@@ -1290,6 +1290,23 @@ Future<void> unlinkActiveChildDevice() async {
   }, SetOptions(merge: true));
 }
 
+Future<void> hydrateChildRiteStateFromFirestore() async {
+  if (activeParentId == null || activeChildId == null) return;
+
+  final doc = await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(activeParentId)
+      .collection('children')
+      .doc(activeChildId)
+      .get();
+
+  final data = doc.data() ?? {};
+
+  hasCompletedChildRite = data['hasCompletedChildRite'] == true;
+
+  await saveChildOnboardingState();
+}
+  
 Future<void> rememberParentDevice() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString('device_mode', 'parent');
@@ -1751,6 +1768,21 @@ int coachPrompts = 0;
   });
 
   await saveChildOnboardingState();
+
+  if (activeParentId != null && activeChildId != null) {
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(activeParentId)
+      .collection('children')
+      .doc(activeChildId)
+      .set({
+    'hasCompletedChildRite': true,
+    'riteCompletedAt': FieldValue.serverTimestamp(),
+    'promises': promises,
+  }, SetOptions(merge: true));
+}
+
+await saveChildOnboardingState();
 
   notifyListeners();
 }
@@ -4969,6 +5001,7 @@ Future<void> _continue() async {
     if (!mounted) return;
 
     await state.hydrateChildOnboardingState();
+    await state.hydrateChildRiteStateFromFirestore();
 
     if (!state.hasCompletedChildRite) {
       Navigator.pushAndRemoveUntil(
