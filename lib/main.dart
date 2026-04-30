@@ -4978,6 +4978,7 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       ),
       (_) => false,
     );
+  }
   } catch (e) {
     setState(() {
       _error = e.toString().replaceFirst('Exception: ', '');
