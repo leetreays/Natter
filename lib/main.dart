@@ -4901,8 +4901,35 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     super.dispose();
   }
 
-  Future<void> _continue() async {
+Future<void> _continue() async {
   final state = AppStateScope.of(context);
+
+  setState(() {
+    _loading = true;
+    _error = null;
+  });
+
+  try {
+    setState(() {
+      _error = 'Signing in...';
+    });
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await FirebaseAuth.instance.signOut();
+    }
+
+    final childUser = await ensureSignedIn();
+
+    setState(() {
+      _error = 'Looking up code...';
+    });
+
+    final result = await state.findChildByAccessCode(_codeController.text);
+
+    if (result == null) {
+      throw Exception('That code was not recognised.');
+    }
 
     setState(() {
       _error = 'Remembering child...';
@@ -4947,7 +4974,7 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         calmRoute(
-          PromiseScreen(
+          PromisesScreen(
             name: state.effectiveChildName,
           ),
         ),
