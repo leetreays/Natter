@@ -4935,69 +4935,62 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
       _error = 'Remembering child...';
     });
     
-  final previousChildId = state.activeChildId;
-  final incomingChildId = result['childId']!;
+await state.hydrateChildOnboardingState();
 
-  if (previousChildId != null && previousChildId ! = incomingChildId){
-    await state.clearChildOnboardingState();
-  }
+final incomingChildId = result['childId']!;
 
-    await state.rememberChildDevice(
-      parentId: result['parentId']!,
-      childId: incomingChildId,
-      childName: result['childName']!,
-      childAvatar: result['avatar'] ?? 'owl',
-      childFriendCode: result['friendCode'] ?? '',
-    );
+// If switching to a different child → reset onboarding
+if (state.activeChildId != null &&
+    state.activeChildId != incomingChildId) {
+  await state.clearChildOnboardingState();
+}
 
-    setState(() {
-      _error = 'Linking device...';
-    });
+await state.rememberChildDevice(
+  parentId: result['parentId']!,
+  childId: incomingChildId,
+  childName: result['childName']!,
+  childAvatar: result['avatar'] ?? 'owl',
+  childFriendCode: result['friendCode'] ?? '',
+);
 
-    await FirebaseFirestore.instance
-        .collection('parents')
-        .doc(result['parentId']!)
-        .collection('children')
-        .doc(result['childId']!)
-        .set({
-      'linkedDevice': true,
-      'linkedAuthUid': childUser.uid,
-    }, SetOptions(merge: true));
+setState(() {
+  _error = 'Linking device...';
+});
 
-    if (!mounted) return;
+await FirebaseFirestore.instance
+    .collection('parents')
+    .doc(result['parentId']!)
+    .collection('children')
+    .doc(result['childId']!)
+    .set({
+  'linkedDevice': true,
+  'linkedAuthUid': childUser.uid,
+}, SetOptions(merge: true));
 
-    await state.hydrateChildOnboardingState();
-    
-    if (!state.hasCompletedChildRite){
-      Navigator.pushAndRemoveUntil(
-        context,
-        calmRoute(
-            PromiseScreen(
-              name: state.effectiveChildName,
-            ),
-        ),
-        (_) =>false,
-    );
-    } else {
-      Navigator.pushAndRemoveUntil(
-        context,
-        calmRoute(
-          const ChatsScreen(),
+if (!mounted) return;
+
+// Re-hydrate AFTER remember (safe + ensures correct state)
+await state.hydrateChildOnboardingState();
+
+// Decide route
+if (!state.hasCompletedChildRite) {
+  Navigator.pushAndRemoveUntil(
+    context,
+    calmRoute(
+      PromiseScreen(
+        name: state.effectiveChildName,
       ),
-      (_) => false,
-    );
-  }
-  } catch (e) {
-    setState(() {
-      _error = e.toString().replaceFirst('Exception: ', '');
-    });
-  } finally {
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
-    }
-  }
+    ),
+    (_) => false,
+  );
+} else {
+  Navigator.pushAndRemoveUntil(
+    context,
+    calmRoute(
+      const ChatsScreen(),
+    ),
+    (_) => false,
+  );
 }
 
   InputDecoration _fieldDecoration(String label) {
