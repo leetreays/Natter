@@ -1415,8 +1415,7 @@ int coachPrompts = 0;
   String? celebrationTitle;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
-  hasCompletedChildRite = true;
-
+ 
   bool isGraduated = false;
   bool readyForGraduation = false;
 
@@ -1425,6 +1424,7 @@ int coachPrompts = 0;
   bool hasSeenFirstReply = false;
   bool hasSeenAddFriendPrompt = false;
   bool hasSeenAddFriendSuccess = false;
+  bool hasCompletedChildRite = false;
 
   bool hasSeenParentOnboarding = false;
 
@@ -1721,6 +1721,7 @@ int coachPrompts = 0;
   lastPromises = List<String>.from(promises);
   lastBadge = badgeForPromises(promises.toSet());
   currentLevel = NatterLevel.promiseKeeper;
+     hasCompletedChildRite = true;
   kindnessRewrites = 0;
   kindnessStreak = 0;
   kindnessStars = 0;
@@ -1749,7 +1750,7 @@ int coachPrompts = 0;
     'createdAt': FieldValue.serverTimestamp(),
   });
 
-  await saveChildOnboardingState()
+  await saveChildOnboardingState();
 
   notifyListeners();
 }
