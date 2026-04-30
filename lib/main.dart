@@ -4934,6 +4934,7 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
     setState(() {
       _error = 'Remembering child...';
     });
+  }
     
 await state.hydrateChildOnboardingState();
 
