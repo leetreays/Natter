@@ -4904,94 +4904,75 @@ class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
   Future<void> _continue() async {
   final state = AppStateScope.of(context);
 
-  setState(() {
-    _loading = true;
-    _error = null;
-  });
-
-  try {
-    setState(() {
-      _error = 'Signing in...';
-    });
-
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      await FirebaseAuth.instance.signOut();
-    }
-
-    final childUser = await ensureSignedIn();
-
-    setState(() {
-      _error = 'Looking up code...';
-    });
-
-    final result = await state.findChildByAccessCode(_codeController.text);
-
-    if (result == null) {
-      throw Exception('That code was not recognised.');
-    }
-
     setState(() {
       _error = 'Remembering child...';
     });
+
+    await state.hydrateChildOnboardingState();
+
+    final incomingChildId = result['childId']!;
+
+    if (state.activeChildId != null &&
+        state.activeChildId != incomingChildId) {
+      await state.clearChildOnboardingState();
+    }
+
+    await state.rememberChildDevice(
+      parentId: result['parentId']!,
+      childId: incomingChildId,
+      childName: result['childName']!,
+      childAvatar: result['avatar'] ?? 'owl',
+      childFriendCode: result['friendCode'] ?? '',
+    );
+
+    setState(() {
+      _error = 'Linking device...';
+    });
+
+    await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(result['parentId']!)
+        .collection('children')
+        .doc(result['childId']!)
+        .set({
+      'linkedDevice': true,
+      'linkedAuthUid': childUser.uid,
+    }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    await state.hydrateChildOnboardingState();
+
+    if (!state.hasCompletedChildRite) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          PromiseScreen(
+            name: state.effectiveChildName,
+          ),
+        ),
+        (_) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          const ChatsScreen(),
+        ),
+        (_) => false,
+      );
+    }
+  } catch (e) {
+    setState(() {
+      _error = e.toString().replaceFirst('Exception: ', '');
+    });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
-    
-await state.hydrateChildOnboardingState();
-
-final incomingChildId = result['childId']!;
-
-// If switching to a different child → reset onboarding
-if (state.activeChildId != null &&
-    state.activeChildId != incomingChildId) {
-  await state.clearChildOnboardingState();
-}
-
-await state.rememberChildDevice(
-  parentId: result['parentId']!,
-  childId: incomingChildId,
-  childName: result['childName']!,
-  childAvatar: result['avatar'] ?? 'owl',
-  childFriendCode: result['friendCode'] ?? '',
-);
-
-setState(() {
-  _error = 'Linking device...';
-});
-
-await FirebaseFirestore.instance
-    .collection('parents')
-    .doc(result['parentId']!)
-    .collection('children')
-    .doc(result['childId']!)
-    .set({
-  'linkedDevice': true,
-  'linkedAuthUid': childUser.uid,
-}, SetOptions(merge: true));
-
-if (!mounted) return;
-
-// Re-hydrate AFTER remember (safe + ensures correct state)
-await state.hydrateChildOnboardingState();
-
-// Decide route
-if (!state.hasCompletedChildRite) {
-  Navigator.pushAndRemoveUntil(
-    context,
-    calmRoute(
-      PromiseScreen(
-        name: state.effectiveChildName,
-      ),
-    ),
-    (_) => false,
-  );
-} else {
-  Navigator.pushAndRemoveUntil(
-    context,
-    calmRoute(
-      const ChatsScreen(),
-    ),
-    (_) => false,
-  );
 }
 
   InputDecoration _fieldDecoration(String label) {
@@ -5130,7 +5111,6 @@ if (!state.hasCompletedChildRite) {
       ),
     );
   }
-}
 }
 
 class ParentSpaceBackground extends StatelessWidget {
