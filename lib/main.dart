@@ -8612,9 +8612,59 @@ Widget build(BuildContext context) {
 
     final conversations = snapshot.data ?? [];
 
-    if (conversations.isEmpty) {
-      return const SizedBox.shrink();
-    }
+if (conversations.isEmpty) {
+  return _buildEmptyState(context);
+}
+
+    Widget _buildEmptyState(BuildContext context) {
+  return Column(
+    children: [
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2A48),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Image.asset(
+              'assets/chirp_welcome.png',
+              height: 80,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Let’s get started',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Add your first friend to begin chatting.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // your add friend action
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: NatterBrand.green,
+              ),
+              child: const Text('Add Friend'),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
 
     return Column(
       children: [
