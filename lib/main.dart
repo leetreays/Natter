@@ -689,6 +689,9 @@ String get myFriendCode => activeChildFriendCode ?? 'NAT-0000';
   String? get activeChildName => _childSession?.childName;
   String? get activeChildAvatar => _childSession?.childAvatar;
 
+  String? activeQuest;
+bool hasCompletedQuest = false;
+  
   String get effectiveChildName =>
       _childSession?.childName.trim().isNotEmpty == true
           ? _childSession!.childName
@@ -1432,7 +1435,10 @@ int coachPrompts = 0;
   String? celebrationTitle;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
- 
+
+  String? activeQuest = 'Send a kind message today';
+bool hasCompletedQuest = false;
+  
   bool isGraduated = false;
   bool readyForGraduation = false;
 
@@ -8534,6 +8540,51 @@ Widget build(BuildContext context) {
     const SizedBox(height: 12),
   ],
 ),
+      Container(
+  width: double.infinity,
+  margin: const EdgeInsets.only(bottom: 14),
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: const Color(0xFF1C2A48),
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.08),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Today’s focus',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.68),
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        state.activeQuest ?? 'Send a kind message today',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 16,
+        ),
+      ),
+      if (state.hasCompletedQuest)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            'Nice work 💛',
+            style: TextStyle(
+              color: NatterBrand.green,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+    ],
+  ),
+),
 
             StreamBuilder<List<ConversationRecord>>(
   stream: state.conversationsForChildStream(
@@ -9411,7 +9462,6 @@ if (!mounted) return;
 
 setState(() {
   _canSend = false;
-  feedback = 'Sent 💛';
 });
 
 Future.delayed(const Duration(milliseconds: 700), () {
@@ -9422,6 +9472,11 @@ Future.delayed(const Duration(milliseconds: 700), () {
     feedback = null;
   });
 });
+
+  if (!flagged && !state.hasCompletedQuest) {
+  state.hasCompletedQuest = true;
+  state.notifyListeners();
+  }
 
 _startStallTimer();
 }
