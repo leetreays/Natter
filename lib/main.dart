@@ -1436,9 +1436,6 @@ int coachPrompts = 0;
   String? celebrationMessage;
   NatterLevel currentLevel = NatterLevel.promiseKeeper;
 
-  String? activeQuest = 'Send a kind message today';
-bool hasCompletedQuest = false;
-  
   bool isGraduated = false;
   bool readyForGraduation = false;
 
@@ -1744,6 +1741,7 @@ bool hasCompletedQuest = false;
   lastPromises = List<String>.from(promises);
   lastBadge = badgeForPromises(promises.toSet());
   currentLevel = NatterLevel.promiseKeeper;
+    activeQuest ??= 'Send a kind message today';
      hasCompletedChildRite = true;
   kindnessRewrites = 0;
   kindnessStreak = 0;
