@@ -8200,6 +8200,7 @@ Widget build(BuildContext context) {
   final state = AppStateScope.of(context);
   final schoolFriends = state.sameSchoolFriends;
   final yearFriends = state.sameYearFriends;
+  final isNewChild = state.approvedContacts.isEmpty;
   final chats = state.approvedContacts
       .map((f) => ChatPreview(
             name: f.name,
@@ -8261,7 +8262,9 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    floatingActionButton: FloatingActionButton.extended(
+    floatingActionButton: isNewChild
+    ? null
+    : FloatingActionButton.extended(
     onPressed: () => _addFriendDialog(context),
     backgroundColor: NatterBrand.green,
     foregroundColor: Colors.black,
@@ -8277,7 +8280,7 @@ Widget build(BuildContext context) {
     physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
-            if (!state.hasSentFirstMessage && state.isInOnboarding) ...[
+            if (!isNewChild && !state.hasSentFirstMessage && state.isInOnboarding) ...[
               BrandCard(
                 child: Row(
                   children: [
@@ -8302,6 +8305,7 @@ Widget build(BuildContext context) {
               const SizedBox(height: 12),
             ],
 
+            if (!isNewChild) ...[
             BrandCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -8348,10 +8352,12 @@ Widget build(BuildContext context) {
               ),
             ),
             const SizedBox(height: 12),
-
-            _friendCodeCard(context, state),
-            const SizedBox(height: 12),
-
+          ]
+            if (!isNewChild) ...[
+  _friendCodeCard(context, state),
+  const SizedBox(height: 12),
+],
+          
             Column(
   children: [
     StreamBuilder<List<ChildContactRequest>>(
@@ -8587,7 +8593,8 @@ Widget build(BuildContext context) {
     const SizedBox(height: 12),
   ],
 ),
-      Container(
+      if (!isNewChild)
+  Container(
   width: double.infinity,
   margin: const EdgeInsets.only(bottom: 14),
   padding: const EdgeInsets.all(16),
@@ -8685,9 +8692,6 @@ if (conversations.isEmpty) {
 
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
 final hasUnread = unreadCount > 0;
-
-print('Active child: ${state.activeChildId}');
-print('Unread map: ${conversation.unreadCounts}');
 
 String previewText;
 
@@ -8864,7 +8868,7 @@ isBlocked
     );
   },
 ),
-            if (schoolFriends.isNotEmpty) ...[
+            if (!isNewChild && schoolFriends.isNotEmpty) ...[
               BrandCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
