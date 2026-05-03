@@ -8353,10 +8353,11 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 12),
           ]
-            if (!isNewChild) ...[
+            if (!isNewChild)
   _friendCodeCard(context, state),
+
+if (!isNewChild)
   const SizedBox(height: 12),
-],
           
             Column(
   children: [
