@@ -658,15 +658,6 @@ class ParentChildProfile {
 
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
-  final List<Friend> approvedContacts = [
-    Friend(name: 'Dad', friendshipPoints: 40)
-  ..friendshipMoments.add('⭐ You became friends'),
-    Friend(name: 'Sam', friendshipPoints: 18)
-  ..friendshipMoments.add('⭐ You became friends'),
-    Friend(name: 'Mia', friendshipPoints: 8)
-  ..friendshipMoments.add('⭐ You became friends'),
-  ];
-  final List<String> pendingRequests = ['Ava', 'Leo'];
   
   List<Friend> get sameSchoolFriends {
   return approvedContacts
@@ -8198,8 +8189,13 @@ Widget build(BuildContext context) {
   final schoolFriends = state.sameSchoolFriends;
   final yearFriends = state.sameYearFriends;
   final realApprovedContacts = state.approvedContacts
-    .where((f) => f.name.trim().toLowerCase() != 'ava')
-    .toList();
+    .where((f) => f.name.trim().toLowerCase();
+
+           return name.isNotEmpty &&
+           name != 'ava' &&
+           name != 'leo' &&
+           name != 'test';
+           }).toList();
 
   final isNewChild = realApprovedContacts.isEmpty;
   final chats = realApprovedContacts
