@@ -8188,16 +8188,16 @@ Widget build(BuildContext context) {
   final state = AppStateScope.of(context);
   final schoolFriends = state.sameSchoolFriends;
   final yearFriends = state.sameYearFriends;
-  final realApprovedContacts = state.approvedContacts
-    .where((f) => f.name.trim().toLowerCase();
+  final realApprovedContacts = state.approvedContacts.where((f) {
+  final name = f.name.trim().toLowerCase();
 
-           return name.isNotEmpty &&
-           name != 'ava' &&
-           name != 'leo' &&
-           name != 'test';
-           }).toList();
+  return name.isNotEmpty &&
+      name != 'ava' &&
+      name != 'leo' &&
+      name != 'test';
+}).toList();
 
-  final isNewChild = realApprovedContacts.isEmpty;
+final isNewChild = realApprovedContacts.isEmpty;
   final chats = realApprovedContacts
     .map((f) => ChatPreview(
           name: f.name,
