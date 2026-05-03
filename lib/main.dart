@@ -658,6 +658,9 @@ class ParentChildProfile {
 
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
+
+  final List<Friend> approvedContacts = [];
+  final List<String> pendingRequests = [];
   
   List<Friend> get sameSchoolFriends {
   return approvedContacts
