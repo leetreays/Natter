@@ -8137,55 +8137,115 @@ await showDialog<void>(
       ),
     );
   }
-  Widget _buildEmptyState(BuildContext context) {
-  return Column(
-    children: [
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C2A48),
-          borderRadius: BorderRadius.circular(20),
+ Widget _buildEmptyState(BuildContext context) {
+  return SizedBox(
+    height: MediaQuery.of(context).size.height - 210,
+    child: Column(
+      children: [
+        const Spacer(),
+
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+            ),
+          ),
+          child: Column(
+            children: [
+              Image.asset(
+                'assets/chirp_welcome.png',
+                height: 92,
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Let’s get started',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 22,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Add your first friend to begin chatting.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 22),
+              ElevatedButton(
+                onPressed: () => _addFriendDialog(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: NatterBrand.green,
+                  foregroundColor: Colors.black,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                child: const Text(
+                  'Add Friend',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          children: [
-            Image.asset(
-              'assets/chirp_welcome.png',
-              height: 80,
+
+        const Spacer(),
+
+        TextButton(
+          onPressed: () async {
+            try {
+              await AppStateScope.of(context).clearRememberedDeviceMode();
+
+              if (!context.mounted) return;
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                calmRoute(const GatewayScreen()),
+                (_) => false,
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Could not reset this device: $e'),
+                ),
+              );
+            }
+          },
+          child: const Text(
+            'Reset this device',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 12),
-            const Text(
-              'Let’s get started',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Add your first friend to begin chatting.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // your add friend action
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: NatterBrand.green,
-              ),
-              child: const Text('Add Friend'),
-            ),
-          ],
+          ),
         ),
-      ),
-    ],
+
+        const SizedBox(height: 8),
+      ],
+    ),
   );
-  }
+}
   @override
 Widget build(BuildContext context) {
   final state = AppStateScope.of(context);
