@@ -8210,37 +8210,6 @@ await showDialog<void>(
 
         const Spacer(),
 
-        TextButton(
-          onPressed: () async {
-            try {
-              await AppStateScope.of(context).clearRememberedDeviceMode();
-
-              if (!context.mounted) return;
-
-              Navigator.pushAndRemoveUntil(
-                context,
-                calmRoute(const GatewayScreen()),
-                (_) => false,
-              );
-            } catch (e) {
-              if (!context.mounted) return;
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Could not reset this device: $e'),
-                ),
-              );
-            }
-          },
-          child: const Text(
-            'Reset this device',
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-
         const SizedBox(height: 8),
       ],
     ),
@@ -8322,9 +8291,8 @@ final isNewChild = realApprovedContacts.isEmpty;
         ),
       ],
     ),
-    floatingActionButton: isNewChild
-    ? null
-    : FloatingActionButton.extended(
+    floatingActionButton:
+    FloatingActionButton.extended(
     onPressed: () => _addFriendDialog(context),
     backgroundColor: NatterBrand.green,
     foregroundColor: Colors.black,
@@ -8335,8 +8303,10 @@ final isNewChild = realApprovedContacts.isEmpty;
     ),
   ),
   floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      child: RepaintBoundary(
-  child: ListView(
+    child: Stack(
+  children: [
+    RepaintBoundary(
+      child: ListView(
     physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
@@ -8965,48 +8935,54 @@ isBlocked
               ),
               const SizedBox(height: 12),
             ],
-
-                        const SizedBox(height: 12),
-            Center(
-              child: TextButton(
-                onPressed: () async {
-  try {
-    await AppStateScope.of(context).clearRememberedDeviceMode();
-
-    if (!context.mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      calmRoute(const GatewayScreen()),
-      (_) => false,
-    );
-  } catch (e) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Could not reset this device: $e'),
-      ),
-    );
-  }
-},
-                child: const Text(
-                  'Reset this device',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 28),
+            const SizedBox(height: 70),
           ],
         ),
       ),
-    );
-  }
-}
+    ),
+
+    Positioned(
+      left: 0,
+      right: 0,
+      bottom: 10,
+      child: SafeArea(
+        top: false,
+        child: Center(
+          child: TextButton(
+            onPressed: () async {
+              try {
+                await AppStateScope.of(context).clearRememberedDeviceMode();
+
+                if (!context.mounted) return;
+
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  calmRoute(const GatewayScreen()),
+                  (_) => false,
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Could not reset this device: $e'),
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'Reset this device',
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
