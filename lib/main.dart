@@ -1752,9 +1752,6 @@ int coachPrompts = 0;
     ..clear()
     ..add(lastBadge!);
 
-  approvedContacts.removeWhere((f) => f.name == 'Ava');
-  approvedContacts.insert(0, Friend(name: 'Ava', friendshipPoints: 0));
-
   hasSeenChirpWelcome = false;
   hasSentFirstMessage = false;
   hasSeenFirstReply = false;
@@ -8200,14 +8197,18 @@ Widget build(BuildContext context) {
   final state = AppStateScope.of(context);
   final schoolFriends = state.sameSchoolFriends;
   final yearFriends = state.sameYearFriends;
-  final isNewChild = state.approvedContacts.isEmpty;
-  final chats = state.approvedContacts
-      .map((f) => ChatPreview(
-            name: f.name,
-            last: 'No messages yet',
-            unread: false,
-          ))
-      .toList();
+  final realApprovedContacts = state.approvedContacts
+    .where((f) => f.name.trim().toLowerCase() != 'ava')
+    .toList();
+
+  final isNewChild = realApprovedContacts.isEmpty;
+  final chats = realApprovedContacts
+    .map((f) => ChatPreview(
+          name: f.name,
+          last: 'No messages yet',
+          unread: false,
+        ))
+    .toList();
 
     return BrandScaffold(
     appBar: AppBar(
