@@ -8305,7 +8305,7 @@ Widget build(BuildContext context) {
               const SizedBox(height: 12),
             ],
 
-            if (!isNewChild) ...[
+            if (!isNewChild)
             BrandCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -8351,8 +8351,9 @@ Widget build(BuildContext context) {
                 ],
               ),
             ),
+            if (!isNewChild)
             const SizedBox(height: 12),
-          ]
+          
             if (!isNewChild)
   _friendCodeCard(context, state),
 
