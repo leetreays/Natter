@@ -9065,7 +9065,7 @@ isBlocked
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: NatterBrand.pink.withOpacity(0.75),
+          color: NatterBrand.pink.withOpacity(0.55),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
