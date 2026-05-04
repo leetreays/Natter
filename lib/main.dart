@@ -5859,7 +5859,7 @@ void dispose() {
                       Text(
                         'Okay, ${widget.name} 😊',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white.withOpacity(0.9),
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
@@ -8808,29 +8808,28 @@ if (suggestedFriend != null) {
 return Column(
   children: [
     if (nudgeText != null) ...[
-  const SizedBox(height: 16),
-  BrandCard(
-    child: Row(
-      children: [
-        Image.asset(
-          'assets/chirp_prompt.png',
-          height: 48,
-          width: 48,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            nudgeText,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+      const SizedBox(height: 16),
+      BrandCard(
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/chirp_prompt.png',
+              height: 48,
+              width: 48,
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                nudgeText,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  ),
-],
+      ),
       const SizedBox(height: 16),
     ],
 
