@@ -8974,7 +8974,7 @@ isBlocked
           child: Container(
   padding: const EdgeInsets.all(12),
   decoration: BoxDecoration(
-    color: NatterBrand.pink.withOpacity(0.85), // 👈 or try green/blue
+    color: NatterBrand.pink.withOpacity(0.85),
     shape: BoxShape.circle,
     boxShadow: [
       BoxShadow(
@@ -8983,6 +8983,11 @@ isBlocked
         offset: const Offset(0, 4),
       ),
     ],
+  ),
+  child: const Icon(
+    Icons.logout_rounded,
+    color: Colors.white,
+    size: 18,
   ),
 ),
             ),
