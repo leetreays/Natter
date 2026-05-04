@@ -725,8 +725,32 @@ String generateChildAccessCode() {
   return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
 }
 
-String? friendNeedingNudge(List<ConversationRecord> conversations, String myChildId) {
+String? friendNeedingNudge(
+  List<ConversationRecord> conversations,
+  String myChildId,
+) {
   if (conversations.isEmpty) return null;
+
+  final sorted = List<ConversationRecord>.from(conversations)
+    ..sort((a, b) => a.lastMessageTime.compareTo(b.lastMessageTime));
+
+  for (final convo in sorted) {
+    if (convo.lastMessageSenderChildId == myChildId) {
+      continue;
+    }
+
+    final other = convo.participantNames.firstWhere(
+      (name) => name != effectiveChildName,
+      orElse: () => '',
+    );
+
+    if (other.isEmpty) continue;
+
+    return other;
+  }
+
+  return null;
+}
 
   // Sort by last activity (oldest first)
   final sorted = List<ConversationRecord>.from(conversations)
