@@ -8489,7 +8489,7 @@ final isNewChild = realApprovedContacts.isEmpty;
               alignment: Alignment.topLeft,
               child: Image.asset(
                 'assets/natter-logo-v2.png',
-                height: 160,
+                height: 64,
               ),
             ),
 
@@ -8513,7 +8513,7 @@ final isNewChild = realApprovedContacts.isEmpty;
                   child: const Icon(
                     Icons.explore_rounded,
                     color: Colors.white,
-                    size: 80,
+                    size: 48,
                   ),
                 ),
               ),
