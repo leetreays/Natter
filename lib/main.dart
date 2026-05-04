@@ -752,27 +752,6 @@ String? friendNeedingNudge(
   return null;
 }
 
-  // Sort by last activity (oldest first)
-  final sorted = List<ConversationRecord>.from(conversations)
-    ..sort((a, b) => a.lastMessageTime.compareTo(b.lastMessageTime));
-
-  for (final convo in sorted) {
-    final other = convo.participantNames.firstWhere(
-      (n) => n != effectiveChildName,
-      orElse: () => '',
-    );
-
-    if (other.isEmpty) continue;
-
-    // If last message wasn't from this child → good nudge candidate
-    if (convo.lastMessageSenderChildId != myChildId) {
-      return other;
-    }
-  }
-
-  return null;
-}
-
 Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
   final code = rawCode.trim().toUpperCase();
   if (code.isEmpty) return null;
