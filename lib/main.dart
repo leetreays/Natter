@@ -8684,13 +8684,8 @@ StreamBuilder<List<ChildContactRequest>>(
 
             return Column(
               children: [
-                ...outgoing.map((request) {
-                  return _pendingOutgoingCard(request);
-                }).toList(),
-
-                ...incoming.map((request) {
-                  return _pendingIncomingCard(request);
-                }).toList(),
+                ...outgoing.map((request) => _pendingOutgoingCard(request)).toList(),
+                ...incoming.map((request) => _pendingIncomingCard(request)).toList(),
 
                 if (nudgeText != null) ...[
                   const SizedBox(height: 16),
@@ -8912,10 +8907,13 @@ isBlocked
                 ),
               ),
             ),
-          );
-        }).toList(),
-        const SizedBox(height: 12),
-      ],
+          );}).toList(),
+                const SizedBox(height: 12),
+              ],
+            );
+          },
+        );
+      },
     );
   },
 ),
