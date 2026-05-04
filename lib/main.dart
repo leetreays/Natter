@@ -572,6 +572,7 @@ class ConversationRecord {
   final String lastMessage;
   final String? lastMessageSenderChildId;
   final Map<String, dynamic> unreadCounts;
+  final DateTime lastMessageTime;
 
   const ConversationRecord({
     required this.id,
@@ -584,6 +585,7 @@ class ConversationRecord {
     required this.lastMessage,
     required this.lastMessageSenderChildId,
     required this.unreadCounts,
+    required this.lastMessageTime,
   });
 
   factory ConversationRecord.fromDoc(
@@ -609,6 +611,8 @@ class ConversationRecord {
       unreadCounts: Map<String, dynamic>.from(
   data['unreadCounts'] ?? const {},
 ),
+      lastMessageTime: (data['lastMessageAt'] as Timestamp?)?.toDate() 
+    ?? DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
   
@@ -719,6 +723,30 @@ String generateChildAccessCode() {
   final random = Random();
 
   return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
+}
+
+String? friendNeedingNudge(List<ConversationRecord> conversations, String myChildId) {
+  if (conversations.isEmpty) return null;
+
+  // Sort by last activity (oldest first)
+  final sorted = List<ConversationRecord>.from(conversations)
+    ..sort((a, b) => a.lastMessageTimestamp.compareTo(b.lastMessageTimestamp));
+
+  for (final convo in sorted) {
+    final other = convo.participantNames.firstWhere(
+      (n) => n != effectiveChildName,
+      orElse: () => '',
+    );
+
+    if (other.isEmpty) continue;
+
+    // If last message wasn't from this child → good nudge candidate
+    if (convo.lastMessageSenderChildId != myChildId) {
+      return other;
+    }
+  }
+
+  return null;
 }
 
 Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
@@ -8700,24 +8728,53 @@ if (!isNewChild)
       );
     }
 
-    final conversations = snapshot.data ?? [];
+final conversations = snapshot.data ?? [];
 
 if (conversations.isEmpty) {
   return _buildEmptyState(context);
 }
 
-    return Column(
-      children: [
-        ...conversations.map((conversation) {
-          String otherChildName = '';
+final suggestedFriend = state.friendNeedingNudge(
+  conversations,
+  state.activeChildId!,
+);
 
-          for (final name in conversation.participantNames) {
-            if (name != state.effectiveChildName) {
-              otherChildName = name;
-              break;
-            }
-          }
+return Column(
+  children: [
+    if (suggestedFriend != null) ...[
+      BrandCard(
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/chirp_prompt.png',
+              height: 48,
+              width: 48,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Chirp says: Maybe check in with $suggestedFriend 💛',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+    ],
 
+    ...conversations.map((conversation) {
+      String otherChildName = '';
+
+      for (final name in conversation.participantNames) {
+        if (name != state.effectiveChildName) {
+          otherChildName = name;
+          break;
+        }
+      }
           if (otherChildName.isEmpty && conversation.participantNames.isNotEmpty) {
             otherChildName = conversation.participantNames.first;
           }
@@ -8726,6 +8783,11 @@ if (conversations.isEmpty) {
 
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
 final hasUnread = unreadCount > 0;
+
+          final suggestedFriend = state.friendNeedingNudge(
+  conversations,
+  state.activeChildId!,
+);
 
 String previewText;
 
@@ -8739,6 +8801,8 @@ if (isBlocked) {
 } else {
   previewText = conversation.lastMessage;
 }
+
+          
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -9544,8 +9608,7 @@ void _showStallRescue() {
     },
   );
 }
-
-
+  
   void _startStallTimer() {
   _stallTimer?.cancel();
 
