@@ -730,7 +730,7 @@ String? friendNeedingNudge(List<ConversationRecord> conversations, String myChil
 
   // Sort by last activity (oldest first)
   final sorted = List<ConversationRecord>.from(conversations)
-    ..sort((a, b) => a.lastMessageTimestamp.compareTo(b.lastMessageTimestamp));
+    ..sort((a, b) => a.lastMessageTime.compareTo(b.lastMessageTime));
 
   for (final convo in sorted) {
     final other = convo.participantNames.firstWhere(
