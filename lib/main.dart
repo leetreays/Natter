@@ -8972,15 +8972,18 @@ isBlocked
             }
           },
           child: Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.25),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.logout_rounded,
-              color: Colors.white70,
-              size: 18,
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: NatterBrand.pink.withOpacity(0.85), // 👈 or try green/blue
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: NatterBrand.pink.withOpacity(0.45),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
             ),
           ),
         ),
