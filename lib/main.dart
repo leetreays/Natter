@@ -8946,48 +8946,51 @@ isBlocked
     ),
 
     Positioned(
-      left: 16,
-      bottom: 16,
-      child: SafeArea(
-        child: GestureDetector(
-          onTap: () async {
-            try {
-              await AppStateScope.of(context).clearRememberedDeviceMode();
+  left: 16,
+  bottom: 16,
+  child: SafeArea(
+    child: GestureDetector(
+      onTap: () async {
+        try {
+          await AppStateScope.of(context).clearRememberedDeviceMode();
 
-              if (!context.mounted) return;
+          if (!context.mounted) return;
 
-              Navigator.pushAndRemoveUntil(
-                context,
-                calmRoute(const GatewayScreen()),
-                (_) => false,
-              );
-            } catch (e) {
-              if (!context.mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            calmRoute(const GatewayScreen()),
+            (_) => false,
+          );
+        } catch (e) {
+          if (!context.mounted) return;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Could not reset this device: $e'),
-                ),
-              );
-            }
-          },
-          child: Container(
-  padding: const EdgeInsets.all(12),
-  decoration: BoxDecoration(
-    color: NatterBrand.pink.withOpacity(0.85),
-    shape: BoxShape.circle,
-    boxShadow: [
-      BoxShadow(
-        color: NatterBrand.pink.withOpacity(0.45),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Could not reset this device: $e'),
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: NatterBrand.pink.withOpacity(0.85),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: NatterBrand.pink.withOpacity(0.45),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.logout_rounded,
+          color: Colors.white,
+          size: 18,
+        ),
       ),
-    ],
-  ),
-  child: const Icon(
-    Icons.logout_rounded,
-    color: Colors.white,
-    size: 18,
+    ),
   ),
 ),
             ),
