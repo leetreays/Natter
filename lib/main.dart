@@ -8527,65 +8527,65 @@ final isNewChild = realApprovedContacts.isEmpty;
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: NatterBrand.blue.withOpacity(0.22),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.14),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: NatterBrand.blue.withOpacity(0.25),
-                          blurRadius: 14,
-                        ),
-                      ],
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.star_rounded,
-                      color: Colors.white,
-                      size: 23,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  GestureDetector(
-                    onTap: () {
-                      final code = state.activeChildFriendCode ?? '';
-                      if (code.isEmpty) return;
+  Container(
+    width: 38,
+    height: 38,
+    decoration: BoxDecoration(
+      color: NatterBrand.blue.withOpacity(0.22),
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: Colors.white.withOpacity(0.14),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: NatterBrand.blue.withOpacity(0.25),
+          blurRadius: 14,
+        ),
+      ],
+    ),
+    alignment: Alignment.center,
+    child: const Icon(
+      Icons.star_rounded,
+      color: Colors.white,
+      size: 23,
+    ),
+  ),
+  const SizedBox(height: 6),
+  GestureDetector(
+    onTap: () {
+      final code = state.activeChildFriendCode ?? '';
+      if (code.isEmpty) return;
 
-                      Clipboard.setData(ClipboardData(text: code));
+      Clipboard.setData(ClipboardData(text: code));
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Code copied')),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.12),
-                        ),
-                      ),
-                      child: Text(
-                        state.activeChildFriendCode ?? '',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Code copied')),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.12),
+        ),
+      ),
+      child: Text(
+        state.activeChildFriendCode ?? '',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1,
+          fontSize: 12,
+        ),
+      ),
+    ),
+  ),
+],
               ),
             ),
           ],
