@@ -8489,7 +8489,7 @@ final isNewChild = realApprovedContacts.isEmpty;
               alignment: Alignment.topLeft,
               child: Image.asset(
                 'assets/natter-logo-v2.png',
-                height: 64,
+                height: 80,
               ),
             ),
 
@@ -8501,8 +8501,8 @@ final isNewChild = realApprovedContacts.isEmpty;
                   calmRoute(const JourneyScreen()),
                 ),
                 icon: Container(
-                  width: 38,
-                  height: 38,
+                  width: 62,
+                  height: 62,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.10),
                     shape: BoxShape.circle,
@@ -8513,7 +8513,7 @@ final isNewChild = realApprovedContacts.isEmpty;
                   child: const Icon(
                     Icons.explore_rounded,
                     color: Colors.white,
-                    size: 24,
+                    size: 48,
                   ),
                 ),
               ),
