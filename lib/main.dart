@@ -8963,7 +8963,7 @@ isBlocked
       ),
     ),
   ),
-)
+),
     Positioned(
   left: 16,
   bottom: 16,
