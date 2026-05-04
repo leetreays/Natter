@@ -660,6 +660,13 @@ class ParentChildProfile {
   }
 }
 
+class NudgeSuggestion {
+  final String name;
+  final String type; // 'reply' or 'checkin'
+
+  NudgeSuggestion({required this.name, required this.type});
+}
+
 class AppState extends ChangeNotifier {
   String? activeChildFriendCode;
 
@@ -725,7 +732,7 @@ String generateChildAccessCode() {
   return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
 }
 
-String? friendNeedingNudge(
+NudgeSuggestion? friendNeedingNudge(
   List<ConversationRecord> conversations,
   String myChildId,
 ) {
@@ -735,10 +742,6 @@ String? friendNeedingNudge(
     ..sort((a, b) => a.lastMessageTime.compareTo(b.lastMessageTime));
 
   for (final convo in sorted) {
-    if (convo.lastMessageSenderChildId == myChildId) {
-      continue;
-    }
-
     final other = convo.participantNames.firstWhere(
       (name) => name != effectiveChildName,
       orElse: () => '',
@@ -746,7 +749,17 @@ String? friendNeedingNudge(
 
     if (other.isEmpty) continue;
 
-    return other;
+    // If THEY sent last message → reply nudge
+    if (convo.lastMessageSenderChildId != myChildId) {
+      return NudgeSuggestion(name: other, type: 'reply');
+    }
+
+    // If YOU sent last message → optional check-in later
+    final hours = DateTime.now().difference(convo.lastMessageTime).inHours;
+
+    if (hours > 24) {
+      return NudgeSuggestion(name: other, type: 'checkin');
+    }
   }
 
   return null;
@@ -5847,7 +5860,7 @@ void dispose() {
                         'Okay, ${widget.name} 😊',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: NatterBrand.navy,
+                          color: Colors.white.withOpacity(0.9),
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                         ),
