@@ -8465,58 +8465,111 @@ final isNewChild = realApprovedContacts.isEmpty;
     .toList();
 
     return BrandScaffold(
-    appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  surfaceTintColor: Colors.transparent,
-  elevation: 0,
-  scrolledUnderElevation: 0,
-  title: const BrandedAppBarTitle(title: 'Chats'),
-      actions: [
-        IconButton(
-          onPressed: () => Navigator.push(
-            context,
-            calmRoute(const ProfileScreen()),
+    appBar: PreferredSize(
+  preferredSize: const Size.fromHeight(140),
+  child: SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        children: [
+          // TOP ROW (logo + journey)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Image.asset(
+                'assets/natter-logo-v2.png',
+                height: 32,
+              ),
+              IconButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  calmRoute(const JourneyScreen()),
+                ),
+                icon: const Icon(
+                  Icons.explore_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
-          icon: const Icon(Icons.account_circle_rounded),
-          tooltip: 'My Profile',
-        ),
-        IconButton(
-          onPressed: () => _addFriendDialog(context),
-          icon: const Icon(Icons.person_add_alt_1_rounded),
-          tooltip: 'Add Friend',
-        ),
-        TextButton(
-          onPressed: () => Navigator.push(
-            context,
-            calmRoute(const JourneyScreen()),
-          ),
-          child: const Text(
-            'Journey',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
+
+          const SizedBox(height: 8),
+
+          // CHILD IDENTITY BLOCK
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              calmRoute(const ProfileScreen()),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  state.effectiveChildName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // avatar (placeholder for now)
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.star_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // friend code
+                GestureDetector(
+                  onTap: () {
+                    final code = state.activeChildFriendCode ?? '';
+                    if (code.isEmpty) return;
+
+                    Clipboard.setData(ClipboardData(text: code));
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Code copied')),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      state.activeChildFriendCode ?? '',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        TextButton(
-          onPressed: () => Navigator.push(
-            context,
-            calmRoute(
-              state.hasSeenParentOnboarding
-                  ? ParentDashboardScreen()
-                  : ParentOnboardingScreen(),
-            ),
-          ),
-          child: const Text(
-            'Parent',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     ),
+  ),
+),
       floatingActionButton: FloatingActionButton.extended(
   onPressed: () => _addFriendDialog(context),
   backgroundColor: NatterBrand.green,
@@ -8538,6 +8591,17 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
+      const Padding(
+  padding: EdgeInsets.only(bottom: 12),
+  child: Text(
+    'Chats',
+    style: TextStyle(
+      color: Colors.white,
+      fontSize: 18,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+),
             if (!isNewChild && !state.hasSentFirstMessage && state.isInOnboarding) ...[
               BrandCard(
                 child: Row(
