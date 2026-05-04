@@ -8717,7 +8717,40 @@ if (!isNewChild)
     ],
   ),
 ),
-
+      
+Container(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.08),
+    borderRadius: BorderRadius.circular(999),
+    border: Border.all(color: Colors.white.withOpacity(0.1)),
+  ),
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const Icon(Icons.qr_code_rounded, size: 14, color: Colors.white70),
+      const SizedBox(width: 6),
+      Text(
+        state.childFriendCode,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1,
+        ),
+      ),
+      const SizedBox(width: 6),
+      GestureDetector(
+        onTap: () {
+          Clipboard.setData(
+            ClipboardData(text: state.childFriendCode),
+          );
+        },
+        child: const Icon(Icons.copy, size: 14, color: Colors.white70),
+      ),
+    ],
+  ),
+),
+      
             StreamBuilder<List<ConversationRecord>>(
   stream: state.conversationsForChildStream(
     childId: state.activeChildId!,
@@ -8751,8 +8784,12 @@ if (snapshot.connectionState == ConnectionState.waiting &&
 
 final conversations = snapshot.data ?? [];
     
-if (conversations.isEmpty) {
+if (conversations.isEmpty && isNewChild) {
   return _buildEmptyState(context);
+}
+
+if (conversations.isEmpty && !isNewChild) {
+  return const SizedBox.shrink();
 }
 
 final suggestedFriend = state.friendNeedingNudge(
@@ -8760,30 +8797,40 @@ final suggestedFriend = state.friendNeedingNudge(
   state.activeChildId!,
 );
 
+    String? nudgeText;
+
+if (suggestedFriend != null) {
+  nudgeText = suggestedFriend.type == 'reply'
+      ? '${suggestedFriend.name} is waiting to hear from you 💛'
+      : 'Maybe check in with ${suggestedFriend.name} 💛';
+}
+
 return Column(
   children: [
-    if (suggestedFriend != null) ...[
-      BrandCard(
-        child: Row(
-          children: [
-            Image.asset(
-              'assets/chirp_prompt.png',
-              height: 48,
-              width: 48,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Chirp says: Maybe check in with $suggestedFriend 💛',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
+    if (nudgeText != null) ...[
+  const SizedBox(height: 16),
+  BrandCard(
+    child: Row(
+      children: [
+        Image.asset(
+          'assets/chirp_prompt.png',
+          height: 48,
+          width: 48,
         ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            nudgeText,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+],
       const SizedBox(height: 16),
     ],
 
