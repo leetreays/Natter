@@ -8944,7 +8944,26 @@ isBlocked
         ),
       ],
     ),
-
+    Positioned(
+  left: 0,
+  right: 0,
+  bottom: 0,
+  height: 120,
+  child: IgnorePointer(
+    child: Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Colors.black.withOpacity(0.25),
+            Colors.transparent,
+          ],
+        ),
+      ),
+    ),
+  ),
+)
     Positioned(
   left: 16,
   bottom: 16,
@@ -8974,12 +8993,12 @@ isBlocked
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: NatterBrand.pink.withOpacity(0.85),
+          color: NatterBrand.pink.withOpacity(0.75),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: NatterBrand.pink.withOpacity(0.45),
-              blurRadius: 12,
+              blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
