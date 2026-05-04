@@ -8731,7 +8731,7 @@ Container(
       const Icon(Icons.qr_code_rounded, size: 14, color: Colors.white70),
       const SizedBox(width: 6),
       Text(
-        state.activeChildFriendCode,
+        state.activeChildFriendCode ?? '',
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w800,
@@ -8742,7 +8742,7 @@ Container(
       GestureDetector(
         onTap: () {
           Clipboard.setData(
-            ClipboardData(text: state.activeChildFriendCode),
+            ClipboardData(text: state.activeChildFriendCode ?? ''),
           );
         },
         child: const Icon(Icons.copy, size: 14, color: Colors.white70),
