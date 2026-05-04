@@ -8466,106 +8466,139 @@ final isNewChild = realApprovedContacts.isEmpty;
 
     return BrandScaffold(
     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(140),
-  child: SafeArea(
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Column(
-        children: [
-          // TOP ROW (logo + journey)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset(
+  preferredSize: const Size.fromHeight(122),
+  child: Container(
+    decoration: BoxDecoration(
+      color: const Color(0xFF071331),
+      boxShadow: [
+        BoxShadow(
+          color: NatterBrand.blue.withOpacity(0.18),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: Image.asset(
                 'assets/natter-logo-v2.png',
-                height: 32,
+                height: 64,
               ),
-              IconButton(
+            ),
+
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
                 onPressed: () => Navigator.push(
                   context,
                   calmRoute(const JourneyScreen()),
                 ),
-                icon: const Icon(
-                  Icons.explore_rounded,
-                  color: Colors.white,
+                icon: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.10),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.16),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.explore_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
               ),
-            ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // CHILD IDENTITY BLOCK
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              calmRoute(const ProfileScreen()),
             ),
-            child: Column(
-              children: [
-                Text(
-                  state.effectiveChildName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 6),
 
-                // avatar (placeholder for now)
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.star_rounded,
-                    color: Colors.white,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // friend code
-                GestureDetector(
-                  onTap: () {
-                    final code = state.activeChildFriendCode ?? '';
-                    if (code.isEmpty) return;
-
-                    Clipboard.setData(ClipboardData(text: code));
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Code copied')),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                calmRoute(const ProfileScreen()),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    state.effectiveChildName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(999),
+                      color: NatterBrand.blue.withOpacity(0.22),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.14),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: NatterBrand.blue.withOpacity(0.25),
+                          blurRadius: 14,
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      state.activeChildFriendCode ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                        fontSize: 12,
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.star_rounded,
+                      color: Colors.white,
+                      size: 23,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  GestureDetector(
+                    onTap: () {
+                      final code = state.activeChildFriendCode ?? '';
+                      if (code.isEmpty) return;
+
+                      Clipboard.setData(ClipboardData(text: code));
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Code copied')),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.12),
+                        ),
+                      ),
+                      child: Text(
+                        state.activeChildFriendCode ?? '',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ),
   ),
