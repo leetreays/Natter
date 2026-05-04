@@ -8939,8 +8939,10 @@ isBlocked
             ],
             const SizedBox(height: 28),
           ],
+            ),
+          ),
         ),
-      ),
+      ],
     ),
 
     Positioned(
