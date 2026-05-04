@@ -8466,7 +8466,7 @@ final isNewChild = realApprovedContacts.isEmpty;
 
     return BrandScaffold(
     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(122),
+  preferredSize: const Size.fromHeight(96),
   child: Container(
     decoration: BoxDecoration(
       color: const Color(0xFF071331),
@@ -8527,15 +8527,6 @@ final isNewChild = realApprovedContacts.isEmpty;
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    state.effectiveChildName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
                   Container(
                     width: 38,
                     height: 38,
@@ -8624,10 +8615,17 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
-      const Padding(
-  padding: EdgeInsets.only(bottom: 12),
+      Padding(
+  padding: const EdgeInsets.only(bottom: 12),
   child: Text(
-    'Chats',
+    '${state.effectiveChildName}’s Chats',
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 20,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+),
     style: TextStyle(
       color: Colors.white,
       fontSize: 18,
