@@ -8993,16 +8993,11 @@ isBlocked
     ),
   ),
 ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  ],
+],
 ),
-);
+    );
   }
-    }
+}
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
