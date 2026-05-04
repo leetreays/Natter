@@ -8302,7 +8302,9 @@ final isNewChild = realApprovedContacts.isEmpty;
   ),
 ),
 floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-  child: Column(
+  child: Stack(
+  children: [
+    Column(
   children: [
     Expanded(
       child: RepaintBoundary(
@@ -8940,44 +8942,53 @@ isBlocked
         ),
       ),
     ),
-    SafeArea(
-      top: false,
-      child: TextButton(
-        onPressed: () async {
-          try {
-            await AppStateScope.of(context).clearRememberedDeviceMode();
 
-            if (!context.mounted) return;
+    Positioned(
+      left: 16,
+      bottom: 16,
+      child: SafeArea(
+        child: GestureDetector(
+          onTap: () async {
+            try {
+              await AppStateScope.of(context).clearRememberedDeviceMode();
 
-            Navigator.pushAndRemoveUntil(
-              context,
-              calmRoute(const GatewayScreen()),
-              (_) => false,
-            );
-          } catch (e) {
-            if (!context.mounted) return;
+              if (!context.mounted) return;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Could not reset this device: $e'),
-              ),
-            );
-          }
-        },
-        child: const Text(
-          'Reset this device',
-          style: TextStyle(
-            color: Colors.white70,
-            fontWeight: FontWeight.w700,
+              Navigator.pushAndRemoveUntil(
+                context,
+                calmRoute(const GatewayScreen()),
+                (_) => false,
+              );
+            } catch (e) {
+              if (!context.mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Could not reset this device: $e'),
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.25),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.logout_rounded,
+              color: Colors.white70,
+              size: 18,
+            ),
           ),
         ),
       ),
     ),
   ],
 ),
-    );
+);
   }
-}
+    }
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
