@@ -8626,13 +8626,6 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     ),
   ),
 ),
-    style: TextStyle(
-      color: Colors.white,
-      fontSize: 18,
-      fontWeight: FontWeight.w900,
-    ),
-  ),
-),
             if (!isNewChild && !state.hasSentFirstMessage && state.isInOnboarding) ...[
               BrandCard(
                 child: Row(
