@@ -7380,17 +7380,6 @@ class _ProgressBarCard extends StatelessWidget {
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
 
-  Future<void> _addFriendDialog(BuildContext context) async {
-    final state = AppStateScope.of(context);
-    final controller = TextEditingController();
-    final lettersController = TextEditingController();
-    final numbersController = TextEditingController();
-
-    final lettersFocus = FocusNode();
-    final numbersFocus = FocusNode();
-
-    final submitting = ValueNotifier<bool>(false);
-
 Widget _smallErrorCard(String message) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 12),
@@ -7571,6 +7560,18 @@ Widget _pendingIncomingCard(ChildContactRequest request) {
     ),
   );
 }
+
+Future<void> _addFriendDialog(BuildContext context) async {
+    final state = AppStateScope.of(context);
+    final controller = TextEditingController();
+    final lettersController = TextEditingController();
+    final numbersController = TextEditingController();
+
+    final lettersFocus = FocusNode();
+    final numbersFocus = FocusNode();
+
+    final submitting = ValueNotifier<bool>(false);
+  
     
 void syncFriendCode() {
   final letters = lettersController.text
