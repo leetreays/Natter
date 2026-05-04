@@ -8728,8 +8728,13 @@ if (!isNewChild)
       );
     }
 
-final conversations = snapshot.data ?? [];
+if (snapshot.connectionState == ConnectionState.waiting &&
+    !snapshot.hasData) {
+  return const SizedBox.shrink();
+}
 
+final conversations = snapshot.data ?? [];
+    
 if (conversations.isEmpty) {
   return _buildEmptyState(context);
 }
