@@ -8291,6 +8291,17 @@ final isNewChild = realApprovedContacts.isEmpty;
         ),
       ],
     ),
+      floatingActionButton: FloatingActionButton.extended(
+  onPressed: () => _addFriendDialog(context),
+  backgroundColor: NatterBrand.green,
+  foregroundColor: Colors.black,
+  icon: const Icon(Icons.person_add_alt_1_rounded),
+  label: const Text(
+    'Add Friend',
+    style: TextStyle(fontWeight: FontWeight.w900),
+  ),
+),
+floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
   child: Column(
   children: [
     Expanded(
@@ -8964,17 +8975,12 @@ isBlocked
     ),
   ],
 ),
-      onPressed: () => _addFriendDialog(context),
-      backgroundColor: NatterBrand.green,
-      foregroundColor: Colors.black,
-      icon: const Icon(Icons.person_add_alt_1_rounded),
-      label: const Text(
-        'Add Friend',
-        style: TextStyle(fontWeight: FontWeight.w900),
-      ),
-    ),
-}
-}
+),
+  ],
+),
+    );
+  }
+}      
               
 class _FriendshipQuestCard extends StatelessWidget {
   final Friend friend;
