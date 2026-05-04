@@ -8501,8 +8501,8 @@ final isNewChild = realApprovedContacts.isEmpty;
                   calmRoute(const JourneyScreen()),
                 ),
                 icon: Container(
-                  width: 46,
-                  height: 46,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.10),
                     shape: BoxShape.circle,
@@ -8513,7 +8513,7 @@ final isNewChild = realApprovedContacts.isEmpty;
                   child: const Icon(
                     Icons.explore_rounded,
                     color: Colors.white,
-                    size: 32,
+                    size: 23,
                   ),
                 ),
               ),
