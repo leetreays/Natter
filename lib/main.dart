@@ -7391,6 +7391,187 @@ class ChatsScreen extends StatelessWidget {
 
     final submitting = ValueNotifier<bool>(false);
 
+Widget _smallErrorCard(String message) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C2A48),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _pendingOutgoingCard(ChildContactRequest request) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C2A48),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.06),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.22),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              request.recipientChildName.isNotEmpty
+                  ? request.recipientChildName[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  request.recipientChildName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Waiting for parent approval',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.22),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'PENDING',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _pendingIncomingCard(ChildContactRequest request) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C2A48),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.06),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.22),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              request.requesterChildName.isNotEmpty
+                  ? request.requesterChildName[0].toUpperCase()
+                  : '?',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  request.requesterChildName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Friend request received',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.22),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'PENDING',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+    
 void syncFriendCode() {
   final letters = lettersController.text
       .toUpperCase()
@@ -8435,405 +8616,110 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 
 if (!isNewChild)
   const SizedBox(height: 12),
-          
-            Column(
-  children: [
-    StreamBuilder<List<ChildContactRequest>>(
-      stream: state.outgoingFriendRequestsForChildStream(
-  parentId: state.activeParentId!,
-  childId: state.activeChildId!,
-),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A48),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                'Could not load outgoing requests: ${snapshot.error}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          );
-        }
-
-        final outgoing = snapshot.data ?? [];
-
-        return Column(
-          children: outgoing.map((request) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C2A48),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.22),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        request.recipientChildName.isNotEmpty
-                            ? request.recipientChildName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.recipientChildName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Waiting for parent approval',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.22),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'PENDING',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    ),
-    StreamBuilder<List<ChildContactRequest>>(
-      stream: state.incomingFriendRequestsForChildStream(
-  parentId: state.activeParentId!,
-  childId: state.activeChildId!,
-),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A48),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                'Could not load incoming requests: ${snapshot.error}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          );
-        }
-
-        final incoming = snapshot.data ?? [];
-
-        return Column(
-          children: incoming.map((request) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C2A48),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.22),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        request.requesterChildName.isNotEmpty
-                            ? request.requesterChildName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.requesterChildName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Friend request received',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.22),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text(
-                        'PENDING',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        );
-      },
-    ),
-    const SizedBox(height: 12),
-  ],
-),
-      if (!isNewChild)
-  Container(
-  width: double.infinity,
-  margin: const EdgeInsets.only(bottom: 14),
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: const Color(0xFF1C2A48),
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.08),
-    ),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Today’s focus',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.68),
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        state.activeQuest ?? 'Send a kind message today',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 16,
-        ),
-      ),
-      if (state.hasCompletedQuest)
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            'Nice work 💛',
-            style: TextStyle(
-              color: NatterBrand.green,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-    ],
-  ),
-),
-      
-Container(
-  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.08),
-    borderRadius: BorderRadius.circular(999),
-    border: Border.all(color: Colors.white.withOpacity(0.1)),
-  ),
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      const Icon(Icons.qr_code_rounded, size: 14, color: Colors.white70),
-      const SizedBox(width: 6),
-      Text(
-        state.activeChildFriendCode ?? '',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1,
-        ),
-      ),
-      const SizedBox(width: 6),
-      GestureDetector(
-        onTap: () {
-          Clipboard.setData(
-            ClipboardData(text: state.activeChildFriendCode ?? ''),
-          );
-        },
-        child: const Icon(Icons.copy, size: 14, color: Colors.white70),
-      ),
-    ],
-  ),
-),
-      
-            StreamBuilder<List<ConversationRecord>>(
-  stream: state.conversationsForChildStream(
+                  
+StreamBuilder<List<ChildContactRequest>>(
+  stream: state.outgoingFriendRequestsForChildStream(
+    parentId: state.activeParentId!,
     childId: state.activeChildId!,
   ),
-  builder: (context, snapshot) {
-    if (snapshot.hasError) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Text(
-            'Could not load conversations: ${snapshot.error}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+  builder: (context, outgoingSnapshot) {
+    if (outgoingSnapshot.hasError) {
+      return _smallErrorCard(
+        'Could not load outgoing requests: ${outgoingSnapshot.error}',
       );
     }
 
-if (snapshot.connectionState == ConnectionState.waiting &&
-    !snapshot.hasData) {
-  return const SizedBox.shrink();
-}
+    final outgoing = outgoingSnapshot.data ?? [];
 
-final conversations = snapshot.data ?? [];
-    
-if (conversations.isEmpty && isNewChild) {
-  return _buildEmptyState(context);
-}
-
-if (conversations.isEmpty && !isNewChild) {
-  return const SizedBox.shrink();
-}
-
-final suggestedFriend = state.friendNeedingNudge(
-  conversations,
-  state.activeChildId!,
-);
-
-    String? nudgeText;
-
-if (suggestedFriend != null) {
-  nudgeText = suggestedFriend.type == 'reply'
-      ? '${suggestedFriend.name} is waiting to hear from you 💛'
-      : 'Maybe check in with ${suggestedFriend.name} 💛';
-}
-
-return Column(
-  children: [
-    if (nudgeText != null) ...[
-      const SizedBox(height: 16),
-      BrandCard(
-        child: Row(
-          children: [
-            Image.asset(
-              'assets/chirp_prompt.png',
-              height: 48,
-              width: 48,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                nudgeText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-        ),
+    return StreamBuilder<List<ChildContactRequest>>(
+      stream: state.incomingFriendRequestsForChildStream(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
       ),
-      const SizedBox(height: 16),
-    ],
+      builder: (context, incomingSnapshot) {
+        if (incomingSnapshot.hasError) {
+          return _smallErrorCard(
+            'Could not load incoming requests: ${incomingSnapshot.error}',
+          );
+        }
 
-    ...conversations.map((conversation) {
+        final incoming = incomingSnapshot.data ?? [];
+        final hasPending = outgoing.isNotEmpty || incoming.isNotEmpty;
+
+        return StreamBuilder<List<ConversationRecord>>(
+          stream: state.conversationsForChildStream(
+            childId: state.activeChildId!,
+          ),
+          builder: (context, conversationSnapshot) {
+            if (conversationSnapshot.hasError) {
+              return _smallErrorCard(
+                'Could not load conversations: ${conversationSnapshot.error}',
+              );
+            }
+
+            if (conversationSnapshot.connectionState ==
+                    ConnectionState.waiting &&
+                !conversationSnapshot.hasData) {
+              return const SizedBox.shrink();
+            }
+
+            final conversations = conversationSnapshot.data ?? [];
+
+            if (conversations.isEmpty && !hasPending) {
+              return _buildEmptyState(context);
+            }
+
+            final suggestedFriend = state.friendNeedingNudge(
+              conversations,
+              state.activeChildId!,
+            );
+
+            String? nudgeText;
+
+            if (suggestedFriend != null) {
+              nudgeText = suggestedFriend.type == 'reply'
+                  ? '${suggestedFriend.name} is waiting to hear from you 💛'
+                  : 'Maybe check in with ${suggestedFriend.name} 💛';
+            }
+
+            return Column(
+              children: [
+                ...outgoing.map((request) {
+                  return _pendingOutgoingCard(request);
+                }).toList(),
+
+                ...incoming.map((request) {
+                  return _pendingIncomingCard(request);
+                }).toList(),
+
+                if (nudgeText != null) ...[
+                  const SizedBox(height: 16),
+                  BrandCard(
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/chirp_prompt.png',
+                          height: 48,
+                          width: 48,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            nudgeText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                ...conversations.map((conversation) {
+
       String otherChildName = '';
 
       for (final name in conversation.participantNames) {
