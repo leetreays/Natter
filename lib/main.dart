@@ -5895,7 +5895,7 @@ Expanded(
   boxShadow: isOn
       ? [
           BoxShadow(
-            color: NatterBrand.yellow.withOpacity(0.35),
+            color: NatterBrand.blue.withOpacity(0.30),
             blurRadius: 16,
             spreadRadius: 1,
           ),
@@ -5909,33 +5909,33 @@ Expanded(
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
                     color: isOn
-                        ? Colors.black
-                        : (isLocked
-                            ? Colors.black.withOpacity(0.45)
-                            : NatterBrand.navy),
+    ? Colors.white
+    : (isLocked
+        ? Colors.white.withOpacity(0.45)
+        : Colors.white.withOpacity(0.90)),
                   ),
                 ),
                 selected: isOn,
                 showCheckmark: false,
                 elevation: isOn ? 6 : 0,
-                shadowColor: NatterBrand.yellow.withOpacity(0.4),
+                shadowColor: NatterBrand.blue.withOpacity(0.35),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 12,
                 ),
                 labelPadding: EdgeInsets.zero,
                 backgroundColor: isLocked && !isOn
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.white.withOpacity(0.9),
-                selectedColor: NatterBrand.yellow,
+    ? Colors.white.withOpacity(0.06)
+    : const Color(0xFF243F6B).withOpacity(0.92),
+selectedColor: NatterBrand.blue.withOpacity(0.85),
                 side: BorderSide(
-                  color: isOn
-                      ? NatterBrand.yellow
-                      : (isLocked
-                          ? Colors.white.withOpacity(0.1)
-                          : Colors.white.withOpacity(0.25)),
-                  width: 2,
-                ),
+  color: isOn
+      ? NatterBrand.blue.withOpacity(0.95)
+      : (isLocked
+          ? Colors.white.withOpacity(0.10)
+          : Colors.white.withOpacity(0.18)),
+  width: isOn ? 2 : 1.4,
+),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
