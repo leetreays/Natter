@@ -8441,6 +8441,29 @@ await showDialog<void>(
     ),
   );
 }
+
+IconData _avatarIcon(String? avatar) {
+  switch ((avatar ?? '').toLowerCase()) {
+    case 'rocket':
+      return Icons.rocket_launch_rounded;
+    case 'planet':
+      return Icons.public_rounded;
+    case 'heart':
+      return Icons.favorite_rounded;
+    case 'shield':
+      return Icons.shield_rounded;
+    case 'bolt':
+      return Icons.bolt_rounded;
+    case 'leaf':
+      return Icons.eco_rounded;
+    case 'owl':
+      return Icons.nightlight_round;
+    case 'star':
+    default:
+      return Icons.star_rounded;
+  }
+}
+  
   @override
 Widget build(BuildContext context) {
   final state = AppStateScope.of(context);
@@ -8466,7 +8489,7 @@ final isNewChild = realApprovedContacts.isEmpty;
 
     return BrandScaffold(
     appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(96),
+  preferredSize: const Size.fromHeight(90),
   child: Container(
     decoration: BoxDecoration(
       gradient: LinearGradient(
@@ -8552,10 +8575,10 @@ final isNewChild = realApprovedContacts.isEmpty;
       ],
     ),
     alignment: Alignment.center,
-    child: const Icon(
-      Icons.star_rounded,
-      color: Colors.white,
-      size: 23,
+    child: Icon(
+  _avatarIcon(state.effectiveChildAvatar),
+  color: Colors.white,
+  size: 24,
     ),
   ),
   const SizedBox(height: 6),
