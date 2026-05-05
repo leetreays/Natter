@@ -8469,7 +8469,15 @@ final isNewChild = realApprovedContacts.isEmpty;
   preferredSize: const Size.fromHeight(96),
   child: Container(
     decoration: BoxDecoration(
-      color: const Color(0xFF071331),
+      gradient: LinearGradient(
+  begin: Alignment.centerLeft,
+  end: Alignment.centerRight,
+  colors: [
+    const Color(0xFF06112E),
+    const Color(0xFF102B5C),
+    const Color(0xFF06112E),
+  ],
+),
       boxShadow: [
         BoxShadow(
           color: NatterBrand.blue.withOpacity(0.18),
@@ -8486,7 +8494,7 @@ final isNewChild = realApprovedContacts.isEmpty;
           alignment: Alignment.center,
           children: [
             Align(
-              alignment: Alignment.topLeft,
+              alignment: Alignment.centerLeft,
               child: Image.asset(
                 'assets/natter-logo-v2.png',
                 height: 64,
@@ -8494,7 +8502,7 @@ final isNewChild = realApprovedContacts.isEmpty;
             ),
 
             Align(
-              alignment: Alignment.topRight,
+              alignment: Alignment.centerRight,
               child: IconButton(
                 onPressed: () => Navigator.push(
                   context,
@@ -8568,12 +8576,19 @@ final isNewChild = realApprovedContacts.isEmpty;
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.12),
-        ),
-      ),
+  color: Colors.white.withOpacity(0.10),
+  borderRadius: BorderRadius.circular(999),
+  border: Border.all(
+    color: NatterBrand.blue.withOpacity(0.35),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.blue.withOpacity(0.22),
+      blurRadius: 10,
+      offset: const Offset(0, 2),
+    ),
+  ],
+),
       child: Text(
         state.activeChildFriendCode ?? '',
         style: const TextStyle(
