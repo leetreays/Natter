@@ -5853,27 +5853,42 @@ void dispose() {
             constraints: const BoxConstraints(maxWidth: 760),
             child: Column(
               children: [
-                BrandCard(
-                  child: Column(
-                    children: [
-                      Text(
-                        'Okay, ${widget.name} 😊',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Pick 3 promises for your Natter life:',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ],
-                  ),
-                ),
+                Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(24),
+    boxShadow: [
+      BoxShadow(
+        color: NatterBrand.blue.withOpacity(0.20),
+        blurRadius: 18,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  ),
+  child: BrandCard(
+    child: Column(
+      children: [
+        Text(
+          'Okay, ${widget.name} 😊',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Pick 3 promises for your Natter life:',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
                 const SizedBox(height: 16),
 Expanded(
   child: Center(
@@ -5911,7 +5926,7 @@ Expanded(
                     color: isOn
     ? Colors.white
     : (isLocked
-        ? Colors.white.withOpacity(0.45)
+        ? Colors.white.withOpacity(0.38)
         : Colors.white.withOpacity(0.90)),
                   ),
                 ),
@@ -5925,7 +5940,7 @@ Expanded(
                 ),
                 labelPadding: EdgeInsets.zero,
                 backgroundColor: isLocked && !isOn
-    ? Colors.white.withOpacity(0.06)
+    ? const Color(0xFF1C2A48).withOpacity(0.55)
     : const Color(0xFF243F6B).withOpacity(0.92),
 selectedColor: NatterBrand.blue.withOpacity(0.85),
                 side: BorderSide(
