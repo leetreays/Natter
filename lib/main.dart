@@ -6124,17 +6124,17 @@ class CeremonyScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: Colors.white.withOpacity(0.18)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.35),
-                    blurRadius: 24,
-                    offset: const Offset(0, 16),
-                  ),
-                ],
-              ),
+  color: const Color(0xFF1C2A48).withOpacity(0.94),
+  borderRadius: BorderRadius.circular(28),
+  border: Border.all(color: Colors.white.withOpacity(0.10)),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.blue.withOpacity(0.24),
+      blurRadius: 22,
+      offset: const Offset(0, 10),
+    ),
+  ],
+),
               child: _SimpleCeremony(
                 name: name,
                 promises: promises,
@@ -6173,11 +6173,17 @@ class _SimpleCeremony extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.verified_rounded,
-            size: 72,
-            color: NatterBrand.yellow,
-          ),
+          Icon(
+  Icons.verified_rounded,
+  size: 72,
+  color: NatterBrand.green,
+  shadows: [
+    Shadow(
+      color: NatterBrand.green.withOpacity(0.45),
+      blurRadius: 18,
+    ),
+  ],
+),
           const SizedBox(height: 10),
           Text(
             'Welcome to Natter',
@@ -6248,9 +6254,24 @@ class _SimpleCeremony extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: onEnter,
-              child: const Text('Enter Natter ✨'),
-            ),
+  onPressed: onEnter,
+  style: ElevatedButton.styleFrom(
+    backgroundColor: NatterBrand.green,
+    foregroundColor: Colors.black,
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(999),
+    ),
+  ),
+  child: const Text(
+    'Enter Natter ✨',
+    style: TextStyle(
+      fontWeight: FontWeight.w900,
+      fontSize: 16,
+    ),
+  ),
+),
           ),
         ],
       ),
