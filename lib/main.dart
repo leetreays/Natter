@@ -749,22 +749,37 @@ NudgeSuggestion? friendNeedingNudge(
 
     if (other.isEmpty) continue;
 
-    // If THEY sent last message → reply nudge
+    final hoursSinceMessage =
+        DateTime.now().difference(convo.lastMessageTime).inHours;
+
+    // Reply nudge: only if the other child sent the last message,
+    // and at least 2 hours have passed.
     if (convo.lastMessageSenderChildId != myChildId) {
-      return NudgeSuggestion(name: other, type: 'reply');
+      if (hoursSinceMessage >= 2) {
+        return NudgeSuggestion(
+          name: other,
+          type: 'reply',
+        );
+      }
+
+      continue;
     }
 
-    // If YOU sent last message → optional check-in later
-    final hours = DateTime.now().difference(convo.lastMessageTime).inHours;
-
-    if (hours > 24) {
-      return NudgeSuggestion(name: other, type: 'checkin');
+    // Check-in nudge: only if this conversation has been quiet for 48+ hours.
+    if (hoursSinceMessage >= 48) {
+      return NudgeSuggestion(
+        name: other,
+        type: 'checkin',
+      );
     }
   }
 
   return null;
 }
 
+DateTime? lastNudgeInteractionAt;
+String? lastNudgedFriend;
+  
 Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
   final code = rawCode.trim().toUpperCase();
   if (code.isEmpty) return null;
