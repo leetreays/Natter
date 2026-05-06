@@ -10721,7 +10721,6 @@ class BadgeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-      decoration: BoxDecoration(
   color: const Color(0xFF243F6B).withOpacity(0.92),
   borderRadius: BorderRadius.circular(24),
   border: Border.all(
