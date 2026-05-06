@@ -295,7 +295,7 @@ NatterBadge badgeForPromises(Set<String> promises) {
   return const NatterBadge(
     title: 'Promise Keeper',
     icon: Icons.shield_rounded,
-    color: NatterBrand.yellow,
+    color: NatterBrand.green,
     description: 'Awarded for sealing your Natter promises.',
   );
 }
@@ -10721,26 +10721,31 @@ class BadgeCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.22)),
-        boxShadow: [
-          BoxShadow(
-            color: badge.color.withOpacity(0.18),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(
+  color: const Color(0xFF243F6B).withOpacity(0.92),
+  borderRadius: BorderRadius.circular(24),
+  border: Border.all(
+    color: badge.color.withOpacity(0.28),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: badge.color.withOpacity(0.16),
+      blurRadius: 18,
+      offset: const Offset(0, 6),
+    ),
+  ],
+),
       child: Row(
         children: [
           Container(
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: badge.color.withOpacity(0.20),
+              color: badge.color.withOpacity(0.16),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: badge.color.withOpacity(0.70)),
+              border: Border.all(
+  color: badge.color.withOpacity(0.38),
+),
             ),
             child: Icon(badge.icon, color: badge.color, size: 30),
           ),
