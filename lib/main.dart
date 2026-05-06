@@ -7460,19 +7460,29 @@ Widget _pendingOutgoingCard(ChildContactRequest request) {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1C2A48),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withOpacity(0.06),
+          color: NatterBrand.blue.withOpacity(0.20),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.blue.withOpacity(0.12),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 42,
+            height: 42,
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.22),
-              borderRadius: BorderRadius.circular(12),
+              color: NatterBrand.blue.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: NatterBrand.blue.withOpacity(0.28),
+              ),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -7490,37 +7500,42 @@ Widget _pendingOutgoingCard(ChildContactRequest request) {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  request.recipientChildName,
-                  style: const TextStyle(
+                const Text(
+                  'Almost there',
+                  style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    fontSize: 16,
+                    fontSize: 15,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  'Waiting for parent approval',
+                  'Waiting for grown-up approval to chat with ${request.recipientChildName}.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withOpacity(0.70),
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
+                    height: 1.25,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.22),
+              color: NatterBrand.blue.withOpacity(0.18),
               borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: NatterBrand.blue.withOpacity(0.26),
+              ),
             ),
             child: const Text(
               'PENDING',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0.4,
               ),
