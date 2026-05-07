@@ -10040,16 +10040,20 @@ bool _canSend = true;
   body: Stack(
   children: [
     Positioned.fill(
-      child: Image.asset(
-        'assets/backgrounds/magical_sky.png',
-        fit: BoxFit.cover,
+  child: DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF071331),
+          Color(0xFF0A3554),
+          Color(0xFF06112E),
+        ],
       ),
     ),
-    Positioned.fill(
-      child: Container(
-        color: const Color(0xFF06112E).withOpacity(0.58),
-      ),
-    ),
+  ),
+),
     SafeArea(
       child: Column(
         children: [
