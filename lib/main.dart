@@ -10037,9 +10037,22 @@ bool _canSend = true;
     scrolledUnderElevation: 0,
     title: BrandedAppBarTitle(title: widget.contactName),
   ),
-  body: SafeArea(
-    child: Column(
-      children: [
+  body: Stack(
+  children: [
+    Positioned.fill(
+      child: Image.asset(
+        'assets/backgrounds/magical_sky.png',
+        fit: BoxFit.cover,
+      ),
+    ),
+    Positioned.fill(
+      child: Container(
+        color: const Color(0xFF06112E).withOpacity(0.58),
+      ),
+    ),
+    SafeArea(
+      child: Column(
+        children: [
         if (quiet)
           Container(
             width: double.infinity,
