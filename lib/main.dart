@@ -10294,7 +10294,62 @@ bool _canSend = true;
               }
 
               final firestoreMessages = snapshot.data ?? [];
-
+              
+   if (firestoreMessages.isEmpty) {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2A48).withOpacity(0.88),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.10),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: NatterBrand.blue.withOpacity(0.18),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/chirp_prompt.png',
+              height: 62,
+              width: 62,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Start your chat with ${widget.contactName}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'A kind hello is a good place to start 💛',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.72),
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+   }
               return ListView.builder(
                 controller: _scrollController,
                 reverse: true,
