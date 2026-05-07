@@ -7462,11 +7462,11 @@ Widget _pendingOutgoingCard(ChildContactRequest request) {
         color: const Color(0xFF1C2A48),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: NatterBrand.blue.withOpacity(0.20),
-        ),
+  color: NatterBrand.green.withOpacity(0.20),
+),
         boxShadow: [
-          BoxShadow(
-            color: NatterBrand.blue.withOpacity(0.12),
+  BoxShadow(
+    color: NatterBrand.green.withOpacity(0.14),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -7510,14 +7510,14 @@ Widget _pendingOutgoingCard(ChildContactRequest request) {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Waiting for grown-up approval to chat with ${request.recipientChildName}.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.70),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    height: 1.25,
-                  ),
-                ),
+  'Waiting for ${request.recipientChildName}’s grown-up to approve this friendship.',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.70),
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    height: 1.25,
+  ),
+),
               ],
             ),
           ),
@@ -7605,14 +7605,14 @@ Widget _pendingIncomingCard(ChildContactRequest request) {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'A grown-up needs to approve this friendship first.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.70),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    height: 1.25,
-                  ),
-                ),
+  'Your grown-up needs to approve this friendship first.',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.70),
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    height: 1.25,
+  ),
+),
               ],
             ),
           ),
