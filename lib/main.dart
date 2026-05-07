@@ -10031,12 +10031,48 @@ bool _canSend = true;
   return Scaffold(
   backgroundColor: const Color(0xFF0A3554),
   appBar: AppBar(
-    backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    title: BrandedAppBarTitle(title: widget.contactName),
+  backgroundColor: Colors.transparent,
+  surfaceTintColor: Colors.transparent,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  centerTitle: true,
+  flexibleSpace: Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          const Color(0xFF06112E),
+          const Color(0xFF0B3F63),
+          const Color(0xFF06112E),
+        ],
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: NatterBrand.blue.withOpacity(0.18),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
   ),
+  leading: IconButton(
+    icon: const Icon(
+      Icons.arrow_back_rounded,
+      color: Colors.white,
+    ),
+    onPressed: () => Navigator.pop(context),
+  ),
+  title: Text(
+    widget.contactName,
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 24,
+      fontWeight: FontWeight.w900,
+    ),
+  ),
+),
+
   body: Stack(
   children: [
     Positioned.fill(
