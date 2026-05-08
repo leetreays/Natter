@@ -10631,7 +10631,7 @@ class _Bubble extends StatelessWidget {
     final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
 
     final bubbleColor = msg.fromMe
-        ? const Color(0xFF2F6FD8)
+        ? const Color(0xFF2A5FAF)
         : const Color(0xFF243F6B).withOpacity(0.82);
 
     if (msg.isHidden) {
