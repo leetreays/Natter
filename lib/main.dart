@@ -3419,6 +3419,30 @@ Text(
     fontSize: 12,
   ),
 ),
+                  const SizedBox(height: 8),
+
+Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 10,
+    vertical: 5,
+  ),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.06),
+    borderRadius: BorderRadius.circular(999),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.05),
+    ),
+  ),
+  child: Text(
+    'Access code · ${child.accessCode}',
+    style: TextStyle(
+      color: Colors.white.withOpacity(0.58),
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.2,
+    ),
+  ),
+),
                 ],
               ),
             ),
