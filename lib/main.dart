@@ -3210,10 +3210,11 @@ class ParentHomeScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           'Signed in as ${user?.email ?? 'unknown email'}',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(
+  color: Colors.white.withOpacity(0.45),
+  fontSize: 13,
+  fontWeight: FontWeight.w500,
+),
                         ),
                       ],
                     ),
@@ -3320,7 +3321,7 @@ class ParentHomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Your children',
+                          'Your family',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20,
@@ -3388,33 +3389,36 @@ class ParentHomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Avatar: ${child.avatar}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Code: ${child.accessCode}',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    child.linkedDevice
-                        ? 'Device linked'
-                        : 'Waiting for child device',
-                    style: TextStyle(
-                      color: child.linkedDevice
-                          ? NatterBrand.green
-                          : Colors.white70,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+
+Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 10,
+    vertical: 5,
+  ),
+  decoration: BoxDecoration(
+    color: NatterBrand.green.withOpacity(0.16),
+    borderRadius: BorderRadius.circular(999),
+  ),
+  child: Text(
+    '🌱 Growing well',
+    style: TextStyle(
+      color: NatterBrand.green.withOpacity(0.95),
+      fontWeight: FontWeight.w800,
+      fontSize: 12,
+    ),
+  ),
+),
+
+const SizedBox(height: 8),
+
+Text(
+  'Things have felt calm this week',
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.72),
+    fontWeight: FontWeight.w600,
+    fontSize: 12,
+  ),
+),
                 ],
               ),
             ),
@@ -3434,42 +3438,6 @@ class ParentHomeScreen extends StatelessWidget {
                     ),
                   );
                 },
-              ),
-              const SizedBox(height: 22),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
-                  ),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Next steps',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      '• Create child profiles\n'
-                      '• Set quiet hours and approvals\n'
-                      '• Review alerts and progress\n'
-                      '• Separate parent and child spaces cleanly',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                        height: 1.6,
-                      ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -3519,7 +3487,7 @@ class ParentHomeScreen extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Open Parent Dashboard',
+                    'Open Family Dashboard',
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: 16,
