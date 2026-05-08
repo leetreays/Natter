@@ -3165,6 +3165,28 @@ class _ParentAuthScreenState extends State<ParentAuthScreen> {
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
 
+IconData _avatarIcon(String avatar) {
+  switch (avatar) {
+    case 'rocket':
+      return Icons.rocket_launch_rounded;
+
+    case 'owl':
+      return Icons.auto_awesome_rounded;
+
+    case 'star':
+      return Icons.star_rounded;
+
+    case 'moon':
+      return Icons.dark_mode_rounded;
+
+    case 'heart':
+      return Icons.favorite_rounded;
+
+    default:
+      return Icons.child_care_rounded;
+  }
+}
+  
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -3367,8 +3389,11 @@ class ParentHomeScreen extends StatelessWidget {
           children: [
             CircleAvatar(
               backgroundColor: Colors.white.withOpacity(0.14),
-              child: Text(
-                child.name.isNotEmpty ? child.name[0].toUpperCase() : '?',
+              child: Icon(
+  _avatarIcon(child.avatar),
+  color: Colors.white,
+  size: 24,
+),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
@@ -3377,36 +3402,38 @@ class ParentHomeScreen extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    child.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 10,
-    vertical: 5,
-  ),
-  decoration: BoxDecoration(
-    color: NatterBrand.green.withOpacity(0.16),
-    borderRadius: BorderRadius.circular(999),
-  ),
-  child: Text(
-    '🌱 Growing well',
-    style: TextStyle(
-      color: NatterBrand.green.withOpacity(0.95),
-      fontWeight: FontWeight.w800,
-      fontSize: 12,
+              child: Row(
+  children: [
+    Expanded(
+      child: Text(
+        child.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 16,
+        ),
+      ),
     ),
-  ),
+
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        color: NatterBrand.green.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        '🌱 Growing well',
+        style: TextStyle(
+          color: NatterBrand.green.withOpacity(0.95),
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+        ),
+      ),
+    ),
+  ],
 ),
 
 const SizedBox(height: 8),
