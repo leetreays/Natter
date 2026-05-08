@@ -10498,8 +10498,11 @@ return Padding(
     ),
     const SizedBox(width: 8),
     Expanded(
-      child: TextField(
-        controller: controller,
+  child: TextField(
+    controller: controller,
+    textCapitalization: TextCapitalization.sentences,
+    keyboardType: TextInputType.multiline,
+    textInputAction: TextInputAction.send,
         enabled: !isBlockedByMe && !isBlockedByOther,
         style: const TextStyle(
           color: Colors.white,
@@ -10628,8 +10631,8 @@ class _Bubble extends StatelessWidget {
     final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
 
     final bubbleColor = msg.fromMe
-        ? const Color(0xFF3F7AE0)
-        : Colors.white.withOpacity(0.14);
+        ? const Color(0xFF2F6FD8)
+        : const Color(0xFF243F6B).withOpacity(0.82);
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -10677,12 +10680,12 @@ class _Bubble extends StatelessWidget {
                 color: const Color(0xFF2C3E5F),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: NatterBrand.yellow.withOpacity(0.5),
+                  color: NatterBrand.blue.withOpacity(0.32),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.22),
+                    color: NatterBrand.blue.withOpacity(0.16),
                     blurRadius: 12,
                     offset: const Offset(0, 5),
                   ),
