@@ -10468,98 +10468,112 @@ return Padding(
           ),
         ),
       Row(
-    children: [
-      Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF2A4A78),
-          borderRadius: BorderRadius.circular(999),
+  children: [
+    Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: NatterBrand.blue.withOpacity(0.18),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: NatterBrand.blue.withOpacity(0.26),
         ),
-        child: IconButton(
-          icon: const Icon(
-            Icons.lightbulb_rounded,
-            color: NatterBrand.yellow,
-            size: 20,
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.blue.withOpacity(0.16),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
-          onPressed: _pickStarter,
-          tooltip: 'Conversation Starter',
-        ),
+        ],
       ),
-      const SizedBox(width: 8),
-      Expanded(
-        child: TextField(
-          controller: controller,
-          enabled: !isBlockedByMe && !isBlockedByOther,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
+      child: IconButton(
+        icon: const Icon(
+          Icons.lightbulb_rounded,
+          color: Colors.white,
+          size: 20,
+        ),
+        onPressed: _pickStarter,
+        tooltip: 'Conversation Starter',
+      ),
+    ),
+    const SizedBox(width: 8),
+    Expanded(
+      child: TextField(
+        controller: controller,
+        enabled: !isBlockedByMe && !isBlockedByOther,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Type a message',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.55),
             fontWeight: FontWeight.w600,
           ),
-          decoration: InputDecoration(
-            hintText: 'Type a message',
-            hintStyle: TextStyle(
-              color: Colors.white.withOpacity(0.55),
-              fontWeight: FontWeight.w600,
-            ),
-            filled: true,
-            fillColor: const Color(0xFF243F6B),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 13,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(999),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(999),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(999),
-              borderSide: BorderSide(
-                color: NatterBrand.green.withOpacity(0.45),
-                width: 1.3,
-              ),
+          filled: true,
+          fillColor: const Color(0xFF243F6B).withOpacity(0.94),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 13,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.06),
             ),
           ),
-          onChanged: (_) => _handleTyping(),
-          onSubmitted: (_) {
-            if (!isBlockedByMe && !isBlockedByOther) _send();
-          },
-        ),
-      ),
-      const SizedBox(width: 8),
-      GestureDetector(
-        onTap: (isBlockedByMe || isBlockedByOther || !_canSend)
-    ? null
-    : _send,
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: (isBlockedByMe || isBlockedByOther || !_canSend)
-                ? Colors.grey.shade700
-                : NatterBrand.green,
-            shape: BoxShape.circle,
-            boxShadow: (isBlockedByMe || isBlockedByOther)
-                ? []
-                : [
-                    BoxShadow(
-                      color: NatterBrand.green.withOpacity(0.28),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-          ),
-          child: const Icon(
-            Icons.send_rounded,
-            color: Colors.black,
-            size: 20,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide(
+              color: NatterBrand.blue.withOpacity(0.55),
+              width: 1.4,
+            ),
           ),
         ),
+        onChanged: (_) => _handleTyping(),
+        onSubmitted: (_) {
+          if (!isBlockedByMe && !isBlockedByOther && _canSend) _send();
+        },
       ),
-    ],
-  ),
+    ),
+    const SizedBox(width: 8),
+    GestureDetector(
+      onTap: (isBlockedByMe || isBlockedByOther || !_canSend) ? null : _send,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: (isBlockedByMe || isBlockedByOther || !_canSend)
+              ? Colors.white.withOpacity(0.12)
+              : NatterBrand.green,
+          shape: BoxShape.circle,
+          boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend)
+              ? []
+              : [
+                  BoxShadow(
+                    color: NatterBrand.green.withOpacity(0.32),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+        ),
+        child: Icon(
+          Icons.send_rounded,
+          color: (isBlockedByMe || isBlockedByOther || !_canSend)
+              ? Colors.white.withOpacity(0.38)
+              : Colors.black,
+          size: 20,
+        ),
+      ),
+    ),
+  ],
+),
 ],
 ),
 );
