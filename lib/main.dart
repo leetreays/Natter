@@ -3361,120 +3361,118 @@ IconData _avatarIcon(String avatar) {
                           )
                         else
                           ...children.map((child) {
-                            return MouseRegion(
+                           return MouseRegion(
   cursor: SystemMouseCursors.click,
   child: Material(
     color: Colors.transparent,
     child: InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(20),
       onTap: () {
         Navigator.push(
           context,
-          calmRoute(
-            ParentChildDetailScreen(child: child),
-          ),
+          calmRoute(ParentChildDashboardScreen(child: child)),
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.10),
-          ),
+          color: const Color(0xFF1C2A48),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.white.withOpacity(0.14),
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.10),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
               child: Icon(
-  _avatarIcon(child.avatar),
-  color: Colors.white,
-  size: 24,
-),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                ),
+                _avatarIcon(child.avatar),
+                color: Colors.white,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
-              child: Row(
-  children: [
-    Expanded(
-      child: Text(
-        child.name,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 16,
-        ),
-      ),
-    ),
-
-    Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 5,
-      ),
-      decoration: BoxDecoration(
-        color: NatterBrand.green.withOpacity(0.16),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        '🌱 Growing well',
-        style: TextStyle(
-          color: NatterBrand.green.withOpacity(0.95),
-          fontWeight: FontWeight.w800,
-          fontSize: 11,
-        ),
-      ),
-    ),
-  ],
-),
-
-const SizedBox(height: 8),
-
-Text(
-  'Things have felt calm this week',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.72),
-    fontWeight: FontWeight.w600,
-    fontSize: 12,
-  ),
-),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          child.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: NatterBrand.green.withOpacity(0.16),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '🌱 Growing well',
+                          style: TextStyle(
+                            color: NatterBrand.green.withOpacity(0.95),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
-
-Container(
-  padding: const EdgeInsets.symmetric(
-    horizontal: 10,
-    vertical: 5,
-  ),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.06),
-    borderRadius: BorderRadius.circular(999),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.05),
-    ),
-  ),
-  child: Text(
-    'Access code · ${child.accessCode}',
-    style: TextStyle(
-      color: Colors.white.withOpacity(0.58),
-      fontSize: 11,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 0.2,
-    ),
-  ),
-),
+                  Text(
+                    'Things have felt calm this week',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.72),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
+                    child: Text(
+                      'Access code · ${child.accessCode}',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.58),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+            const SizedBox(width: 10),
             const Icon(
-              Icons.chevron_right,
+              Icons.chevron_right_rounded,
               color: Colors.white70,
             ),
           ],
@@ -3483,7 +3481,6 @@ Container(
     ),
   ),
 );
-                      
                           }),
                       ],
                     ),
