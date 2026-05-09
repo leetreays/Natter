@@ -9696,7 +9696,13 @@ class _ChatScreenState extends State<ChatScreen> {
       ],
     ),
   ],
-),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
 
     return result ?? false;
   }
