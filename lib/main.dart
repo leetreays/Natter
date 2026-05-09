@@ -3162,6 +3162,54 @@ class _ParentAuthScreenState extends State<ParentAuthScreen> {
   }
 }
 
+class ChildJourneyStatus {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const ChildJourneyStatus({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
+}
+
+ChildJourneyStatus journeyStatusForChild({
+  required int guidanceMoments,
+  required int blockedMoments,
+  required bool quietHoursEnabled,
+}) {
+  if (blockedMoments > 0) {
+    return const ChildJourneyStatus(
+      label: 'Needs support',
+      icon: Icons.favorite_rounded,
+      color: Color(0xFFFFC857),
+    );
+  }
+
+  if (guidanceMoments >= 3) {
+    return const ChildJourneyStatus(
+      label: 'Learning together',
+      icon: Icons.lightbulb_rounded,
+      color: Color(0xFFFFC857),
+    );
+  }
+
+  if (quietHoursEnabled) {
+    return const ChildJourneyStatus(
+      label: 'Growing well',
+      icon: Icons.eco_rounded,
+      color: NatterBrand.green,
+    );
+  }
+
+  return const ChildJourneyStatus(
+    label: 'Journey started',
+    icon: Icons.explore_rounded,
+    color: NatterBrand.blue,
+  );
+}
+
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
 
@@ -3361,6 +3409,11 @@ IconData _avatarIcon(String avatar) {
                           )
                         else
                           ...children.map((child) {
+                            final status = journeyStatusForChild(
+  guidanceMoments: 0,
+  blockedMoments: 0,
+  quietHoursEnabled: true,
+);
                            return MouseRegion(
   cursor: SystemMouseCursors.click,
   child: Material(
@@ -3376,7 +3429,7 @@ IconData _avatarIcon(String avatar) {
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: const Color(0xFF1C2A48),
           borderRadius: BorderRadius.circular(20),
@@ -3426,25 +3479,16 @@ IconData _avatarIcon(String avatar) {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: NatterBrand.green.withOpacity(0.16),
+                  color: status.color.withOpacity(0.16),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '🌱 Growing well',
+                  '${String.fromCharCode(status.icon.codePoint)} ${status.label}'
                   style: TextStyle(
-                    color: NatterBrand.green.withOpacity(0.95),
+                    color: status.color.withOpacity(0.95),
                     fontWeight: FontWeight.w800,
                     fontSize: 11,
                   ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Things have felt calm this week',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 12,
                 ),
               ),
               const SizedBox(height: 8),
