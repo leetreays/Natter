@@ -3249,7 +3249,7 @@ IconData _avatarIcon(String avatar) {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
+              Row (
                 children: [
                   Container(
                     width: 54,
@@ -3526,17 +3526,8 @@ IconData _avatarIcon(String avatar) {
       ),
     ),
   );
-}).toList(),  
-        ],
-      ),
-    );
-                          }),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
+}).toList(),
+const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
