@@ -9616,61 +9616,87 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: Colors.white.withOpacity(0.22),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text(
-                          'Keep editing',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.text = suggestion;
-                          controller.selection = TextSelection.fromPosition(
-                            TextPosition(offset: controller.text.length),
-                          );
-                          Navigator.pop(ctx, false);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NatterBrand.green,
-                          foregroundColor: Colors.black,
-                        ),
-                        child: const Text('Use kinder version'),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Send with care'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                Column(
+  children: [
+    SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          controller.text = suggestion;
+          controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length),
+          );
+          Navigator.pop(ctx, false);
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: NatterBrand.green,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
+        child: const Text(
+          'Use kinder version',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 15,
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(height: 10),
+    Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.22),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            child: const Text(
+              'Keep editing',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
             ),
           ),
-        );
-      },
-    );
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: NatterBrand.blue,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            child: const Text(
+              'Send with care',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+),
 
     return result ?? false;
   }
