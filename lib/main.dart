@@ -3408,129 +3408,128 @@ IconData _avatarIcon(String avatar) {
                             ),
                           )
                         else
-                          ...children.map((child) {
-                            final status = journeyStatusForChild(
-  guidanceMoments: 0,
-  blockedMoments: 0,
-  quietHoursEnabled: true,
-);
-                           return MouseRegion(
-  cursor: SystemMouseCursors.click,
-  child: Material(
-    color: Colors.transparent,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () {
-        Navigator.push(
-          context,
-          calmRoute(ParentChildDetailScreen(child: child)),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C2A48),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
-       child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Text(
-      child.name,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w900,
-        fontSize: 18,
-      ),
-    ),
-    const SizedBox(height: 10),
-
-    Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.10),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              _avatarIcon(child.avatar),
-              color: Colors.white,
-              size: 24,
-            ),
+                        ...children.map((child) {
+  return MouseRegion(
+    cursor: SystemMouseCursors.click,
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.push(
+            context,
+            calmRoute(ParentChildDetailScreen(child: child)),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
           ),
-        ),
-        const SizedBox(width: 14),
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: status.color.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(999),
+                  color: Colors.white.withOpacity(0.10),
+                  shape: BoxShape.circle,
                 ),
-                child: Text(
-                  '${String.fromCharCode(status.icon.codePoint)} ${status.label}',
-                  style: TextStyle(
-                    color: status.color.withOpacity(0.95),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 11,
-                  ),
+                alignment: Alignment.center,
+                child: Icon(
+                  _avatarIcon(child.avatar),
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            child.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 17,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: child.linkedDevice
+                                ? NatterBrand.green.withOpacity(0.16)
+                                : Colors.white.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            child.linkedDevice
+                                ? 'Device linked'
+                                : 'Device not linked',
+                            style: TextStyle(
+                              color: child.linkedDevice
+                                  ? NatterBrand.green.withOpacity(0.95)
+                                  : Colors.white.withOpacity(0.62),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.05),
+                        ),
+                      ),
+                      child: Text(
+                        'Access code · ${child.accessCode}',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.58),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.05),
-                  ),
-                ),
-                child: Text(
-                  'Access code · ${child.accessCode}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.58),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                  ),
-                ),
+              ),
+              const SizedBox(width: 10),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white70,
               ),
             ],
           ),
         ),
-
-        const SizedBox(width: 10),
-        const Icon(
-          Icons.chevron_right_rounded,
-          color: Colors.white70,
-        ),
-      ],
-    ),
-  ],
-),        
-        ),
       ),
     ),
   );
+}).toList(),  
+        ],
+      ),
+    );
                           }),
                       ],
                     ),
