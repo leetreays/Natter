@@ -3527,6 +3527,11 @@ IconData _avatarIcon(String avatar) {
     ),
   );
 }).toList(),
+            ],
+          ),
+        );
+      },
+    ),        
 const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -3556,11 +3561,6 @@ const SizedBox(height: 24),
                 ),
               ),
               const SizedBox(height: 12),
-                        ],
-                    ),
-                  );
-                },
-              ),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
