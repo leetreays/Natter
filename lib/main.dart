@@ -9985,7 +9985,7 @@ if (isBlockedByMe || isBlockedByOther) {
         state.addAlert(AlertEvent(
           type: AlertType.quietHours,
           message:
-              'Message attempt during Quiet Hours (to ${widget.contactName}).',
+              'Message attempt during Quiet Hours.',
         ));
       }
       return;
@@ -10013,10 +10013,10 @@ if (isBlockedByMe || isBlockedByOther) {
       if (state.alertsSafetyCoach) {
         state.recordCoachPrompt();
         state.addAlert(AlertEvent(
-          type: AlertType.safetyCoach,
-          message:
-              'Kindness coach triggered in chat with ${widget.contactName}.',
-        ));
+  type: AlertType.safetyCoach,
+  message:
+      'Kindness coach supported a message before sending.',
+));
       }
 
       final sendAnyway = await _showSafetyCoachDialog(
