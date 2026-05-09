@@ -3485,7 +3485,8 @@ IconData _avatarIcon(String avatar) {
 ),        
         ),
       ),
-    );
+    ),
+  );
                           }),
                       ],
                     ),
