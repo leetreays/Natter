@@ -3483,7 +3483,7 @@ IconData _avatarIcon(String avatar) {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '${String.fromCharCode(status.icon.codePoint)} ${status.label}'
+                  '${String.fromCharCode(status.icon.codePoint)} ${status.label}',
                   style: TextStyle(
                     color: status.color.withOpacity(0.95),
                     fontWeight: FontWeight.w800,
