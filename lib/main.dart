@@ -9557,10 +9557,17 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.80),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
-            ),
+  color: const Color(0xFF1C2A48).withOpacity(0.96),
+  borderRadius: BorderRadius.circular(24),
+  border: Border.all(color: Colors.white.withOpacity(0.10)),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.blue.withOpacity(0.22),
+      blurRadius: 22,
+      offset: const Offset(0, 10),
+    ),
+  ],
+),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -9571,7 +9578,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'Try a kinder message',
+                  'Pause and check',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -9624,7 +9631,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         child: const Text(
-                          'Cancel',
+                          'Keep editing',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -9646,14 +9653,14 @@ class _ChatScreenState extends State<ChatScreen> {
                           backgroundColor: NatterBrand.green,
                           foregroundColor: Colors.black,
                         ),
-                        child: const Text('Rewrite'),
+                        child: const Text('Use kinder version'),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Send anyway'),
+                        child: const Text('Send with care'),
                       ),
                     ),
                   ],
