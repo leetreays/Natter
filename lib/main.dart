@@ -3370,7 +3370,7 @@ IconData _avatarIcon(String avatar) {
       onTap: () {
         Navigator.push(
           context,
-          calmRoute(ParentChildDashboardScreen(child: child)),
+          calmRoute(ParentChildDetailScreen(child: child)),
         );
       },
       child: Container(
