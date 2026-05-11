@@ -10082,6 +10082,7 @@ if (isBlockedByMe || isBlockedByOther) {
       state.recordQuietHoursAttempt();
 
 if (state.activeParentId != null && state.activeChildId != null) {
+  debugPrint('Writing signal for parent=${state.activeParentId}, child=${state.activeChildId}');
   await state.recordChildSignal(
     parentId: state.activeParentId!,
     childId: state.activeChildId!,
