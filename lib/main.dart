@@ -10003,7 +10003,7 @@ if (isBlockedByMe || isBlockedByOther) {
         state.recordBlockedAttempt();
         state.addAlert(AlertEvent(
           type: AlertType.blockedWord,
-          message: 'Blocked-word attempt in chat with ${widget.contactName}.',
+          message: 'Blocked-word attempt during a conversation.',
         ));
       }
       return;
@@ -10033,7 +10033,7 @@ if (isBlockedByMe || isBlockedByOther) {
           state.addAlert(AlertEvent(
             type: AlertType.safetyCoach,
             message:
-                'A coached message was sent anyway to ${widget.contactName}.',
+                'A coached message was sent with protected delivery.',
           ));
 
           state.addAlert(AlertEvent(
