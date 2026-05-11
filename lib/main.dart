@@ -10082,7 +10082,6 @@ if (isBlockedByMe || isBlockedByOther) {
       state.recordQuietHoursAttempt();
 
 if (state.activeParentId != null && state.activeChildId != null) {
-  debugPrint('Writing signal for parent=${state.activeParentId}, child=${state.activeChildId}');
   await state.recordChildSignal(
     parentId: state.activeParentId!,
     childId: state.activeChildId!,
@@ -10092,24 +10091,7 @@ if (state.activeParentId != null && state.activeChildId != null) {
       time: DateTime.now(),
     ),
   );
-}
-
-      if (state.activeParentId != null && state.activeChildId != null) {
-  setState(() {
-    feedback =
-        'Writing signal: ${state.activeParentId} / ${state.activeChildId}';
-  });
-
-  await state.recordChildSignal(
-    parentId: state.activeParentId!,
-    childId: state.activeChildId!,
-    signal: ChildSignalEvent(
-      type: 'quietHours',
-      context: 'message_attempt',
-      time: DateTime.now(),
-    ),
-  );
-      }
+}      
       
 if (state.alertsQuietHours) {
   state.addAlert(AlertEvent(
