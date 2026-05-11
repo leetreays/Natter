@@ -10094,6 +10094,23 @@ if (state.activeParentId != null && state.activeChildId != null) {
   );
 }
 
+      if (state.activeParentId != null && state.activeChildId != null) {
+  setState(() {
+    feedback =
+        'Writing signal: ${state.activeParentId} / ${state.activeChildId}';
+  });
+
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'quietHours',
+      context: 'message_attempt',
+      time: DateTime.now(),
+    ),
+  );
+      }
+      
 if (state.alertsQuietHours) {
   state.addAlert(AlertEvent(
     type: AlertType.quietHours,
