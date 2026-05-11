@@ -277,6 +277,29 @@ class AlertEvent {
   }) : time = time ?? DateTime.now();
 }
 
+class ChildSignalEvent {
+  final String type;
+  final String context;
+  final String severity;
+  final DateTime time;
+
+  const ChildSignalEvent({
+    required this.type,
+    required this.context,
+    this.severity = 'gentle',
+    required this.time,
+  });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'type': type,
+      'context': context,
+      'severity': severity,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+  }
+}
+
 class NatterBadge {
   final String title;
   final IconData icon;
