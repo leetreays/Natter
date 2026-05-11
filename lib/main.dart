@@ -4194,6 +4194,96 @@ final suggestions = _supportIdeas(
 final pendingCount = connectionCount;
 final signalCount = signals.length;
 final quietTimeOn = state.quietHoursEnabled;
+
+    if (!child.linkedDevice) {
+  return ParentBrandScaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      title: Text(
+        child.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C2A48),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.08),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.link_rounded,
+                color: Colors.white.withOpacity(0.78),
+                size: 42,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '${child.name} hasn’t started their Natter journey yet.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Once their device is linked and they begin using Natter, you’ll see gentle insights, support signals and progress here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.06),
+                  ),
+                ),
+                child: Text(
+                  'Access code · ${child.accessCode}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+    }
     
     return ParentBrandScaffold(
       appBar: AppBar(
