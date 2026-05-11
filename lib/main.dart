@@ -10079,14 +10079,26 @@ if (isBlockedByMe || isBlockedByOther) {
       });
       controller.clear();
 
-      if (state.alertsQuietHours) {
-        state.recordQuietHoursAttempt();
-        state.addAlert(AlertEvent(
-          type: AlertType.quietHours,
-          message:
-              'Message attempt during Quiet Hours.',
-        ));
-      }
+      state.recordQuietHoursAttempt();
+
+if (state.activeParentId != null && state.activeChildId != null) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'quietHours',
+      context: 'message_attempt',
+      time: DateTime.now(),
+    ),
+  );
+}
+
+if (state.alertsQuietHours) {
+  state.addAlert(AlertEvent(
+    type: AlertType.quietHours,
+    message: 'Message attempt during Quiet Hours.',
+  ));
+}
       return;
     }
 
