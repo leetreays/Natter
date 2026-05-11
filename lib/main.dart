@@ -3563,34 +3563,6 @@ const SizedBox(height: 24),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      calmRoute(const ParentDashboardScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF0B80BB),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: const Text(
-                    'Open Family Dashboard',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
                     Navigator.pushAndRemoveUntil(
@@ -10010,14 +9982,7 @@ if (isBlockedByMe || isBlockedByOther) {
     }
 
     if (safety.level == SafetyLevel.coach) {
-      if (state.alertsSafetyCoach) {
-        state.recordCoachPrompt();
-        state.addAlert(AlertEvent(
-  type: AlertType.safetyCoach,
-  message:
-      'Kindness coach supported a message before sending.',
-));
-      }
+  state.recordCoachPrompt();
 
       final sendAnyway = await _showSafetyCoachDialog(
         suggestion: safety.suggestion ?? 'Can we try that again kindly?',
@@ -10047,10 +10012,18 @@ if (isBlockedByMe || isBlockedByOther) {
         
       } else {
         state.recordKindRewrite();
-        state.addFriendshipPoints(widget.contactName, 3);
-        setState(() {
-          feedback = 'Nice pause. Try rewriting your message kindly 💛';
-        });
+
+if (state.alertsSafetyCoach) {
+  state.addAlert(AlertEvent(
+    type: AlertType.safetyCoach,
+    message: 'A message was rewritten kindly.',
+  ));
+}
+
+state.addFriendshipPoints(widget.contactName, 3);
+setState(() {
+  feedback = 'Nice pause. Try rewriting your message kindly 💛';
+});
       }
       return;
     }
