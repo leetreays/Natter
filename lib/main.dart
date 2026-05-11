@@ -1048,6 +1048,20 @@ Stream<List<Map<String, dynamic>>> conversationMessagesStream(
       );
 }
 
+Future<void> recordChildSignal({
+  required String parentId,
+  required String childId,
+  required ChildSignalEvent signal,
+}) async {
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .collection('signals')
+      .add(signal.toFirestore());
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
