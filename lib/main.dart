@@ -1919,63 +1919,64 @@ Future<String> currentUid() async {
   }
 
   SafetyCheckResult checkMessageSafety(String text) {
-    final lower = text.trim().toLowerCase();
+  final lower = text.trim().toLowerCase();
 
-    if (lower.isEmpty) {
-      return const SafetyCheckResult.ok();
-    }
-
-    const blockedTerms = ['badword', 'swear'];
-
-    for (final term in blockedTerms) {
-      if (lower.contains(term)) {
-        return const SafetyCheckResult(
-          level: SafetyLevel.block,
-          reason: 'That word is not allowed on Natter.',
-          suggestion: 'Try saying it in a calmer or kinder way.',
-        );
-      }
-    }
-
-    const blockedPatterns = {
-  "kill yourself",
-  "kys",
-  "sex",
-  "nude",
-};
-
-for (final blocked in blockedPatterns) {
-  if (lower.contains(blocked)) {
-    return const SafetyCheckResult(
-      level: SafetyLevel.block,
-      reason: "That message isn’t allowed on Natter.",
-    );
+  if (lower.isEmpty) {
+    return const SafetyCheckResult.ok();
   }
-}
 
-const coachingPatterns = {
-  "you're stupid": "I’m upset right now. Can we try again?",
-  "you are stupid": "I’m upset right now. Can we try again?",
-  "i hate you": "I’m really upset and need a minute.",
-  "shut up": "Can we slow down for a second?",
-  "go away": "I need some space right now.",
-  "leave me alone": "I want a little quiet time right now.",
-  "idiot": "That upset me. Can we talk kindly?",
-  "dumb": "That didn’t feel good. Can we reset?",
-  "mean": "That felt unkind. Can we start over?",
-};
+  const blockedTerms = ['badword', 'swear'];
 
-for (final entry in coachingPatterns.entries) {
-  if (lower.contains(entry.key)) {
-    return SafetyCheckResult(
-      level: SafetyLevel.coach,
-      reason: 'That message could hurt someone’s feelings.',
-      suggestion: entry.value,
-    );
+  for (final term in blockedTerms) {
+    if (lower.contains(term)) {
+      return const SafetyCheckResult(
+        level: SafetyLevel.block,
+        reason: 'That word is not allowed on Natter.',
+        suggestion: 'Try saying it in a calmer or kinder way.',
+      );
+    }
   }
-}
 
-return const SafetyCheckResult.ok();
+  const blockedPatterns = [
+    "kill yourself",
+    "kys",
+    "sex",
+    "nude",
+  ];
+
+  for (final blocked in blockedPatterns) {
+    if (lower.contains(blocked)) {
+      return const SafetyCheckResult(
+        level: SafetyLevel.block,
+        reason: "That message isn’t allowed on Natter.",
+      );
+    }
+  }
+
+  const coachingPatterns = {
+    "you're stupid": "I’m upset right now. Can we try again?",
+    "you are stupid": "I’m upset right now. Can we try again?",
+    "i hate you": "I’m really upset and need a minute.",
+    "shut up": "Can we slow down for a second?",
+    "go away": "I need some space right now.",
+    "leave me alone": "I want a little quiet time right now.",
+    "idiot": "That upset me. Can we talk kindly?",
+    "dumb": "That didn’t feel good. Can we reset?",
+    "mean": "That felt unkind. Can we start over?",
+  };
+
+  for (final entry in coachingPatterns.entries) {
+    if (lower.contains(entry.key)) {
+      return SafetyCheckResult(
+        level: SafetyLevel.coach,
+        reason: 'That message could hurt someone’s feelings.',
+        suggestion: entry.value,
+      );
+    }
+  }
+
+  return const SafetyCheckResult.ok();
+}
 
   void _checkStreakMilestones() {
     if (kindnessStreak == 3) {
