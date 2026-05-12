@@ -10119,14 +10119,8 @@ if (state.alertsQuietHours) {
     }
 
     final safety = state.checkMessageSafety(text);
-    setState(() {
-  feedback = 'Safety result: ${safety.level}';
-});
 
-    if (safety.level == SafetyLevel.block) {
-      setState(() {
-  feedback = 'BLOCK branch reached';
-});
+if (safety.level == SafetyLevel.block) {
   setState(() {
     feedback = safety.reason ?? "That word isn’t allowed on Natter.";
   });
