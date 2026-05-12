@@ -1937,30 +1937,45 @@ Future<String> currentUid() async {
       }
     }
 
-    const coachingPatterns = {
-      "you're stupid": "I’m upset right now. Can we try again?",
-      "you are stupid": "I’m upset right now. Can we try again?",
-      "i hate you": "I’m really upset and need a minute.",
-      "shut up": "Can we slow down for a second?",
-      "go away": "I need some space right now.",
-      "leave me alone": "I want a little quiet time right now.",
-      "idiot": "That upset me. Can we talk kindly?",
-      "dumb": "That didn’t feel good. Can we reset?",
-      "mean": "That felt unkind. Can we start over?",
-    };
+    const blockedPatterns = {
+  "kill yourself",
+  "kys",
+  "sex",
+  "nude",
+};
 
-    for (final entry in coachingPatterns.entries) {
-      if (lower.contains(entry.key)) {
-        return SafetyCheckResult(
-          level: SafetyLevel.coach,
-          reason: 'That message could hurt someone’s feelings.',
-          suggestion: entry.value,
-        );
-      }
-    }
-
-    return const SafetyCheckResult.ok();
+for (final blocked in blockedPatterns) {
+  if (lower.contains(blocked)) {
+    return const SafetyCheckResult(
+      level: SafetyLevel.block,
+      reason: "That message isn’t allowed on Natter.",
+    );
   }
+}
+
+const coachingPatterns = {
+  "you're stupid": "I’m upset right now. Can we try again?",
+  "you are stupid": "I’m upset right now. Can we try again?",
+  "i hate you": "I’m really upset and need a minute.",
+  "shut up": "Can we slow down for a second?",
+  "go away": "I need some space right now.",
+  "leave me alone": "I want a little quiet time right now.",
+  "idiot": "That upset me. Can we talk kindly?",
+  "dumb": "That didn’t feel good. Can we reset?",
+  "mean": "That felt unkind. Can we start over?",
+};
+
+for (final entry in coachingPatterns.entries) {
+  if (lower.contains(entry.key)) {
+    return SafetyCheckResult(
+      level: SafetyLevel.coach,
+      reason: 'That message could hurt someone’s feelings.',
+      suggestion: entry.value,
+    );
+  }
+}
+
+return const SafetyCheckResult.ok();
 
   void _checkStreakMilestones() {
     if (kindnessStreak == 3) {
@@ -10105,6 +10120,9 @@ if (state.alertsQuietHours) {
     final safety = state.checkMessageSafety(text);
 
     if (safety.level == SafetyLevel.block) {
+      setState(() {
+  feedback = 'BLOCK branch reached';
+});
   setState(() {
     feedback = safety.reason ?? "That word isn’t allowed on Natter.";
   });
@@ -10153,12 +10171,6 @@ if (state.alertsQuietHours) {
             type: AlertType.safetyCoach,
             message:
                 'A coached message was sent with protected delivery.',
-          ));
-
-          state.addAlert(AlertEvent(
-            type: AlertType.safetyCoach,
-            message:
-                '${widget.contactName} received a potentially unkind message.',
           ));
         }
 
