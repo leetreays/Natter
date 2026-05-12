@@ -10119,6 +10119,9 @@ if (state.alertsQuietHours) {
     }
 
     final safety = state.checkMessageSafety(text);
+    setState(() {
+  feedback = 'Safety result: ${safety.level}';
+});
 
     if (safety.level == SafetyLevel.block) {
       setState(() {
