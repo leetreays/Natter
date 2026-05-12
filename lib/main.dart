@@ -10105,19 +10105,34 @@ if (state.alertsQuietHours) {
     final safety = state.checkMessageSafety(text);
 
     if (safety.level == SafetyLevel.block) {
-      setState(() {
-        feedback = safety.reason ?? "That word isn’t allowed on Natter.";
-      });
-      controller.clear();
+  setState(() {
+    feedback = safety.reason ?? "That word isn’t allowed on Natter.";
+  });
+  controller.clear();
 
-      if (state.alertsBlockedWord) {
-        state.recordBlockedAttempt();
-        state.addAlert(AlertEvent(
-          type: AlertType.blockedWord,
-          message: 'Blocked-word attempt during a conversation.',
-        ));
-      }
-      return;
+  state.recordBlockedAttempt();
+
+  if (state.activeParentId != null && state.activeChildId != null) {
+    await state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'blockedWord',
+        context: 'message_blocked',
+        severity: 'strong',
+        time: DateTime.now(),
+      ),
+    );
+  }
+
+  if (state.alertsBlockedWord) {
+    state.addAlert(AlertEvent(
+      type: AlertType.blockedWord,
+      message: 'Blocked-word attempt during a conversation.',
+    ));
+  }
+
+  return;
     }
 
     if (safety.level == SafetyLevel.coach) {
