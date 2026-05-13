@@ -4666,23 +4666,130 @@ const SizedBox(height: 18),
 ),
       ),
       const SizedBox(height: 12),
-      Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: const Color(0xFF1C2A48),
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.08),
-    ),
-  ),
-  child: Text(
-    'Recent signals will appear here once Firestore insights are connected.',
-    style: TextStyle(
-      color: Colors.white.withOpacity(0.72),
-      fontWeight: FontWeight.w700,
-    ),
-  ),
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: signalsStream,
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Text(
+        'Loading recent signals…',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.72),
+          fontWeight: FontWeight.w700,
+        ),
+      );
+    }
+
+    if (snapshot.hasError) {
+      return Text(
+        'Could not load recent signals.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.72),
+          fontWeight: FontWeight.w700,
+        ),
+      );
+    }
+
+    final docs = snapshot.data?.docs ?? [];
+
+    if (docs.isEmpty) {
+      return Text(
+        'No gentle signals have been logged recently.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontWeight: FontWeight.w700,
+        ),
+      );
+    }
+
+    return Column(
+      children: docs.take(5).map((doc) {
+        final data = doc.data();
+        final type = (data['type'] ?? '').toString();
+        final context = (data['context'] ?? '').toString();
+        final severity = (data['severity'] ?? 'gentle').toString();
+
+        String title;
+        String message;
+        IconData icon;
+
+        if (type == 'quietHours') {
+          title = 'Quiet hours';
+          message = 'Your child tried to use Natter during quiet hours.';
+          icon = Icons.nightlight_round;
+        } else if (type == 'blockedWord') {
+          title = 'Message stopped';
+          message = 'A message was stopped before sending.';
+          icon = Icons.shield_rounded;
+        } else if (type == 'safetyCoach' &&
+            context == 'rewrite_used') {
+          title = 'Kind rewrite';
+          message = 'Your child chose a kinder version of a message.';
+          icon = Icons.favorite_rounded;
+        } else if (type == 'safetyCoach' &&
+            context == 'sent_with_protected_delivery') {
+          title = 'Protected delivery';
+          message = 'A coached message was sent with extra care.';
+          icon = Icons.lightbulb_rounded;
+        } else {
+          title = 'Gentle signal';
+          message = 'A support signal was recorded for your child.';
+          icon = Icons.info_rounded;
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: _innerCardDecoration(
+            color: const Color(0xFF304A78),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: _innerCardDecoration(
+                  color: const Color(0xFF304A78),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  icon,
+                  color: severity == 'strong'
+                      ? NatterBrand.yellow
+                      : Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      message,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  },
 ),
     ],
   ),
