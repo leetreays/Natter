@@ -4205,47 +4205,34 @@ String _weeklyNoteText({
  @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-final signals = _signalsForChild(state);
+    final signalsStream = FirebaseFirestore.instance
+    .collection('parents')
+    .doc(child.parentId)
+    .collection('children')
+    .doc(child.id)
+    .collection('signals')
+    .orderBy('createdAt', descending: true)
+    .snapshots();
 
-final quietCount =
-    signals.where((s) => s.type == AlertType.quietHours).length;
-final guidanceCount = signals
-    .where((s) =>
-        s.type == AlertType.blockedWord ||
-        s.type == AlertType.safetyCoach)
-    .length;
-final connectionCount =
-    signals.where((s) => s.type == AlertType.contactRequest).length;
 
-final showWeeklyNote = _shouldShowWeeklyNote();
+final quietCount = 0;
+final guidanceCount = 0;
+final connectionCount = 0;
 
-final weeklyNoteText = _weeklyNoteText(
-  quiet: quietCount,
-  guidance: guidanceCount,
-  connection: connectionCount,
-);
-    
-final patterns = _patternsForChild(signals);
+final showWeeklyNote = false;
 
-final insightHeadline = _insightHeadline(
-  quiet: quietCount,
-  guidance: guidanceCount,
-  connection: connectionCount,
-);
+final weeklyNoteText = '';
 
-final insight = _buildInsightFractions(
-  quiet: quietCount,
-  guidance: guidanceCount,
-  connection: connectionCount,
-);
+final patterns = <String>[];
 
-final suggestions = _supportIdeas(
-  quiet: quietCount,
-  guidance: guidanceCount,
-);
+final insightHeadline = '';
 
-final pendingCount = connectionCount;
-final signalCount = signals.length;
+final insight = <String, double>{};
+
+final suggestions = <String>[];
+
+final pendingCount = 0;
+final signalCount = 0;
 final quietTimeOn = state.quietHoursEnabled;
 
     if (!child.linkedDevice) {
