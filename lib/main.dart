@@ -4207,9 +4207,9 @@ String _weeklyNoteText({
     final state = AppStateScope.of(context);
     final signalsStream = FirebaseFirestore.instance
     .collection('parents')
-    .doc(child.parentId)
+    .doc(FirebaseAuth.instance.currentUser!.uid)
     .collection('children')
-    .doc(child.id)
+    .doc(child.childId)
     .collection('signals')
     .orderBy('createdAt', descending: true)
     .snapshots();
