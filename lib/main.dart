@@ -4873,50 +4873,58 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: _outerSectionDecoration(),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Patterns',
-        style: TextStyle(
-  color: Colors.white,
-  fontSize: 20,
-  fontWeight: FontWeight.w900,
-  letterSpacing: 0.2,
-),
-      ),
-      const SizedBox(height: 12),
-      ...patterns.map((pattern) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-             Text(
-                '• ',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.78),
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              Expanded(
-                child: Text(
-                  pattern,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.78),
-                    fontWeight: FontWeight.w700,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
+  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: signalsStream,
+    builder: (context, snapshot) {
+      final docs = snapshot.data?.docs ?? [];
+      final firestorePatterns = _patternsForSignalDocs(docs);
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Patterns',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
+            ),
           ),
-        );
-      }),
-    ],
+          const SizedBox(height: 12),
+          ...firestorePatterns.map((pattern) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '• ',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      pattern,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      );
+    },
   ),
 ),
-            const SizedBox(height: 18),
+const SizedBox(height: 18),
 Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
