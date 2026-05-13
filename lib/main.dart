@@ -3901,8 +3901,8 @@ List<String> _patternsForChild(List<AlertEvent> signals) {
 
   return items;
 }
-  
-List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
+
+  List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   final quietHoursCount =
       signals.where((s) => s.type == AlertType.quietHours).length;
   final trickyMessageCount = signals
@@ -3928,6 +3928,80 @@ List<String> _supportSuggestionsForChild(List<AlertEvent> signals) {
   if (suggestions.isEmpty) {
     suggestions.add(
       'Things seem steady right now — a quiet check-in may still be helpful.',
+    );
+  }
+
+  return suggestions;
+  }
+
+  List<String> _patternsForSignalDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final quietHoursCount = docs
+      .where((d) => (d.data()['type'] ?? '') == 'quietHours')
+      .length;
+
+  final guidanceCount = docs.where((d) {
+    final type = (d.data()['type'] ?? '').toString();
+    return type == 'blockedWord' || type == 'safetyCoach';
+  }).length;
+
+  final items = <String>[];
+
+  if (quietHoursCount > 0) {
+    items.add(
+      quietHoursCount == 1
+          ? 'Evening habits: one quiet-hours reminder came up recently.'
+          : 'Evening habits: a few quiet-hours reminders came up recently.',
+    );
+  }
+
+  if (guidanceCount > 0) {
+    items.add(
+      guidanceCount == 1
+          ? 'Message guidance: Natter helped with one tricky moment.'
+          : 'Message guidance: Natter helped with a few tricky moments.',
+    );
+  }
+
+  if (items.isEmpty) {
+    items.add(
+      'Overall rhythm: no support signals have been recorded recently.',
+    );
+  }
+
+  return items;
+}
+
+List<String> _supportIdeasForSignalDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final quietHoursCount = docs
+      .where((d) => (d.data()['type'] ?? '') == 'quietHours')
+      .length;
+
+  final trickyMessageCount = docs.where((d) {
+    final type = (d.data()['type'] ?? '').toString();
+    return type == 'blockedWord' || type == 'safetyCoach';
+  }).length;
+
+  final suggestions = <String>[];
+
+  if (quietHoursCount > 0) {
+    suggestions.add(
+      'You might want to talk about winding down before bed.',
+    );
+  }
+
+  if (trickyMessageCount > 0) {
+    suggestions.add(
+      'Your child may be learning how to handle difficult messages online.',
+    );
+  }
+
+  if (suggestions.isEmpty) {
+    suggestions.add(
+      'No support signals have been recorded yet. A gentle check-in can still help your child feel supported.',
     );
   }
 
