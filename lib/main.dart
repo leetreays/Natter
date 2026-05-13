@@ -4666,75 +4666,24 @@ const SizedBox(height: 18),
 ),
       ),
       const SizedBox(height: 12),
-      if (signals.isEmpty)
-       Text(
-          'No gentle signals have been logged recently.',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.78),
-            fontWeight: FontWeight.w700,
-          ),
-        )
-      else
-        ...signals.take(5).map((signal) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(14),
-            decoration: _innerCardDecoration(
-  color: const Color(0xFF304A78),
+      Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: const Color(0xFF1C2A48),
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.08),
+    ),
+  ),
+  child: Text(
+    'Recent signals will appear here once Firestore insights are connected.',
+    style: TextStyle(
+      color: Colors.white.withOpacity(0.72),
+      fontWeight: FontWeight.w700,
+    ),
+  ),
 ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: _innerCardDecoration(
-  color: const Color(0xFF304A78),
-),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    _signalIcon(signal),
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _signalTitle(signal),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _signalMessage(signal),
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.78),
-                          fontWeight: FontWeight.w700,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _softWhen(signal),
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
     ],
   ),
 ),
