@@ -4275,6 +4275,26 @@ String _weeklyNoteText({
 
   return 'This week brought a mix of connection, learning, and reflection.';
 }
+
+Map<String, int> _signalCountsFromDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final quiet = docs.where((d) {
+    return (d.data()['type'] ?? '') == 'quietHours';
+  }).length;
+
+  final guidance = docs.where((d) {
+    final type = (d.data()['type'] ?? '').toString();
+    return type == 'blockedWord' || type == 'safetyCoach';
+  }).length;
+
+  return {
+    'quiet': quiet,
+    'guidance': guidance,
+    'connection': 0,
+    'total': docs.length,
+  };
+}
   
  @override
   Widget build(BuildContext context) {
@@ -4559,11 +4579,42 @@ Positioned(
   ),
 ),
 const SizedBox(height: 18),
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(22),
-  decoration: _outerSectionDecoration(),
-    child: Column(
+StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: signalsStream,
+  builder: (context, signalSnapshot) {
+    final signalDocs = signalSnapshot.data?.docs ?? [];
+    final signalCounts = _signalCountsFromDocs(signalDocs);
+
+    final firestoreQuietCount = signalCounts['quiet'] ?? 0;
+    final firestoreGuidanceCount = signalCounts['guidance'] ?? 0;
+    final firestoreConnectionCount = signalCounts['connection'] ?? 0;
+    final firestoreSignalCount = signalCounts['total'] ?? 0;
+
+    final firestoreInsightHeadline = _insightHeadline(
+      quiet: firestoreQuietCount,
+      guidance: firestoreGuidanceCount,
+      connection: firestoreConnectionCount,
+    );
+
+    final firestoreInsight = _buildInsightFractions(
+      quiet: firestoreQuietCount,
+      guidance: firestoreGuidanceCount,
+      connection: firestoreConnectionCount,
+    );
+
+    final firestoreShowWeeklyNote = _shouldShowWeeklyNote();
+
+    final firestoreWeeklyNoteText = _weeklyNoteText(
+      quiet: firestoreQuietCount,
+      guidance: firestoreGuidanceCount,
+      connection: firestoreConnectionCount,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: _outerSectionDecoration(),
+      child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
@@ -4576,14 +4627,14 @@ Container(
       ),
       const SizedBox(height: 8),
 Text(
-  insightHeadline,
+  firestoreInsightHeadline,
   style: TextStyle(
     color: Colors.white.withOpacity(0.78),
     fontWeight: FontWeight.w700,
     height: 1.4,
   ),
 ),
-if (showWeeklyNote) ...[
+if (firestoreShowWeeklyNote) ...[
   const SizedBox(height: 12),
   Container(
     width: double.infinity,
@@ -4634,7 +4685,7 @@ if (showWeeklyNote) ...[
               ),
               const SizedBox(height: 3),
               Text(
-                weeklyNoteText,
+                firestoreWeeklyNoteText,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.78),
                   fontWeight: FontWeight.w700,
@@ -4655,9 +4706,9 @@ const SizedBox(height: 16),
           height: 150,
           child: CustomPaint(
             painter: _InsightDonutPainter(
-              positiveFraction: insight['positive']!,
-              guidanceFraction: insight['guidance']!,
-              quietFraction: insight['quiet']!,
+              positiveFraction: firestoreInsight['positive']!,
+              guidanceFraction: firestoreInsight['guidance']!,
+              quietFraction: firestoreInsight['quiet']!,
             ),
             child: const Center(
               child: Icon(
@@ -4726,7 +4777,7 @@ const SizedBox(height: 16),
             ),
             _glanceCard(
               label: 'Signals',
-              value: '$signalCount',
+              value: '$firestoreSignalCount',
               color: const Color(0xFFA4CF58),
               icon: Icons.insights_rounded,
             ),
