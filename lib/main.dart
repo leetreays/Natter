@@ -4279,9 +4279,19 @@ String _weeklyNoteText({
  @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final signalsStream = FirebaseFirestore.instance
+    final parentUid = FirebaseAuth.instance.currentUser?.uid;
+
+if (parentUid == null) {
+  return const ParentBrandScaffold(
+    child: Center(
+      child: CircularProgressIndicator(),
+    ),
+  );
+}
+
+final signalsStream = FirebaseFirestore.instance
     .collection('parents')
-    .doc(FirebaseAuth.instance.currentUser!.uid)
+    .doc(parentUid)
     .collection('children')
     .doc(child.childId)
     .collection('signals')
