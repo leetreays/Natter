@@ -4311,7 +4311,11 @@ final patterns = <String>[];
 
 final insightHeadline = '';
 
-final insight = <String, double>{};
+final insight = {
+  'positive': 1.0,
+  'guidance': 0.0,
+  'quiet': 0.0,
+};
 
 final suggestions = <String>[];
 
