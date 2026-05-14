@@ -4929,58 +4929,67 @@ Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: _outerSectionDecoration(),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Support ideas',
-        style: TextStyle(
-  color: Colors.white,
-  fontSize: 20,
-  fontWeight: FontWeight.w900,
-  letterSpacing: 0.2,
-),
-      ),
-      const SizedBox(height: 12),
-      ...suggestions.map((suggestion) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: _innerCardDecoration(
-  color: const Color(0xFF32486A),
-),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-  width: 30,
-  height: 30,
-  decoration: _innerCardDecoration(
-  color: const Color(0xFF32486A),
-),
-  alignment: Alignment.center,
-  child: const Icon(
-    Icons.lightbulb_rounded,
-    color: NatterBrand.yellow,
-    size: 16,
-  ),
-),
-const SizedBox(width: 10),
-Expanded(
-  child: Text(
-                  suggestion,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.78),
-                    fontWeight: FontWeight.w700,
-                    height: 1.45,
-                  ),
-                ),
-              ),
-            ],
+  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: signalsStream,
+    builder: (context, snapshot) {
+      final docs = snapshot.data?.docs ?? [];
+      final firestoreSuggestions =
+          _supportIdeasForSignalDocs(docs);
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Support ideas',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
+            ),
           ),
-        );
-      }),
-    ],
+          const SizedBox(height: 12),
+          ...firestoreSuggestions.map((suggestion) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: _innerCardDecoration(
+                color: const Color(0xFF32486A),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: _innerCardDecoration(
+                      color: const Color(0xFF32486A),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.lightbulb_rounded,
+                      color: NatterBrand.yellow,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      suggestion,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.45,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      );
+    },
   ),
 ),
 const SizedBox(height: 18),
