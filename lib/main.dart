@@ -10722,6 +10722,9 @@ bool _canSend = true;
             final isBlockedByOther = otherChildId.isNotEmpty &&
                 blockedByChildIds.contains(otherChildId);
 
+            final spikeHeat =
+    (conversationData['spikeHeat'] ?? 0) as num;
+
             return Column(
               children: [
                 if (isBlockedByMe)
@@ -11034,6 +11037,77 @@ return Padding(
             ),
           ),
         ),
+      if (spikeHeat >= 3 && spikeHeat < 6)
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF32486A),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.wb_twilight_rounded,
+          color: NatterBrand.yellow,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat feels a little heated. Take a moment before replying.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.82),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+
+if (spikeHeat >= 6)
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A3540),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.favorite_rounded,
+          color: Color(0xFFFFB3C7),
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This conversation may need a pause before continuing.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
       Row(
   children: [
     Container(
