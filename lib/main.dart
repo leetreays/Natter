@@ -1965,6 +1965,23 @@ Future<String> currentUid() async {
     "mean": "That felt unkind. Can we start over?",
   };
 
+    const behaviouralPatterns = {
+  "nobody likes you":
+      "That could really hurt someone’s feelings.",
+  "you can't play":
+      "That message might make someone feel left out.",
+  "no one wants you here":
+      "That could make someone feel excluded.",
+  "don't tell your parents":
+      "Secrets online can sometimes be unsafe.",
+  "reply now":
+      "Try giving people time to respond calmly.",
+  "why are you ignoring me":
+      "That message could feel pressuring.",
+  "everyone hates you":
+      "That could deeply upset someone.",
+};
+
   for (final entry in coachingPatterns.entries) {
     if (lower.contains(entry.key)) {
       return SafetyCheckResult(
@@ -1974,6 +1991,35 @@ Future<String> currentUid() async {
       );
     }
   }
+
+    for (final entry in behaviouralPatterns.entries) {
+  if (lower.contains(entry.key)) {
+    return SafetyCheckResult(
+      level: SafetyLevel.coach,
+      reason: entry.value,
+      suggestion: "Can we try saying that in a kinder way?",
+    );
+  }
+    }
+
+    final lettersOnly = text.replaceAll(RegExp(r'[^A-Za-z]'), '');
+
+if (lettersOnly.length >= 8 &&
+    lettersOnly == lettersOnly.toUpperCase()) {
+  return const SafetyCheckResult(
+    level: SafetyLevel.coach,
+    reason: 'That message feels very intense.',
+    suggestion: 'Can we slow it down and try again calmly?',
+  );
+}
+
+    if (text.contains('!!!') || text.contains('???')) {
+  return const SafetyCheckResult(
+    level: SafetyLevel.coach,
+    reason: 'That message feels emotionally heated.',
+    suggestion: 'Can we try saying it more calmly?',
+  );
+    }
 
   return const SafetyCheckResult.ok();
 }
