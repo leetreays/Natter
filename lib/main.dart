@@ -10424,6 +10424,14 @@ if (safety.level == SafetyLevel.block) {
     if (safety.level == SafetyLevel.coach) {
   state.recordCoachPrompt();
 
+      await state.conversationsRef()
+    .doc(widget.conversationId)
+    .update({
+  'spikeHeat': FieldValue.increment(1),
+  'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+  'lastSpikeHeatReason': 'coach_prompt',
+});
+
       final sendAnyway = await _showSafetyCoachDialog(
         suggestion: safety.suggestion ?? 'Can we try that again kindly?',
         reason: safety.reason ?? 'That message could hurt someone’s feelings.',
@@ -10433,6 +10441,14 @@ if (safety.level == SafetyLevel.block) {
 
       if (sendAnyway) {
         state.recordCoachedMessageSentAnyway();
+
+        await state.conversationsRef()
+    .doc(widget.conversationId)
+    .update({
+  'spikeHeat': FieldValue.increment(1),
+  'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+  'lastSpikeHeatReason': 'protected_delivery',
+});
 
       if (state.activeParentId != null && state.activeChildId != null) {
   await state.recordChildSignal(
