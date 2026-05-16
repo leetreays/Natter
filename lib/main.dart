@@ -10387,20 +10387,13 @@ if (safety.level == SafetyLevel.block) {
 
   state.recordBlockedAttempt();
 
-  debugPrint('BLOCKED MESSAGE HIT');
-
-  try {
-  await state.addConversationSpikeHeat(
-    conversationId: widget.conversationId,
-    amount: 3,
-    reason: 'blocked_message',
-  );
-} catch (e) {
-  setState(() {
-    feedback = 'Spike heat failed: $e';
-  });
-  return;
-  }
+  await state.conversationsRef()
+    .doc(widget.conversationId)
+    .update({
+  'spikeHeat': FieldValue.increment(3),
+  'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+  'lastSpikeHeatReason': 'blocked_message',
+});
 
   if (state.activeParentId != null && state.activeChildId != null) {
     await state.recordChildSignal(
