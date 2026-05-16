@@ -1137,6 +1137,24 @@ if (otherChildId.isNotEmpty) {
 }
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
+
+  await conversationsRef().doc(conversationId).update({
+  'spikeHeat': FieldValue.increment(-1),
+});
+
+  final refreshedConversation =
+    await conversationsRef().doc(conversationId).get();
+
+final refreshedData = refreshedConversation.data() ?? {};
+
+final currentHeat =
+    (refreshedData['spikeHeat'] ?? 0) as num;
+
+if (currentHeat < 0) {
+  await conversationsRef().doc(conversationId).update({
+    'spikeHeat': 0,
+  });
+}
   
   return true;
 }
