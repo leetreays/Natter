@@ -10387,6 +10387,8 @@ if (safety.level == SafetyLevel.block) {
 
   state.recordBlockedAttempt();
 
+  debugPrint('BLOCKED MESSAGE HIT');
+
   await state.addConversationSpikeHeat(
   conversationId: widget.conversationId,
   amount: 3,
