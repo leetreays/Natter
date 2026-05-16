@@ -10365,6 +10365,19 @@ if (safety.level == SafetyLevel.block) {
       if (sendAnyway) {
         state.recordCoachedMessageSentAnyway();
 
+      if (state.activeParentId != null && state.activeChildId != null) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'safetyCoach',
+      context: 'sent_with_protected_delivery',
+      severity: 'gentle',
+      time: DateTime.now(),
+    ),
+  );
+        }
+
         if (state.alertsSafetyCoach) {
           state.addAlert(AlertEvent(
             type: AlertType.safetyCoach,
@@ -10377,6 +10390,19 @@ if (safety.level == SafetyLevel.block) {
         
       } else {
         state.recordKindRewrite();
+
+        if (state.activeParentId != null && state.activeChildId != null) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'safetyCoach',
+      context: 'rewrite_used',
+      severity: 'gentle',
+      time: DateTime.now(),
+    ),
+  );
+        }
 
 if (state.alertsSafetyCoach) {
   state.addAlert(AlertEvent(
