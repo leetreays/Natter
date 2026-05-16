@@ -10722,9 +10722,6 @@ bool _canSend = true;
             final isBlockedByOther = otherChildId.isNotEmpty &&
                 blockedByChildIds.contains(otherChildId);
 
-            final spikeHeat =
-    (conversationData['spikeHeat'] ?? 0) as num;
-
             return Column(
               children: [
                 if (isBlockedByMe)
@@ -11019,6 +11016,8 @@ bool _canSend = true;
 
             final isBlockedByOther = otherChildId.isNotEmpty &&
                 blockedByChildIds.contains(otherChildId);
+
+            final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
