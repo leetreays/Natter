@@ -10380,29 +10380,24 @@ if (state.alertsQuietHours) {
     final safety = state.checkMessageSafety(text);
 
 if (safety.level == SafetyLevel.block) {
-  setState(() {
-    feedback = safety.reason ?? "That word isn’t allowed on Natter.";
-  });
-  controller.clear();
-
-  state.recordBlockedAttempt();
-
   try {
-  await state.conversationsRef()
-      .doc(widget.conversationId)
-      .update({
-    'spikeHeat': FieldValue.increment(3),
-    'lastSpikeHeatAt': FieldValue.serverTimestamp(),
-    'lastSpikeHeatReason': 'blocked_message',
-  });
+    await state.conversationsRef()
+        .doc(widget.conversationId)
+        .update({
+      'spikeHeat': FieldValue.increment(3),
+      'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+      'lastSpikeHeatReason': 'blocked_message',
+    });
 
-  setState(() {
-    feedback = 'Spike heat written to ${widget.conversationId}';
-  });
-} catch (e) {
-  setState(() {
-    feedback = 'Spike heat failed: $e';
-  });
+    setState(() {
+      feedback = 'Spike heat written to ${widget.conversationId}';
+    });
+  } catch (e) {
+    setState(() {
+      feedback = 'Spike heat failed: $e';
+    });
+  }
+
   return;
 }
 
