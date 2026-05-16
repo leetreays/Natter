@@ -1062,6 +1062,18 @@ Future<void> recordChildSignal({
       .add(signal.toFirestore());
 }
 
+Future<void> addConversationSpikeHeat({
+  required String conversationId,
+  required int amount,
+  required String reason,
+}) async {
+  await conversationsRef().doc(conversationId).set({
+    'spikeHeat': FieldValue.increment(amount),
+    'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+    'lastSpikeHeatReason': reason,
+  }, SetOptions(merge: true));
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
