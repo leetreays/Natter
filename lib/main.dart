@@ -10387,6 +10387,12 @@ if (safety.level == SafetyLevel.block) {
 
   state.recordBlockedAttempt();
 
+  await state.addConversationSpikeHeat(
+  conversationId: widget.conversationId,
+  amount: 3,
+  reason: 'blocked_message',
+);
+
   if (state.activeParentId != null && state.activeChildId != null) {
     await state.recordChildSignal(
       parentId: state.activeParentId!,
