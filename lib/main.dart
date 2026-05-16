@@ -10380,22 +10380,42 @@ if (state.alertsQuietHours) {
     final safety = state.checkMessageSafety(text);
 
 if (safety.level == SafetyLevel.block) {
-  try {
-    await state.conversationsRef()
-        .doc(widget.conversationId)
-        .update({
-      'spikeHeat': FieldValue.increment(3),
-      'lastSpikeHeatAt': FieldValue.serverTimestamp(),
-      'lastSpikeHeatReason': 'blocked_message',
-    });
+  setState(() {
+    feedback =
+        safety.reason ?? "That word isn’t allowed on Natter.";
+  });
 
-    setState(() {
-      feedback = 'Spike heat written to ${widget.conversationId}';
-    });
-  } catch (e) {
-    setState(() {
-      feedback = 'Spike heat failed: $e';
-    });
+  controller.clear();
+
+  state.recordBlockedAttempt();
+
+  await state.conversationsRef()
+      .doc(widget.conversationId)
+      .update({
+    'spikeHeat': FieldValue.increment(3),
+    'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+    'lastSpikeHeatReason': 'blocked_message',
+  });
+
+  if (state.activeParentId != null &&
+      state.activeChildId != null) {
+    await state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'blockedWord',
+        context: 'message_blocked',
+        severity: 'strong',
+        time: DateTime.now(),
+      ),
+    );
+  }
+
+  if (state.alertsBlockedWord) {
+    state.addAlert(AlertEvent(
+      type: AlertType.blockedWord,
+      message: 'Blocked-word attempt during a conversation.',
+    ));
   }
 
   return;
