@@ -1475,6 +1475,23 @@ Future<String?> getRememberedChildFriendCode() async {
   return prefs.getString('child_friend_code');
 }
 
+Future<void> saveQuietHoursForActiveChild() async {
+  if (activeParentId == null || activeChildId == null) return;
+
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(activeParentId)
+      .collection('children')
+      .doc(activeChildId)
+      .set({
+    'quietHoursEnabled': quietHoursEnabled,
+    'quietStartHour': quietStart.hour,
+    'quietStartMinute': quietStart.minute,
+    'quietEndHour': quietEnd.hour,
+    'quietEndMinute': quietEnd.minute,
+  }, SetOptions(merge: true));
+}
+
   String? lastQuestCelebrationFriend;
   String? lastQuestCelebrationTitle;
 
@@ -1810,20 +1827,23 @@ int coachPrompts = 0;
     notifyListeners();
   }
 
-  void setQuietEnabled(bool v) {
-    quietHoursEnabled = v;
-    notifyListeners();
-  }
+void setQuietEnabled(bool v) {
+  quietHoursEnabled = v;
+  notifyListeners();
+  saveQuietHoursForActiveChild();
+}
 
-  void setQuietStart(TimeOfDay t) {
-    quietStart = t;
-    notifyListeners();
-  }
+void setQuietStart(TimeOfDay t) {
+  quietStart = t;
+  notifyListeners();
+  saveQuietHoursForActiveChild();
+}
 
-  void setQuietEnd(TimeOfDay t) {
-    quietEnd = t;
-    notifyListeners();
-  }
+void setQuietEnd(TimeOfDay t) {
+  quietEnd = t;
+  notifyListeners();
+  saveQuietHoursForActiveChild();
+}
 
   void setAlerts({
     bool? blockedWord,
