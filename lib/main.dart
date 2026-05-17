@@ -10456,16 +10456,39 @@ if (safety.level == SafetyLevel.block) {
   return;
 }
 
-    if (safety.level == SafetyLevel.coach) {
+if (safety.level == SafetyLevel.coach) {
   state.recordCoachPrompt();
 
-      await state.conversationsRef()
-    .doc(widget.conversationId)
-    .update({
-  'spikeHeat': FieldValue.increment(1),
-  'lastSpikeHeatAt': FieldValue.serverTimestamp(),
-  'lastSpikeHeatReason': 'coach_prompt',
-});
+  await state.conversationsRef()
+      .doc(widget.conversationId)
+      .update({
+    'spikeHeat': FieldValue.increment(1),
+    'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+    'lastSpikeHeatReason': 'coach_prompt',
+  });
+
+  final refreshedConversation = await state
+      .conversationsRef()
+      .doc(widget.conversationId)
+      .get();
+
+  final refreshedData =
+      refreshedConversation.data() ?? {};
+
+  final updatedHeat =
+      (refreshedData['spikeHeat'] ?? 0) as num;
+
+  if (updatedHeat >= 6) {
+    setState(() {
+      _sendLockedUntil =
+          DateTime.now().add(const Duration(seconds: 20));
+
+      feedback =
+          'Take a short pause before replying.';
+    });
+  }
+
+  final sendAnyway = await _showSafetyCoachDialog(
 
       final sendAnyway = await _showSafetyCoachDialog(
         suggestion: safety.suggestion ?? 'Can we try that again kindly?',
@@ -11042,11 +11065,6 @@ bool _canSend = true;
                 blockedByChildIds.contains(otherChildId);
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
-
-            if (spikeHeat >= 6 && !_isSendLocked) {
-  _sendLockedUntil =
-      DateTime.now().add(const Duration(seconds: 20));
-            }
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
