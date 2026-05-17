@@ -10479,13 +10479,7 @@ if (safety.level == SafetyLevel.coach) {
       (refreshedData['spikeHeat'] ?? 0) as num;
 
   if (updatedHeat >= 6) {
-    setState(() {
-      _sendLockedUntil =
-          DateTime.now().add(const Duration(seconds: 20));
-
-      feedback =
-          'Take a short pause before replying.';
-    });
+    _startSendPause();
   }
 
       final sendAnyway = await _showSafetyCoachDialog(
@@ -10565,6 +10559,7 @@ setState(() {
 
   @override
   void dispose() {
+    _sendLockTimer?.cancel();
     _scrollController.dispose();
     _stallTimer?.cancel();
     controller.dispose();
@@ -10628,11 +10623,31 @@ bool _isTyping = false;
 bool _canSend = true;
 
   DateTime? _sendLockedUntil;
+  Timer? _sendLockTimer;
   
   bool get _isSendLocked {
   if (_sendLockedUntil == null) return false;
   return DateTime.now().isBefore(_sendLockedUntil!);
   }
+
+ void _startSendPause() {
+  _sendLockTimer?.cancel();
+
+  setState(() {
+    _sendLockedUntil =
+        DateTime.now().add(const Duration(seconds: 20));
+    feedback = 'Take a short pause before replying.';
+  });
+
+  _sendLockTimer = Timer(const Duration(seconds: 20), () {
+    if (!mounted) return;
+
+    setState(() {
+      _sendLockedUntil = null;
+      feedback = null;
+    });
+  });
+ } 
   
   @override
   Widget build(BuildContext context) {
@@ -11233,7 +11248,7 @@ if (spikeHeat >= 6)
     ),
     const SizedBox(width: 8),
     GestureDetector(
-      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked || heatPauseActive)
+      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
     ? null
     : _send,
       child: Container(
