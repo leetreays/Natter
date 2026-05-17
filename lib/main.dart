@@ -10624,6 +10624,8 @@ bool _canSend = true;
 
   DateTime? _sendLockedUntil;
   Timer? _sendLockTimer;
+
+  num _lastPausedForHeat = 0;
   
   bool get _isSendLocked {
   if (_sendLockedUntil == null) return false;
@@ -11079,9 +11081,13 @@ bool _canSend = true;
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
 
-if (spikeHeat >= 6 && !_isSendLocked) {
+if (spikeHeat >= 6 &&
+    spikeHeat != _lastPausedForHeat &&
+    !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || _isSendLocked) return;
+
+    _lastPausedForHeat = spikeHeat;
     _startSendPause();
   });
 }
