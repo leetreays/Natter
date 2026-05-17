@@ -1364,16 +1364,25 @@ Future<void> rememberChildDevice({
   await prefs.setString('child_friend_code', childFriendCode);
 
   _childSession = session;
-  activeChildFriendCode = childFriendCode;
-  notifyListeners();
+activeChildFriendCode = childFriendCode;
+
+await loadQuietHoursForActiveChild();
+
+notifyListeners();
 }
 
 Future<void> hydrateRememberedChildSession() async {
   final prefs = await SharedPreferences.getInstance();
   _childSession = ChildSession.fromPrefs(prefs);
-  activeChildFriendCode = await getRememberedChildFriendCode();
-  await hydrateChildOnboardingState();
-  notifyListeners();
+
+activeChildFriendCode =
+    await getRememberedChildFriendCode();
+
+await hydrateChildOnboardingState();
+
+await loadQuietHoursForActiveChild();
+
+notifyListeners();
 }
 
 Future<void> clearChildSession() async {
@@ -1939,6 +1948,27 @@ DocumentReference<Map<String, dynamic>> childDocRef() {
       .doc(session.parentId)
       .collection('children')
       .doc(session.childId);
+}
+
+Future<void> loadQuietHoursForActiveChild() async {
+  if (!hasActiveChildSession) return;
+
+  final snap = await childDocRef().get();
+  final data = snap.data() ?? {};
+
+  quietHoursEnabled = data['quietHoursEnabled'] == true;
+
+  quietStart = TimeOfDay(
+    hour: (data['quietStartHour'] ?? 20) as int,
+    minute: (data['quietStartMinute'] ?? 0) as int,
+  );
+
+  quietEnd = TimeOfDay(
+    hour: (data['quietEndHour'] ?? 7) as int,
+    minute: (data['quietEndMinute'] ?? 0) as int,
+  );
+
+  notifyListeners();
 }
 
 Future<String> currentUid() async {
