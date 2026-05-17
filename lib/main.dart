@@ -1366,8 +1366,6 @@ Future<void> rememberChildDevice({
   _childSession = session;
 activeChildFriendCode = childFriendCode;
 
-await loadQuietHoursForActiveChild();
-
 notifyListeners();
 }
 
