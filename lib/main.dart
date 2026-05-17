@@ -11063,6 +11063,7 @@ bool _canSend = true;
                 blockedByChildIds.contains(otherChildId);
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
+            final heatPauseActive = spikeHeat >= 6;
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
@@ -11232,7 +11233,7 @@ if (spikeHeat >= 6)
     ),
     const SizedBox(width: 8),
     GestureDetector(
-      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked || heatPauseActive)
     ? null
     : _send,
       child: Container(
