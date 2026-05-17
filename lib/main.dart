@@ -11078,7 +11078,13 @@ bool _canSend = true;
                 blockedByChildIds.contains(otherChildId);
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
-            final heatPauseActive = spikeHeat >= 6;
+
+if (spikeHeat >= 6 && !_isSendLocked) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted || _isSendLocked) return;
+    _startSendPause();
+  });
+}
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
