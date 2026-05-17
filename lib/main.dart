@@ -10363,7 +10363,24 @@ if (isBlockedByMe || isBlockedByOther) {
   });
   return;
 }
-    final text = controller.text.trim();
+
+if (!_canSend || _isSendLocked) {
+  if (_isSendLocked) {
+    final remaining = _sendLockedUntil!
+        .difference(DateTime.now())
+        .inSeconds
+        .clamp(1, 20);
+
+    setState(() {
+      feedback = 'Take a short pause before replying ($remaining s)';
+    });
+  }
+
+  return;
+}
+
+final text = controller.text.trim();
+  
     if (text.isEmpty) return;
 
     if (state.isQuietNow()) {
@@ -10588,6 +10605,13 @@ bool _isTyping = false;
 }
 
 bool _canSend = true;
+
+  DateTime? _sendLockedUntil;
+  
+  bool get _isSendLocked {
+  if (_sendLockedUntil == null) return false;
+  return DateTime.now().isBefore(_sendLockedUntil!);
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -11019,6 +11043,11 @@ bool _canSend = true;
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
 
+            if (spikeHeat >= 6 && !_isSendLocked) {
+  _sendLockedUntil =
+      DateTime.now().add(const Duration(seconds: 20));
+            }
+
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
@@ -11187,7 +11216,9 @@ if (spikeHeat >= 6)
     ),
     const SizedBox(width: 8),
     GestureDetector(
-      onTap: (isBlockedByMe || isBlockedByOther || !_canSend) ? null : _send,
+      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+    ? null
+    : _send,
       child: Container(
         width: 50,
         height: 50,
