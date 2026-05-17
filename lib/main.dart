@@ -10488,8 +10488,6 @@ if (safety.level == SafetyLevel.coach) {
     });
   }
 
-  final sendAnyway = await _showSafetyCoachDialog(
-
       final sendAnyway = await _showSafetyCoachDialog(
         suggestion: safety.suggestion ?? 'Can we try that again kindly?',
         reason: safety.reason ?? 'That message could hurt someone’s feelings.',
