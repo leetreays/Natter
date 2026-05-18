@@ -12292,16 +12292,15 @@ BrandCard(
                                   ),
                 const SizedBox(height: 10),
                 ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    calmRoute(
-  ParentRulesScreen(
-    parentId: parentUid,
-    childId: child.childId,
-  ),
-),
-                  ),
+                  onPressed: () {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Open a child profile first to edit their quiet hours.'),
+    ),
+  );
+},
                   child: const Text('Rules & Alerts'),
+                  ),
                 ),
               ],
             ),
