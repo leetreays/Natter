@@ -12265,47 +12265,48 @@ BrandCard(
             const SizedBox(height: 14),
           ],
           BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Controls',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    calmRoute(const ParentContactsScreen()),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: NatterBrand.green,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: Text(
-                    'Contacts (${state.pendingRequests.length} pending)',
-                  ),
-                                  ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Open a child profile first to edit their quiet hours.'),
-    ),
-  );
-},
-                  child: const Text('Rules & Alerts'),
-                  ),
-                ),
-              ],
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const Text(
+        'Controls',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 12),
+      ElevatedButton(
+        onPressed: () => Navigator.push(
+          context,
+          calmRoute(const ParentContactsScreen()),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: NatterBrand.green,
+          foregroundColor: Colors.black,
+        ),
+        child: Text(
+          'Contacts (${state.pendingRequests.length} pending)',
+        ),
+      ),
+      const SizedBox(height: 10),
+      ElevatedButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Open a child profile first to edit their quiet hours.',
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
+          );
+        },
+        child: const Text('Rules & Alerts'),
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 14),
           BrandCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
