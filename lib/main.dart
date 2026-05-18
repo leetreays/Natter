@@ -1969,6 +1969,28 @@ Future<void> loadQuietHoursForActiveChild() async {
   notifyListeners();
 }
 
+Future<void> saveQuietHoursForChild({
+  required String parentId,
+  required String childId,
+  required bool enabled,
+  required TimeOfDay start,
+  required TimeOfDay end,
+}) async {
+  await FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .set({
+    'quietHoursEnabled': enabled,
+    'quietStartHour': start.hour,
+    'quietStartMinute': start.minute,
+    'quietEndHour': end.hour,
+    'quietEndMinute': end.minute,
+    'quietUpdatedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
 Future<String> currentUid() async {
   final user = await ensureSignedIn();
   return user.uid;
@@ -5293,7 +5315,12 @@ Container(
               onPressed: () {
                 Navigator.push(
                   context,
-                  calmRoute(const ParentRulesScreen()),
+                  calmRoute(
+  ParentRulesScreen(
+    parentId: parentUid,
+    childId: child.id,
+  ),
+),
                 );
               },
               child: const Row(
@@ -12680,8 +12707,15 @@ class ParentContactsScreen extends StatelessWidget {
 }
 
 class ParentRulesScreen extends StatelessWidget {
-  const ParentRulesScreen({super.key});
+  final String parentId;
+  final String childId;
 
+  const ParentRulesScreen({
+    super.key,
+    required this.parentId,
+    required this.childId,
+  });
+  
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -12729,8 +12763,18 @@ class ParentRulesScreen extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       SwitchListTile(
-        value: state.quietHoursEnabled,
-        onChanged: state.setQuietEnabled,
+  value: state.quietHoursEnabled,
+  onChanged: (value) async {
+    state.setQuietEnabled(value);
+
+    await state.saveQuietHoursForChild(
+      parentId: parentId,
+      childId: childId,
+      enabled: value,
+      start: state.quietStart,
+      end: state.quietEnd,
+    );
+  },
         title: const Text(
           'Enable Quiet Hours',
           style: TextStyle(
@@ -12755,7 +12799,17 @@ class ParentRulesScreen extends StatelessWidget {
                   context: context,
                   initialTime: state.quietStart,
                 );
-                if (picked != null) state.setQuietStart(picked);
+                if (picked != null) {
+  state.setQuietStart(picked);
+
+  await state.saveQuietHoursForChild(
+    parentId: parentId,
+    childId: childId,
+    enabled: state.quietHoursEnabled,
+    start: picked,
+    end: state.quietEnd,
+  );
+}
               },
             ),
           ),
@@ -12769,7 +12823,17 @@ class ParentRulesScreen extends StatelessWidget {
                   context: context,
                   initialTime: state.quietEnd,
                 );
-                if (picked != null) state.setQuietEnd(picked);
+                if (picked != null) {
+  state.setQuietEnd(picked);
+
+  await state.saveQuietHoursForChild(
+    parentId: parentId,
+    childId: childId,
+    enabled: state.quietHoursEnabled,
+    start: state.quietStart,
+    end: picked,
+  );
+}
               },
             ),
           ),
