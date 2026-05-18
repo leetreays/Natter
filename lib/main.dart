@@ -5318,7 +5318,7 @@ Container(
                   calmRoute(
   ParentRulesScreen(
     parentId: parentUid,
-    childId: child.id,
+    childId: child.childId,
   ),
 ),
                 );
@@ -12294,7 +12294,12 @@ BrandCard(
                 ElevatedButton(
                   onPressed: () => Navigator.push(
                     context,
-                    calmRoute(const ParentRulesScreen()),
+                    calmRoute(
+  ParentRulesScreen(
+    parentId: parentUid,
+    childId: child.childId,
+  ),
+),
                   ),
                   child: const Text('Rules & Alerts'),
                 ),
