@@ -1074,6 +1074,36 @@ Future<void> addConversationSpikeHeat({
   }, SetOptions(merge: true));
 }
 
+Future<void> applySpikeHeatDecay(String conversationId) async {
+  final ref = conversationsRef().doc(conversationId);
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final currentHeat = (data['spikeHeat'] ?? 0) as num;
+  if (currentHeat <= 0) return;
+
+  final lastSpike = data['lastSpikeHeatAt'];
+
+  if (lastSpike is! Timestamp) {
+    return;
+  }
+
+  final lastSpikeAt = lastSpike.toDate();
+  final minutesSinceSpike = DateTime.now().difference(lastSpikeAt).inMinutes;
+
+  if (minutesSinceSpike < 30) return;
+
+  final decayAmount = minutesSinceSpike ~/ 30;
+  final newHeat = (currentHeat - decayAmount).clamp(0, 999);
+
+  if (newHeat == currentHeat) return;
+
+  await ref.set({
+    'spikeHeat': newHeat,
+    'spikeHeatDecayedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
@@ -10412,15 +10442,25 @@ _startStallTimer();
 void initState() {
   super.initState();
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
     if (!mounted) return;
-    AppStateScope.of(context).markConversationRead(widget.conversationId);
+
+    final state = AppStateScope.of(context);
+
+    await state.applySpikeHeatDecay(widget.conversationId);
+
+    if (!mounted) return;
+
+    await state.markConversationRead(widget.conversationId);
   });
 }
   
   void _send() async {
     final state = AppStateScope.of(context);
-    final conversationSnap = await state
+
+await state.applySpikeHeatDecay(widget.conversationId);
+
+final conversationSnap = await state
     .conversationsRef()
     .doc(widget.conversationId)
     .get();
