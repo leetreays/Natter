@@ -12711,7 +12711,7 @@ class ParentContactsScreen extends StatelessWidget {
   }
 }
 
-class ParentRulesScreen extends StatelessWidget {
+class ParentRulesScreen extends StatefulWidget {
   final String parentId;
   final String childId;
 
@@ -12720,220 +12720,277 @@ class ParentRulesScreen extends StatelessWidget {
     required this.parentId,
     required this.childId,
   });
-  
+
+  @override
+  State<ParentRulesScreen> createState() => _ParentRulesScreenState();
+}
+
+class _ParentRulesScreenState extends State<ParentRulesScreen> {
+  bool _loading = true;
+  bool _quietHoursEnabled = false;
+  TimeOfDay _quietStart = const TimeOfDay(hour: 20, minute: 0);
+  TimeOfDay _quietEnd = const TimeOfDay(hour: 7, minute: 0);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadQuietHours();
+  }
+
+  Future<void> _loadQuietHours() async {
+    final snap = await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(widget.parentId)
+        .collection('children')
+        .doc(widget.childId)
+        .get();
+
+    final data = snap.data() ?? {};
+
+    if (!mounted) return;
+
+    setState(() {
+      _quietHoursEnabled = data['quietHoursEnabled'] == true;
+      _quietStart = TimeOfDay(
+        hour: (data['quietStartHour'] ?? 20) as int,
+        minute: (data['quietStartMinute'] ?? 0) as int,
+      );
+      _quietEnd = TimeOfDay(
+        hour: (data['quietEndHour'] ?? 7) as int,
+        minute: (data['quietEndMinute'] ?? 0) as int,
+      );
+      _loading = false;
+    });
+  }
+
+  Future<void> _saveQuietHours() async {
+    await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(widget.parentId)
+        .collection('children')
+        .doc(widget.childId)
+        .set({
+      'quietHoursEnabled': _quietHoursEnabled,
+      'quietStartHour': _quietStart.hour,
+      'quietStartMinute': _quietStart.minute,
+      'quietEndHour': _quietEnd.hour,
+      'quietEndMinute': _quietEnd.minute,
+      'quietUpdatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
 
     return ParentBrandScaffold(
       appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  surfaceTintColor: Colors.transparent,
-  elevation: 0,
-  scrolledUnderElevation: 0,
-  title: const Text(
-    'Rules and Quiet Time',
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w900,
-    ),
-  ),
-  leading: IconButton(
-    icon: const Icon(Icons.arrow_back, color: Colors.white),
-    onPressed: () => Navigator.pop(context),
-  ),
-),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-  padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Quiet Hours',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
-      ),
-      const SizedBox(height: 12),
-      SwitchListTile(
-  value: state.quietHoursEnabled,
-  onChanged: (value) async {
-    state.setQuietEnabled(value);
-
-    await state.saveQuietHoursForChild(
-      parentId: parentId,
-      childId: childId,
-      enabled: value,
-      start: state.quietStart,
-      end: state.quietEnd,
-    );
-  },
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const Text(
-          'Enable Quiet Hours',
+          'Rules and Quiet Time',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w900,
           ),
         ),
-        subtitle: Text(
-          'Kids can’t send messages during this time.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      const SizedBox(height: 8),
-      Row(
-        children: [
-          Expanded(
-            child: _TimeButton(
-              label: 'Start',
-              time: state.quietStart,
-              onPick: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: state.quietStart,
-                );
-                if (picked != null) {
-  state.setQuietStart(picked);
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF21345C),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Quiet Hours',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        value: _quietHoursEnabled,
+                        onChanged: (value) async {
+                          setState(() {
+                            _quietHoursEnabled = value;
+                          });
+                          await _saveQuietHours();
+                        },
+                        title: const Text(
+                          'Enable Quiet Hours',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Kids can’t send messages during this time.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _TimeButton(
+                              label: 'Start',
+                              time: _quietStart,
+                              onPick: () async {
+                                final picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: _quietStart,
+                                );
 
-  await state.saveQuietHoursForChild(
-    parentId: parentId,
-    childId: childId,
-    enabled: state.quietHoursEnabled,
-    start: picked,
-    end: state.quietEnd,
-  );
-}
-              },
+                                if (picked != null) {
+                                  setState(() {
+                                    _quietStart = picked;
+                                  });
+                                  await _saveQuietHours();
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _TimeButton(
+                              label: 'End',
+                              time: _quietEnd,
+                              onPick: () async {
+                                final picked = await showTimePicker(
+                                  context: context,
+                                  initialTime: _quietEnd,
+                                );
+
+                                if (picked != null) {
+                                  setState(() {
+                                    _quietEnd = picked;
+                                  });
+                                  await _saveQuietHours();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF21345C),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Signals',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        value: state.alertsBlockedWord,
+                        onChanged: (v) => state.setAlerts(blockedWord: v),
+                        title: const Text(
+                          'Tricky message signals',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Log when a message needs extra care.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                      SwitchListTile(
+                        value: state.alertsQuietHours,
+                        onChanged: (v) => state.setAlerts(quietHours: v),
+                        title: const Text(
+                          'Quiet Time signals',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Log when Natter is used during Quiet Time.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                      SwitchListTile(
+                        value: state.alertsContactRequest,
+                        onChanged: (v) => state.setAlerts(contactRequest: v),
+                        title: const Text(
+                          'Connection signals',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Log friendship requests and decisions.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                      SwitchListTile(
+                        value: state.alertsSafetyCoach,
+                        onChanged: (v) => state.setAlerts(safetyCoach: v),
+                        title: const Text(
+                          'Gentle guidance signals',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Log when Natter coaches a message, without showing the message itself.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _TimeButton(
-              label: 'End',
-              time: state.quietEnd,
-              onPick: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: state.quietEnd,
-                );
-                if (picked != null) {
-  state.setQuietEnd(picked);
-
-  await state.saveQuietHoursForChild(
-    parentId: parentId,
-    childId: childId,
-    enabled: state.quietHoursEnabled,
-    start: state.quietStart,
-    end: picked,
-  );
-}
-              },
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-),
-          const SizedBox(height: 18),
-          Container(
-  padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Text(
-        'Signals',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
-      ),
-      const SizedBox(height: 12),
-      SwitchListTile(
-        value: state.alertsBlockedWord,
-        onChanged: (v) => state.setAlerts(blockedWord: v),
-        title: const Text(
-          'Tricky message signals',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        subtitle: Text(
-          'Log when a message needs extra care.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
-        ),
-      ),
-      SwitchListTile(
-        value: state.alertsQuietHours,
-        onChanged: (v) => state.setAlerts(quietHours: v),
-        title: const Text(
-          'Quiet Time signals',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        subtitle: Text(
-          'Log when Natter is used during Quiet Time.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
-        ),
-      ),
-      SwitchListTile(
-        value: state.alertsContactRequest,
-        onChanged: (v) => state.setAlerts(contactRequest: v),
-        title: const Text(
-          'Connection signals',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        subtitle: Text(
-          'Log friendship requests and decisions.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
-        ),
-      ),
-      SwitchListTile(
-        value: state.alertsSafetyCoach,
-        onChanged: (v) => state.setAlerts(safetyCoach: v),
-        title: const Text(
-          'Gentle guidance signals',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        subtitle: Text(
-          'Log when Natter coaches a message, without showing the message itself.',
-          style: TextStyle(color: Colors.white.withOpacity(0.8)),
-        ),
-      ),
-    ],
-  ),
-),
-        ],
-      ),
     );
   }
 }
