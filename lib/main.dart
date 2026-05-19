@@ -4487,8 +4487,14 @@ final suggestions = <String>[];
 
 final pendingCount = 0;
 final signalCount = 0;
-final quietTimeOn = state.quietHoursEnabled;
-
+    
+final childDocStream = FirebaseFirestore.instance
+    .collection('parents')
+    .doc(parentUid)
+    .collection('children')
+    .doc(child.childId)
+    .snapshots();
+    
     if (!child.linkedDevice) {
   return ParentBrandScaffold(
     appBar: AppBar(
@@ -4915,12 +4921,20 @@ const SizedBox(height: 16),
               color: const Color(0xFF95C85A),
               icon: Icons.hourglass_top_rounded,
             ),
-            _glanceCard(
-              label: 'Quiet Time',
-              value: quietTimeOn ? 'ON' : 'OFF',
-              color: const Color(0xFF4599DD),
-              icon: Icons.nightlight_round
-            ),
+            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: childDocStream,
+  builder: (context, snapshot) {
+    final data = snapshot.data?.data() ?? {};
+    final quietTimeOn = data['quietHoursEnabled'] == true;
+
+    return _glanceCard(
+      label: 'Quiet Time',
+      value: quietTimeOn ? 'ON' : 'OFF',
+      color: const Color(0xFF4599DD),
+      icon: Icons.nightlight_round,
+    );
+  },
+),
             _glanceCard(
               label: 'Signals',
               value: '$firestoreSignalCount',
@@ -5584,6 +5598,7 @@ Future<void> _continue() async {
 
     await state.hydrateChildOnboardingState();
     await state.hydrateChildRiteStateFromFirestore();
+    await state.loadQuietHoursForActiveChild();
 
     if (!state.hasCompletedChildRite) {
       Navigator.pushAndRemoveUntil(
