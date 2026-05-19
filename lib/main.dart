@@ -5328,14 +5328,14 @@ Container(
             TextButton(
               onPressed: () {
                 Navigator.push(
-                  context,
-                  calmRoute(
-  ParentRulesScreen(
-    parentId: parentUid,
-    childId: child.childId,
+  context,
+  MaterialPageRoute(
+    builder: (_) => ParentRulesScreen(
+      parentId: parentUid,
+      childId: child.childId,
+    ),
   ),
-),
-                );
+);
               },
               child: const Row(
   mainAxisSize: MainAxisSize.min,
