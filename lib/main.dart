@@ -10871,23 +10871,62 @@ bool _canSend = true;
             ),
           ),
         if (feedback != null)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF20385F),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              feedback!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
+  AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 14,
+    ),
+    margin: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: const Color(0xFF21345C),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: feedback == 'Take a short pause before replying.'
+            ? NatterBrand.yellow.withOpacity(0.38)
+            : Colors.white.withOpacity(0.08),
+        width: feedback == 'Take a short pause before replying.'
+            ? 1.3
+            : 1,
+      ),
+      boxShadow: feedback == 'Take a short pause before replying.'
+          ? [
+              BoxShadow(
+                color: NatterBrand.yellow.withOpacity(0.10),
+                blurRadius: 14,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
               ),
+            ]
+          : [],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (feedback == 'Take a short pause before replying.') ...[
+          Icon(
+            Icons.pause_circle_filled_rounded,
+            color: NatterBrand.yellow.withOpacity(0.95),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+        ],
+        Flexible(
+          child: Text(
+            feedback!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 15,
+              height: 1.25,
             ),
           ),
+        ),
+      ],
+    ),
+  ),
 
         StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           stream: state.conversationDocStream(widget.conversationId),
