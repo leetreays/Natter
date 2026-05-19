@@ -11276,33 +11276,49 @@ return Padding(
   ),
 
 if (spikeHeat >= 6)
-  Container(
+  AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
       horizontal: 14,
       vertical: 12,
     ),
     decoration: BoxDecoration(
-      color: const Color(0xFF4A3540),
-      borderRadius: BorderRadius.circular(16),
+      color: const Color(0xFF21345C),
+      borderRadius: BorderRadius.circular(18),
       border: Border.all(
-        color: Colors.white.withOpacity(0.08),
+        color: NatterBrand.blue.withOpacity(0.28),
       ),
+      boxShadow: [
+        BoxShadow(
+          color: NatterBrand.blue.withOpacity(0.16),
+          blurRadius: 14,
+          offset: const Offset(0, 4),
+        ),
+      ],
     ),
     child: Row(
       children: [
-        const Icon(
-          Icons.favorite_rounded,
-          color: Color(0xFFFFB3C7),
-          size: 18,
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: NatterBrand.blue.withOpacity(0.18),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.pause_rounded,
+            color: NatterBrand.yellow,
+            size: 18,
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'This conversation may need a pause before continuing.',
+            'Natter pause is on. Take a breath — this chat will reopen shortly.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
+              color: Colors.white.withOpacity(0.86),
+              fontWeight: FontWeight.w800,
               height: 1.35,
             ),
           ),
@@ -11390,36 +11406,42 @@ if (spikeHeat >= 6)
     ),
     const SizedBox(width: 8),
     GestureDetector(
-      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-    ? null
-    : _send,
-      child: Container(
-        width: 50,
-        height: 50,
-        decoration: BoxDecoration(
-          color: (isBlockedByMe || isBlockedByOther || !_canSend)
-              ? Colors.white.withOpacity(0.12)
-              : NatterBrand.green,
-          shape: BoxShape.circle,
-          boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend)
-              ? []
-              : [
-                  BoxShadow(
-                    color: NatterBrand.green.withOpacity(0.32),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-        ),
-        child: Icon(
-          Icons.send_rounded,
-          color: (isBlockedByMe || isBlockedByOther || !_canSend)
-              ? Colors.white.withOpacity(0.38)
-              : Colors.black,
-          size: 20,
-        ),
+  onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+      ? null
+      : _send,
+  child: AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    width: 50,
+    height: 50,
+    decoration: BoxDecoration(
+      color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+          ? Colors.white.withOpacity(0.12)
+          : NatterBrand.green,
+      shape: BoxShape.circle,
+      border: Border.all(
+        color: _isSendLocked
+            ? NatterBrand.yellow.withOpacity(0.35)
+            : Colors.transparent,
       ),
+      boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+          ? []
+          : [
+              BoxShadow(
+                color: NatterBrand.green.withOpacity(0.32),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
     ),
+    child: Icon(
+      _isSendLocked ? Icons.pause_rounded : Icons.send_rounded,
+      color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+          ? Colors.white.withOpacity(0.46)
+          : Colors.black,
+      size: 20,
+    ),
+  ),
+),
   ],
 ),
 ],
