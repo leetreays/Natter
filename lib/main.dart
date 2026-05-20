@@ -1133,6 +1133,38 @@ Future<void> applyEscalationDecay(String conversationId) async {
   }, SetOptions(merge: true));
 }
 
+Future<void> applyRepairDecay(
+  String conversationId,
+) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final momentum =
+      (data['repairMomentum'] ?? 0) as num;
+
+  if (momentum <= 0) return;
+
+  final lastRepair = data['lastRepairAt'];
+
+  if (lastRepair is! Timestamp) return;
+
+  final hours =
+      DateTime.now().difference(lastRepair.toDate()).inHours;
+
+  if (hours < 6) return;
+
+  final decay = hours ~/ 6;
+
+  final newMomentum =
+      (momentum - decay).clamp(0, 999);
+
+  await ref.set({
+    'repairMomentum': newMomentum,
+  }, SetOptions(merge: true));
+}
+
 Future<void> recordTargetingConcern({
   required String conversationId,
   required String senderChildId,
@@ -1197,6 +1229,33 @@ Future<void> addConversationEscalation({
     'lastEscalationAt': FieldValue.serverTimestamp(),
     'lastEscalationReason': reason,
   }, SetOptions(merge: true));
+}
+
+Future<void> recordConversationRepair(
+  String conversationId,
+) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  await ref.set({
+    'recentCalmMessages': FieldValue.increment(1),
+    'repairMomentum': FieldValue.increment(1),
+    'lastRepairAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final repairMomentum =
+      (data['repairMomentum'] ?? 0) as num;
+
+  if (repairMomentum >= 2) {
+    await ref.set({
+      'conversationEscalationScore':
+          FieldValue.increment(-2),
+      'spikeHeat':
+          FieldValue.increment(-2),
+    }, SetOptions(merge: true));
+  }
 }
 
 Future<bool> sendMessageToConversation({
@@ -1264,6 +1323,9 @@ if (otherChildId.isNotEmpty) {
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
   final cooldownAmount = isFlagged ? 1 : 3;
+  if (!isFlagged) {
+  await recordConversationRepair(conversationId);
+  }
 
 await conversationsRef().doc(conversationId).set({
   'spikeHeat': FieldValue.increment(-cooldownAmount),
@@ -10547,6 +10609,7 @@ void initState() {
 
     await state.applySpikeHeatDecay(widget.conversationId);
     await state.applyEscalationDecay(widget.conversationId);
+    await state.applyRepairDecay(widget.conversationId);
 
     if (!mounted) return;
 
@@ -10559,6 +10622,7 @@ void initState() {
 
 await state.applySpikeHeatDecay(widget.conversationId);
 await state.applyEscalationDecay(widget.conversationId);
+await state.applyRepairDecay(widget.conversationId);
 
 final conversationSnap = await state
     .conversationsRef()
@@ -10729,12 +10793,15 @@ if (safety.level == SafetyLevel.coach) {
   final updatedHeat =
       (refreshedData['spikeHeat'] ?? 0) as num;
 
+  final repairMomentum =
+    (refreshedData['repairMomentum'] ?? 0) as num;
+  
   final shouldPause =
-    updatedHeat >= 6 || (updatedHeat >= 4 && escalationScore >= 4);
-
-if (shouldPause) {
-  _startSendPause();
-}
+    repairMomentum >= 2
+        ? updatedHeat >= 7
+        : (updatedHeat >= 6 ||
+            (updatedHeat >= 4 &&
+             escalationScore >= 4));
 
       final sendAnyway = await _showSafetyCoachDialog(
   suggestion: escalationScore >= 4
