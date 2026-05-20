@@ -1168,9 +1168,12 @@ if (otherChildId.isNotEmpty) {
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
-  await conversationsRef().doc(conversationId).update({
-  'spikeHeat': FieldValue.increment(-1),
-});
+  final cooldownAmount = isFlagged ? 1 : 3;
+
+await conversationsRef().doc(conversationId).set({
+  'spikeHeat': FieldValue.increment(-cooldownAmount),
+  'lastCalmMessageAt': FieldValue.serverTimestamp(),
+}, SetOptions(merge: true));
 
   final refreshedConversation =
     await conversationsRef().doc(conversationId).get();
@@ -10495,17 +10498,6 @@ if (isBlockedByMe || isBlockedByOther) {
 }
 
 if (!_canSend || _isSendLocked) {
-  if (_isSendLocked) {
-    final remaining = _sendLockedUntil!
-        .difference(DateTime.now())
-        .inSeconds
-        .clamp(1, 20);
-
-    setState(() {
-      feedback = 'Take a short pause before replying ($remaining s)';
-    });
-  }
-
   return;
 }
 
