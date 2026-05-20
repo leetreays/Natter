@@ -10566,6 +10566,8 @@ final conversationSnap = await state
     .get();
 
 final conversationData = conversationSnap.data() ?? {};
+final escalationScore =
+    (conversationData['conversationEscalationScore'] ?? 0) as num;
 final blockedByChildIds = List<String>.from(
   conversationData['blockedByChildIds'] ?? const [],
 );
@@ -10727,14 +10729,21 @@ if (safety.level == SafetyLevel.coach) {
   final updatedHeat =
       (refreshedData['spikeHeat'] ?? 0) as num;
 
-  if (updatedHeat >= 6) {
-    _startSendPause();
-  }
+  final shouldPause =
+    updatedHeat >= 6 || (updatedHeat >= 4 && escalationScore >= 4);
+
+if (shouldPause) {
+  _startSendPause();
+}
 
       final sendAnyway = await _showSafetyCoachDialog(
-        suggestion: safety.suggestion ?? 'Can we try that again kindly?',
-        reason: safety.reason ?? 'That message could hurt someone’s feelings.',
-      );
+  suggestion: escalationScore >= 4
+      ? 'This chat feels like it may be getting tense. Can we slow it down and try again kindly?'
+      : (safety.suggestion ?? 'Can we try that again kindly?'),
+  reason: escalationScore >= 4
+      ? 'This conversation may need a calmer moment.'
+      : (safety.reason ?? 'That message could hurt someone’s feelings.'),
+);
 
       if (!mounted) return;
 
