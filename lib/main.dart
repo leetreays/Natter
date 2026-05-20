@@ -1104,6 +1104,60 @@ Future<void> applySpikeHeatDecay(String conversationId) async {
   }, SetOptions(merge: true));
 }
 
+Future<void> recordTargetingConcern({
+  required String conversationId,
+  required String senderChildId,
+  required String targetChildId,
+  required String reason,
+}) async {
+  final ref = conversationsRef().doc(conversationId);
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final previousSender = (data['targetingChildId'] ?? '').toString();
+  final previousTarget = (data['targetedChildId'] ?? '').toString();
+  final previousCount = (data['targetingCount'] ?? 0) as num;
+  final previousStartedAt = data['targetingWindowStartedAt'];
+
+  final now = DateTime.now();
+
+  var shouldResetWindow = false;
+
+  if (previousSender != senderChildId || previousTarget != targetChildId) {
+    shouldResetWindow = true;
+  }
+
+  if (previousStartedAt is Timestamp) {
+    final windowAge = now.difference(previousStartedAt.toDate());
+    if (windowAge.inHours >= 24) {
+      shouldResetWindow = true;
+    }
+  } else {
+    shouldResetWindow = true;
+  }
+
+  final newCount = shouldResetWindow ? 1 : previousCount.toInt() + 1;
+
+  await ref.set({
+    'targetingChildId': senderChildId,
+    'targetedChildId': targetChildId,
+    'targetingCount': newCount,
+    'targetingWindowStartedAt': shouldResetWindow
+        ? FieldValue.serverTimestamp()
+        : previousStartedAt,
+    'lastTargetingAt': FieldValue.serverTimestamp(),
+    'lastTargetingReason': reason,
+  }, SetOptions(merge: true));
+
+  if (newCount >= 3) {
+    await addConversationSpikeHeat(
+      conversationId: conversationId,
+      amount: 2,
+      reason: 'repeated_targeting',
+    );
+  }
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
@@ -10554,6 +10608,15 @@ if (safety.level == SafetyLevel.block) {
     'lastSpikeHeatReason': 'blocked_message',
   });
 
+  if (state.activeChildId != null && otherChildId.isNotEmpty) {
+  await state.recordTargetingConcern(
+    conversationId: widget.conversationId,
+    senderChildId: state.activeChildId!,
+    targetChildId: otherChildId,
+    reason: 'blocked_message',
+  );
+  }
+
   if (state.activeParentId != null &&
       state.activeChildId != null) {
     await state.recordChildSignal(
@@ -10588,6 +10651,15 @@ if (safety.level == SafetyLevel.coach) {
     'lastSpikeHeatAt': FieldValue.serverTimestamp(),
     'lastSpikeHeatReason': 'coach_prompt',
   });
+
+  if (state.activeChildId != null && otherChildId.isNotEmpty) {
+  await state.recordTargetingConcern(
+    conversationId: widget.conversationId,
+    senderChildId: state.activeChildId!,
+    targetChildId: otherChildId,
+    reason: 'coach_prompt',
+  );
+  }
 
   final refreshedConversation = await state
       .conversationsRef()
