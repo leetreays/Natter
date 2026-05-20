@@ -1104,6 +1104,35 @@ Future<void> applySpikeHeatDecay(String conversationId) async {
   }, SetOptions(merge: true));
 }
 
+Future<void> applyEscalationDecay(String conversationId) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final current =
+      (data['conversationEscalationScore'] ?? 0) as num;
+
+  if (current <= 0) return;
+
+  final lastEscalation = data['lastEscalationAt'];
+
+  if (lastEscalation is! Timestamp) return;
+
+  final minutes =
+      DateTime.now().difference(lastEscalation.toDate()).inMinutes;
+
+  if (minutes < 60) return;
+
+  final decay = minutes ~/ 60;
+
+  final newScore = (current - decay).clamp(0, 999);
+
+  await ref.set({
+    'conversationEscalationScore': newScore,
+  }, SetOptions(merge: true));
+}
+
 Future<void> recordTargetingConcern({
   required String conversationId,
   required String senderChildId,
@@ -1156,6 +1185,18 @@ Future<void> recordTargetingConcern({
       reason: 'repeated_targeting',
     );
   }
+}
+
+Future<void> addConversationEscalation({
+  required String conversationId,
+  required int amount,
+  required String reason,
+}) async {
+  await conversationsRef().doc(conversationId).set({
+    'conversationEscalationScore': FieldValue.increment(amount),
+    'lastEscalationAt': FieldValue.serverTimestamp(),
+    'lastEscalationReason': reason,
+  }, SetOptions(merge: true));
 }
 
 Future<bool> sendMessageToConversation({
@@ -10505,6 +10546,7 @@ void initState() {
     final state = AppStateScope.of(context);
 
     await state.applySpikeHeatDecay(widget.conversationId);
+    await state.applyEscalationDecay(widget.conversationId);
 
     if (!mounted) return;
 
@@ -10516,6 +10558,7 @@ void initState() {
     final state = AppStateScope.of(context);
 
 await state.applySpikeHeatDecay(widget.conversationId);
+await state.applyEscalationDecay(widget.conversationId);
 
 final conversationSnap = await state
     .conversationsRef()
@@ -10617,6 +10660,12 @@ if (safety.level == SafetyLevel.block) {
   );
   }
 
+  await state.addConversationEscalation(
+  conversationId: widget.conversationId,
+  amount: 3,
+  reason: 'blocked_message',
+);
+
   if (state.activeParentId != null &&
       state.activeChildId != null) {
     await state.recordChildSignal(
@@ -10661,6 +10710,12 @@ if (safety.level == SafetyLevel.coach) {
   );
   }
 
+  await state.addConversationEscalation(
+  conversationId: widget.conversationId,
+  amount: 1,
+  reason: 'coach_prompt',
+);
+
   final refreshedConversation = await state
       .conversationsRef()
       .doc(widget.conversationId)
@@ -10694,6 +10749,12 @@ if (safety.level == SafetyLevel.coach) {
   'lastSpikeHeatReason': 'protected_delivery',
 });
 
+await state.addConversationEscalation(
+  conversationId: widget.conversationId,
+  amount: 2,
+  reason: 'protected_delivery',
+);
+      
       if (state.activeParentId != null && state.activeChildId != null) {
   await state.recordChildSignal(
     parentId: state.activeParentId!,
@@ -10713,7 +10774,7 @@ if (safety.level == SafetyLevel.coach) {
             message:
                 'A coached message was sent with protected delivery.',
           ));
-        }
+        } 
 
         await _sendMessageNow(text, flagged: true);
         
