@@ -1251,9 +1251,9 @@ Future<void> recordConversationRepair(
   if (repairMomentum >= 2) {
     await ref.set({
       'conversationEscalationScore':
-          FieldValue.increment(-2),
+          FieldValue.increment(-1),
       'spikeHeat':
-          FieldValue.increment(-2),
+          FieldValue.increment(-1),
     }, SetOptions(merge: true));
   }
 }
@@ -1334,7 +1334,7 @@ if (otherChildId.isNotEmpty) {
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
-  final cooldownAmount = isFlagged ? 1 : 3;
+  final cooldownAmount = isFlagged ? 1 : 2;
   if (!isFlagged) {
   await recordConversationRepair(conversationId);
   }
@@ -10762,7 +10762,7 @@ if (safety.level == SafetyLevel.block) {
   await state.conversationsRef()
       .doc(widget.conversationId)
       .update({
-    'spikeHeat': FieldValue.increment(3),
+    'spikeHeat': FieldValue.increment(2),
     'lastSpikeHeatAt': FieldValue.serverTimestamp(),
     'lastSpikeHeatReason': 'blocked_message',
   });
