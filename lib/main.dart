@@ -10848,10 +10848,8 @@ if (safety.level == SafetyLevel.coach) {
   
   final shouldPause =
     repairMomentum >= 2
-        ? updatedHeat >= 7
-        : (updatedHeat >= 6 ||
-            (updatedHeat >= 4 &&
-             escalationScore >= 4));
+        ? updatedHeat >= 8
+        : updatedHeat >= 7;
 
       final sendAnyway = await _showSafetyCoachDialog(
   suggestion: escalationScore >= 4
