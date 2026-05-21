@@ -1270,6 +1270,28 @@ bool shouldShowRepairFeedback(
   return repairMomentum >= 2 && escalation <= 2;
 }
 
+String conversationToneBand({
+  required num spikeHeat,
+  required num escalationScore,
+  required num repairMomentum,
+}) {
+  if (spikeHeat >= 8) return 'pause';
+
+  if (repairMomentum >= 2 && spikeHeat <= 5) {
+    return 'repairing';
+  }
+
+  if (spikeHeat >= 5 || escalationScore >= 6) {
+    return 'heated';
+  }
+
+  if (spikeHeat >= 3 || escalationScore >= 3) {
+    return 'warming';
+  }
+
+  return 'calm';
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
@@ -11517,7 +11539,19 @@ bool _canSend = true;
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
 
-if (spikeHeat >= 7 &&
+            final escalationScore =
+    (conversationData['conversationEscalationScore'] ?? 0) as num;
+
+final repairMomentum =
+    (conversationData['repairMomentum'] ?? 0) as num;
+
+final toneBand = state.conversationToneBand(
+  spikeHeat: spikeHeat,
+  escalationScore: escalationScore,
+  repairMomentum: repairMomentum,
+);
+
+if (toneBand == 'pause' &&
     spikeHeat != _lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -11545,7 +11579,7 @@ return Padding(
             ),
           ),
         ),
-      if (spikeHeat >= 3 && spikeHeat < 7)
+      if (toneBand == 'warming')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11569,7 +11603,7 @@ return Padding(
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'This chat feels a little heated. Take a moment before replying.',
+            'This chat is getting a little tense. Take a moment before replying.',
             style: TextStyle(
               color: Colors.white.withOpacity(0.82),
               fontWeight: FontWeight.w700,
@@ -11580,8 +11614,42 @@ return Padding(
       ],
     ),
   ),
-
-if (spikeHeat >= 7)
+if (toneBand == 'heated')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF3A435F),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.yellow.withOpacity(0.18),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.wb_twilight_rounded,
+          color: NatterBrand.yellow,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat feels heated. Let’s slow it down before replying.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (toneBand == 'pause')
   AnimatedContainer(
     duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
@@ -11632,6 +11700,41 @@ if (spikeHeat >= 7)
       ],
     ),
   ),
+    if (toneBand == 'repairing')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2F4A4A),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.green.withOpacity(0.18),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.favorite_rounded,
+          color: NatterBrand.green,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'Nice reset — this chat feels calmer now 💛',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ), 
       Row(
   children: [
     Container(
