@@ -1281,11 +1281,11 @@ String conversationToneBand({
     return 'repairing';
   }
 
-  if (spikeHeat >= 5 || escalationScore >= 6) {
+  if (spikeHeat >= 6 || escalationScore >= 8) {
     return 'heated';
   }
 
-  if (spikeHeat >= 3 || escalationScore >= 3) {
+  if (spikeHeat >= 2 || escalationScore >= 3) {
     return 'warming';
   }
 
