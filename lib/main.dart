@@ -1258,6 +1258,18 @@ Future<void> recordConversationRepair(
   }
 }
 
+bool shouldShowRepairFeedback(
+  Map<String, dynamic> conversationData,
+) {
+  final repairMomentum =
+      (conversationData['repairMomentum'] ?? 0) as num;
+
+  final escalation =
+      (conversationData['conversationEscalationScore'] ?? 0) as num;
+
+  return repairMomentum >= 2 && escalation <= 2;
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
@@ -10578,6 +10590,37 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   if (!flagged) {
   _sendLockTimer?.cancel();
   _sendLockedUntil = null;
+  }
+
+  if (!flagged) {
+  final refreshedConversation = await state
+      .conversationsRef()
+      .doc(widget.conversationId)
+      .get();
+
+  final refreshedData =
+      refreshedConversation.data() ?? {};
+
+  final shouldCelebrateRepair =
+      state.shouldShowRepairFeedback(refreshedData);
+
+  if (shouldCelebrateRepair && mounted) {
+    setState(() {
+      feedback =
+          'Nice reset — this chat feels calmer now 💛';
+    });
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (!mounted) return;
+
+      if (feedback ==
+          'Nice reset — this chat feels calmer now 💛') {
+        setState(() {
+          feedback = null;
+        });
+      }
+    });
+  }
   }
 
 if (!mounted) return;
