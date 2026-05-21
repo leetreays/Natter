@@ -10575,6 +10575,11 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
 
   controller.clear();
 
+  if (!flagged) {
+  _sendLockTimer?.cancel();
+  _sendLockedUntil = null;
+  }
+
 if (!mounted) return;
 
 setState(() {
@@ -10619,6 +10624,8 @@ void initState() {
   
   void _send() async {
     final state = AppStateScope.of(context);
+
+    _clearExpiredSendPause();
 
 await state.applySpikeHeatDecay(widget.conversationId);
 await state.applyEscalationDecay(widget.conversationId);
@@ -10981,6 +10988,24 @@ bool _canSend = true;
     });
   });
  } 
+
+  void _clearExpiredSendPause() {
+  if (_sendLockedUntil == null) return;
+
+  final hasExpired = !DateTime.now().isBefore(_sendLockedUntil!);
+
+  if (!hasExpired) return;
+
+  _sendLockTimer?.cancel();
+
+  setState(() {
+    _sendLockedUntil = null;
+
+    if (feedback == 'Take a short pause before replying.') {
+      feedback = null;
+    }
+  });
+  }
   
   @override
   Widget build(BuildContext context) {
