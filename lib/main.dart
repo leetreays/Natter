@@ -1228,6 +1228,8 @@ Future<void> addConversationEscalation({
     'conversationEscalationScore': FieldValue.increment(amount),
     'lastEscalationAt': FieldValue.serverTimestamp(),
     'lastEscalationReason': reason,
+    'repairMomentum': 0,
+    'recentCalmMessages': 0,
   }, SetOptions(merge: true));
 }
 
@@ -1276,19 +1278,8 @@ String conversationToneBand({
   required num repairMomentum,
 }) {
   if (spikeHeat >= 8) return 'pause';
-
-  if (repairMomentum >= 2 && spikeHeat <= 5) {
-    return 'repairing';
-  }
-
-  if (spikeHeat >= 6 || escalationScore >= 8) {
-    return 'heated';
-  }
-
-  if (spikeHeat >= 2 || escalationScore >= 3) {
-    return 'warming';
-  }
-
+  if (spikeHeat >= 5) return 'heated';
+  if (spikeHeat >= 2) return 'warming';
   return 'calm';
 }
 
@@ -11693,41 +11684,6 @@ if (toneBand == 'pause')
             style: TextStyle(
               color: Colors.white.withOpacity(0.86),
               fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-    if (toneBand == 'repairing')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF2F4A4A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.green.withOpacity(0.18),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.favorite_rounded,
-          color: NatterBrand.green,
-          size: 18,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Nice reset — this chat feels calmer now 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
               height: 1.35,
             ),
           ),
