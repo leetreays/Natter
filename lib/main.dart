@@ -11517,7 +11517,7 @@ bool _canSend = true;
 
             final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
 
-if (spikeHeat >= 6 &&
+if (spikeHeat >= 7 &&
     spikeHeat != _lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -11545,7 +11545,7 @@ return Padding(
             ),
           ),
         ),
-      if (spikeHeat >= 3 && spikeHeat < 6)
+      if (spikeHeat >= 3 && spikeHeat < 7)
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11581,7 +11581,7 @@ return Padding(
     ),
   ),
 
-if (spikeHeat >= 6)
+if (spikeHeat >= 7)
   AnimatedContainer(
     duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
