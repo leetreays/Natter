@@ -1230,6 +1230,7 @@ Future<void> addConversationEscalation({
     'lastEscalationReason': reason,
     'repairMomentum': 0,
     'recentCalmMessages': 0,
+    'repairFeedbackShown': false,
   }, SetOptions(merge: true));
 }
 
@@ -1269,7 +1270,12 @@ bool shouldShowRepairFeedback(
   final spikeHeat =
       (conversationData['spikeHeat'] ?? 0) as num;
 
-  return repairMomentum >= 1 && spikeHeat <= 1;
+  final repairFeedbackShown =
+      conversationData['repairFeedbackShown'] == true;
+
+  return repairMomentum >= 1 &&
+      spikeHeat <= 1 &&
+      !repairFeedbackShown;
 }
 
 String conversationToneBand({
@@ -10636,6 +10642,7 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     .doc(widget.conversationId)
     .set({
   'repairMomentum': 0,
+  'repairFeedbackShown': true,
 }, SetOptions(merge: true));
 
     Future.delayed(const Duration(seconds: 4), () {
