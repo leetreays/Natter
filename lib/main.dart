@@ -10504,6 +10504,8 @@ Future<void> _pickStarter() async {
 }
   
 void _showStallRescue() {
+  if (_isSendLocked) return;
+
   showDialog(
     context: context,
     builder: (ctx) {
@@ -10516,32 +10518,61 @@ void _showStallRescue() {
         child: Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.85),
+            color: const Color(0xFF21345C),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.18)),
+            border: Border.all(
+              color: NatterBrand.blue.withOpacity(0.26),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: NatterBrand.blue.withOpacity(0.14),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Icons.chat_bubble_outline,
-                color: NatterBrand.yellow,
-                size: 40,
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: NatterBrand.blue.withOpacity(0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lightbulb_rounded,
+                  color: NatterBrand.yellow,
+                  size: 24,
+                ),
               ),
               const SizedBox(height: 12),
               const Text(
-                "Need help continuing?",
+                'Need a gentle starter?',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w900,
                   fontSize: 20,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
+              Text(
+                'Here are a few calm ways to keep chatting with ${widget.contactName}.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.76),
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 16),
               ...starters.map((option) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 9),
                   child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
                     onTap: () {
                       controller.text = option.message;
                       controller.selection = TextSelection.fromPosition(
@@ -10551,25 +10582,37 @@ void _showStallRescue() {
                     },
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(13),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.10),
+                        color: const Color(0xFF2D466F),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.16),
+                          color: Colors.white.withOpacity(0.08),
                         ),
                       ),
                       child: Text(
                         option.label,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.90),
+                          fontWeight: FontWeight.w800,
+                          height: 1.25,
                         ),
                       ),
                     ),
                   ),
                 );
               }),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(
+                  'Not now',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.72),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
