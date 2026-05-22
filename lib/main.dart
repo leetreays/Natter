@@ -10581,11 +10581,15 @@ void _showStallRescue() {
   void _startStallTimer() {
   _stallTimer?.cancel();
 
+  if (_isSendLocked) return;
+
   _stallTimer = Timer(const Duration(seconds: 20), () {
     if (!mounted) return;
+    if (_isSendLocked) return;
+
     _showStallRescue();
   });
-  }
+}
   
 Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
