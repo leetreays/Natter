@@ -10647,7 +10647,10 @@ Future.delayed(const Duration(milliseconds: 700), () {
 
   setState(() {
     _canSend = true;
-    feedback = null;
+
+    if (feedback != 'Nice reset — this chat feels calmer now 💛') {
+      feedback = null;
+    }
   });
 });
 
@@ -11605,7 +11608,7 @@ return Padding(
       ],
     ),
   ),
-if (toneBand == 'heated')
+if (toneBand == 'heated' || (toneBand == 'pause' && !_isSendLocked))
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11640,7 +11643,7 @@ if (toneBand == 'heated')
       ],
     ),
   ),
-if (toneBand == 'pause')
+if (toneBand == 'pause' && _isSendLocked)
   AnimatedContainer(
     duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
