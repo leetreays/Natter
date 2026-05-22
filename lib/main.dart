@@ -1266,10 +1266,10 @@ bool shouldShowRepairFeedback(
   final repairMomentum =
       (conversationData['repairMomentum'] ?? 0) as num;
 
-  final escalation =
-      (conversationData['conversationEscalationScore'] ?? 0) as num;
+  final spikeHeat =
+      (conversationData['spikeHeat'] ?? 0) as num;
 
-  return repairMomentum >= 2 && escalation <= 2;
+  return repairMomentum >= 2 && spikeHeat < 2;
 }
 
 String conversationToneBand({
@@ -1278,8 +1278,15 @@ String conversationToneBand({
   required num repairMomentum,
 }) {
   if (spikeHeat >= 8) return 'pause';
+
+  if (repairMomentum >= 1 && spikeHeat >= 2) {
+    return 'cooling';
+  }
+
   if (spikeHeat >= 5) return 'heated';
+
   if (spikeHeat >= 2) return 'warming';
+
   return 'calm';
 }
 
@@ -11633,6 +11640,41 @@ if (toneBand == 'heated' || (toneBand == 'pause' && !_isSendLocked))
         Expanded(
           child: Text(
             'This chat feels heated. Let’s slow it down before replying.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (toneBand == 'cooling')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2F4A4A),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.green.withOpacity(0.18),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.eco_rounded,
+          color: NatterBrand.green,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat is settling. Keep going calmly 💛',
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
               fontWeight: FontWeight.w700,
