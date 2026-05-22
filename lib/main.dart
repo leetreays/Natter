@@ -1269,7 +1269,7 @@ bool shouldShowRepairFeedback(
   final spikeHeat =
       (conversationData['spikeHeat'] ?? 0) as num;
 
-  return repairMomentum >= 2 && spikeHeat < 2;
+  return repairMomentum >= 1 && spikeHeat <= 1;
 }
 
 String conversationToneBand({
@@ -10625,10 +10625,18 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
       state.shouldShowRepairFeedback(refreshedData);
 
   if (shouldCelebrateRepair && mounted) {
-    setState(() {
-      feedback =
-          'Nice reset — this chat feels calmer now 💛';
-    });
+    if (feedback !=
+    'Nice reset — this chat feels calmer now 💛') {
+  setState(() {
+    feedback =
+        'Nice reset — this chat feels calmer now 💛';
+  });
+}
+    await state.conversationsRef()
+    .doc(widget.conversationId)
+    .set({
+  'repairMomentum': 0,
+}, SetOptions(merge: true));
 
     Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
