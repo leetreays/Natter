@@ -1508,7 +1508,7 @@ if (otherChildId.isNotEmpty) {
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
-  final cooldownAmount = isFlagged ? 1 : 2;
+  final cooldownAmount = isFlagged ? 0 : 2;
   if (!isFlagged) {
   await recordConversationRepair(conversationId);
   }
@@ -11091,12 +11091,28 @@ if (adjustedLevel == SafetyLevel.protect) {
     );
   }
 
-  final sendAnyway = await _showSafetyCoachDialog(
-    suggestion:
-        'This chat feels tense. If you still send this, Natter will deliver it carefully.',
-    reason:
-        'This message may land badly because the conversation has been getting tense.',
-  );
+  final refreshedConversation = await state
+    .conversationsRef()
+    .doc(widget.conversationId)
+    .get();
+
+final refreshedData = refreshedConversation.data() ?? {};
+
+final escalationChain =
+    (refreshedData['recentEscalationChain'] ?? 0) as num;
+
+final sendAnyway = await _showSafetyCoachDialog(
+  suggestion: escalationChain >= 5
+      ? 'This keeps feeling tense. Try changing the words before sending.'
+      : escalationChain >= 3
+          ? 'This chat is getting tense. Natter can deliver it carefully, but a calmer version may help.'
+          : 'This chat feels tense. If you still send this, Natter will deliver it carefully.',
+  reason: escalationChain >= 5
+      ? 'Natter is noticing repeated tense messages in this chat.'
+      : escalationChain >= 3
+          ? 'This message may land badly because the conversation is heating up.'
+          : 'This message may land badly because the conversation has been getting tense.',
+);
 
   if (!mounted) return;
 
