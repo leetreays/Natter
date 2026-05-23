@@ -11400,24 +11400,41 @@ bool _canSend = true;
   return DateTime.now().isBefore(_sendLockedUntil!);
   }
 
- void _startSendPause() {
-  _sendLockTimer?.cancel();
+_sendLockTimer = Timer.periodic(
+  const Duration(milliseconds: 250),
+  (timer) {
+    if (!mounted) {
+      timer.cancel();
+      return;
+    }
 
-  setState(() {
-    _sendLockedUntil =
-        DateTime.now().add(const Duration(seconds: 20));
-    feedback = 'Take a short pause before replying.';
-  });
+    final remaining =
+        _sendLockedUntil?.difference(DateTime.now());
 
-  _sendLockTimer = Timer(const Duration(seconds: 20), () {
-    if (!mounted) return;
+    if (remaining == null || remaining.inMilliseconds <= 0) {
+      timer.cancel();
 
-    setState(() {
-      _sendLockedUntil = null;
-      feedback = null;
-    });
-  });
- } 
+      setState(() {
+        _sendLockedUntil = null;
+        feedback = null;
+      });
+
+      return;
+    }
+
+    setState(() {});
+  },
+);
+
+double get _sendPauseProgress {
+  if (_sendLockedUntil == null) return 0;
+
+  final totalMs = const Duration(seconds: 20).inMilliseconds;
+  final remainingMs =
+      _sendLockedUntil!.difference(DateTime.now()).inMilliseconds;
+
+  return (remainingMs / totalMs).clamp(0.0, 1.0);
+}
 
 String _smoothedBanner(String activeBanner) {
   const minimumDisplay = Duration(seconds: 3);
@@ -12296,14 +12313,34 @@ if (displayedBanner == 'pause')
               ),
             ],
     ),
-    child: Icon(
+    child: Stack(
+  alignment: Alignment.center,
+  children: [
+    if (_isSendLocked)
+      SizedBox(
+        width: 42,
+        height: 42,
+        child: CircularProgressIndicator(
+          value: _sendPauseProgress,
+          strokeWidth: 3,
+          backgroundColor: Colors.white.withOpacity(0.12),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            NatterBrand.green.withOpacity(0.85),
+          ),
+        ),
+      ),
+    Icon(
       _isSendLocked ? Icons.pause_rounded : Icons.send_rounded,
-      color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-          ? Colors.white.withOpacity(0.46)
+      color: (isBlockedByMe ||
+              isBlockedByOther ||
+              !_canSend ||
+              _isSendLocked)
+          ? Colors.white.withOpacity(0.58)
           : Colors.black,
       size: 20,
     ),
-  ),
+  ],
+),
 ),
   ],
 ),
