@@ -1284,14 +1284,14 @@ Future<void> recordEscalationEvent({
   final previousChain =
       (data['recentEscalationChain'] ?? 0) as num;
 
-  final lastEscalationAt = data['lastEscalationAt'];
+  final lastEscalationEventAt = data['lastEscalationEventAt'];
 
   int newChain = 1;
 
-  if (lastEscalationAt is Timestamp) {
-    final minutesAgo = DateTime.now()
-        .difference(lastEscalationAt.toDate())
-        .inMinutes;
+  if (lastEscalationEventAt is Timestamp) {
+  final minutesAgo = DateTime.now()
+      .difference(lastEscalationEventAt.toDate())
+      .inMinutes;
 
     final worsening =
         severity >= previousSeverity;
@@ -1311,8 +1311,7 @@ Future<void> recordEscalationEvent({
             ? 'improving'
             : 'stable',
     'lastEscalationReason': reason,
-    'lastEscalationAt':
-        FieldValue.serverTimestamp(),
+    'lastEscalationEventAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 }
 
