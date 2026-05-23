@@ -70,7 +70,7 @@ class NatterBrand {
 
 enum AlertType { blockedWord, quietHours, contactRequest, safetyCoach }
 
-enum SafetyLevel { ok, coach, block }
+enum SafetyLevel { ok, coach, protect, block }
 
 class SafetyCheckResult {
   final SafetyLevel level;
@@ -1408,7 +1408,7 @@ SafetyLevel adjustedSafetyLevel({
   }
 
   if (baseLevel == SafetyLevel.coach && conversationIsWorsening) {
-    return SafetyLevel.coach;
+  return SafetyLevel.protect;
   }
 
   return baseLevel;
@@ -11050,6 +11050,108 @@ if (adjustedLevel == SafetyLevel.block) {
       type: AlertType.blockedWord,
       message: 'Blocked-word attempt during a conversation.',
     ));
+  }
+
+  return;
+}
+
+if (adjustedLevel == SafetyLevel.protect) {
+  state.recordCoachPrompt();
+
+  await state.conversationsRef()
+      .doc(widget.conversationId)
+      .update({
+    'spikeHeat': FieldValue.increment(1),
+    'lastSpikeHeatAt': FieldValue.serverTimestamp(),
+    'lastSpikeHeatReason': 'protected_delivery',
+  });
+
+  await state.addConversationEscalation(
+    conversationId: widget.conversationId,
+    amount: 2,
+    reason: 'protected_delivery',
+  );
+
+  await state.recordEscalationEvent(
+    conversationId: widget.conversationId,
+    severity: 3,
+    reason: 'protected_delivery',
+  );
+
+  if (state.activeParentId != null && state.activeChildId != null) {
+    await state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'safetyCoach',
+        context: 'protected_delivery_recommended',
+        severity: 'gentle',
+        time: DateTime.now(),
+      ),
+    );
+  }
+
+  final sendAnyway = await _showSafetyCoachDialog(
+    suggestion:
+        'This chat feels tense. If you still send this, Natter will deliver it carefully.',
+    reason:
+        'This message may land badly because the conversation has been getting tense.',
+  );
+
+  if (!mounted) return;
+
+  if (sendAnyway) {
+    state.recordCoachedMessageSentAnyway();
+
+    if (state.activeParentId != null && state.activeChildId != null) {
+      await state.recordChildSignal(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
+        signal: ChildSignalEvent(
+          type: 'safetyCoach',
+          context: 'sent_with_protected_delivery',
+          severity: 'gentle',
+          time: DateTime.now(),
+        ),
+      );
+    }
+
+    if (state.alertsSafetyCoach) {
+      state.addAlert(AlertEvent(
+        type: AlertType.safetyCoach,
+        message: 'A coached message was sent with protected delivery.',
+      ));
+    }
+
+    await _sendMessageNow(text, flagged: true);
+  } else {
+    state.recordKindRewrite();
+
+    if (state.activeParentId != null && state.activeChildId != null) {
+      await state.recordChildSignal(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
+        signal: ChildSignalEvent(
+          type: 'safetyCoach',
+          context: 'rewrite_used',
+          severity: 'gentle',
+          time: DateTime.now(),
+        ),
+      );
+    }
+
+    if (state.alertsSafetyCoach) {
+      state.addAlert(AlertEvent(
+        type: AlertType.safetyCoach,
+        message: 'A message was rewritten kindly.',
+      ));
+    }
+
+    state.addFriendshipPoints(widget.contactName, 3);
+
+    setState(() {
+      feedback = 'Good choice. Try a calmer version 💛';
+    });
   }
 
   return;
