@@ -11409,31 +11409,14 @@ DateTime.now().add(const Duration(seconds: 20));
 feedback = 'Take a short pause before replying.';
 });
 
-_sendLockTimer = Timer.periodic(
-  const Duration(milliseconds: 250),
-  (timer) {
-    if (!mounted) {
-      timer.cancel();
-      return;
-    }
+_sendLockTimer = Timer(const Duration(seconds: 20), () {
+  if (!mounted) return;
 
-    final remaining =
-        _sendLockedUntil?.difference(DateTime.now());
-
-    if (remaining == null || remaining.inMilliseconds <= 0) {
-      timer.cancel();
-
-      setState(() {
-        _sendLockedUntil = null;
-        feedback = null;
-      });
-
-      return;
-    }
-
-    setState(() {});
-  },
-);
+  setState(() {
+    _sendLockedUntil = null;
+    feedback = null;
+  });
+});
   }
 
 
@@ -12331,14 +12314,23 @@ if (displayedBanner == 'pause')
       SizedBox(
         width: 42,
         height: 42,
-        child: CircularProgressIndicator(
-          value: _sendPauseProgress,
-          strokeWidth: 3,
-          backgroundColor: Colors.white.withOpacity(0.12),
-          valueColor: AlwaysStoppedAnimation<Color>(
-            NatterBrand.green.withOpacity(0.85),
-          ),
-        ),
+        child: TweenAnimationBuilder<double>(
+  tween: Tween<double>(
+    begin: 1,
+    end: 0,
+  ),
+  duration: const Duration(seconds: 20),
+  builder: (context, value, child) {
+    return CircularProgressIndicator(
+      value: value,
+      strokeWidth: 3,
+      backgroundColor: Colors.white.withOpacity(0.12),
+      valueColor: AlwaysStoppedAnimation<Color>(
+        NatterBrand.green.withOpacity(0.85),
+      ),
+    );
+  },
+),
       ),
     Icon(
       _isSendLocked ? Icons.pause_rounded : Icons.send_rounded,
