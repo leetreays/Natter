@@ -11208,13 +11208,20 @@ if (adjustedLevel == SafetyLevel.coach) {
         ? updatedHeat >= 8
         : updatedHeat >= 7;
 
-      final sendAnyway = await _showSafetyCoachDialog(
-  suggestion: escalationScore >= 4
-      ? 'This chat feels like it may be getting tense. Can we slow it down and try again kindly?'
-      : (safety.suggestion ?? 'Can we try that again kindly?'),
-  reason: escalationScore >= 4
-      ? 'This conversation may need a calmer moment.'
-      : (safety.reason ?? 'That message could hurt someone’s feelings.'),
+      final escalationChain =
+    (refreshedData['recentEscalationChain'] ?? 0) as num;
+
+final sendAnyway = await _showSafetyCoachDialog(
+  suggestion: escalationChain >= 4
+      ? 'This keeps feeling tense. Before sending, try writing what you mean in a calmer way.'
+      : escalationChain >= 2
+          ? 'This chat seems to be getting tense. Can we slow it down and try again kindly?'
+          : (safety.suggestion ?? 'Can we try that again kindly?'),
+  reason: escalationChain >= 4
+      ? 'Natter is noticing repeated tense messages in this chat.'
+      : escalationChain >= 2
+          ? 'This conversation may need a calmer moment.'
+          : (safety.reason ?? 'That message could hurt someone’s feelings.'),
 );
 
       if (!mounted) return;
