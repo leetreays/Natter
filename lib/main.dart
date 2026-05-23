@@ -1342,6 +1342,36 @@ String conversationToneBand({
   return 'calm';
 }
 
+String activeConversationBanner({
+  required String toneBand,
+  required String escalationDirection,
+  required num escalationChain,
+  required bool isSendLocked,
+}) {
+  if (toneBand == 'pause' && isSendLocked) {
+    return 'pause';
+  }
+
+  if (escalationDirection == 'worsening' &&
+      escalationChain >= 3) {
+    return 'worsening';
+  }
+
+  if (toneBand == 'heated') {
+    return 'heated';
+  }
+
+  if (toneBand == 'cooling') {
+    return 'cooling';
+  }
+
+  if (toneBand == 'warming') {
+    return 'warming';
+  }
+
+  return 'none';
+}
+
 Future<bool> sendMessageToConversation({
   required String conversationId,
   required String text,
@@ -11696,6 +11726,14 @@ final escalationDirection =
 final escalationChain =
     (conversationData['recentEscalationChain'] ?? 0) as num;
 
+final activeBanner =
+    state.activeConversationBanner(
+  toneBand: toneBand,
+  escalationDirection: escalationDirection,
+  escalationChain: escalationChain,
+  isSendLocked: _isSendLocked,
+);
+
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
@@ -11713,8 +11751,7 @@ return Padding(
             ),
           ),
         ),
-      if (escalationDirection == 'worsening' &&
-    escalationChain >= 3)
+      if (activeBanner == 'worsening')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11749,7 +11786,7 @@ return Padding(
       ],
     ),
   ),
-      if (toneBand == 'warming')
+      if (activeBanner == 'warming')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11784,7 +11821,7 @@ return Padding(
       ],
     ),
   ),
-if (toneBand == 'heated' || (toneBand == 'pause' && !_isSendLocked))
+if (activeBanner == 'heated')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11819,7 +11856,7 @@ if (toneBand == 'heated' || (toneBand == 'pause' && !_isSendLocked))
       ],
     ),
   ),
-if (toneBand == 'cooling')
+if (activeBanner == 'cooling')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11854,7 +11891,7 @@ if (toneBand == 'cooling')
       ],
     ),
   ),
-if (toneBand == 'pause' && _isSendLocked)
+if (activeBanner == 'pause')
   AnimatedContainer(
     duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
