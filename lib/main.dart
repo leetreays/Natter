@@ -2393,10 +2393,34 @@ Future<String> currentUid() async {
     }
   }
 
-  SafetyCheckResult checkMessageSafety(String text) {
-  final lower = text.trim().toLowerCase();
+  String normaliseMessageForSafety(String text) {
+  var value = text.toLowerCase().trim();
 
-  if (lower.isEmpty) {
+  value = value
+      .replaceAll('0', 'o')
+      .replaceAll('1', 'i')
+      .replaceAll('3', 'e')
+      .replaceAll('4', 'a')
+      .replaceAll('5', 's')
+      .replaceAll('7', 't')
+      .replaceAll('@', 'a')
+      .replaceAll('!', 'i')
+      .replaceAll('\$', 's');
+
+  value = value.replaceAll(RegExp(r'[^a-z\s]'), ' ');
+  value = value.replaceAll(RegExp(r'\s+'), ' ').trim();
+  value = value.replaceAllMapped(
+    RegExp(r'(.)\1{2,}'),
+    (match) => match.group(1)!,
+  );
+
+  return value;
+  }
+
+  SafetyCheckResult checkMessageSafety(String text) {
+  final lower = normaliseMessageForSafety(text);
+
+if (lower.isEmpty) {
     return const SafetyCheckResult.ok();
   }
 
