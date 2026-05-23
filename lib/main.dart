@@ -1380,6 +1380,40 @@ String conversationToneBand({
   return 'calm';
 }
 
+SafetyLevel adjustedSafetyLevel({
+  required SafetyLevel baseLevel,
+  required Map<String, dynamic> conversationData,
+}) {
+  if (baseLevel == SafetyLevel.ok) return SafetyLevel.ok;
+  if (baseLevel == SafetyLevel.block) return SafetyLevel.block;
+
+  final spikeHeat = (conversationData['spikeHeat'] ?? 0) as num;
+  final escalationScore =
+      (conversationData['conversationEscalationScore'] ?? 0) as num;
+  final escalationChain =
+      (conversationData['recentEscalationChain'] ?? 0) as num;
+  final targetingCount =
+      (conversationData['targetingCount'] ?? 0) as num;
+  final repairMomentum =
+      (conversationData['repairMomentum'] ?? 0) as num;
+
+  final conversationIsWorsening =
+      escalationChain >= 3 || escalationScore >= 6 || targetingCount >= 3;
+
+  final conversationIsRepairing =
+      repairMomentum >= 2 && spikeHeat <= 5;
+
+  if (conversationIsRepairing) {
+    return SafetyLevel.coach;
+  }
+
+  if (baseLevel == SafetyLevel.coach && conversationIsWorsening) {
+    return SafetyLevel.coach;
+  }
+
+  return baseLevel;
+}
+
 String activeConversationBanner({
   required String toneBand,
   required String escalationDirection,
@@ -10953,8 +10987,12 @@ if (state.alertsQuietHours) {
     }
 
     final safety = state.checkMessageSafety(text);
+    final adjustedLevel = state.adjustedSafetyLevel(
+  baseLevel: safety.level,
+  conversationData: conversationData,
+);
 
-if (safety.level == SafetyLevel.block) {
+if (adjustedLevel == SafetyLevel.block) {
   setState(() {
     feedback =
         safety.reason ?? "That word isn’t allowed on Natter.";
@@ -11017,7 +11055,7 @@ if (safety.level == SafetyLevel.block) {
   return;
 }
 
-if (safety.level == SafetyLevel.coach) {
+if (adjustedLevel == SafetyLevel.coach) {
   state.recordCoachPrompt();
 
   await state.conversationsRef()
