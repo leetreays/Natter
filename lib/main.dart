@@ -10400,6 +10400,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String? feedback;
   int _stallCounter = 0;
   Timer? _stallTimer;
+  String _displayedBanner = 'none';
+  DateTime? _bannerShownAt;
+  Timer? _bannerTimer;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -11327,6 +11330,7 @@ setState(() {
     _scrollController.dispose();
     _stallTimer?.cancel();
     controller.dispose();
+    _bannerTimer?.cancel();
     super.dispose();
   }
 
@@ -11414,6 +11418,40 @@ bool _canSend = true;
     });
   });
  } 
+
+String _smoothedBanner(String activeBanner) {
+  const minimumDisplay = Duration(seconds: 3);
+
+  if (_displayedBanner == 'none') {
+    _displayedBanner = activeBanner;
+    _bannerShownAt = DateTime.now();
+    return _displayedBanner;
+  }
+
+  if (activeBanner == _displayedBanner) {
+    return _displayedBanner;
+  }
+
+  final shownAt = _bannerShownAt;
+  final hasShownLongEnough = shownAt == null ||
+      DateTime.now().difference(shownAt) >= minimumDisplay;
+
+  if (hasShownLongEnough || activeBanner == 'pause') {
+    _displayedBanner = activeBanner;
+    _bannerShownAt = DateTime.now();
+  } else {
+    _bannerTimer?.cancel();
+    _bannerTimer = Timer(minimumDisplay, () {
+      if (!mounted) return;
+      setState(() {
+        _displayedBanner = activeBanner;
+        _bannerShownAt = DateTime.now();
+      });
+    });
+  }
+
+  return _displayedBanner;
+}
 
   void _clearExpiredSendPause() {
   if (_sendLockedUntil == null) return;
@@ -11940,6 +11978,9 @@ final activeBanner =
   isSendLocked: _isSendLocked,
 );
 
+final displayedBanner =
+    _smoothedBanner(activeBanner);
+
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
@@ -11957,7 +11998,7 @@ return Padding(
             ),
           ),
         ),
-      if (activeBanner == 'worsening')
+      if (displayedBanner == 'worsening')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -11992,7 +12033,7 @@ return Padding(
       ],
     ),
   ),
-      if (activeBanner == 'warming')
+      if (displayedBanner == 'warming')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -12027,7 +12068,7 @@ return Padding(
       ],
     ),
   ),
-if (activeBanner == 'heated')
+if (displayedBanner == 'heated')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -12062,7 +12103,7 @@ if (activeBanner == 'heated')
       ],
     ),
   ),
-if (activeBanner == 'cooling')
+if (displayedBanner == 'cooling')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
     padding: const EdgeInsets.symmetric(
@@ -12097,7 +12138,7 @@ if (activeBanner == 'cooling')
       ],
     ),
   ),
-if (activeBanner == 'pause')
+if (displayedBanner == 'pause')
   AnimatedContainer(
     duration: const Duration(milliseconds: 250),
     margin: const EdgeInsets.only(bottom: 10),
