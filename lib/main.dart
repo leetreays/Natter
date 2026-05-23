@@ -1234,6 +1234,52 @@ Future<void> addConversationEscalation({
   }, SetOptions(merge: true));
 }
 
+Future<void> recordEscalationEvent({
+  required String conversationId,
+  required int severity,
+  required String reason,
+}) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final previousSeverity =
+      (data['lastEscalationSeverity'] ?? 0) as num;
+
+  final previousChain =
+      (data['recentEscalationChain'] ?? 0) as num;
+
+  final lastEscalationAt = data['lastEscalationAt'];
+
+  int newChain = 1;
+
+  if (lastEscalationAt is Timestamp) {
+    final minutesAgo = DateTime.now()
+        .difference(lastEscalationAt.toDate())
+        .inMinutes;
+
+    final worsening =
+        severity >= previousSeverity;
+
+    if (minutesAgo <= 15 && worsening) {
+      newChain = previousChain.toInt() + 1;
+    }
+  }
+
+  await ref.set({
+    'recentEscalationChain': newChain,
+    'lastEscalationSeverity': severity,
+    'lastEscalationDirection':
+        severity >= previousSeverity
+            ? 'worsening'
+            : 'improving',
+    'lastEscalationReason': reason,
+    'lastEscalationAt':
+        FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
 Future<void> recordConversationRepair(
   String conversationId,
 ) async {
@@ -10867,6 +10913,12 @@ if (safety.level == SafetyLevel.block) {
   reason: 'blocked_message',
 );
 
+  await state.recordEscalationEvent(
+  conversationId: widget.conversationId,
+  severity: 4,
+  reason: 'blocked_message',
+);
+
   if (state.activeParentId != null &&
       state.activeChildId != null) {
     await state.recordChildSignal(
@@ -10917,6 +10969,12 @@ if (safety.level == SafetyLevel.coach) {
   reason: 'coach_prompt',
 );
 
+  await state.recordEscalationEvent(
+  conversationId: widget.conversationId,
+  severity: 1,
+  reason: 'coach_prompt',
+);
+
   final refreshedConversation = await state
       .conversationsRef()
       .doc(widget.conversationId)
@@ -10961,6 +11019,12 @@ if (safety.level == SafetyLevel.coach) {
 await state.addConversationEscalation(
   conversationId: widget.conversationId,
   amount: 2,
+  reason: 'protected_delivery',
+);
+
+await state.recordEscalationEvent(
+  conversationId: widget.conversationId,
+  severity: 3,
   reason: 'protected_delivery',
 );
       
@@ -11625,6 +11689,13 @@ if (toneBand == 'pause' &&
   });
 }
 
+final escalationDirection =
+    (conversationData['lastEscalationDirection'] ?? '')
+        .toString();
+
+final escalationChain =
+    (conversationData['recentEscalationChain'] ?? 0) as num;
+
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
@@ -11642,6 +11713,42 @@ return Padding(
             ),
           ),
         ),
+      if (escalationDirection == 'worsening' &&
+    escalationChain >= 3)
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A3540),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: const Color(0xFFFFB3C7).withOpacity(0.22),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.favorite_rounded,
+          color: Color(0xFFFFB3C7),
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat seems to be getting more tense. Let’s slow things down 💛',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
       if (toneBand == 'warming')
   Container(
     margin: const EdgeInsets.only(bottom: 10),
