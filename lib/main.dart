@@ -1133,6 +1133,40 @@ Future<void> applyEscalationDecay(String conversationId) async {
   }, SetOptions(merge: true));
 }
 
+Future<void> applyEscalationChainDecay(
+  String conversationId,
+) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final chain =
+      (data['recentEscalationChain'] ?? 0) as num;
+
+  if (chain <= 0) return;
+
+  final lastEscalation = data['lastEscalationAt'];
+
+  if (lastEscalation is! Timestamp) return;
+
+  final minutes =
+      DateTime.now()
+          .difference(lastEscalation.toDate())
+          .inMinutes;
+
+  if (minutes < 20) return;
+
+  final decay = minutes ~/ 20;
+
+  final newChain =
+      (chain - decay).clamp(0, 999);
+
+  await ref.set({
+    'recentEscalationChain': newChain,
+  }, SetOptions(merge: true));
+}
+
 Future<void> applyRepairDecay(
   String conversationId,
 ) async {
@@ -1271,9 +1305,11 @@ Future<void> recordEscalationEvent({
     'recentEscalationChain': newChain,
     'lastEscalationSeverity': severity,
     'lastEscalationDirection':
-        severity >= previousSeverity
-            ? 'worsening'
-            : 'improving',
+    severity > previousSeverity
+        ? 'worsening'
+        : severity < previousSeverity
+            ? 'improving'
+            : 'stable',
     'lastEscalationReason': reason,
     'lastEscalationAt':
         FieldValue.serverTimestamp(),
@@ -1288,6 +1324,8 @@ Future<void> recordConversationRepair(
   await ref.set({
     'recentCalmMessages': FieldValue.increment(1),
     'repairMomentum': FieldValue.increment(1),
+    'recentEscalationChain':
+    FieldValue.increment(-1),
     'lastRepairAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
@@ -10819,6 +10857,9 @@ void initState() {
     await state.applySpikeHeatDecay(widget.conversationId);
     await state.applyEscalationDecay(widget.conversationId);
     await state.applyRepairDecay(widget.conversationId);
+    await state.applyEscalationChainDecay(
+  widget.conversationId,
+);
 
     if (!mounted) return;
 
@@ -10834,7 +10875,10 @@ void initState() {
 await state.applySpikeHeatDecay(widget.conversationId);
 await state.applyEscalationDecay(widget.conversationId);
 await state.applyRepairDecay(widget.conversationId);
-
+await state.applyEscalationChainDecay(
+  widget.conversationId,
+);
+    
 final conversationSnap = await state
     .conversationsRef()
     .doc(widget.conversationId)
