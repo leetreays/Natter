@@ -11400,6 +11400,15 @@ bool _canSend = true;
   return DateTime.now().isBefore(_sendLockedUntil!);
   }
 
+  void _startSendPause() {
+_sendLockTimer?.cancel();
+
+setState(() {
+_sendLockedUntil =
+DateTime.now().add(const Duration(seconds: 20));
+feedback = 'Take a short pause before replying.';
+});
+
 _sendLockTimer = Timer.periodic(
   const Duration(milliseconds: 250),
   (timer) {
@@ -11425,6 +11434,8 @@ _sendLockTimer = Timer.periodic(
     setState(() {});
   },
 );
+  }
+
 
 double get _sendPauseProgress {
   if (_sendLockedUntil == null) return 0;
@@ -12338,15 +12349,16 @@ if (displayedBanner == 'pause')
           ? Colors.white.withOpacity(0.58)
           : Colors.black,
       size: 20,
+        ),
+      ],
     ),
-  ],
-),
-),
-  ],
+  ),
 ),
 ],
 ),
+],
 );
+  ),
           },
         ),
       ],
