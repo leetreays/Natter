@@ -2417,7 +2417,11 @@ Future<String> currentUid() async {
   return value;
   }
 
-bool safetyPatternMatches(String originalText, String normalisedText, String pattern) {
+bool safetyPatternMatches(
+  String originalText,
+  String normalisedText,
+  String pattern,
+) {
   final condensedNormalised = normalisedText.replaceAll(' ', '');
   final condensedPattern = pattern.replaceAll(' ', '');
 
@@ -2426,9 +2430,8 @@ bool safetyPatternMatches(String originalText, String normalisedText, String pat
     return true;
   }
 
-  final raw = originalText.toLowerCase().trim();
-
-  final rawWithWildcards = raw
+  final raw = originalText
+      .toLowerCase()
       .replaceAll('0', 'o')
       .replaceAll('1', 'i')
       .replaceAll('3', 'e')
@@ -2440,14 +2443,12 @@ bool safetyPatternMatches(String originalText, String normalisedText, String pat
       .replaceAll('\$', 's')
       .replaceAll(RegExp(r'[^a-z*]'), '');
 
-  final wildcardRegex = RegExp(
-    condensedPattern
-        .split('')
-        .map(RegExp.escape)
-        .join(r'[a-z*]?'),
-  );
+  final patternRegex = condensedPattern
+      .split('')
+      .map((letter) => '(?:${RegExp.escape(letter)}|\\*)')
+      .join();
 
-  return wildcardRegex.hasMatch(rawWithWildcards);
+  return RegExp(patternRegex).hasMatch(raw);
 }
 
   SafetyCheckResult checkMessageSafety(String text) {
@@ -10821,10 +10822,12 @@ void _showStallRescue() {
   _stallTimer?.cancel();
 
   if (_isSendLocked) return;
+  if (controller.text.trim().isNotEmpty) return;
 
   _stallTimer = Timer(const Duration(seconds: 20), () {
     if (!mounted) return;
     if (_isSendLocked) return;
+    if (controller.text.trim().isNotEmpty) return;
 
     _showStallRescue();
   });
