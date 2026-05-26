@@ -11153,11 +11153,8 @@ final escalationChain =
     (refreshedData['recentEscalationChain'] ?? 0) as num;
 
 final sendAnyway = await _showSafetyCoachDialog(
-  suggestion: escalationChain >= 5
-      ? 'This keeps feeling tense. Try changing the words before sending.'
-      : escalationChain >= 3
-          ? 'This chat is getting tense. Natter can deliver it carefully, but a calmer version may help.'
-          : 'This chat feels tense. If you still send this, Natter will deliver it carefully.',
+  suggestion: safety.suggestion ??
+    'I’m upset. Can we talk about this calmly?',
   reason: escalationChain >= 5
       ? 'Natter is noticing repeated tense messages in this chat.'
       : escalationChain >= 3
