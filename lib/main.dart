@@ -2481,28 +2481,28 @@ bool safetyPatternMatches(
     }
   }
 
-  const protectPatterns = {
-    'idiot': 'That could really hurt someone. Try saying what upset you instead.',
-    'stupid': 'That could hurt someone. Try explaining what you mean calmly.',
-    'dumb': 'That could feel unkind. Try saying it another way.',
-    'shut up': 'That can feel harsh. Try asking for space more kindly.',
-    'i hate you': 'That is a big feeling. Try saying you are upset instead.',
-    'go away': 'That can feel hurtful. Try saying you need space.',
-    'leave me alone': 'Try saying you need a little quiet time.',
-    'nobody likes you': 'That could deeply hurt someone.',
-    'everyone hates you': 'That could deeply upset someone.',
-    'no one wants you here': 'That could make someone feel excluded.',
-  };
+const protectPatterns = {
+  'idiot': 'I’m upset. Can we talk kindly?',
+  'stupid': 'That upset me. Can we slow down?',
+  'dumb': 'Can we try speaking more kindly?',
+  'shut up': 'I need a minute to calm down.',
+  'i hate you': 'I’m really upset right now.',
+  'go away': 'I need a little space right now.',
+  'leave me alone': 'Can we pause this conversation for a bit?',
+  'nobody likes you': 'That felt hurtful. Can we reset?',
+  'everyone hates you': 'Can we try speaking more kindly?',
+  'no one wants you here': 'Let’s try to include everyone kindly.',
+};
 
-  for (final entry in protectPatterns.entries) {
-    if (safetyPatternMatches(text, lower, entry.key)) {
-      return SafetyCheckResult(
-        level: SafetyLevel.protect,
-        reason: entry.value,
-        suggestion: 'Can we try a calmer version before sending?',
-      );
-    }
+for (final entry in protectPatterns.entries) {
+  if (safetyPatternMatches(text, lower, entry.key)) {
+    return SafetyCheckResult(
+      level: SafetyLevel.protect,
+      reason: 'That message could hurt someone’s feelings.',
+      suggestion: entry.value,
+    );
   }
+}
 
   const coachPatterns = {
     'you can t play': 'That might make someone feel left out.',
@@ -11481,6 +11481,12 @@ double get _sendPauseProgress {
 
 String _smoothedBanner(String activeBanner) {
   const minimumDisplay = Duration(seconds: 3);
+
+  if (_displayedBanner == 'pause' && activeBanner != 'pause') {
+  _displayedBanner = activeBanner;
+  _bannerShownAt = DateTime.now();
+  return _displayedBanner;
+  }
 
   if (_displayedBanner == 'none') {
     _displayedBanner = activeBanner;
