@@ -2453,7 +2453,7 @@ Future<String> currentUid() async {
   ];
 
   for (final pattern in hardBlockPatterns) {
-    if (safetyPatternMatches(lower, entry.key)) {
+  if (safetyPatternMatches(lower, pattern)) {
       return const SafetyCheckResult(
         level: SafetyLevel.block,
         reason: 'That message cannot be sent on Natter.',
