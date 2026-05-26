@@ -2420,105 +2420,93 @@ Future<String> currentUid() async {
   SafetyCheckResult checkMessageSafety(String text) {
   final lower = normaliseMessageForSafety(text);
 
-if (lower.isEmpty) {
+  if (lower.isEmpty) {
     return const SafetyCheckResult.ok();
   }
 
-  const blockedTerms = ['badword', 'swear'];
-
-  for (final term in blockedTerms) {
-    if (lower.contains(term)) {
-      return const SafetyCheckResult(
-        level: SafetyLevel.block,
-        reason: 'That word is not allowed on Natter.',
-        suggestion: 'Try saying it in a calmer or kinder way.',
-      );
-    }
-  }
-
-  const blockedPatterns = [
-    "kill yourself",
-    "kys",
-    "sex",
-    "nude",
+  const hardBlockPatterns = [
+    'kill yourself',
+    'kys',
+    'sex',
+    'nude',
+    'fuck',
+    'cunt',
+    'bitch',
+    'slag',
+    'dick',
   ];
 
-  for (final blocked in blockedPatterns) {
-    if (lower.contains(blocked)) {
+  for (final pattern in hardBlockPatterns) {
+    if (lower.contains(pattern)) {
       return const SafetyCheckResult(
         level: SafetyLevel.block,
-        reason: "That message isn’t allowed on Natter.",
+        reason: 'That message cannot be sent on Natter.',
+        suggestion: 'Choose words that keep everyone safe.',
       );
     }
   }
 
-  const coachingPatterns = {
-    "you're stupid": "I’m upset right now. Can we try again?",
-    "you are stupid": "I’m upset right now. Can we try again?",
-    "i hate you": "I’m really upset and need a minute.",
-    "shut up": "Can we slow down for a second?",
-    "go away": "I need some space right now.",
-    "leave me alone": "I want a little quiet time right now.",
-    "idiot": "That upset me. Can we talk kindly?",
-    "dumb": "That didn’t feel good. Can we reset?",
-    "mean": "That felt unkind. Can we start over?",
+  const protectPatterns = {
+    'idiot': 'That could really hurt someone. Try saying what upset you instead.',
+    'stupid': 'That could hurt someone. Try explaining what you mean calmly.',
+    'dumb': 'That could feel unkind. Try saying it another way.',
+    'shut up': 'That can feel harsh. Try asking for space more kindly.',
+    'i hate you': 'That is a big feeling. Try saying you are upset instead.',
+    'go away': 'That can feel hurtful. Try saying you need space.',
+    'leave me alone': 'Try saying you need a little quiet time.',
+    'nobody likes you': 'That could deeply hurt someone.',
+    'everyone hates you': 'That could deeply upset someone.',
+    'no one wants you here': 'That could make someone feel excluded.',
   };
 
-    const behaviouralPatterns = {
-  "nobody likes you":
-      "That could really hurt someone’s feelings.",
-  "you can't play":
-      "That message might make someone feel left out.",
-  "no one wants you here":
-      "That could make someone feel excluded.",
-  "don't tell your parents":
-      "Secrets online can sometimes be unsafe.",
-  "reply now":
-      "Try giving people time to respond calmly.",
-  "why are you ignoring me":
-      "That message could feel pressuring.",
-  "everyone hates you":
-      "That could deeply upset someone.",
-};
+  for (final entry in protectPatterns.entries) {
+    if (lower.contains(entry.key)) {
+      return SafetyCheckResult(
+        level: SafetyLevel.protect,
+        reason: entry.value,
+        suggestion: 'Can we try a calmer version before sending?',
+      );
+    }
+  }
 
-  for (final entry in coachingPatterns.entries) {
+  const coachPatterns = {
+    'you can t play': 'That might make someone feel left out.',
+    'you cant play': 'That might make someone feel left out.',
+    'reply now': 'Try giving people time to respond calmly.',
+    'why are you ignoring me': 'That message could feel pressuring.',
+    'don t tell your parents': 'Secrets online can sometimes be unsafe.',
+    'dont tell your parents': 'Secrets online can sometimes be unsafe.',
+    'mean': 'That felt unkind. Can we start over?',
+  };
+
+  for (final entry in coachPatterns.entries) {
     if (lower.contains(entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.coach,
-        reason: 'That message could hurt someone’s feelings.',
-        suggestion: entry.value,
+        reason: entry.value,
+        suggestion: 'Can we try saying that in a kinder way?',
       );
     }
   }
 
-    for (final entry in behaviouralPatterns.entries) {
-  if (lower.contains(entry.key)) {
-    return SafetyCheckResult(
+  final lettersOnly = text.replaceAll(RegExp(r'[^A-Za-z]'), '');
+
+  if (lettersOnly.length >= 8 &&
+      lettersOnly == lettersOnly.toUpperCase()) {
+    return const SafetyCheckResult(
       level: SafetyLevel.coach,
-      reason: entry.value,
-      suggestion: "Can we try saying that in a kinder way?",
+      reason: 'That message feels very intense.',
+      suggestion: 'Can we slow it down and try again calmly?',
     );
   }
-    }
 
-    final lettersOnly = text.replaceAll(RegExp(r'[^A-Za-z]'), '');
-
-if (lettersOnly.length >= 8 &&
-    lettersOnly == lettersOnly.toUpperCase()) {
-  return const SafetyCheckResult(
-    level: SafetyLevel.coach,
-    reason: 'That message feels very intense.',
-    suggestion: 'Can we slow it down and try again calmly?',
-  );
-}
-
-    if (text.contains('!!!') || text.contains('???')) {
-  return const SafetyCheckResult(
-    level: SafetyLevel.coach,
-    reason: 'That message feels emotionally heated.',
-    suggestion: 'Can we try saying it more calmly?',
-  );
-    }
+  if (text.contains('!!!') || text.contains('???')) {
+    return const SafetyCheckResult(
+      level: SafetyLevel.coach,
+      reason: 'That message feels emotionally heated.',
+      suggestion: 'Can we try saying it more calmly?',
+    );
+  }
 
   return const SafetyCheckResult.ok();
 }
