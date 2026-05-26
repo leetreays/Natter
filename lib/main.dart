@@ -2417,20 +2417,38 @@ Future<String> currentUid() async {
   return value;
   }
 
-  bool safetyPatternMatches(String lower, String pattern) {
-  final condensed = lower.replaceAll(' ', '');
+bool safetyPatternMatches(String originalText, String normalisedText, String pattern) {
+  final condensedNormalised = normalisedText.replaceAll(' ', '');
   final condensedPattern = pattern.replaceAll(' ', '');
 
-  if (lower.contains(pattern) || condensed.contains(condensedPattern)) {
+  if (normalisedText.contains(pattern) ||
+      condensedNormalised.contains(condensedPattern)) {
     return true;
   }
 
-  final wildcardPattern = RegExp(
-    condensedPattern.split('').map(RegExp.escape).join(r'.?'),
+  final raw = originalText.toLowerCase().trim();
+
+  final rawWithWildcards = raw
+      .replaceAll('0', 'o')
+      .replaceAll('1', 'i')
+      .replaceAll('3', 'e')
+      .replaceAll('4', 'a')
+      .replaceAll('5', 's')
+      .replaceAll('7', 't')
+      .replaceAll('@', 'a')
+      .replaceAll('!', 'i')
+      .replaceAll('\$', 's')
+      .replaceAll(RegExp(r'[^a-z*]'), '');
+
+  final wildcardRegex = RegExp(
+    condensedPattern
+        .split('')
+        .map(RegExp.escape)
+        .join(r'[a-z*]?'),
   );
 
-  return wildcardPattern.hasMatch(condensed);
-  }
+  return wildcardRegex.hasMatch(rawWithWildcards);
+}
 
   SafetyCheckResult checkMessageSafety(String text) {
   final lower = normaliseMessageForSafety(text);
@@ -2453,7 +2471,7 @@ Future<String> currentUid() async {
   ];
 
   for (final pattern in hardBlockPatterns) {
-  if (safetyPatternMatches(lower, pattern)) {
+  if (safetyPatternMatches(text, lower, pattern)) {
       return const SafetyCheckResult(
         level: SafetyLevel.block,
         reason: 'That message cannot be sent on Natter.',
@@ -2476,7 +2494,7 @@ Future<String> currentUid() async {
   };
 
   for (final entry in protectPatterns.entries) {
-    if (safetyPatternMatches(lower, entry.key)) {
+    if (safetyPatternMatches(text, lower, entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.protect,
         reason: entry.value,
@@ -2496,7 +2514,7 @@ Future<String> currentUid() async {
   };
 
   for (final entry in coachPatterns.entries) {
-    if (safetyPatternMatches(lower, entry.key)) {
+    if (safetyPatternMatches(text, lower, entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.coach,
         reason: entry.value,
