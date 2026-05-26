@@ -2417,6 +2417,21 @@ Future<String> currentUid() async {
   return value;
   }
 
+  bool safetyPatternMatches(String lower, String pattern) {
+  final condensed = lower.replaceAll(' ', '');
+  final condensedPattern = pattern.replaceAll(' ', '');
+
+  if (lower.contains(pattern) || condensed.contains(condensedPattern)) {
+    return true;
+  }
+
+  final wildcardPattern = RegExp(
+    condensedPattern.split('').map(RegExp.escape).join(r'.?'),
+  );
+
+  return wildcardPattern.hasMatch(condensed);
+  }
+
   SafetyCheckResult checkMessageSafety(String text) {
   final lower = normaliseMessageForSafety(text);
   final condensed = lower.replaceAll(' ', '');
@@ -2438,8 +2453,7 @@ Future<String> currentUid() async {
   ];
 
   for (final pattern in hardBlockPatterns) {
-    if (lower.contains(pattern) ||
-    condensed.contains(pattern.replaceAll(' ', ''))) {
+    if (safetyPatternMatches(lower, entry.key)) {
       return const SafetyCheckResult(
         level: SafetyLevel.block,
         reason: 'That message cannot be sent on Natter.',
@@ -2462,8 +2476,7 @@ Future<String> currentUid() async {
   };
 
   for (final entry in protectPatterns.entries) {
-    if (lower.contains(entry.key) ||
-    condensed.contains(entry.key.replaceAll(' ', ''))) {
+    if (safetyPatternMatches(lower, entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.protect,
         reason: entry.value,
@@ -2483,8 +2496,7 @@ Future<String> currentUid() async {
   };
 
   for (final entry in coachPatterns.entries) {
-    if (lower.contains(entry.key) ||
-    condensed.contains(entry.key.replaceAll(' ', ''))) {
+    if (safetyPatternMatches(lower, entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.coach,
         reason: entry.value,
