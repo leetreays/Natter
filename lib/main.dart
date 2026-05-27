@@ -1417,10 +1417,22 @@ String activeConversationBanner({
   required String toneBand,
   required String escalationDirection,
   required num escalationChain,
+  required num repairMomentum,
   required bool isSendLocked,
 }) {
+  if (toneBand == 'pause' &&
+      isSendLocked &&
+      escalationDirection == 'improving' &&
+      repairMomentum >= 2) {
+    return 'repairing_pause';
+  }
+
   if (toneBand == 'pause' && isSendLocked) {
     return 'pause';
+  }
+
+  if (toneBand == 'pause' && !isSendLocked) {
+    return 'heated';
   }
 
   if (escalationDirection == 'worsening' &&
@@ -12045,6 +12057,7 @@ final activeBanner =
   toneBand: toneBand,
   escalationDirection: escalationDirection,
   escalationChain: escalationChain,
+  repairMomentum: repairMomentum,
   isSendLocked: _isSendLocked,
 );
 
@@ -12165,6 +12178,39 @@ if (displayedBanner == 'heated')
             'This chat feels heated. Let’s slow it down before replying.',
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (displayedBanner == 'repairing_pause')
+  AnimatedContainer(
+    duration: const Duration(milliseconds: 250),
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2A4A42),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.green.withOpacity(0.22),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.eco_rounded,
+          color: NatterBrand.green,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat still needs slowing down, but you’re helping calm it 💛',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.86),
               fontWeight: FontWeight.w700,
               height: 1.35,
             ),
