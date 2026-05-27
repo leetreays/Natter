@@ -2496,6 +2496,7 @@ bool safetyPatternMatches(
 
 const protectPatterns = {
   'idiot': 'I’m upset. Can we talk kindly?',
+  'loser': 'I’m upset. Can we talk kindly?',
   'stupid': 'That upset me. Can we slow down?',
   'dumb': 'Can we try speaking more kindly?',
   'shut up': 'I need a minute to calm down.',
@@ -11460,23 +11461,34 @@ bool _canSend = true;
   }
 
   void _startSendPause() {
-_sendLockTimer?.cancel();
-
-setState(() {
-_sendLockedUntil =
-DateTime.now().add(const Duration(seconds: 20));
-feedback = 'Take a short pause before replying.';
-});
-
-_sendLockTimer = Timer(const Duration(seconds: 20), () {
-  if (!mounted) return;
+  _sendLockTimer?.cancel();
 
   setState(() {
-    _sendLockedUntil = null;
-    feedback = null;
+    _sendLockedUntil = DateTime.now().add(const Duration(seconds: 20));
+    feedback = 'Take a short pause before replying.';
   });
-});
-  }
+
+  AppStateScope.of(context).conversationsRef()
+      .doc(widget.conversationId)
+      .set({
+    'sendPauseUntil': Timestamp.fromDate(_sendLockedUntil!),
+  }, SetOptions(merge: true));
+
+  _sendLockTimer = Timer(const Duration(seconds: 20), () {
+    if (!mounted) return;
+
+    setState(() {
+      _sendLockedUntil = null;
+      feedback = null;
+    });
+
+    AppStateScope.of(context).conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'sendPauseUntil': FieldValue.delete(),
+    }, SetOptions(merge: true));
+  });
+}
 
 
 double get _sendPauseProgress {
@@ -11705,6 +11717,23 @@ String _smoothedBanner(String activeBanner) {
           stream: state.conversationDocStream(widget.conversationId),
           builder: (context, conversationSnapshot) {
             final conversationData = conversationSnapshot.data?.data() ?? {};
+            final pauseUntil = conversationData['sendPauseUntil'];
+
+if (pauseUntil is Timestamp) {
+  final pauseUntilDate = pauseUntil.toDate();
+
+  if (DateTime.now().isBefore(pauseUntilDate)) {
+    _sendLockedUntil = pauseUntilDate;
+  } else {
+    _sendLockedUntil = null;
+
+    AppStateScope.of(context).conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'sendPauseUntil': FieldValue.delete(),
+    }, SetOptions(merge: true));
+  }
+}
             final blockedByChildIds = List<String>.from(
               conversationData['blockedByChildIds'] ?? const [],
             );
