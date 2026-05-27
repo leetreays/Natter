@@ -2497,9 +2497,9 @@ bool safetyPatternMatches(
   }
 
 const protectPatterns = {
-  'idiot': 'I’m upset. Can we talk kindly?',
-  'loser': 'I’m upset. Can we talk kindly?',
-  'stupid': 'That upset me. Can we slow down?',
+  'idiot': 'Can we talk kindly?',
+  'loser': 'Can we talk kindly?',
+  'stupid': 'Can we slow down?',
   'dumb': 'Can we try speaking more kindly?',
   'shut up': 'I need a minute to calm down.',
   'i hate you': 'I’m really upset right now.',
@@ -11462,34 +11462,44 @@ bool _canSend = true;
   return DateTime.now().isBefore(_sendLockedUntil!);
   }
 
-  void _startSendPause() {
+  void _startSendPause({num? pausedForHeat}) {
   _sendLockTimer?.cancel();
 
   setState(() {
-    _sendLockedUntil = DateTime.now().add(const Duration(seconds: 20));
+    _sendLockedUntil =
+        DateTime.now().add(const Duration(seconds: 20));
+
     feedback = 'Take a short pause before replying.';
   });
 
   AppStateScope.of(context).conversationsRef()
       .doc(widget.conversationId)
       .set({
-    'sendPauseUntil': Timestamp.fromDate(_sendLockedUntil!),
+    'sendPauseUntil':
+        Timestamp.fromDate(_sendLockedUntil!),
+
+    if (pausedForHeat != null)
+      'lastPausedForHeat': pausedForHeat,
   }, SetOptions(merge: true));
 
-  _sendLockTimer = Timer(const Duration(seconds: 20), () {
-    if (!mounted) return;
+  _sendLockTimer = Timer(
+    const Duration(seconds: 20),
+    () {
+      if (!mounted) return;
 
-    setState(() {
-      _sendLockedUntil = null;
-      feedback = null;
-    });
+      setState(() {
+        _sendLockedUntil = null;
+        feedback = null;
+      });
 
-    AppStateScope.of(context).conversationsRef()
-        .doc(widget.conversationId)
-        .set({
-      'sendPauseUntil': FieldValue.delete(),
-    }, SetOptions(merge: true));
-  });
+      AppStateScope.of(context)
+          .conversationsRef()
+          .doc(widget.conversationId)
+          .set({
+        'sendPauseUntil': FieldValue.delete(),
+      }, SetOptions(merge: true));
+    },
+  );
 }
 
 
@@ -12066,14 +12076,16 @@ final toneBand = state.conversationToneBand(
   repairMomentum: repairMomentum,
 );
 
+final lastPausedForHeat =
+    (conversationData['lastPausedForHeat'] ?? -1) as num;
+            
 if (toneBand == 'pause' &&
     spikeHeat != _lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || _isSendLocked) return;
 
-    _lastPausedForHeat = spikeHeat;
-    _startSendPause();
+    _startSendPause(pausedForHeat: spikeHeat);
   });
 }
 
