@@ -11735,9 +11735,37 @@ if (pauseUntil is Timestamp) {
   final pauseUntilDate = pauseUntil.toDate();
 
   if (DateTime.now().isBefore(pauseUntilDate)) {
-    _sendLockedUntil = pauseUntilDate;
+    if (_sendLockedUntil != pauseUntilDate) {
+      _sendLockTimer?.cancel();
+
+      setState(() {
+        _sendLockedUntil = pauseUntilDate;
+      });
+
+      final remaining = pauseUntilDate.difference(DateTime.now());
+
+      _sendLockTimer = Timer(remaining, () {
+        if (!mounted) return;
+
+        setState(() {
+          _sendLockedUntil = null;
+          feedback = null;
+        });
+
+        AppStateScope.of(context).conversationsRef()
+            .doc(widget.conversationId)
+            .set({
+          'sendPauseUntil': FieldValue.delete(),
+        }, SetOptions(merge: true));
+      });
+    }
   } else {
-    _sendLockedUntil = null;
+    if (_sendLockedUntil != null) {
+      setState(() {
+        _sendLockedUntil = null;
+        feedback = null;
+      });
+    }
 
     AppStateScope.of(context).conversationsRef()
         .doc(widget.conversationId)
@@ -11746,6 +11774,7 @@ if (pauseUntil is Timestamp) {
     }, SetOptions(merge: true));
   }
 }
+            
             final blockedByChildIds = List<String>.from(
               conversationData['blockedByChildIds'] ?? const [],
             );
@@ -12078,9 +12107,14 @@ final toneBand = state.conversationToneBand(
 
 final lastPausedForHeat =
     (conversationData['lastPausedForHeat'] ?? -1) as num;
+
+final hasActiveFirestorePause =
+    pauseUntil is Timestamp &&
+    DateTime.now().isBefore(pauseUntil.toDate());
             
 if (toneBand == 'pause' &&
-    spikeHeat != _lastPausedForHeat &&
+    !hasActiveFirestorePause &&
+    spikeHeat != lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || _isSendLocked) return;
