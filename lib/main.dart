@@ -2469,6 +2469,10 @@ bool safetyPatternMatches(
     'bitch',
     'slag',
     'dick',
+    'fuk',
+    'fu',
+    'F.U',
+    'cnt'
   ];
 
   for (final pattern in hardBlockPatterns) {
