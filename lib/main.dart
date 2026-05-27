@@ -2445,18 +2445,20 @@ bool safetyPatternMatches(
       .replaceAll('5', 's')
       .replaceAll('7', 't')
       .replaceAll('@', 'a')
-      .replaceAll('!', 'i')
-      .replaceAll('\$', 's')
-      .replaceAll(RegExp(r'[^a-z*]'), '');
+      .replaceAll('\$', 's');
+
+  final compactRaw = raw.replaceAll(RegExp(r'[^a-z0-9]'), '');
+  final wildcardRaw = raw.replaceAll(RegExp(r'[^a-z0-9]'), '*');
 
   final patternRegex = condensedPattern
       .split('')
-      .map((letter) => '(?:${RegExp.escape(letter)}|\\*)')
+      .map((letter) => '(?:${RegExp.escape(letter)}|[^a-z0-9])')
       .join();
 
-  return RegExp(patternRegex).hasMatch(raw);
+  return compactRaw.contains(condensedPattern) ||
+      RegExp(patternRegex).hasMatch(wildcardRaw);
 }
-
+  
   SafetyCheckResult checkMessageSafety(String text) {
   final lower = normaliseMessageForSafety(text);
   final condensed = lower.replaceAll(' ', '');
