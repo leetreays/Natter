@@ -12108,6 +12108,8 @@ final toneBand = state.conversationToneBand(
 final lastPausedForHeat =
     (conversationData['lastPausedForHeat'] ?? -1) as num;
 
+final pauseUntil = conversationData['sendPauseUntil'];
+
 final hasActiveFirestorePause =
     pauseUntil is Timestamp &&
     DateTime.now().isBefore(pauseUntil.toDate());
