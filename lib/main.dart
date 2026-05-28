@@ -1379,6 +1379,30 @@ String conversationToneBand({
   return 'calm';
 }
 
+String conversationRecoveryState({
+  required num spikeHeat,
+  required num repairMomentum,
+  required num escalationScore,
+}) {
+  if (repairMomentum >= 5 && spikeHeat <= 2) {
+    return 'recovered';
+  }
+
+  if (repairMomentum >= 3) {
+    return 'recovering';
+  }
+
+  if (repairMomentum >= 1) {
+    return 'repair_started';
+  }
+
+  if (spikeHeat >= 8 || escalationScore >= 10) {
+    return 'strained';
+  }
+
+  return 'stable';
+}
+
 SafetyLevel adjustedSafetyLevel({
   required SafetyLevel baseLevel,
   required Map<String, dynamic> conversationData,
@@ -12100,6 +12124,51 @@ if (pauseUntil is Timestamp) {
           ),
         ),
 
+        Widget _buildRecoveryChip({
+  required IconData icon,
+  required Color color,
+  required String text,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: color.withOpacity(0.22),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.88),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+        }
+
         StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           stream: state.conversationDocStream(widget.conversationId),
           builder: (context, conversationSnapshot) {
@@ -12141,6 +12210,13 @@ final toneBand = state.conversationToneBand(
   spikeHeat: spikeHeat,
   escalationScore: escalationScore,
   repairMomentum: repairMomentum,
+);
+
+final recoveryState =
+    state.conversationRecoveryState(
+  spikeHeat: spikeHeat,
+  repairMomentum: repairMomentum,
+  escalationScore: escalationScore,
 );
 
 final lastPausedForHeat =
@@ -12432,6 +12508,24 @@ if (displayedBanner == 'pause')
         ],
       ),
     ),
+  ),
+    if (recoveryState == 'repair_started')
+  _buildRecoveryChip(
+    icon: Icons.favorite_rounded,
+    color: NatterBrand.green,
+    text: '💛 Better direction. This chat is calming down.',
+  ),
+    if (recoveryState == 'recovering')
+  _buildRecoveryChip(
+    icon: Icons.eco_rounded,
+    color: NatterBrand.green,
+    text: '🌱 This conversation is recovering.',
+  ),
+    if (recoveryState == 'recovered')
+  _buildRecoveryChip(
+    icon: Icons.auto_awesome_rounded,
+    color: NatterBrand.blue,
+    text: '✨ You helped reset this conversation.',
   ),
       Row(
   children: [
