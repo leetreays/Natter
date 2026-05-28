@@ -12475,10 +12475,12 @@ if (displayedBanner == 'pause')
         height: 42,
         child: TweenAnimationBuilder<double>(
   tween: Tween<double>(
-    begin: 1,
+    begin: _sendPauseProgress,
     end: 0,
   ),
-  duration: const Duration(seconds: 20),
+  duration: _sendLockedUntil == null
+    ? Duration.zero
+    : _sendLockedUntil!.difference(DateTime.now()),
   builder: (context, value, child) {
     return CircularProgressIndicator(
       value: value,
