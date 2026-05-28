@@ -11627,6 +11627,51 @@ String _smoothedBanner(String activeBanner) {
     }
   });
   }
+
+Widget _buildRecoveryChip({
+  required IconData icon,
+  required Color color,
+  required String text,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: color.withOpacity(0.22),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.88),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
   
   @override
   Widget build(BuildContext context) {
@@ -12123,51 +12168,6 @@ if (pauseUntil is Timestamp) {
             },
           ),
         ),
-
-        Widget _buildRecoveryChip({
-  required IconData icon,
-  required Color color,
-  required String text,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 10,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withOpacity(0.22),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.88),
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-        }
 
         StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           stream: state.conversationDocStream(widget.conversationId),
