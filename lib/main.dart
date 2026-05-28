@@ -11730,6 +11730,11 @@ String _smoothedBanner(String activeBanner) {
           builder: (context, conversationSnapshot) {
             final conversationData = conversationSnapshot.data?.data() ?? {};
             final pauseUntil = conversationData['sendPauseUntil'];
+            final hasFirestorePauseField = pauseUntil is Timestamp;
+
+final hasActiveFirestorePause =
+    hasFirestorePauseField &&
+    DateTime.now().isBefore(pauseUntil.toDate());
 
 if (pauseUntil is Timestamp) {
   final pauseUntilDate = pauseUntil.toDate();
@@ -12110,12 +12115,14 @@ final lastPausedForHeat =
 
 final pauseUntil = conversationData['sendPauseUntil'];
 
+final hasFirestorePauseField = pauseUntil is Timestamp;
+
 final hasActiveFirestorePause =
-    pauseUntil is Timestamp &&
+    hasFirestorePauseField &&
     DateTime.now().isBefore(pauseUntil.toDate());
             
 if (toneBand == 'pause' &&
-    !hasActiveFirestorePause &&
+    !hasFirestorePauseField &&
     spikeHeat != lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -12124,7 +12131,7 @@ if (toneBand == 'pause' &&
     _startSendPause(pausedForHeat: spikeHeat);
   });
 }
-
+            
 final escalationDirection =
     (conversationData['lastEscalationDirection'] ?? '')
         .toString();
