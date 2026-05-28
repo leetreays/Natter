@@ -2484,6 +2484,8 @@ bool safetyPatternMatches(
     'fu',
     'F.U',
     'cnt'
+    'shit',
+    'sht',
   ];
 
   for (final pattern in hardBlockPatterns) {
@@ -11477,6 +11479,8 @@ bool _canSend = true;
   DateTime? _sendLockedUntil;
   Timer? _sendLockTimer;
 
+  bool _justClearedExpiredPause = false;
+
   num _lastPausedForHeat = 0;
   
   bool get _isSendLocked {
@@ -11787,19 +11791,26 @@ if (pauseUntil is Timestamp) {
       });
     }
   } else {
-    if (_sendLockedUntil != null) {
-      setState(() {
-        _sendLockedUntil = null;
-        feedback = null;
-      });
-    }
-
-    AppStateScope.of(context).conversationsRef()
-        .doc(widget.conversationId)
-        .set({
-      'sendPauseUntil': FieldValue.delete(),
-    }, SetOptions(merge: true));
+  if (_sendLockedUntil != null) {
+    setState(() {
+      _sendLockedUntil = null;
+      feedback = null;
+    });
   }
+
+  _justClearedExpiredPause = true;
+
+  Future.delayed(const Duration(seconds: 2), () {
+    if (!mounted) return;
+    _justClearedExpiredPause = false;
+  });
+
+  AppStateScope.of(context).conversationsRef()
+      .doc(widget.conversationId)
+      .set({
+    'sendPauseUntil': FieldValue.delete(),
+  }, SetOptions(merge: true));
+}
 }
             
             final blockedByChildIds = List<String>.from(
@@ -12144,9 +12155,11 @@ final hasActiveFirestorePause =
     DateTime.now().isBefore(pauseUntil.toDate());
             
 if (toneBand == 'pause' &&
+    !_justClearedExpiredPause &&
     !hasFirestorePauseField &&
     spikeHeat > lastPausedForHeat &&
     !_isSendLocked) {
+  
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || _isSendLocked) return;
 
