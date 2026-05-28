@@ -11404,12 +11404,6 @@ setState(() {
       }
       return;
     }
-    
-    if (toneBand == 'pause' || toneBand == 'heated') {
-  _showRepairAcknowledgement(
-    '🌱 Better direction. This chat is calming down.',
-  );
-    }
 
     await _sendMessageNow(text);
   }
