@@ -12145,7 +12145,7 @@ final hasActiveFirestorePause =
             
 if (toneBand == 'pause' &&
     !hasFirestorePauseField &&
-    spikeHeat != lastPausedForHeat &&
+    spikeHeat > lastPausedForHeat &&
     !_isSendLocked) {
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted || _isSendLocked) return;
