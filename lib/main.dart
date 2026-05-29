@@ -2523,6 +2523,19 @@ bool safetyPatternMatches(
     return const SafetyCheckResult.ok();
   }
 
+  final stripped =
+    text
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z]'), '');
+
+if (stripped == 'fu') {
+  return const SafetyCheckResult(
+    level: SafetyLevel.block,
+    reason: 'That message cannot be sent on Natter.',
+    suggestion: 'Choose words that keep everyone safe.',
+  );
+}
+  
   const hardBlockPatterns = [
     'kill yourself',
     'kys',
