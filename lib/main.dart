@@ -596,7 +596,7 @@ class ConversationRecord {
   final String? lastMessageSenderChildId;
   final Map<String, dynamic> unreadCounts;
   final DateTime lastMessageTime;
-  final num friendshipPoints;
+  final num friendshipHealth;
   final num repairMomentum;
 
   const ConversationRecord({
@@ -611,7 +611,7 @@ class ConversationRecord {
     required this.lastMessageSenderChildId,
     required this.unreadCounts,
     required this.lastMessageTime,
-    required this.friendshipPoints,
+    required this.friendshipHealth,
     required this.repairMomentum,
   });
 
@@ -640,7 +640,7 @@ class ConversationRecord {
       ),
       lastMessageTime: (data['lastMessageAt'] as Timestamp?)?.toDate() 
       ?? DateTime.fromMillisecondsSinceEpoch(0),
-      friendshipPoints: (data['friendshipPoints'] ?? 0) as num,
+      friendshipHealth: (data['friendshipHealth'] ?? 0) as num,
       repairMomentum: (data['repairMomentum'] ?? 0) as num,
     );
   }
@@ -1444,11 +1444,11 @@ SafetyLevel adjustedSafetyLevel({
 }
 
 String friendshipHealthBand({
-  required num friendshipPoints,
+  required num friendshipHealth,
   required num repairMomentum,
 }) {
   final score =
-      friendshipPoints + (repairMomentum * 2);
+      friendshipHealth + (repairMomentum * 2);
 
   if (score >= 80) {
     return 'flourishing';
@@ -1467,6 +1467,28 @@ String friendshipHealthBand({
   }
 
   return 'seedling';
+}
+
+Future<void> adjustConversationFriendshipHealth({
+  required String conversationId,
+  required int amount,
+  required String reason,
+}) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  await FirebaseFirestore.instance.runTransaction((transaction) async {
+    final snap = await transaction.get(ref);
+    final data = snap.data() ?? {};
+
+    final current = (data['friendshipHealth'] ?? 0) as num;
+    final updated = (current + amount).clamp(0, 100);
+
+    transaction.set(ref, {
+      'friendshipHealth': updated,
+      'lastFriendshipHealthReason': reason,
+      'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  });
 }
 
 String activeConversationBanner({
@@ -1572,7 +1594,13 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   final cooldownAmount = isFlagged ? 0 : 2;
   if (!isFlagged) {
   await recordConversationRepair(conversationId);
-  }
+
+  await adjustConversationFriendshipHealth(
+    conversationId: conversationId,
+    amount: 1,
+    reason: 'calm_message',
+  );
+}
 
 await conversationsRef().doc(conversationId).set({
   'spikeHeat': FieldValue.increment(-cooldownAmount),
@@ -10075,10 +10103,10 @@ if (isBlocked) {
   previewText = conversation.lastMessage;
 }
 
-final friendshipPoints = conversation.friendshipPoints;
+final friendshipHealth = conversation.friendshipHealth;
 final repairMomentum = conversation.repairMomentum;
 final friendshipBand = state.friendshipHealthBand(
-  friendshipPoints: friendshipPoints,
+  friendshipHealth: friendshipHealth,
   repairMomentum: repairMomentum,
 );
 
@@ -11271,6 +11299,12 @@ if (adjustedLevel == SafetyLevel.block) {
   reason: 'blocked_message',
 );
 
+  await state.adjustConversationFriendshipHealth(
+  conversationId: widget.conversationId,
+  amount: -2,
+  reason: 'blocked_message',
+);
+
   if (state.activeParentId != null &&
       state.activeChildId != null) {
     await state.recordChildSignal(
@@ -11375,6 +11409,12 @@ final sendAnyway = await _showSafetyCoachDialog(
         message: 'A coached message was sent with protected delivery.',
       ));
     }
+
+    await state.adjustConversationFriendshipHealth(
+  conversationId: widget.conversationId,
+  amount: -1,
+  reason: 'protected_delivery',
+);
 
     await _sendMessageNow(text, flagged: true);
   } else {
@@ -11531,6 +11571,12 @@ await state.recordEscalationEvent(
       } else {
         state.recordKindRewrite();
 
+      await state.adjustConversationFriendshipHealth(
+  conversationId: widget.conversationId,
+  amount: 2,
+  reason: 'kind_rewrite',
+);
+
         if (state.activeParentId != null && state.activeChildId != null) {
   await state.recordChildSignal(
     parentId: state.activeParentId!,
@@ -11551,7 +11597,6 @@ if (state.alertsSafetyCoach) {
   ));
 }
 
-state.addFriendshipPoints(widget.contactName, 3);
 setState(() {
   feedback = 'Nice pause. Try rewriting your message kindly 💛';
 });
