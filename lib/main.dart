@@ -1437,6 +1437,32 @@ SafetyLevel adjustedSafetyLevel({
   return baseLevel;
 }
 
+String friendshipHealthBand({
+  required num friendshipPoints,
+  required num repairMomentum,
+}) {
+  final score =
+      friendshipPoints + (repairMomentum * 2);
+
+  if (score >= 80) {
+    return 'flourishing';
+  }
+
+  if (score >= 60) {
+    return 'trusted';
+  }
+
+  if (score >= 40) {
+    return 'strong';
+  }
+
+  if (score >= 20) {
+    return 'growing';
+  }
+
+  return 'seedling';
+}
+
 String activeConversationBanner({
   required String toneBand,
   required String escalationDirection,
@@ -10028,7 +10054,16 @@ if (isBlocked) {
   previewText = conversation.lastMessage;
 }
 
-          
+final friendshipPoints =
+    (conversation.friendshipPoints ?? 0) as num;
+
+final repairMomentum =
+    (conversation.repairMomentum ?? 0) as num;
+
+final friendshipBand = state.friendshipHealthBand(
+  friendshipPoints: friendshipPoints,
+  repairMomentum: repairMomentum,
+);
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -10106,14 +10141,27 @@ if (isBlocked) {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-  otherChildName,
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: hasUnread ? FontWeight.w900 : FontWeight.w800,
-    letterSpacing: hasUnread ? 0.2 : 0,
-  ),
+                            Row(
+  children: [
+    Expanded(
+      child: Text(
+        otherChildName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: hasUnread ? FontWeight.w900 : FontWeight.w800,
+          letterSpacing: hasUnread ? 0.2 : 0,
+        ),
+      ),
+    ),
+    const SizedBox(width: 6),
+    Text(
+      friendshipEmoji(friendshipBand),
+      style: const TextStyle(fontSize: 15),
+    ),
+  ],
 ),
                             const SizedBox(height: 2),
                             Text(
