@@ -2537,8 +2537,6 @@ bool safetyPatternMatches(
     'dick',
     'twat',
     'fuk',
-    'fu',
-    'F.U',
     'cnt',
     'shit',
     'sht',
