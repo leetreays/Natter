@@ -8738,6 +8738,21 @@ Widget _pendingIncomingCard(ChildContactRequest request) {
   );
 }
 
+String friendshipEmoji(String band) {
+  switch (band) {
+    case 'flourishing':
+      return '✨';
+    case 'trusted':
+      return '🌳';
+    case 'strong':
+      return '🌿';
+    case 'growing':
+      return '🌱';
+    default:
+      return '🌰';
+  }
+}
+  
 Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
@@ -10054,11 +10069,8 @@ if (isBlocked) {
   previewText = conversation.lastMessage;
 }
 
-final friendshipPoints =
-    (conversation.friendshipPoints ?? 0) as num;
-
-final repairMomentum =
-    (conversation.repairMomentum ?? 0) as num;
+final friendshipPoints = 0;
+final repairMomentum = 0;
 
 final friendshipBand = state.friendshipHealthBand(
   friendshipPoints: friendshipPoints,
