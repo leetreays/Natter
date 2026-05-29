@@ -2469,18 +2469,50 @@ bool safetyPatternMatches(
       .replaceAll('5', 's')
       .replaceAll('7', 't')
       .replaceAll('@', 'a')
+      .replaceAll('!', 'i')
       .replaceAll('\$', 's');
 
-  final compactRaw = raw.replaceAll(RegExp(r'[^a-z0-9]'), '');
-  final wildcardRaw = raw.replaceAll(RegExp(r'[^a-z0-9]'), '*');
+  final coded = raw
+      .replaceAll(RegExp(r'[a-z0-9]'), '')
+      .isEmpty;
 
-  final patternRegex = condensedPattern
+  final chars = raw
       .split('')
-      .map((letter) => '(?:${RegExp.escape(letter)}|[^a-z0-9])')
-      .join();
+      .where((c) => RegExp(r'[a-z0-9\W]').hasMatch(c))
+      .map((c) {
+        if (RegExp(r'[a-z0-9]').hasMatch(c)) return c;
+        return '*';
+      })
+      .toList();
 
-  return compactRaw.contains(condensedPattern) ||
-      RegExp(patternRegex).hasMatch(wildcardRaw);
+  final target = condensedPattern.split('');
+
+  for (var i = 0; i <= chars.length - target.length; i++) {
+    var actualMatches = 0;
+    var matches = true;
+
+    for (var j = 0; j < target.length; j++) {
+      final current = chars[i + j];
+
+      if (current == target[j]) {
+        actualMatches++;
+        continue;
+      }
+
+      if (current == '*') {
+        continue;
+      }
+
+      matches = false;
+      break;
+    }
+
+    if (matches && actualMatches >= target.length - 1) {
+      return true;
+    }
+  }
+
+  return false;
 }
   
   SafetyCheckResult checkMessageSafety(String text) {
