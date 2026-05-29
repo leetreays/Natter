@@ -2528,7 +2528,8 @@ bool safetyPatternMatches(
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z]'), '');
 
-if (stripped == 'fu') {
+if (stripped == 'fu' ||
+    stripped == 'fui') {
   return const SafetyCheckResult(
     level: SafetyLevel.block,
     reason: 'That message cannot be sent on Natter.',
