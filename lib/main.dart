@@ -2537,27 +2537,34 @@ if (stripped == 'fu' ||
   );
 }
   
-  const hardBlockPatterns = [
-    'kill yourself',
-    'kys',
-    'sex',
-    'nude',
-    'fuck',
-    'fucking',
-    'fucker',
-    'cunt',
-    'bitch',
-    'slag',
-    'dick',
-    'twat',
-    'fuk',
-    'cnt',
-    'shit',
-    'sht',
-  ];
+  const severeHarmPatterns = [
+  'kill yourself',
+  'kys',
+];
 
-  for (final pattern in hardBlockPatterns) {
-  if (safetyPatternMatches(text, lower, pattern)) {
+const sexualContentPatterns = [
+  'sex',
+  'nude',
+];
+
+const profanityPatterns = [
+  'fuck',
+  'fucking',
+  'fucker',
+  'cunt',
+  'bitch',
+  'slag',
+  'dick',
+  'twat',
+  'fuk',
+  'cnt',
+  'shit',
+  'sht',
+];
+
+SafetyCheckResult? checkHardBlockList(List<String> patterns) {
+  for (final pattern in patterns) {
+    if (safetyPatternMatches(text, lower, pattern)) {
       return const SafetyCheckResult(
         level: SafetyLevel.block,
         reason: 'That message cannot be sent on Natter.',
@@ -2565,6 +2572,18 @@ if (stripped == 'fu' ||
       );
     }
   }
+
+  return null;
+}
+
+final severeHarmResult = checkHardBlockList(severeHarmPatterns);
+if (severeHarmResult != null) return severeHarmResult;
+
+final sexualContentResult = checkHardBlockList(sexualContentPatterns);
+if (sexualContentResult != null) return sexualContentResult;
+
+final profanityResult = checkHardBlockList(profanityPatterns);
+if (profanityResult != null) return profanityResult;
 
 const protectPatterns = {
   'idiot': 'Can we talk kindly?',
