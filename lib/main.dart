@@ -596,6 +596,8 @@ class ConversationRecord {
   final String? lastMessageSenderChildId;
   final Map<String, dynamic> unreadCounts;
   final DateTime lastMessageTime;
+  final num friendshipPoints;
+  final num repairMomentum;
 
   const ConversationRecord({
     required this.id,
@@ -609,6 +611,8 @@ class ConversationRecord {
     required this.lastMessageSenderChildId,
     required this.unreadCounts,
     required this.lastMessageTime,
+    required this.friendshipPoints,
+    required this.repairMomentum,
   });
 
   factory ConversationRecord.fromDoc(
@@ -632,10 +636,12 @@ class ConversationRecord {
       lastMessageSenderChildId:
           data['lastMessageSenderChildId']?.toString(),
       unreadCounts: Map<String, dynamic>.from(
-  data['unreadCounts'] ?? const {},
-),
+      data['unreadCounts'] ?? const {},
+      ),
       lastMessageTime: (data['lastMessageAt'] as Timestamp?)?.toDate() 
-    ?? DateTime.fromMillisecondsSinceEpoch(0),
+      ?? DateTime.fromMillisecondsSinceEpoch(0),
+      friendshipPoints: (data['friendshipPoints'] ?? 0) as num,
+      repairMomentum: (data['repairMomentum'] ?? 0) as num,
     );
   }
   
@@ -10069,9 +10075,8 @@ if (isBlocked) {
   previewText = conversation.lastMessage;
 }
 
-final friendshipPoints = 0;
-final repairMomentum = 0;
-
+final friendshipPoints = conversation.friendshipPoints;
+final repairMomentum = conversation.repairMomentum;
 final friendshipBand = state.friendshipHealthBand(
   friendshipPoints: friendshipPoints,
   repairMomentum: repairMomentum,
