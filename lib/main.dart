@@ -2539,7 +2539,7 @@ bool safetyPatternMatches(
     'fuk',
     'fu',
     'F.U',
-    'cnt'
+    'cnt',
     'shit',
     'sht',
   ];
