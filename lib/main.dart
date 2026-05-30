@@ -11050,11 +11050,12 @@ void _showStallRescue() {
 Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   final state = AppStateScope.of(context);
   _stallTimer?.cancel();
+
   if (!_canSend) return;
 
   await state.clearTyping(
-  conversationId: widget.conversationId,
-);
+    conversationId: widget.conversationId,
+  );
 
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
@@ -11074,32 +11075,31 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   controller.clear();
 
   if (!flagged) {
-  _sendLockTimer?.cancel();
-  _sendLockedUntil = null;
+    _sendLockTimer?.cancel();
+    _sendLockedUntil = null;
   }
 
-if (!mounted) return;
-
-setState(() {
-  _canSend = false;
-});
-
-Future.delayed(const Duration(milliseconds: 700), () {
   if (!mounted) return;
 
   setState(() {
-    _canSend = true;
-      feedback = null;
-    }
+    _canSend = false;
   });
-});
+
+  Future.delayed(const Duration(milliseconds: 700), () {
+    if (!mounted) return;
+
+    setState(() {
+      _canSend = true;
+      feedback = null;
+    });
+  });
 
   if (!flagged && !state.hasCompletedQuest) {
-  state.hasCompletedQuest = true;
-  state.notifyListeners();
+    state.hasCompletedQuest = true;
+    state.notifyListeners();
   }
 
-_startStallTimer();
+  _startStallTimer();
 }
 
 @override
