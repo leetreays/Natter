@@ -12699,24 +12699,6 @@ if (displayedBanner == 'pause')
       ),
     ),
   ),
-    if (recoveryState == 'repair_started')
-  _buildRecoveryChip(
-    icon: Icons.favorite_rounded,
-    color: NatterBrand.green,
-    text: '💛 Better direction. This chat is calming down.',
-  ),
-    if (recoveryState == 'recovering')
-  _buildRecoveryChip(
-    icon: Icons.eco_rounded,
-    color: NatterBrand.green,
-    text: '🌱 This conversation is recovering.',
-  ),
-    if (recoveryState == 'recovered')
-  _buildRecoveryChip(
-    icon: Icons.auto_awesome_rounded,
-    color: NatterBrand.blue,
-    text: '✨ You helped reset this conversation.',
-  ),
       Row(
   children: [
     Container(
