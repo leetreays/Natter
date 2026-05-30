@@ -1374,9 +1374,11 @@ String conversationToneBand({
 }) {
   if (spikeHeat >= 8) return 'pause';
 
-  if (repairMomentum >= 1 && spikeHeat >= 2) {
-    return 'cooling';
-  }
+  if (repairMomentum >= 1 &&
+    spikeHeat >= 2 &&
+    escalationScore > 0) {
+  return 'cooling';
+}
 
   if (spikeHeat >= 5) return 'heated';
 
@@ -10006,6 +10008,12 @@ StreamBuilder<List<ChildContactRequest>>(
 
             final conversations = conversationSnapshot.data ?? [];
 
+            final sortedConversations =
+    List<ConversationRecord>.from(conversations)
+      ..sort((a, b) {
+        return b.lastMessageTime.compareTo(a.lastMessageTime);
+      });
+
             if (conversations.isEmpty && !hasPending) {
               return _buildEmptyState(context);
             }
@@ -10025,9 +10033,6 @@ StreamBuilder<List<ChildContactRequest>>(
 
             return Column(
               children: [
-                ...outgoing.map((request) => _pendingOutgoingCard(request)).toList(),
-                ...incoming.map((request) => _pendingIncomingCard(request)).toList(),
-
                 if (nudgeText != null) ...[
                   const SizedBox(height: 16),
                   BrandCard(
@@ -10054,7 +10059,7 @@ StreamBuilder<List<ChildContactRequest>>(
                   const SizedBox(height: 16),
                 ],
 
-                ...conversations.map((conversation) {
+                ...sortedConversations.map((conversation) {
 
       String otherChildName = '';
 
@@ -10267,6 +10272,10 @@ isBlocked
               ),
             ),
           );}).toList(),
+                
+            ...outgoing.map((request) => _pendingOutgoingCard(request)).toList(),
+            ...incoming.map((request) => _pendingIncomingCard(request)).toList(),
+                
                 const SizedBox(height: 12),
               ],
             );
