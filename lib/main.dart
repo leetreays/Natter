@@ -11078,46 +11078,6 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
   _sendLockedUntil = null;
   }
 
-  if (!flagged) {
-  final refreshedConversation = await state
-      .conversationsRef()
-      .doc(widget.conversationId)
-      .get();
-
-  final refreshedData =
-      refreshedConversation.data() ?? {};
-
-  final shouldCelebrateRepair =
-      state.shouldShowRepairFeedback(refreshedData);
-
-  if (shouldCelebrateRepair && mounted) {
-    if (feedback !=
-    'Nice reset — this chat feels calmer now 💛') {
-  setState(() {
-    feedback =
-        'Nice reset — this chat feels calmer now 💛';
-  });
-}
-    await state.conversationsRef()
-    .doc(widget.conversationId)
-    .set({
-  'repairMomentum': 0,
-  'repairFeedbackShown': true,
-}, SetOptions(merge: true));
-
-    Future.delayed(const Duration(seconds: 4), () {
-      if (!mounted) return;
-
-      if (feedback ==
-          'Nice reset — this chat feels calmer now 💛') {
-        setState(() {
-          feedback = null;
-        });
-      }
-    });
-  }
-  }
-
 if (!mounted) return;
 
 setState(() {
@@ -11129,8 +11089,6 @@ Future.delayed(const Duration(milliseconds: 700), () {
 
   setState(() {
     _canSend = true;
-
-    if (feedback != 'Nice reset — this chat feels calmer now 💛') {
       feedback = null;
     }
   });
