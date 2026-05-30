@@ -11833,6 +11833,36 @@ Widget _buildRecoveryChip({
     ),
   );
 }
+
+String friendshipEmoji(String band) {
+  switch (band) {
+    case 'flourishing':
+      return '✨';
+    case 'trusted':
+      return '🌳';
+    case 'strong':
+      return '🌿';
+    case 'growing':
+      return '🌱';
+    default:
+      return '🌰';
+  }
+}
+
+String friendshipLabel(String band) {
+  switch (band) {
+    case 'flourishing':
+      return 'Flourishing friendship';
+    case 'trusted':
+      return 'Trusted friendship';
+    case 'strong':
+      return 'Strong friendship';
+    case 'growing':
+      return 'Growing friendship';
+    default:
+      return 'Seedling friendship';
+  }
+}
   
   @override
   Widget build(BuildContext context) {
@@ -11875,14 +11905,46 @@ Widget _buildRecoveryChip({
     ),
     onPressed: () => Navigator.pop(context),
   ),
-  title: Text(
-    widget.contactName,
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 24,
-      fontWeight: FontWeight.w900,
-    ),
-  ),
+title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: state.conversationDocStream(widget.conversationId),
+  builder: (context, snapshot) {
+    final data = snapshot.data?.data() ?? {};
+
+    final friendshipHealth =
+        (data['friendshipHealth'] ?? 0) as num;
+
+    final repairMomentum =
+        (data['repairMomentum'] ?? 0) as num;
+
+    final band = state.friendshipHealthBand(
+      friendshipHealth: friendshipHealth,
+      repairMomentum: repairMomentum,
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          widget.contactName,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '${friendshipEmoji(band)} ${friendshipLabel(band)}',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.72),
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  },
+),
 ),
 
   body: Stack(
