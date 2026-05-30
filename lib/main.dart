@@ -598,6 +598,7 @@ class ConversationRecord {
   final DateTime lastMessageTime;
   final num friendshipHealth;
   final num repairMomentum;
+  final String friendshipStage;
 
   const ConversationRecord({
     required this.id,
@@ -613,6 +614,7 @@ class ConversationRecord {
     required this.lastMessageTime,
     required this.friendshipHealth,
     required this.repairMomentum,
+    required this.friendshipStage,
   });
 
   factory ConversationRecord.fromDoc(
@@ -642,6 +644,8 @@ class ConversationRecord {
       ?? DateTime.fromMillisecondsSinceEpoch(0),
       friendshipHealth: (data['friendshipHealth'] ?? 0) as num,
       repairMomentum: (data['repairMomentum'] ?? 0) as num,
+      friendshipStage:
+      (data['friendshipStage'] ?? 'seedling') as String,
     );
   }
   
@@ -1459,6 +1463,16 @@ String friendshipHealthBand({
   return 'seedling';
 }
 
+String friendshipStageFromHealth({
+  required num friendshipHealth,
+  required num repairMomentum,
+}) {
+  return friendshipHealthBand(
+    friendshipHealth: friendshipHealth,
+    repairMomentum: repairMomentum,
+  );
+}
+  
 Future<void> adjustConversationFriendshipHealth({
   required String conversationId,
   required int amount,
@@ -1471,13 +1485,29 @@ Future<void> adjustConversationFriendshipHealth({
     final data = snap.data() ?? {};
 
     final current = (data['friendshipHealth'] ?? 0) as num;
-    final updated = (current + amount).clamp(0, 100);
+    final updated = (current + amount).clamp(0, 1000);
+
+    final repairMomentum =
+    (data['repairMomentum'] ?? 0) as num;
+
+final previousStage =
+    (data['friendshipStage'] ?? 'seedling') as String;
+
+final newStage =
+    friendshipStageFromHealth(
+      friendshipHealth: updated,
+      repairMomentum: repairMomentum,
+    );
 
     transaction.set(ref, {
-      'friendshipHealth': updated,
-      'lastFriendshipHealthReason': reason,
-      'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+  'friendshipHealth': updated,
+  'friendshipStage': newStage,
+  'friendshipStageChanged':
+      previousStage != newStage,
+  'lastFriendshipHealthReason': reason,
+  'lastFriendshipHealthAt':
+      FieldValue.serverTimestamp(),
+}, SetOptions(merge: true));
   });
 }
 
