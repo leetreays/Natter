@@ -10677,6 +10677,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String _displayedBanner = 'none';
   DateTime? _bannerShownAt;
   Timer? _bannerTimer;
+  String? _friendshipStageCelebration;
+  Timer? _friendshipStageCelebrationTimer;
+  String? _lastCelebratedStage;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -11860,6 +11863,40 @@ String friendshipLabel(String band) {
       return 'Seedling friendship';
   }
 }
+
+String friendshipStageCelebrationText(String stage) {
+  switch (stage) {
+    case 'flourishing':
+      return '✨ This friendship is flourishing.';
+    case 'trusted':
+      return '🌳 This friendship has become trusted.';
+    case 'strong':
+      return '🌿 This friendship is growing strong.';
+    case 'growing':
+      return '🌱 This friendship is growing.';
+    default:
+      return '🌰 This friendship has started.';
+  }
+}
+
+void _showFriendshipStageCelebration(String stage) {
+  _friendshipStageCelebrationTimer?.cancel();
+
+  setState(() {
+    _friendshipStageCelebration =
+        friendshipStageCelebrationText(stage);
+    _lastCelebratedStage = stage;
+  });
+
+  _friendshipStageCelebrationTimer =
+      Timer(const Duration(seconds: 4), () {
+    if (!mounted) return;
+
+    setState(() {
+      _friendshipStageCelebration = null;
+    });
+  });
+}
   
   @override
   Widget build(BuildContext context) {
@@ -12393,6 +12430,29 @@ if (pauseUntil is Timestamp) {
           stream: state.conversationDocStream(widget.conversationId),
           builder: (context, conversationSnapshot) {
             final conversationData = conversationSnapshot.data?.data() ?? {};
+
+            final friendshipStage =
+    (conversationData['friendshipStage'] ?? 'seedling').toString();
+
+final friendshipStageChanged =
+    conversationData['friendshipStageChanged'] == true;
+
+if (friendshipStageChanged &&
+    _lastCelebratedStage != friendshipStage) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!mounted) return;
+
+    _showFriendshipStageCelebration(friendshipStage);
+
+    await AppStateScope.of(context)
+        .conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'friendshipStageChanged': false,
+    }, SetOptions(merge: true));
+  });
+}
+            
             final blockedByChildIds = List<String>.from(
               conversationData['blockedByChildIds'] ?? const [],
             );
@@ -12690,6 +12750,32 @@ if (displayedBanner == 'pause')
       ],
     ),
   ), 
+    if (_friendshipStageCelebration != null)
+  Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF243F6B),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: NatterBrand.green.withOpacity(0.24),
+        ),
+      ),
+      child: Text(
+        _friendshipStageCelebration!,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: 13,
+        ),
+      ),
+    ),
+  ),
       Row(
   children: [
     Container(
