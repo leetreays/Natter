@@ -11894,7 +11894,7 @@ String friendshipStageCelebrationText(
 void _showFriendshipStageCelebration(
   String previousStage,
   String currentStage,
-)
+){
   _friendshipStageCelebrationTimer?.cancel();
 
 setState(() {
