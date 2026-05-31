@@ -1502,6 +1502,7 @@ final newStage =
     transaction.set(ref, {
   'friendshipHealth': updated,
   'friendshipStage': newStage,
+  'lastFriendshipStage': previousStage,
   'friendshipStageChanged':
       previousStage != newStage,
   'lastFriendshipHealthReason': reason,
