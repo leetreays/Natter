@@ -1505,6 +1505,7 @@ final newStage =
   'lastFriendshipStage': previousStage,
   'friendshipStageChanged':
       previousStage != newStage,
+  'friendshipStageChangedAt':
   'lastFriendshipHealthReason': reason,
   'lastFriendshipHealthAt':
       FieldValue.serverTimestamp(),
@@ -11865,19 +11866,31 @@ String friendshipLabel(String band) {
   }
 }
 
-String friendshipStageCelebrationText(String stage) {
-  switch (stage) {
-    case 'flourishing':
-      return '✨ This friendship is flourishing.';
-    case 'trusted':
-      return '🌳 This friendship has become trusted.';
-    case 'strong':
-      return '🌿 This friendship is growing strong.';
-    case 'growing':
-      return '🌱 This friendship is growing.';
-    default:
-      return '🌰 This friendship has started.';
+String friendshipStageCelebrationText(
+  String previousStage,
+  String currentStage,
+) {
+  if (previousStage == 'seedling' &&
+      currentStage == 'growing') {
+    return '🌱 Friendship Growing\n\nYou and ${widget.contactName} are getting to know each other.';
   }
+
+  if (previousStage == 'growing' &&
+      currentStage == 'strong') {
+    return '🌿 Friendship Growing Strong\n\nYou have shared lots of positive conversations together.';
+  }
+
+  if (previousStage == 'strong' &&
+      currentStage == 'trusted') {
+    return '🌳 Trusted Friendship\n\nYou have built a strong and kind connection.';
+  }
+
+  if (previousStage == 'trusted' &&
+      currentStage == 'flourishing') {
+    return '✨ Flourishing Friendship\n\nThis friendship is something special.';
+  }
+
+  return '🌱 Friendship Growing';
 }
 
 void _showFriendshipStageCelebration(String stage) {
