@@ -1453,7 +1453,7 @@ String friendshipHealthBand({
   required num friendshipHealth,
   required num repairMomentum,
 }) {
-  final score = friendshipHealth + (repairMomentum * 2);
+  final score = friendshipHealth;
 
   if (score >= 300) return 'flourishing';
   if (score >= 150) return 'trusted';
