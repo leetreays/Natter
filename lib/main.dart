@@ -1499,16 +1499,14 @@ final newStage =
       repairMomentum: repairMomentum,
     );
 
-    transaction.set(ref, {
+transaction.set(ref, {
   'friendshipHealth': updated,
   'friendshipStage': newStage,
   'lastFriendshipStage': previousStage,
-  'friendshipStageChanged':
-      previousStage != newStage,
-  'friendshipStageChangedAt':
+  'friendshipStageChanged': previousStage != newStage,
+  'friendshipStageChangedAt': FieldValue.serverTimestamp(),
   'lastFriendshipHealthReason': reason,
-  'lastFriendshipHealthAt':
-      FieldValue.serverTimestamp(),
+  'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
 }, SetOptions(merge: true));
   });
 }
@@ -11893,14 +11891,19 @@ String friendshipStageCelebrationText(
   return '🌱 Friendship Growing';
 }
 
-void _showFriendshipStageCelebration(String stage) {
+void _showFriendshipStageCelebration(
+  String previousStage,
+  String currentStage,
+)
   _friendshipStageCelebrationTimer?.cancel();
 
-  setState(() {
-    _friendshipStageCelebration =
-        friendshipStageCelebrationText(stage);
-    _lastCelebratedStage = stage;
-  });
+setState(() {
+  _friendshipStageCelebration =
+      friendshipStageCelebrationText(
+        previousStage,
+        currentStage,
+      );
+});
 
   _friendshipStageCelebrationTimer =
       Timer(const Duration(seconds: 4), () {
@@ -12448,6 +12451,10 @@ if (pauseUntil is Timestamp) {
             final friendshipStage =
     (conversationData['friendshipStage'] ?? 'seedling').toString();
 
+            final previousFriendshipStage =
+    (conversationData['lastFriendshipStage'] ?? 'seedling')
+        .toString();
+
 final friendshipStageChanged =
     conversationData['friendshipStageChanged'] == true;
 
@@ -12456,7 +12463,10 @@ if (friendshipStageChanged &&
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     if (!mounted) return;
 
-    _showFriendshipStageCelebration(friendshipStage);
+    _showFriendshipStageCelebration(
+  previousFriendshipStage,
+  friendshipStage,
+);
 
     await AppStateScope.of(context)
         .conversationsRef()
