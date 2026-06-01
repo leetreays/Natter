@@ -11925,6 +11925,12 @@ void _showFriendshipStageCelebration(
 }
 
 bool _friendshipStageCelebrationVisible = false;
+
+Widget _buildFriendshipMilestoneCard() {
+  return Container(
+    child: const Text('Placeholder'),
+  );
+}
   
   @override
   Widget build(BuildContext context) {
