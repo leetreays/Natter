@@ -12949,6 +12949,8 @@ if (displayedBanner == 'pause')
       ],
     ),
   ),
+  if (_friendshipStageCelebration != null)
+  _buildFriendshipMilestoneCard(),
 ],
 ),
 );
