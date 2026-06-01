@@ -11894,26 +11894,37 @@ String friendshipStageCelebrationText(
 void _showFriendshipStageCelebration(
   String previousStage,
   String currentStage,
-){
+) {
   _friendshipStageCelebrationTimer?.cancel();
 
-setState(() {
-  _friendshipStageCelebration =
-      friendshipStageCelebrationText(
-        previousStage,
-        currentStage,
-      );
-});
+  setState(() {
+    _friendshipStageCelebration =
+        friendshipStageCelebrationText(
+      previousStage,
+      currentStage,
+    );
+    _friendshipStageCelebrationVisible = true;
+    _lastCelebratedStage = currentStage;
+  });
 
   _friendshipStageCelebrationTimer =
-      Timer(const Duration(seconds: 4), () {
+      Timer(const Duration(seconds: 5), () {
     if (!mounted) return;
 
     setState(() {
-      _friendshipStageCelebration = null;
+      _friendshipStageCelebrationVisible = false;
+    });
+
+    Future.delayed(const Duration(milliseconds: 450), () {
+      if (!mounted) return;
+      setState(() {
+        _friendshipStageCelebration = null;
+      });
     });
   });
 }
+
+bool _friendshipStageCelebrationVisible = false;
   
   @override
   Widget build(BuildContext context) {
@@ -12774,86 +12785,6 @@ if (displayedBanner == 'pause')
       ],
     ),
   ), 
-    if (_friendshipStageCelebration != null)
-  Padding(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 24,
-      vertical: 8,
-    ),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOut,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 24,
-        vertical: 20,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF243F6B),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: NatterBrand.green.withOpacity(0.45),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: NatterBrand.green.withOpacity(0.18),
-            blurRadius: 24,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            '🌱',
-            style: TextStyle(fontSize: 34),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'FRIENDSHIP GROWING',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _friendshipStageCelebration!,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.90),
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: const Text(
-              '⭐ New Friendship Level',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
       Row(
   children: [
     Container(
@@ -12934,74 +12865,74 @@ if (displayedBanner == 'pause')
     ),
     const SizedBox(width: 8),
     GestureDetector(
-  onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-      ? null
-      : _send,
-  child: AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    width: 50,
-    height: 50,
-    decoration: BoxDecoration(
-      color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-          ? Colors.white.withOpacity(0.12)
-          : NatterBrand.green,
-      shape: BoxShape.circle,
-      border: Border.all(
-        color: _isSendLocked
-            ? NatterBrand.yellow.withOpacity(0.35)
-            : Colors.transparent,
-      ),
-      boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-          ? []
-          : [
-              BoxShadow(
-                color: NatterBrand.green.withOpacity(0.32),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
-              ),
-            ],
-    ),
-    child: Stack(
-  alignment: Alignment.center,
-  children: [
-    if (_isSendLocked)
-      SizedBox(
-        width: 42,
-        height: 42,
-        child: TweenAnimationBuilder<double>(
-  tween: Tween<double>(
-    begin: _sendPauseProgress,
-    end: 0,
-  ),
-  duration: _sendLockedUntil == null
-    ? Duration.zero
-    : _sendLockedUntil!.difference(DateTime.now()),
-  builder: (context, value, child) {
-    return CircularProgressIndicator(
-      value: value,
-      strokeWidth: 3,
-      backgroundColor: Colors.white.withOpacity(0.12),
-      valueColor: AlwaysStoppedAnimation<Color>(
-        NatterBrand.green.withOpacity(0.85),
-      ),
-    );
-  },
-),
-      ),
-    Icon(
-      _isSendLocked ? Icons.pause_rounded : Icons.send_rounded,
-      color: (isBlockedByMe ||
-              isBlockedByOther ||
-              !_canSend ||
-              _isSendLocked)
-          ? Colors.white.withOpacity(0.58)
-          : Colors.black,
-      size: 20,
+      onTap: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+          ? null
+          : _send,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+              ? Colors.white.withOpacity(0.12)
+              : NatterBrand.green,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: _isSendLocked
+                ? NatterBrand.yellow.withOpacity(0.35)
+                : Colors.transparent,
+          ),
+          boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
+              ? []
+              : [
+                  BoxShadow(
+                    color: NatterBrand.green.withOpacity(0.32),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
-      ],
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (_isSendLocked)
+              SizedBox(
+                width: 42,
+                height: 42,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(
+                    begin: _sendPauseProgress,
+                    end: 0,
+                  ),
+                  duration: _sendLockedUntil == null
+                      ? Duration.zero
+                      : _sendLockedUntil!.difference(DateTime.now()),
+                  builder: (context, value, child) {
+                    return CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 3,
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        NatterBrand.green.withOpacity(0.85),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            Icon(
+              _isSendLocked ? Icons.pause_rounded : Icons.send_rounded,
+              color: (isBlockedByMe ||
+                      isBlockedByOther ||
+                      !_canSend ||
+                      _isSendLocked)
+                  ? Colors.white.withOpacity(0.58)
+                  : Colors.black,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
     ),
-  ),
-),
   ],
 ),
 ],
@@ -13009,14 +12940,100 @@ if (displayedBanner == 'pause')
 );
           },
         ),
+
+        if (_friendshipStageCelebration != null)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedOpacity(
+                opacity: _friendshipStageCelebrationVisible ? 1 : 0,
+                duration: const Duration(milliseconds: 450),
+                curve: Curves.easeOut,
+                child: Container(
+                  color: Colors.black.withOpacity(0.46),
+                  child: Center(
+                    child: AnimatedScale(
+                      scale: _friendshipStageCelebrationVisible ? 1 : 0.92,
+                      duration: const Duration(milliseconds: 450),
+                      curve: Curves.easeOutBack,
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 28),
+                        padding: const EdgeInsets.all(26),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF243F6B),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(
+                            color: NatterBrand.green.withOpacity(0.55),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: NatterBrand.green.withOpacity(0.32),
+                              blurRadius: 36,
+                              spreadRadius: 3,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              '✨🌱✨',
+                              style: TextStyle(fontSize: 42),
+                            ),
+                            const SizedBox(height: 14),
+                            const Text(
+                              'FRIENDSHIP MILESTONE',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 19,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              _friendshipStageCelebration!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.94),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: NatterBrand.green.withOpacity(0.18),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: const Text(
+                                'New Friendship Level',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     ),
-  ),
-],
-),
-);
-  }
-}
+  );
+    }
 
 class _Msg {
   final bool fromMe;
