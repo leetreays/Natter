@@ -12938,12 +12938,16 @@ if (displayedBanner == 'pause')
 ],
 ),
 );
-          },
+},
         ),
       ],
     ),
-  );
-    }
+  ),
+],
+),
+);
+  }
+}
 
 class _Msg {
   final bool fromMe;
