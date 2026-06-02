@@ -11912,6 +11912,44 @@ String _friendshipStageIcon() {
   }
 }
 
+Color _friendshipStageGlowColor() {
+  switch (_lastCelebratedStage) {
+    case 'growing':
+      return NatterBrand.green;
+
+    case 'strong':
+      return const Color(0xFF4FD1C5);
+
+    case 'trusted':
+      return const Color(0xFF63A4FF);
+
+    case 'flourishing':
+      return const Color(0xFFFFD54F);
+
+    default:
+      return NatterBrand.green;
+  }
+}
+
+Color _friendshipStageCardColor() {
+  switch (_lastCelebratedStage) {
+    case 'growing':
+      return const Color(0xFF243F6B);
+
+    case 'strong':
+      return const Color(0xFF214C57);
+
+    case 'trusted':
+      return const Color(0xFF1E3F73);
+
+    case 'flourishing':
+      return const Color(0xFF5A4A1A);
+
+    default:
+      return const Color(0xFF243F6B);
+  }
+}
+
 void _showFriendshipStageCelebration(
   String previousStage,
   String currentStage,
@@ -11963,19 +12001,19 @@ Widget _buildFriendshipMilestoneCard() {
               curve: Curves.easeOutBack,
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 28),
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF243F6B),
+                  color: _friendshipStageCardColor(),
                   borderRadius: BorderRadius.circular(34),
                   border: Border.all(
-                    color: NatterBrand.green.withOpacity(0.65),
+                    color: _friendshipStageGlowColor().withOpacity(0.65),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: NatterBrand.green.withOpacity(0.34),
-                      blurRadius: 40,
-                      spreadRadius: 4,
+                      color: _friendshipStageGlowColor().withOpacity(0.34),
+                      blurRadius: 50,
+                      spreadRadius: 6,
                     ),
                   ],
                 ),
@@ -12000,14 +12038,14 @@ Widget _buildFriendshipMilestoneCard() {
                         ),
                       ),
                     ),
-                     const SizedBox(height: 14), 
+                     const SizedBox(height: 8), 
                     Image.asset(
   'assets/chirp_welldone.png',
-  height: 90,
+  height: 115,
 ),
                     const SizedBox(height: 8),
                     Text(
-  'Chirp noticed something special...',
+  'Your friendship has grown!',
   textAlign: TextAlign.center,
   style: TextStyle(
     color: Colors.white.withOpacity(0.75),
