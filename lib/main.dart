@@ -11866,29 +11866,50 @@ String friendshipLabel(String band) {
 
 String friendshipStageCelebrationText(
   String previousStage,
-  String currentStage,
+  String stage,
 ) {
-  if (previousStage == 'seedling' &&
-      currentStage == 'growing') {
-    return '🌱 Friendship Growing\n\nYou and ${widget.contactName} are getting to know each other.';
+  switch (stage) {
+    case 'growing':
+      return 'You and ${widget.contactName} are getting to know each other.';
+    case 'strong':
+      return 'Your friendship is becoming stronger.';
+    case 'trusted':
+      return 'You have built a trusted friendship.';
+    case 'flourishing':
+      return 'What a journey! This friendship is flourishing.';
+    default:
+      return 'Your friendship has grown.';
   }
+}
 
-  if (previousStage == 'growing' &&
-      currentStage == 'strong') {
-    return '🌿 Friendship Growing Strong\n\nYou have shared lots of positive conversations together.';
+String _friendshipStageTitle() {
+  switch (_lastCelebratedStage) {
+    case 'growing':
+      return '🌱 GROWING FRIENDSHIP';
+    case 'strong':
+      return '🌿 STRONG FRIENDSHIP';
+    case 'trusted':
+      return '🌳 TRUSTED FRIENDSHIP';
+    case 'flourishing':
+      return '✨ FLOURISHING FRIENDSHIP';
+    default:
+      return '🌱 FRIENDSHIP GROWING';
   }
+}
 
-  if (previousStage == 'strong' &&
-      currentStage == 'trusted') {
-    return '🌳 Trusted Friendship\n\nYou have built a strong and kind connection.';
+String _friendshipStageIcon() {
+  switch (_lastCelebratedStage) {
+    case 'growing':
+      return '🌱';
+    case 'strong':
+      return '🌿';
+    case 'trusted':
+      return '🌳';
+    case 'flourishing':
+      return '✨🌳✨';
+    default:
+      return '🌱';
   }
-
-  if (previousStage == 'trusted' &&
-      currentStage == 'flourishing') {
-    return '✨ Flourishing Friendship\n\nThis friendship is something special.';
-  }
-
-  return '🌱 Friendship Growing';
 }
 
 void _showFriendshipStageCelebration(
@@ -11961,21 +11982,35 @@ Widget _buildFriendshipMilestoneCard() {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      '✨🌱✨',
-                      style: TextStyle(fontSize: 44),
-                    ),
+                    Image.asset(
+  'assets/chirp_welcome.png',
+  height: 80,
+),
+                    const SizedBox(height: 8),
+                    Text(
+  'Chirp noticed something special...',
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.75),
+    fontWeight: FontWeight.w700,
+    fontSize: 13,
+  ),
+),
+                    Text(
+  _friendshipStageIcon(),
+  style: const TextStyle(fontSize: 54),
+),
                     const SizedBox(height: 16),
-                    const Text(
-                      'FRIENDSHIP MILESTONE',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 19,
-                        letterSpacing: 1,
-                      ),
-                    ),
+                    Text(
+  _friendshipStageTitle(),
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 24,
+    letterSpacing: 1,
+  ),
+),
                     const SizedBox(height: 14),
                     Text(
                       _friendshipStageCelebration ?? '',
