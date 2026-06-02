@@ -12041,7 +12041,6 @@ Widget _buildFriendshipMilestoneCard() {
                         height: 1.35,
                       ),
                     ),
-                    ),
                   ],
                 ),
               ),
