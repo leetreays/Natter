@@ -11885,13 +11885,13 @@ String friendshipStageCelebrationText(
 String _friendshipStageTitle() {
   switch (_lastCelebratedStage) {
     case 'growing':
-      return '🌱 GROWING FRIENDSHIP';
+      return 'GROWING FRIENDSHIP';
     case 'strong':
-      return '🌿 STRONG FRIENDSHIP';
+      return 'STRONG FRIENDSHIP';
     case 'trusted':
-      return '🌳 TRUSTED FRIENDSHIP';
+      return 'TRUSTED FRIENDSHIP';
     case 'flourishing':
-      return '✨ FLOURISHING FRIENDSHIP';
+      return '✨ FLOURISHING FRIENDSHIP ✨';
     default:
       return '🌱 FRIENDSHIP GROWING';
   }
@@ -11982,47 +11982,6 @@ Widget _buildFriendshipMilestoneCard() {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-  'assets/chirp_welcome.png',
-  height: 80,
-),
-                    const SizedBox(height: 8),
-                    Text(
-  'Chirp noticed something special...',
-  textAlign: TextAlign.center,
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.75),
-    fontWeight: FontWeight.w700,
-    fontSize: 13,
-  ),
-),
-                    Text(
-  _friendshipStageIcon(),
-  style: const TextStyle(fontSize: 54),
-),
-                    const SizedBox(height: 16),
-                    Text(
-  _friendshipStageTitle(),
-  textAlign: TextAlign.center,
-  style: const TextStyle(
-    color: Colors.white,
-    fontWeight: FontWeight.w900,
-    fontSize: 24,
-    letterSpacing: 1,
-  ),
-),
-                    const SizedBox(height: 14),
-                    Text(
-                      _friendshipStageCelebration ?? '',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.94),
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -12040,6 +11999,48 @@ Widget _buildFriendshipMilestoneCard() {
                           fontSize: 12,
                         ),
                       ),
+                    ),
+                     const SizedBox(height: 14), 
+                    Image.asset(
+  'assets/chirp_welldone.png',
+  height: 90,
+),
+                    const SizedBox(height: 8),
+                    Text(
+  'Chirp noticed something special...',
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.75),
+    fontWeight: FontWeight.w700,
+    fontSize: 13,
+  ),
+),
+                    Text(
+  _friendshipStageIcon(),
+  style: const TextStyle(fontSize: 54),
+),
+                    const SizedBox(height: 8),
+                    Text(
+  _friendshipStageTitle(),
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w900,
+    fontSize: 24,
+    letterSpacing: 1,
+  ),
+),
+                    const SizedBox(height: 8),
+                    Text(
+                      _friendshipStageCelebration ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.94),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        height: 1.35,
+                      ),
+                    ),
                     ),
                   ],
                 ),
