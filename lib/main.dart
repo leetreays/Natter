@@ -12001,7 +12001,7 @@ Widget _buildFriendshipMilestoneCard() {
               curve: Curves.easeOutBack,
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 28),
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
                   color: _friendshipStageCardColor(),
                   borderRadius: BorderRadius.circular(34),
@@ -12068,7 +12068,7 @@ Widget _buildFriendshipMilestoneCard() {
     letterSpacing: 1,
   ),
 ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
                       _friendshipStageCelebration ?? '',
                       textAlign: TextAlign.center,
