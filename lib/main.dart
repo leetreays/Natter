@@ -1495,44 +1495,93 @@ Future<void> adjustConversationFriendshipHealth({
 }) async {
   final ref = conversationsRef().doc(conversationId);
 
-  await FirebaseFirestore.instance.runTransaction((transaction) async {
-    final snap = await transaction.get(ref);
-    final data = snap.data() ?? {};
+  final result =
+      await FirebaseFirestore.instance.runTransaction<Map<String, dynamic>>(
+    (transaction) async {
+      final snap = await transaction.get(ref);
+      final data = snap.data() ?? {};
 
-    final current = (data['friendshipHealth'] ?? 0) as num;
-    final updated = (current + amount).clamp(0, 1000);
+      final current = (data['friendshipHealth'] ?? 0) as num;
+      final updated = (current + amount).clamp(0, 1000);
 
-    final repairMomentum = (data['repairMomentum'] ?? 0) as num;
-    final previousStage =
-        (data['friendshipStage'] ?? 'seedling').toString();
+      final repairMomentum =
+          (data['repairMomentum'] ?? 0) as num;
 
-    final newStage = friendshipStageFromHealth(
-      friendshipHealth: updated,
-      repairMomentum: repairMomentum,
-    );
+      final previousStage =
+          (data['friendshipStage'] ?? 'seedling').toString();
 
-    final stageChanged = previousStage != newStage;
+      final newStage = friendshipStageFromHealth(
+        friendshipHealth: updated,
+        repairMomentum: repairMomentum,
+      );
 
-    transaction.set(ref, {
-      'friendshipHealth': updated,
-      'friendshipStage': newStage,
-      'lastFriendshipStage': previousStage,
-      'friendshipStageChanged': stageChanged,
-      'friendshipStageChangedAt': stageChanged
-          ? FieldValue.serverTimestamp()
-          : data['friendshipStageChangedAt'],
-      'lastFriendshipHealthReason': reason,
-      'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+      final stageChanged = previousStage != newStage;
+      final friendshipId = (data['friendshipId'] ?? '').toString();
 
-      // temporary debug
-      'friendshipMomentDebug': {
-        'stageChanged': stageChanged,
+      transaction.set(ref, {
+        'friendshipHealth': updated,
+        'friendshipStage': newStage,
+        'lastFriendshipStage': previousStage,
+        'friendshipStageChanged': stageChanged,
+        'friendshipStageChangedAt': stageChanged
+            ? FieldValue.serverTimestamp()
+            : data['friendshipStageChangedAt'],
+        'lastFriendshipHealthReason': reason,
+        'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+        'friendshipMomentDebug': {
+          'stageChanged': stageChanged,
+          'friendshipId': friendshipId,
+          'previousStage': previousStage,
+          'newStage': newStage,
+          'reason': reason,
+        },
+      }, SetOptions(merge: true));
+
+      return {
+        'friendshipId': friendshipId,
+        'updated': updated,
         'previousStage': previousStage,
         'newStage': newStage,
-        'reason': reason,
-      },
+        'stageChanged': stageChanged,
+      };
+    },
+  );
+
+  final friendshipId = result['friendshipId'].toString();
+  if (friendshipId.isEmpty) return;
+
+  try {
+    final friendshipRef =
+        FirebaseFirestore.instance.collection('friendships').doc(friendshipId);
+
+    await friendshipRef.set({
+      'friendshipHealth': result['updated'],
+      'friendshipStage': result['newStage'],
+      'lastFriendshipStage': result['previousStage'],
+      'lastFriendshipHealthReason': reason,
+      'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+      if (result['stageChanged'] == true)
+        'lastStageChangedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
-  });
+
+    if (result['stageChanged'] == true) {
+      await friendshipRef.collection('friendship_moments').add({
+        'type': 'stage_milestone',
+        'fromStage': result['previousStage'],
+        'toStage': result['newStage'],
+        'title': friendshipStageTitleForMoment(
+          result['newStage'].toString(),
+        ),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  } catch (e) {
+    debugPrint('Friendship mirror write failed: $e');
+
+    await ref.set({
+      'friendshipMomentDebugError': e.toString(),
+    }, SetOptions(merge: true));
+  }
 }
   
 String activeConversationBanner({
