@@ -1564,6 +1564,13 @@ Future<void> adjustConversationFriendshipHealth({
         'lastStageChangedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
+    await friendshipRef.set({
+  'lastFriendshipMomentAttemptAt': FieldValue.serverTimestamp(),
+  'lastFriendshipMomentAttemptStageChanged': result['stageChanged'],
+  'lastFriendshipMomentAttemptFrom': result['previousStage'],
+  'lastFriendshipMomentAttemptTo': result['newStage'],
+}, SetOptions(merge: true));
+
     if (result['stageChanged'] == true) {
       await friendshipRef.collection('friendship_moments').add({
         'type': 'stage_milestone',
