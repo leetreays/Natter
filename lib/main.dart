@@ -1472,6 +1472,21 @@ String friendshipStageFromHealth({
     repairMomentum: repairMomentum,
   );
 }
+
+String friendshipStageTitleForMoment(String stage) {
+  switch (stage) {
+    case 'growing':
+      return 'Growing Friendship';
+    case 'strong':
+      return 'Strong Friendship';
+    case 'trusted':
+      return 'Trusted Friendship';
+    case 'flourishing':
+      return 'Flourishing Friendship';
+    default:
+      return 'Seedling Friendship';
+  }
+}
   
 Future<void> adjustConversationFriendshipHealth({
   required String conversationId,
@@ -1500,14 +1515,47 @@ final newStage =
     );
 
 transaction.set(ref, {
+final stageChanged = previousStage != newStage;
+final friendshipId = (data['friendshipId'] ?? '').toString();
+
+transaction.set(ref, {
   'friendshipHealth': updated,
   'friendshipStage': newStage,
   'lastFriendshipStage': previousStage,
-  'friendshipStageChanged': previousStage != newStage,
-  'friendshipStageChangedAt': FieldValue.serverTimestamp(),
+  'friendshipStageChanged': stageChanged,
+  'friendshipStageChangedAt':
+      stageChanged ? FieldValue.serverTimestamp() : data['friendshipStageChangedAt'],
   'lastFriendshipHealthReason': reason,
   'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
 }, SetOptions(merge: true));
+
+if (friendshipId.isNotEmpty) {
+  final friendshipRef =
+      FirebaseFirestore.instance.collection('friendships').doc(friendshipId);
+
+  transaction.set(friendshipRef, {
+    'friendshipHealth': updated,
+    'friendshipStage': newStage,
+    'lastFriendshipStage': previousStage,
+    'lastFriendshipHealthReason': reason,
+    'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+    if (stageChanged)
+      'lastStageChangedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  if (stageChanged) {
+    final momentRef =
+        friendshipRef.collection('friendship_moments').doc();
+
+    transaction.set(momentRef, {
+      'type': 'stage_milestone',
+      'fromStage': previousStage,
+      'toStage': newStage,
+      'title': friendshipStageTitleForMoment(newStage),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+}
   });
 }
 
