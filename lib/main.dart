@@ -1503,7 +1503,8 @@ Future<void> adjustConversationFriendshipHealth({
     final updated = (current + amount).clamp(0, 1000);
 
     final repairMomentum = (data['repairMomentum'] ?? 0) as num;
-    final previousStage = (data['friendshipStage'] ?? 'seedling') as String;
+    final previousStage =
+        (data['friendshipStage'] ?? 'seedling').toString();
 
     final newStage = friendshipStageFromHealth(
       friendshipHealth: updated,
@@ -1511,17 +1512,6 @@ Future<void> adjustConversationFriendshipHealth({
     );
 
     final stageChanged = previousStage != newStage;
-    final friendshipId = (data['friendshipId'] ?? '').toString();
-
-    transaction.set(ref, {
-  'friendshipMomentDebug': {
-    'stageChanged': stageChanged,
-    'friendshipId': friendshipId,
-    'previousStage': previousStage,
-    'newStage': newStage,
-    'reason': reason,
-  },
-}, SetOptions(merge: true));
 
     transaction.set(ref, {
       'friendshipHealth': updated,
@@ -1533,36 +1523,15 @@ Future<void> adjustConversationFriendshipHealth({
           : data['friendshipStageChangedAt'],
       'lastFriendshipHealthReason': reason,
       'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+
+      // temporary debug
+      'friendshipMomentDebug': {
+        'stageChanged': stageChanged,
+        'previousStage': previousStage,
+        'newStage': newStage,
+        'reason': reason,
+      },
     }, SetOptions(merge: true));
-
-    if (friendshipId.isNotEmpty) {
-      final friendshipRef = FirebaseFirestore.instance
-          .collection('friendships')
-          .doc(friendshipId);
-
-      transaction.set(friendshipRef, {
-        'friendshipHealth': updated,
-        'friendshipStage': newStage,
-        'lastFriendshipStage': previousStage,
-        'lastFriendshipHealthReason': reason,
-        'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
-        if (stageChanged)
-          'lastStageChangedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      if (stageChanged) {
-        final momentRef =
-            friendshipRef.collection('friendship_moments').doc();
-
-        transaction.set(momentRef, {
-          'type': 'stage_milestone',
-          'fromStage': previousStage,
-          'toStage': newStage,
-          'title': friendshipStageTitleForMoment(newStage),
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      }
-    }
   });
 }
   
