@@ -1514,6 +1514,16 @@ Future<void> adjustConversationFriendshipHealth({
     final friendshipId = (data['friendshipId'] ?? '').toString();
 
     transaction.set(ref, {
+  'friendshipMomentDebug': {
+    'stageChanged': stageChanged,
+    'friendshipId': friendshipId,
+    'previousStage': previousStage,
+    'newStage': newStage,
+    'reason': reason,
+  },
+}, SetOptions(merge: true));
+
+    transaction.set(ref, {
       'friendshipHealth': updated,
       'friendshipStage': newStage,
       'lastFriendshipStage': previousStage,
