@@ -1502,63 +1502,60 @@ Future<void> adjustConversationFriendshipHealth({
     final current = (data['friendshipHealth'] ?? 0) as num;
     final updated = (current + amount).clamp(0, 1000);
 
-    final repairMomentum =
-    (data['repairMomentum'] ?? 0) as num;
+    final repairMomentum = (data['repairMomentum'] ?? 0) as num;
+    final previousStage = (data['friendshipStage'] ?? 'seedling') as String;
 
-final previousStage =
-    (data['friendshipStage'] ?? 'seedling') as String;
-
-final newStage =
-    friendshipStageFromHealth(
+    final newStage = friendshipStageFromHealth(
       friendshipHealth: updated,
       repairMomentum: repairMomentum,
     );
 
-transaction.set(ref, {
-final stageChanged = previousStage != newStage;
-final friendshipId = (data['friendshipId'] ?? '').toString();
+    final stageChanged = previousStage != newStage;
+    final friendshipId = (data['friendshipId'] ?? '').toString();
 
-transaction.set(ref, {
-  'friendshipHealth': updated,
-  'friendshipStage': newStage,
-  'lastFriendshipStage': previousStage,
-  'friendshipStageChanged': stageChanged,
-  'friendshipStageChangedAt':
-      stageChanged ? FieldValue.serverTimestamp() : data['friendshipStageChangedAt'],
-  'lastFriendshipHealthReason': reason,
-  'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
-}, SetOptions(merge: true));
+    transaction.set(ref, {
+      'friendshipHealth': updated,
+      'friendshipStage': newStage,
+      'lastFriendshipStage': previousStage,
+      'friendshipStageChanged': stageChanged,
+      'friendshipStageChangedAt': stageChanged
+          ? FieldValue.serverTimestamp()
+          : data['friendshipStageChangedAt'],
+      'lastFriendshipHealthReason': reason,
+      'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
 
-if (friendshipId.isNotEmpty) {
-  final friendshipRef =
-      FirebaseFirestore.instance.collection('friendships').doc(friendshipId);
+    if (friendshipId.isNotEmpty) {
+      final friendshipRef = FirebaseFirestore.instance
+          .collection('friendships')
+          .doc(friendshipId);
 
-  transaction.set(friendshipRef, {
-    'friendshipHealth': updated,
-    'friendshipStage': newStage,
-    'lastFriendshipStage': previousStage,
-    'lastFriendshipHealthReason': reason,
-    'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
-    if (stageChanged)
-      'lastStageChangedAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+      transaction.set(friendshipRef, {
+        'friendshipHealth': updated,
+        'friendshipStage': newStage,
+        'lastFriendshipStage': previousStage,
+        'lastFriendshipHealthReason': reason,
+        'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+        if (stageChanged)
+          'lastStageChangedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
-  if (stageChanged) {
-    final momentRef =
-        friendshipRef.collection('friendship_moments').doc();
+      if (stageChanged) {
+        final momentRef =
+            friendshipRef.collection('friendship_moments').doc();
 
-    transaction.set(momentRef, {
-      'type': 'stage_milestone',
-      'fromStage': previousStage,
-      'toStage': newStage,
-      'title': friendshipStageTitleForMoment(newStage),
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  }
-}
+        transaction.set(momentRef, {
+          'type': 'stage_milestone',
+          'fromStage': previousStage,
+          'toStage': newStage,
+          'title': friendshipStageTitleForMoment(newStage),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
   });
 }
-
+  
 String activeConversationBanner({
   required String toneBand,
   required String escalationDirection,
