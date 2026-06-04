@@ -10526,7 +10526,7 @@ class _FriendshipQuestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPressed: () {
+  onTap: () {
   ScaffoldMessenger.of(context).showSnackBar(
     const SnackBar(
       content: Text('Friendship Journey is being upgraded.'),
