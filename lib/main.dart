@@ -1579,6 +1579,24 @@ Future<void> adjustConversationFriendshipHealth({
   debugPrint('Friendship mirror write failed: $e');
 }
 }
+
+Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
+  required String friendshipId,
+}) async* {
+  yield* friendshipsRef()
+      .doc(friendshipId)
+      .collection('friendship_moments')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        ...doc.data(),
+      };
+    }).toList();
+  });
+}
   
 String activeConversationBanner({
   required String toneBand,
