@@ -1487,6 +1487,21 @@ String friendshipStageTitleForMoment(String stage) {
       return 'Seedling Friendship';
   }
 }
+
+String friendshipStageDescriptionForMoment(String stage) {
+  switch (stage) {
+    case 'growing':
+      return 'This friendship is beginning to grow.';
+    case 'strong':
+      return 'This friendship is becoming stronger.';
+    case 'trusted':
+      return 'This friendship has built real trust.';
+    case 'flourishing':
+      return 'This friendship is flourishing.';
+    default:
+      return 'A friendship milestone was reached.';
+  }
+}
   
 Future<void> adjustConversationFriendshipHealth({
   required String conversationId,
@@ -1566,14 +1581,17 @@ Future<void> adjustConversationFriendshipHealth({
 
     if (result['stageChanged'] == true) {
       await friendshipRef.collection('friendship_moments').add({
-        'type': 'stage_milestone',
-        'fromStage': result['previousStage'],
-        'toStage': result['newStage'],
-        'title': friendshipStageTitleForMoment(
-          result['newStage'].toString(),
-        ),
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+  'type': 'stage_milestone',
+  'fromStage': result['previousStage'],
+  'toStage': result['newStage'],
+  'title': friendshipStageTitleForMoment(
+    result['newStage'].toString(),
+  ),
+  'description': friendshipStageDescriptionForMoment(
+    result['newStage'].toString(),
+  ),
+  'createdAt': FieldValue.serverTimestamp(),
+});
     }
   } catch (e) {
   debugPrint('Friendship mirror write failed: $e');
