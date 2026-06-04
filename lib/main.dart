@@ -12263,14 +12263,37 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          '${friendshipEmoji(band)} ${friendshipLabel(band)}',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.72),
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
+        GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      calmRoute(
+        FriendshipJourneyScreen(
+          friendshipId: widget.friendshipId,
+          friendName: widget.contactName,
         ),
+      ),
+    );
+  },
+  child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        '${friendshipEmoji(band)} ${friendshipLabel(band)}',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.72),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      Icon(
+        Icons.chevron_right_rounded,
+        size: 14,
+        color: Colors.white.withOpacity(0.55),
+      ),
+    ],
+  ),
+),
       ],
     );
   },
