@@ -10529,7 +10529,12 @@ class _FriendshipQuestCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          calmRoute(FriendshipJourneyScreen(friend: friend)),
+          calmRoute(
+  FriendshipJourneyScreen(
+    friendshipId: widget.friendshipId,
+    friendName: widget.contactName,
+  ),
+),
         );
       },
       child: BrandCard(
