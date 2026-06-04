@@ -12542,12 +12542,6 @@ if (pauseUntil is Timestamp) {
             ),
           ),
 
-        if (friend != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: _FriendshipQuestCard(friend: friend),
-          ),
-
         Expanded(
           child: StreamBuilder<List<Map<String, dynamic>>>(
             stream: AppStateScope.of(context)
