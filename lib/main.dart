@@ -1702,11 +1702,13 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   if (!isFlagged) {
   await recordConversationRepair(conversationId);
 
-  await adjustConversationFriendshipHealth(
+  unawaited(
+  adjustConversationFriendshipHealth(
     conversationId: conversationId,
     amount: 1,
     reason: 'calm_message',
-  );
+  ),
+);
 }
 
 await conversationsRef().doc(conversationId).set({
