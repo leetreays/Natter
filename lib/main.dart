@@ -13202,6 +13202,115 @@ if (displayedBanner == 'pause')
   }
 }
 
+class FriendshipJourneyScreen extends StatelessWidget {
+  final String friendshipId;
+  final String friendName;
+
+  const FriendshipJourneyScreen({
+    super.key,
+    required this.friendshipId,
+    required this.friendName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF06112E),
+      appBar: AppBar(
+        title: Text(
+          '$friendName Journey',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: state.friendshipMomentsStream(friendshipId: friendshipId),
+        builder: (context, snapshot) {
+          final moments = snapshot.data ?? [];
+
+          if (moments.isEmpty) {
+            return const Center(
+              child: Text(
+                'No friendship moments yet.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: moments.length,
+            itemBuilder: (context, index) {
+              final moment = moments[index];
+              final title = (moment['title'] ?? 'Friendship Moment').toString();
+              final fromStage = (moment['fromStage'] ?? '').toString();
+              final toStage = (moment['toStage'] ?? '').toString();
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF243F6B),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: NatterBrand.green.withOpacity(0.22),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Text(
+                      '🌱',
+                      style: TextStyle(fontSize: 30),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            fromStage.isNotEmpty && toStage.isNotEmpty
+                                ? '$fromStage → $toStage'
+                                : 'A friendship milestone',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.68),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _Msg {
   final bool fromMe;
   final String text;
