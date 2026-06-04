@@ -1699,17 +1699,17 @@ if (otherChildId.isNotEmpty) {
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
   final cooldownAmount = isFlagged ? 0 : 2;
-  if (!isFlagged) {
-  unawaited(recordConversationRepair(conversationId));
-
-  unawaited(
-  adjustConversationFriendshipHealth(
-    conversationId: conversationId,
-    amount: 1,
-    reason: 'calm_message',
-  ),
-);
-}
+  // Growth Engine temporarily disabled for performance testing.
+// if (!isFlagged) {
+//   unawaited(recordConversationRepair(conversationId));
+//   unawaited(
+//     adjustConversationFriendshipHealth(
+//       conversationId: conversationId,
+//       amount: 1,
+//       reason: 'calm_message',
+//     ),
+//   );
+// }
 
 await conversationsRef().doc(conversationId).set({
   'spikeHeat': FieldValue.increment(-cooldownAmount),
