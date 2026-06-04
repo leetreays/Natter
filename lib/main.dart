@@ -1700,7 +1700,7 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
 
   final cooldownAmount = isFlagged ? 0 : 2;
   if (!isFlagged) {
-  await recordConversationRepair(conversationId);
+  unawaited(recordConversationRepair(conversationId));
 
   unawaited(
   adjustConversationFriendshipHealth(
