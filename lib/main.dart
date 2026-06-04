@@ -10526,13 +10526,13 @@ class _FriendshipQuestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          calmRoute(
-  calmRoute(FriendshipJourneyScreen(friend: friend)),
-        );
-      },
+      onPressed: () {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Friendship Journey is being upgraded.'),
+    ),
+  );
+},
       child: BrandCard(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
