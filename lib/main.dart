@@ -11172,6 +11172,8 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
     conversationId: widget.conversationId,
   );
 
+  controller.clear(); 
+
   final delivered = await state.sendMessageToConversation(
     conversationId: widget.conversationId,
     text: text,
@@ -11185,9 +11187,7 @@ Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
       feedback = 'Message not delivered.';
     });
     return;
-  }
-
-  controller.clear();
+  } 
 
   if (!flagged) {
     _sendLockTimer?.cancel();
