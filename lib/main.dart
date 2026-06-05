@@ -10629,6 +10629,8 @@ class FriendshipJourneyScreen extends StatelessWidget {
 
   String stageEmoji(String stage) {
   switch (stage) {
+    case 'seedling':
+      return '🌰';
     case 'growing':
       return '🌱';
     case 'strong':
@@ -10638,12 +10640,14 @@ class FriendshipJourneyScreen extends StatelessWidget {
     case 'flourishing':
       return '✨';
     default:
-      return '🌱';
+      return '🌰';
   }
-  }
+}
 
   String stageTitle(String stage) {
   switch (stage) {
+    case 'seedling':
+      return 'Seedling Friendship';
     case 'growing':
       return 'Growing Friendship';
     case 'strong':
@@ -10655,11 +10659,11 @@ class FriendshipJourneyScreen extends StatelessWidget {
     default:
       return 'Seedling Friendship';
   }
-  }
+}
 
   Widget _pathLine() {
   return Container(
-    width: 26,
+    width: 16,
     height: 2,
     color: Colors.white.withOpacity(0.16),
   );
@@ -10754,23 +10758,24 @@ class FriendshipJourneyScreen extends StatelessWidget {
         const SizedBox(height: 16),
 
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _pathStage('🌱', currentStage == 'seedling'),
-            _pathLine(),
-            _pathStage('🌿', currentStage == 'growing'),
-            _pathLine(),
-            _pathStage('⭐', currentStage == 'strong'),
-            _pathLine(),
-            _pathStage('✨', currentStage == 'trusted' ||
-                currentStage == 'flourishing'),
-          ],
-        ),
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    _pathStage('🌰', currentStage == 'seedling'),
+    _pathLine(),
+    _pathStage('🌱', currentStage == 'growing'),
+    _pathLine(),
+    _pathStage('🌿', currentStage == 'strong'),
+    _pathLine(),
+    _pathStage('⭐', currentStage == 'trusted'),
+    _pathLine(),
+    _pathStage('✨', currentStage == 'flourishing'),
+  ],
+),
 
         const SizedBox(height: 14),
 
         Text(
-          stageTitle(currentStage),
+  'You are here',
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
