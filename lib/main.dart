@@ -11374,16 +11374,12 @@ void initState() {
 
     _clearExpiredSendPause();
 
-// Performance test:
-// Decay is already applied when conversations are opened.
-// Temporarily disabled during send to measure responsiveness.
-//
-// await state.applySpikeHeatDecay(widget.conversationId);
-// await state.applyEscalationDecay(widget.conversationId);
-// await state.applyRepairDecay(widget.conversationId);
-// await state.applyEscalationChainDecay(
-//   widget.conversationId,
-// );
+await state.applySpikeHeatDecay(widget.conversationId);
+await state.applyEscalationDecay(widget.conversationId);
+await state.applyRepairDecay(widget.conversationId);
+await state.applyEscalationChainDecay(
+  widget.conversationId,
+);
     
 final conversationSnap = await state
     .conversationsRef()
