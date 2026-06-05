@@ -10682,7 +10682,7 @@ final title = (moment['title'] ?? 'Friendship Moment').toString();
 final description = (moment['description'] ?? '').toString();
 final fromStage = (moment['fromStage'] ?? '').toString();
 final toStage = (moment['toStage'] ?? '').toString();
-
+final isCurrent = index == 0; 
 final isLast = index == moments.length - 1;
 
 return Padding(
@@ -10711,8 +10711,20 @@ return Padding(
             color: const Color(0xFF243F6B),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: NatterBrand.green.withOpacity(0.20),
-            ),
+  color: isCurrent
+      ? NatterBrand.green.withOpacity(0.55)
+      : NatterBrand.green.withOpacity(0.18),
+  width: isCurrent ? 1.6 : 1,
+),
+            boxShadow: isCurrent
+    ? [
+        BoxShadow(
+          color: NatterBrand.green.withOpacity(0.24),
+          blurRadius: 22,
+          spreadRadius: 2,
+        ),
+      ]
+    : [],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
