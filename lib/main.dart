@@ -10642,6 +10642,21 @@ class FriendshipJourneyScreen extends StatelessWidget {
   }
   }
 
+  String stageTitle(String stage) {
+  switch (stage) {
+    case 'growing':
+      return 'Growing Friendship';
+    case 'strong':
+      return 'Strong Friendship';
+    case 'trusted':
+      return 'Trusted Friendship';
+    case 'flourishing':
+      return 'Flourishing Friendship';
+    default:
+      return 'Seedling Friendship';
+  }
+  }
+
   Widget _pathLine() {
   return Container(
     width: 26,
@@ -10755,7 +10770,7 @@ class FriendshipJourneyScreen extends StatelessWidget {
         const SizedBox(height: 14),
 
         Text(
-          friendshipStageTitleForMoment(currentStage),
+          stageTitle(currentStage),
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
