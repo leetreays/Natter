@@ -10641,6 +10641,39 @@ class FriendshipJourneyScreen extends StatelessWidget {
       return '🌱';
   }
   }
+
+  Widget _pathLine() {
+  return Container(
+    width: 26,
+    height: 2,
+    color: Colors.white.withOpacity(0.16),
+  );
+  }
+
+  Widget _pathStage(String emoji, bool active) {
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 300),
+    padding: const EdgeInsets.all(8),
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      boxShadow: active
+          ? [
+              BoxShadow(
+                color: NatterBrand.green.withOpacity(0.35),
+                blurRadius: 16,
+                spreadRadius: 2,
+              ),
+            ]
+          : [],
+    ),
+    child: Text(
+      emoji,
+      style: TextStyle(
+        fontSize: active ? 34 : 26,
+      ),
+    ),
+  );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -10678,63 +10711,62 @@ class FriendshipJourneyScreen extends StatelessWidget {
   itemCount: moments.length + 1,
   itemBuilder: (context, index) {
     if (index == 0) {
-      final latest = moments.first;
-      final currentStage = (latest['toStage'] ?? 'seedling').toString();
-      final currentTitle =
-          (latest['title'] ?? 'Friendship Journey').toString();
+  final latest = moments.first;
+  final currentStage =
+      (latest['toStage'] ?? 'seedling').toString();
 
-      return Container(
-        margin: const EdgeInsets.only(bottom: 20),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF21345C),
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(
-            color: NatterBrand.green.withOpacity(0.34),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 24),
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: const Color(0xFF21345C),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+    ),
+    child: Column(
+      children: [
+        Text(
+          'Friendship Path',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.72),
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: NatterBrand.green.withOpacity(0.18),
-              blurRadius: 22,
-              spreadRadius: 2,
-            ),
-          ],
         ),
-        child: Row(
+
+        const SizedBox(height: 16),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              stageEmoji(currentStage),
-              style: const TextStyle(fontSize: 42),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Current Friendship Level',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.68),
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    currentTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 22,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _pathStage('🌱', currentStage == 'seedling'),
+            _pathLine(),
+            _pathStage('🌿', currentStage == 'growing'),
+            _pathLine(),
+            _pathStage('⭐', currentStage == 'strong'),
+            _pathLine(),
+            _pathStage('✨', currentStage == 'trusted' ||
+                currentStage == 'flourishing'),
           ],
         ),
-      );
-    }
+
+        const SizedBox(height: 14),
+
+        Text(
+          friendshipStageTitleForMoment(currentStage),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
     final momentIndex = index - 1;
 final moment = moments[momentIndex];
