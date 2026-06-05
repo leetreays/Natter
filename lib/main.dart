@@ -10674,16 +10674,76 @@ class FriendshipJourneyScreen extends StatelessWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: moments.length,
-            itemBuilder: (context, index) {
-final moment = moments[index];
+  padding: const EdgeInsets.all(16),
+  itemCount: moments.length + 1,
+  itemBuilder: (context, index) {
+    if (index == 0) {
+      final latest = moments.first;
+      final currentStage = (latest['toStage'] ?? 'seedling').toString();
+      final currentTitle =
+          (latest['title'] ?? 'Friendship Journey').toString();
+
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF21345C),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: NatterBrand.green.withOpacity(0.34),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: NatterBrand.green.withOpacity(0.18),
+              blurRadius: 22,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Text(
+              stageEmoji(currentStage),
+              style: const TextStyle(fontSize: 42),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Current Friendship Level',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.68),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    currentTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final momentIndex = index - 1;
+final moment = moments[momentIndex];
 final title = (moment['title'] ?? 'Friendship Moment').toString();
 final description = (moment['description'] ?? '').toString();
 final fromStage = (moment['fromStage'] ?? '').toString();
 final toStage = (moment['toStage'] ?? '').toString();
-final isCurrent = index == 0; 
-final isLast = index == moments.length - 1;
+final isLast = momentIndex == moments.length - 1;
+final isCurrent = momentIndex == 0;
 
 return Padding(
   padding: const EdgeInsets.only(bottom: 12),
@@ -10746,7 +10806,7 @@ return Padding(
                   color: Colors.white.withOpacity(0.65),
                   fontWeight: FontWeight.w700,
                 ),
-              ),
+              ), 
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
