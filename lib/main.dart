@@ -10627,6 +10627,21 @@ class FriendshipJourneyScreen extends StatelessWidget {
     required this.friendName,
   });
 
+  String stageEmoji(String stage) {
+  switch (stage) {
+    case 'growing':
+      return '🌱';
+    case 'strong':
+      return '🌿';
+    case 'trusted':
+      return '⭐';
+    case 'flourishing':
+      return '✨';
+    default:
+      return '🌱';
+  }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -10662,57 +10677,82 @@ class FriendshipJourneyScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             itemCount: moments.length,
             itemBuilder: (context, index) {
-              final moment = moments[index];
-              final title = (moment['title'] ?? 'Friendship Moment').toString();
-              final fromStage = (moment['fromStage'] ?? '').toString();
-              final toStage = (moment['toStage'] ?? '').toString();
+final moment = moments[index];
+final title = (moment['title'] ?? 'Friendship Moment').toString();
+final description = (moment['description'] ?? '').toString();
+final fromStage = (moment['fromStage'] ?? '').toString();
+final toStage = (moment['toStage'] ?? '').toString();
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF243F6B),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: NatterBrand.green.withOpacity(0.22),
+final isLast = index == moments.length - 1;
+
+return Padding(
+  padding: const EdgeInsets.only(bottom: 12),
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Column(
+        children: [
+          Text(
+            stageEmoji(toStage),
+            style: const TextStyle(fontSize: 28),
+          ),
+          Container(
+            width: 3,
+            height: isLast ? 0 : 90,
+            color: Colors.white.withOpacity(0.12),
+          ),
+        ],
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFF243F6B),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: NatterBrand.green.withOpacity(0.20),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                fromStage.isNotEmpty && toStage.isNotEmpty
+                    ? '$fromStage → $toStage'
+                    : 'A friendship milestone',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.65),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (description.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.82),
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    const Text(
-                      '🌱',
-                      style: TextStyle(fontSize: 30),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            fromStage.isNotEmpty && toStage.isNotEmpty
-                                ? '$fromStage → $toStage'
-                                : 'A friendship milestone',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.68),
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              ],
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+);
             },
           );
         },
