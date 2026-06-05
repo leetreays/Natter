@@ -12281,14 +12281,14 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       Text(
         '${friendshipEmoji(band)} ${friendshipLabel(band)}',
         style: TextStyle(
-          color: Colors.white.withOpacity(0.72),
-          fontSize: 11,
+          color: Colors.white.withOpacity(0.85),
+          fontSize: 13,
           fontWeight: FontWeight.w800,
         ),
       ),
       Icon(
         Icons.chevron_right_rounded,
-        size: 14,
+        size: 18,
         color: Colors.white.withOpacity(0.55),
       ),
     ],
