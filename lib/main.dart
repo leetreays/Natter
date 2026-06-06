@@ -13173,30 +13173,16 @@ final activeBanner =
   repairMomentum: repairMomentum,
   isSendLocked: _isSendLocked,
   burstCoachActive:
-    conversationData['burstCoachActive'] == true,
+    conversationData['burstCoachActive'] == true &&
+    conversationData['burstCoachTriggeredAt'] is Timestamp &&
+    DateTime.now().difference(
+      (conversationData['burstCoachTriggeredAt'] as Timestamp)
+          .toDate(),
+    ).inSeconds < 6,
 );
 
 final displayedBanner =
     _smoothedBanner(activeBanner);
-
-if (displayedBanner == 'burst' &&
-    conversationData['burstCoachActive'] == true) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
-
-    Future.delayed(const Duration(seconds: 4), () async {
-      if (!mounted) return;
-
-      await AppStateScope.of(context)
-          .conversationsRef()
-          .doc(widget.conversationId)
-          .set({
-        'burstCoachActive': false,
-        'burstCoachClearedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-    });
-  });
-}
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
