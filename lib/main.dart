@@ -13176,8 +13176,6 @@ final activeBanner =
     conversationData['burstCoachActive'] == true,
 );
 
-final activeBanner = state.activeConversationBanner(...);
-
 final displayedBanner =
     _smoothedBanner(activeBanner);
 
