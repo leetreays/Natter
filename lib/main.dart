@@ -13181,16 +13181,20 @@ final displayedBanner =
 
 if (displayedBanner == 'burst' &&
     conversationData['burstCoachActive'] == true) {
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted) return;
 
-    await AppStateScope.of(context)
-        .conversationsRef()
-        .doc(widget.conversationId)
-        .set({
-      'burstCoachActive': false,
-      'burstCoachClearedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    Future.delayed(const Duration(seconds: 4), () async {
+      if (!mounted) return;
+
+      await AppStateScope.of(context)
+          .conversationsRef()
+          .doc(widget.conversationId)
+          .set({
+        'burstCoachActive': false,
+        'burstCoachClearedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    });
   });
 }
 
