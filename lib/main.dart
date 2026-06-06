@@ -2746,10 +2746,10 @@ const exclusionPatterns = [
 for (final pattern in exclusionPatterns) {
   if (safetyPatternMatches(text, lower, pattern)) {
     return const SafetyCheckResult(
-      level: SafetyLevel.coach,
-      reason: 'That message could make someone feel left out.',
-      suggestion: 'Try saying what you mean without leaving someone out.',
-    );
+  level: SafetyLevel.coach,
+  reason: 'That message could make someone feel left out.',
+  suggestion: 'I’m upset, but I still want to speak kindly.',
+);
   }
 }
   
@@ -11842,16 +11842,18 @@ if (adjustedLevel == SafetyLevel.coach) {
     (refreshedData['recentEscalationChain'] ?? 0) as num;
 
 final sendAnyway = await _showSafetyCoachDialog(
-  suggestion: escalationChain >= 4
-      ? 'This keeps feeling tense. Before sending, try writing what you mean in a calmer way.'
-      : escalationChain >= 2
-          ? 'This chat seems to be getting tense. Can we slow it down and try again kindly?'
-          : (safety.suggestion ?? 'Can we try that again kindly?'),
-  reason: escalationChain >= 4
-      ? 'Natter is noticing repeated tense messages in this chat.'
-      : escalationChain >= 2
-          ? 'This conversation may need a calmer moment.'
-          : (safety.reason ?? 'That message could hurt someone’s feelings.'),
+  suggestion: safety.suggestion ??
+    (escalationChain >= 4
+        ? 'This keeps feeling tense. Before sending, try writing what you mean in a calmer way.'
+        : escalationChain >= 2
+            ? 'This chat seems to be getting tense. Can we slow it down and try again kindly?'
+            : 'Can we try that again kindly?'),
+  reason: safety.reason ??
+    (escalationChain >= 4
+        ? 'Natter is noticing repeated tense messages in this chat.'
+        : escalationChain >= 2
+            ? 'This conversation may need a calmer moment.'
+            : 'That message could hurt someone’s feelings.'),
 );
 
       if (!mounted) return;
