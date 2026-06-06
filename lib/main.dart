@@ -1737,7 +1737,7 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
     'lastBurstMessageAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
   
-  if (updatedBurstCount >= 4) {
+  if (updatedBurstCount == 4) {
   await conversationsRef().doc(conversationId).set({
     'conversationEscalationScore': FieldValue.increment(1),
     'lastEscalationReason': 'message_burst',
