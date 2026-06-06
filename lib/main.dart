@@ -2741,6 +2741,17 @@ const exclusionPatterns = [
   'youre not invited',
   'you\'re not invited',
   'everyone hates you',
+  'you cant sit with us',
+'you can\'t sit with us',
+'we are not your friends',
+'nobody wants to talk to you',
+'no one wants to talk to you',
+'you are not welcome',
+'youre not welcome',
+'you\'re not welcome',
+'we dont like you',
+'we don\'t like you',
+'everyone is laughing at you',
 ];
 
 for (final pattern in exclusionPatterns) {
