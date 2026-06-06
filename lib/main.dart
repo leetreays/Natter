@@ -2868,7 +2868,6 @@ for (final entry in protectPatterns.entries) {
     'why are you ignoring me': 'That message could feel pressuring.',
     'don t tell your parents': 'Secrets online can sometimes be unsafe.',
     'dont tell your parents': 'Secrets online can sometimes be unsafe.',
-    'mean': 'That felt unkind. Can we start over?',
   };
 
   for (final entry in coachPatterns.entries) {
