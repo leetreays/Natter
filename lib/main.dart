@@ -11097,6 +11097,8 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _friendshipStageCelebration;
   Timer? _friendshipStageCelebrationTimer;
   String? _lastCelebratedStage;
+  Timer? _burstCoachTimer;
+  bool _burstCoachTimerScheduled = false;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -12022,6 +12024,7 @@ setState(() {
     controller.dispose();
     _bannerTimer?.cancel();
     super.dispose();
+    _burstCoachTimer?.cancel();
   }
 
   Timer? _typingTimer;
@@ -13183,6 +13186,26 @@ final activeBanner =
 
 final displayedBanner =
     _smoothedBanner(activeBanner);
+
+if (displayedBanner == 'burst' && !_burstCoachTimerScheduled) {
+  _burstCoachTimerScheduled = true;
+  _burstCoachTimer?.cancel();
+
+  _burstCoachTimer = Timer(const Duration(seconds: 6), () {
+    if (!mounted) return;
+
+    setState(() {
+      if (_displayedBanner == 'burst') {
+        _displayedBanner = 'none';
+      }
+      _burstCoachTimerScheduled = false;
+    });
+  });
+}
+
+if (displayedBanner != 'burst') {
+  _burstCoachTimerScheduled = false;
+} 
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
