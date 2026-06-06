@@ -2763,6 +2763,31 @@ for (final pattern in exclusionPatterns) {
 );
   }
 }
+
+const pressurePatterns = [
+  'if youre my friend',
+  'if you\'re my friend',
+  'you have to',
+  'you must',
+  'do it now',
+  'tell me now',
+  'answer me now',
+  'do it or else',
+  'or else',
+  'dont tell anyone',
+  'don\'t tell anyone',
+  'keep this secret',
+];
+
+for (final pattern in pressurePatterns) {
+  if (safetyPatternMatches(text, lower, pattern)) {
+    return const SafetyCheckResult(
+      level: SafetyLevel.coach,
+      reason: 'That message could make someone feel pressured.',
+      suggestion: 'Can I ask you something? It is okay if you say no.',
+    );
+  }
+}
   
   const severeHarmPatterns = [
   'kill yourself',
