@@ -12866,7 +12866,7 @@ if (pauseUntil is Timestamp) {
             ),
             const SizedBox(height: 6),
             Text(
-              'A kind hello is a good place to start 💛',
+              'A kind "Hello" is a good place to start 💛',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.72),
