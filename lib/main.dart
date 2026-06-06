@@ -10661,6 +10661,15 @@ class FriendshipJourneyScreen extends StatelessWidget {
   }
 }
 
+String momentDate(dynamic value) {
+  if (value is Timestamp) {
+    final date = value.toDate();
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  return '';
+}
+
   Widget _pathLine() {
   return Container(
     width: 16,
@@ -10776,13 +10785,13 @@ class FriendshipJourneyScreen extends StatelessWidget {
 
         Text(
   'You are here',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+  textAlign: TextAlign.center,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.72),
+    fontSize: 10,
+    fontWeight: FontWeight.w800,
+  ),
+),
       ],
     ),
   );
@@ -10794,6 +10803,7 @@ final title = (moment['title'] ?? 'Friendship Moment').toString();
 final description = (moment['description'] ?? '').toString();
 final fromStage = (moment['fromStage'] ?? '').toString();
 final toStage = (moment['toStage'] ?? '').toString();
+final dateText = momentDate(moment['createdAt']);
 final isLast = momentIndex == moments.length - 1;
 final isCurrent = momentIndex == 0;
 
@@ -10859,6 +10869,17 @@ return Padding(
                   fontWeight: FontWeight.w700,
                 ),
               ), 
+              if (dateText.isNotEmpty) ...[
+  const SizedBox(height: 4),
+  Text(
+    dateText,
+    style: TextStyle(
+      color: Colors.white.withOpacity(0.52),
+      fontWeight: FontWeight.w700,
+      fontSize: 12,
+    ),
+  ),
+],
               if (description.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
