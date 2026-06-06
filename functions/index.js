@@ -259,11 +259,27 @@ exports.approveFriendRequest = onCall(async (request) => {
     },
 
     status: 'active',
+    friendshipHealth: 0,
+friendshipStage: 'seedling',
+lastFriendshipStage: 'seedling',
     blockedByChildIds: [],
     blockedAtByChildId: {},
 
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   }, {merge: false});
+
+  const seedlingMomentRef = friendshipRef
+    .collection('friendship_moments')
+    .doc();
+
+batch.set(seedlingMomentRef, {
+  type: 'friendship_started',
+  fromStage: '',
+  toStage: 'seedling',
+  title: 'Seedling Friendship',
+  description: 'This friendship has begun.',
+  createdAt: admin.firestore.FieldValue.serverTimestamp(),
+});
 
   batch.set(conversationRef, {
     friendshipId: friendshipId,
