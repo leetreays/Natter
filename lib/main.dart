@@ -1622,10 +1622,15 @@ String activeConversationBanner({
   required num escalationChain,
   required num repairMomentum,
   required bool isSendLocked,
+  required bool burstCoachActive,
 }) {
 
   if (toneBand == 'pause' && isSendLocked) {
     return 'pause';
+  }
+
+  if (burstCoachActive) {
+  return 'burst';
   }
 
   if (toneBand == 'pause' && !isSendLocked) {
@@ -13166,6 +13171,8 @@ final activeBanner =
   escalationChain: escalationChain,
   repairMomentum: repairMomentum,
   isSendLocked: _isSendLocked,
+  burstCoachActive:
+    conversationData['burstCoachActive'] == true,
 );
 
 final displayedBanner =
@@ -13283,6 +13290,38 @@ if (displayedBanner == 'heated')
         Expanded(
           child: Text(
             'This chat feels heated. Let’s slow it down before replying.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (displayedBanner == 'burst')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: const Color(0xFF32486A),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.green.withOpacity(0.18),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.hourglass_bottom_rounded,
+          color: NatterBrand.green,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'You’ve sent a few messages quickly. Give your friend a chance to reply 💛',
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
               fontWeight: FontWeight.w700,
