@@ -1733,7 +1733,7 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
 
   final updatedBurstCount =
       lastBurstAt != null &&
-              now.difference(lastBurstAt).inSeconds <= 45
+              now.difference(lastBurstAt).inSeconds <= 15
           ? burstCount + 1
           : 1;
 
