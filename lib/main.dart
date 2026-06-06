@@ -10664,7 +10664,23 @@ class FriendshipJourneyScreen extends StatelessWidget {
 String momentDate(dynamic value) {
   if (value is Timestamp) {
     final date = value.toDate();
-    return '${date.day}/${date.month}/${date.year}';
+
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
   return '';
@@ -10678,7 +10694,11 @@ String momentDate(dynamic value) {
   );
   }
 
-  Widget _pathStage(String emoji, bool active) {
+  Widget _pathStage(
+  String emoji,
+  bool active, {
+  bool unlocked = true,
+}) {
   return AnimatedContainer(
     duration: const Duration(milliseconds: 300),
     padding: const EdgeInsets.all(8),
@@ -10694,14 +10714,17 @@ String momentDate(dynamic value) {
             ]
           : [],
     ),
-    child: Text(
-      emoji,
-      style: TextStyle(
-        fontSize: active ? 34 : 26,
+    child: Opacity(
+      opacity: unlocked || active ? 1 : 0.38,
+      child: Text(
+        emoji,
+        style: TextStyle(
+          fontSize: active ? 34 : 26,
+        ),
       ),
     ),
   );
-  }
+}
   
   @override
   Widget build(BuildContext context) {
@@ -10769,28 +10792,39 @@ String momentDate(dynamic value) {
         Row(
   mainAxisAlignment: MainAxisAlignment.center,
   children: [
-    _pathStage('🌰', currentStage == 'seedling'),
+    _pathStage(
+      '🌰',
+      currentStage == 'seedling',
+      unlocked: true,
+    ),
     _pathLine(),
-    _pathStage('🌱', currentStage == 'growing'),
+    _pathStage(
+      '🌱',
+      currentStage == 'growing',
+      unlocked: currentStage != 'seedling',
+    ),
     _pathLine(),
-    _pathStage('🌿', currentStage == 'strong'),
+    _pathStage(
+      '🌿',
+      currentStage == 'strong',
+      unlocked: currentStage == 'strong' ||
+          currentStage == 'trusted' ||
+          currentStage == 'flourishing',
+    ),
     _pathLine(),
-    _pathStage('⭐', currentStage == 'trusted'),
+    _pathStage(
+      '⭐',
+      currentStage == 'trusted',
+      unlocked: currentStage == 'trusted' ||
+          currentStage == 'flourishing',
+    ),
     _pathLine(),
-    _pathStage('✨', currentStage == 'flourishing'),
+    _pathStage(
+      '✨',
+      currentStage == 'flourishing',
+      unlocked: currentStage == 'flourishing',
+    ),
   ],
-),
-
-        const SizedBox(height: 14),
-
-        Text(
-  'You are here',
-  textAlign: TextAlign.center,
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.72),
-    fontSize: 10,
-    fontWeight: FontWeight.w800,
-  ),
 ),
       ],
     ),
@@ -10861,9 +10895,7 @@ return Padding(
               ),
               const SizedBox(height: 6),
               Text(
-                fromStage.isNotEmpty && toStage.isNotEmpty
-                    ? '$fromStage → $toStage'
-                    : 'A friendship milestone',
+                'A new friendship level was reached',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.65),
                   fontWeight: FontWeight.w700,
