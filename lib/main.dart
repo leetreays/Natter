@@ -1738,6 +1738,15 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   }, SetOptions(merge: true));
   }
 
+  if (updatedBurstCount >= 4) {
+  await conversationsRef().doc(conversationId).set({
+    'conversationEscalationScore': FieldValue.increment(1),
+    'lastEscalationReason': 'message_burst',
+    'lastEscalationAt': FieldValue.serverTimestamp(),
+    'burstCoachActive': true,
+  }, SetOptions(merge: true));
+  }
+
   final cooldownAmount = isFlagged ? 0 : 2;
   if (!isFlagged) {
   unawaited(recordConversationRepair(conversationId));
