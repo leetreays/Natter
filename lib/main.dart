@@ -11097,8 +11097,9 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _friendshipStageCelebration;
   Timer? _friendshipStageCelebrationTimer;
   String? _lastCelebratedStage;
-  Timer? _burstCoachTimer;
-  bool _burstCoachTimerScheduled = false;
+  bool _burstCoachVisible = false;
+  DateTime? _lastBurstCoachShownAt;
+  Timer? _burstCoachHideTimer;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -12024,7 +12025,7 @@ setState(() {
     controller.dispose();
     _bannerTimer?.cancel();
     super.dispose();
-    _burstCoachTimer?.cancel();
+    _burstCoachHideTimer?.cancel();
   }
 
   Timer? _typingTimer;
@@ -13175,37 +13176,35 @@ final activeBanner =
   escalationChain: escalationChain,
   repairMomentum: repairMomentum,
   isSendLocked: _isSendLocked,
-  burstCoachActive:
-    conversationData['burstCoachActive'] == true &&
-    conversationData['burstCoachTriggeredAt'] is Timestamp &&
-    DateTime.now().difference(
-      (conversationData['burstCoachTriggeredAt'] as Timestamp)
-          .toDate(),
-    ).inSeconds < 6,
+  burstCoachActive: _burstCoachVisible,
 );
 
 final displayedBanner =
     _smoothedBanner(activeBanner);
 
-if (displayedBanner == 'burst' && !_burstCoachTimerScheduled) {
-  _burstCoachTimerScheduled = true;
-  _burstCoachTimer?.cancel();
+final burstTriggeredAt =
+    (conversationData['burstCoachTriggeredAt'] as Timestamp?)
+        ?.toDate();
 
-  _burstCoachTimer = Timer(const Duration(seconds: 6), () {
+if (burstTriggeredAt != null &&
+    (_lastBurstCoachShownAt == null ||
+        burstTriggeredAt.isAfter(_lastBurstCoachShownAt!))) {
+  _lastBurstCoachShownAt = burstTriggeredAt;
+
+  _burstCoachHideTimer?.cancel();
+
+  setState(() {
+    _burstCoachVisible = true;
+  });
+
+  _burstCoachHideTimer = Timer(const Duration(seconds: 5), () {
     if (!mounted) return;
 
     setState(() {
-      if (_displayedBanner == 'burst') {
-        _displayedBanner = 'none';
-      }
-      _burstCoachTimerScheduled = false;
+      _burstCoachVisible = false;
     });
   });
 }
-
-if (displayedBanner != 'burst') {
-  _burstCoachTimerScheduled = false;
-} 
 
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
