@@ -2723,6 +2723,35 @@ if (stripped == 'fu' ||
     suggestion: 'Choose words that keep everyone safe.',
   );
 }
+
+const exclusionPatterns = [
+  'nobody likes you',
+  'no one likes you',
+  'you cant play',
+  'you cannot play',
+  'you can not play',
+  'you can\'t play',
+  'we dont want you',
+  'we don\'t want you',
+  'i dont want you here',
+  'i don\'t want you here',
+  'go away',
+  'leave us alone',
+  'you are not invited',
+  'youre not invited',
+  'you\'re not invited',
+  'everyone hates you',
+];
+
+for (final pattern in exclusionPatterns) {
+  if (safetyPatternMatches(text, lower, pattern)) {
+    return const SafetyCheckResult(
+      level: SafetyLevel.coach,
+      reason: 'That message could make someone feel left out.',
+      suggestion: 'Try saying what you mean without leaving someone out.',
+    );
+  }
+}
   
   const severeHarmPatterns = [
   'kill yourself',
