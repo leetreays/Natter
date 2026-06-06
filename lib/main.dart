@@ -1716,6 +1716,28 @@ if (otherChildId.isNotEmpty) {
 
 await conversationsRef().doc(conversationId).update(conversationUpdate);
 
+  if (!isFlagged) {
+  final burstCount =
+      (conversationData['recentMessageBurstCount'] ?? 0) as num;
+
+  final lastBurstAt =
+      (conversationData['lastBurstMessageAt'] as Timestamp?)
+          ?.toDate();
+
+  final now = DateTime.now();
+
+  final updatedBurstCount =
+      lastBurstAt != null &&
+              now.difference(lastBurstAt).inSeconds <= 45
+          ? burstCount + 1
+          : 1;
+
+  await conversationsRef().doc(conversationId).set({
+    'recentMessageBurstCount': updatedBurstCount,
+    'lastBurstMessageAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+  }
+
   final cooldownAmount = isFlagged ? 0 : 2;
   if (!isFlagged) {
   unawaited(recordConversationRepair(conversationId));
