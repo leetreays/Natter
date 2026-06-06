@@ -13178,6 +13178,19 @@ final activeBanner =
 final displayedBanner =
     _smoothedBanner(activeBanner);
 
+if (conversationData['burstCoachActive'] == true) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!mounted) return;
+
+    await AppStateScope.of(context)
+        .conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'burstCoachActive': false,
+    }, SetOptions(merge: true));
+  });
+}
+
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
