@@ -1748,6 +1748,7 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
     'lastEscalationReason': 'message_burst',
     'lastEscalationAt': FieldValue.serverTimestamp(),
     'burstCoachActive': true,
+    'burstCoachTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
   }
 }
@@ -13175,10 +13176,13 @@ final activeBanner =
     conversationData['burstCoachActive'] == true,
 );
 
+final activeBanner = state.activeConversationBanner(...);
+
 final displayedBanner =
     _smoothedBanner(activeBanner);
 
-if (conversationData['burstCoachActive'] == true) {
+if (displayedBanner == 'burst' &&
+    conversationData['burstCoachActive'] == true) {
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     if (!mounted) return;
 
@@ -13187,6 +13191,7 @@ if (conversationData['burstCoachActive'] == true) {
         .doc(widget.conversationId)
         .set({
       'burstCoachActive': false,
+      'burstCoachClearedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   });
 }
