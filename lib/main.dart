@@ -13186,22 +13186,37 @@ final burstTriggeredAt =
     (conversationData['burstCoachTriggeredAt'] as Timestamp?)
         ?.toDate();
 
-if (burstTriggeredAt != null &&
+final isFreshBurst = burstTriggeredAt != null &&
+    DateTime.now().difference(burstTriggeredAt).inSeconds <= 8;
+
+if (isFreshBurst &&
     (_lastBurstCoachShownAt == null ||
         burstTriggeredAt.isAfter(_lastBurstCoachShownAt!))) {
   _lastBurstCoachShownAt = burstTriggeredAt;
 
-  _burstCoachHideTimer?.cancel();
-
-  setState(() {
-    _burstCoachVisible = true;
-  });
-
-  _burstCoachHideTimer = Timer(const Duration(seconds: 5), () {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     if (!mounted) return;
 
     setState(() {
-      _burstCoachVisible = false;
+      _burstCoachVisible = true;
+      _displayedBanner = 'burst';
+      _bannerShownAt = DateTime.now();
+    });
+
+    _burstCoachHideTimer?.cancel();
+
+    _burstCoachHideTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
+
+      setState(() {
+        _burstCoachVisible = false;
+
+        if (_displayedBanner == 'burst') {
+          _displayedBanner = 'none';
+        }
+
+        _bannerShownAt = DateTime.now();
+      });
     });
   });
 }
