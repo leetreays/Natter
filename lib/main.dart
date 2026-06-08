@@ -1274,6 +1274,27 @@ Future<void> recordTargetingConcern({
     'repeatedTargetingTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 }
+
+  if (newCount == 5) {
+  await addConversationSpikeHeat(
+    conversationId: conversationId,
+    amount: 3,
+    reason: 'continued_targeting',
+  );
+
+  unawaited(
+    adjustConversationFriendshipHealth(
+      conversationId: conversationId,
+      amount: -3,
+      reason: 'continued_targeting',
+    ),
+  );
+
+  await ref.set({
+    'continuedTargetingActive': true,
+    'continuedTargetingTriggeredAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+  }
 }
 
 Future<void> addConversationEscalation({
@@ -1637,10 +1658,15 @@ String activeConversationBanner({
   required bool isSendLocked,
   required bool burstCoachActive,
   required bool targetingCoachActive,
+  required bool continuedTargetingCoachActive,
 }) {
 
   if (toneBand == 'pause' && isSendLocked) {
     return 'pause';
+  }
+
+  if (continuedTargetingCoachActive) {
+  return 'continued_targeting';
   }
 
   if (targetingCoachActive) {
@@ -11121,6 +11147,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _targetingCoachVisible = false;
   DateTime? _lastTargetingCoachShownAt;
   Timer? _targetingCoachHideTimer;
+  bool _continuedTargetingCoachVisible = false;
+  DateTime? _lastContinuedTargetingCoachShownAt;
+  Timer? _continuedTargetingCoachHideTimer;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -12066,6 +12095,7 @@ setState(() {
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
+    _continuedTargetingCoachHideTimer?.cancel();
   }
 
   Timer? _typingTimer;
@@ -13218,6 +13248,7 @@ final activeBanner =
   isSendLocked: _isSendLocked,
   burstCoachActive: _burstCoachVisible,
   targetingCoachActive: _targetingCoachVisible,
+  continuedTargetingCoachActive: _continuedTargetingCoachVisible,
 );
 
 final displayedBanner =
@@ -13301,6 +13332,53 @@ if (isFreshTargeting &&
   });
 }
 
+final continuedTargetingTriggeredAt =
+    (conversationData['continuedTargetingTriggeredAt'] as Timestamp?)
+        ?.toDate();
+
+final isFreshContinuedTargeting =
+    continuedTargetingTriggeredAt != null &&
+    DateTime.now()
+            .difference(continuedTargetingTriggeredAt)
+            .inSeconds <=
+        8;
+
+if (isFreshContinuedTargeting &&
+    (_lastContinuedTargetingCoachShownAt == null ||
+        continuedTargetingTriggeredAt.isAfter(
+          _lastContinuedTargetingCoachShownAt!,
+        ))) {
+  _lastContinuedTargetingCoachShownAt =
+      continuedTargetingTriggeredAt;
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+
+    setState(() {
+      _continuedTargetingCoachVisible = true;
+      _displayedBanner = 'continued_targeting';
+      _bannerShownAt = DateTime.now();
+    });
+
+    _continuedTargetingCoachHideTimer?.cancel();
+
+    _continuedTargetingCoachHideTimer =
+        Timer(const Duration(seconds: 6), () {
+      if (!mounted) return;
+
+      setState(() {
+        _continuedTargetingCoachVisible = false;
+
+        if (_displayedBanner == 'continued_targeting') {
+          _displayedBanner = 'none';
+        }
+
+        _bannerShownAt = DateTime.now();
+      });
+    });
+  });
+}
+            
 return Padding(
   padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
   child: Column(
@@ -13483,6 +13561,41 @@ if (displayedBanner == 'targeting')
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
               fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (displayedBanner == 'continued_targeting')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF4A3540),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.yellow.withOpacity(0.28),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.pause_circle_outline_rounded,
+          color: NatterBrand.yellow,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This chat still feels difficult. It might be time to pause and reset 💛',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.86),
+              fontWeight: FontWeight.w800,
               height: 1.35,
             ),
           ),
