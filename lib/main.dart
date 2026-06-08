@@ -11113,6 +11113,9 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _burstCoachVisible = false;
   DateTime? _lastBurstCoachShownAt;
   Timer? _burstCoachHideTimer;
+  bool _targetingCoachVisible = false;
+  DateTime? _lastTargetingCoachShownAt;
+  Timer? _targetingCoachHideTimer;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -12039,10 +12042,11 @@ setState(() {
     _bannerTimer?.cancel();
     super.dispose();
     _burstCoachHideTimer?.cancel();
+    _targetingCoachHideTimer?.cancel();
   }
 
   Timer? _typingTimer;
-bool _isTyping = false;
+  bool _isTyping = false;
 
   Future<void> _handleTyping() async {
   final state = AppStateScope.of(context);
@@ -13225,6 +13229,45 @@ if (isFreshBurst &&
         _burstCoachVisible = false;
 
         if (_displayedBanner == 'burst') {
+          _displayedBanner = 'none';
+        }
+
+        _bannerShownAt = DateTime.now();
+      });
+    });
+  });
+}
+
+final targetingTriggeredAt =
+    (conversationData['repeatedTargetingTriggeredAt'] as Timestamp?)
+        ?.toDate();
+
+final isFreshTargeting = targetingTriggeredAt != null &&
+    DateTime.now().difference(targetingTriggeredAt).inSeconds <= 8;
+
+if (isFreshTargeting &&
+    (_lastTargetingCoachShownAt == null ||
+        targetingTriggeredAt.isAfter(_lastTargetingCoachShownAt!))) {
+  _lastTargetingCoachShownAt = targetingTriggeredAt;
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+
+    setState(() {
+      _targetingCoachVisible = true;
+      _displayedBanner = 'targeting';
+      _bannerShownAt = DateTime.now();
+    });
+
+    _targetingCoachHideTimer?.cancel();
+
+    _targetingCoachHideTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
+
+      setState(() {
+        _targetingCoachVisible = false;
+
+        if (_displayedBanner == 'targeting') {
           _displayedBanner = 'none';
         }
 
