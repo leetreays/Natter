@@ -1261,6 +1261,14 @@ Future<void> recordTargetingConcern({
     reason: 'repeated_targeting',
   );
 
+  unawaited(
+  adjustConversationFriendshipHealth(
+    conversationId: conversationId,
+    amount: -2,
+    reason: 'repeated_targeting',
+  ),
+);
+
   await ref.set({
     'repeatedTargetingActive': true,
     'repeatedTargetingTriggeredAt': FieldValue.serverTimestamp(),
