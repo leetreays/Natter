@@ -1636,6 +1636,7 @@ String activeConversationBanner({
   required num repairMomentum,
   required bool isSendLocked,
   required bool burstCoachActive,
+  required bool targetingCoachActive,
 }) {
 
   if (toneBand == 'pause' && isSendLocked) {
@@ -1644,6 +1645,10 @@ String activeConversationBanner({
 
   if (burstCoachActive) {
   return 'burst';
+  }
+
+  if (targetingCoachActive) {
+  return 'targeting';
   }
 
   if (toneBand == 'pause' && !isSendLocked) {
@@ -13194,6 +13199,7 @@ final activeBanner =
   repairMomentum: repairMomentum,
   isSendLocked: _isSendLocked,
   burstCoachActive: _burstCoachVisible,
+  targetingCoachActive: _targetingCoachVisible,
 );
 
 final displayedBanner =
@@ -13421,6 +13427,41 @@ if (displayedBanner == 'burst')
         Expanded(
           child: Text(
             'You’ve sent a few messages quickly. Give your friend a chance to reply 💛',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.84),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+if (displayedBanner == 'targeting')
+  Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 12,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF32486A),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: NatterBrand.yellow.withOpacity(0.20),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.favorite_border_rounded,
+          color: NatterBrand.yellow,
+          size: 18,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'This friendship may need a reset. A kind message can help turn things around 💛',
             style: TextStyle(
               color: Colors.white.withOpacity(0.84),
               fontWeight: FontWeight.w700,
