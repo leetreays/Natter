@@ -11998,6 +11998,15 @@ await state.recordEscalationEvent(
   );
         }
 
+        if (state.activeChildId != null && otherChildId.isNotEmpty) {
+  await state.recordTargetingConcern(
+    conversationId: widget.conversationId,
+    senderChildId: state.activeChildId!,
+    targetChildId: otherChildId,
+    reason: 'sent_after_coaching',
+  );
+        }
+
         if (state.alertsSafetyCoach) {
           state.addAlert(AlertEvent(
             type: AlertType.safetyCoach,
