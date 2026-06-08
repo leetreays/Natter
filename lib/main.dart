@@ -1254,13 +1254,18 @@ Future<void> recordTargetingConcern({
     'lastTargetingReason': reason,
   }, SetOptions(merge: true));
 
-  if (newCount >= 3) {
-    await addConversationSpikeHeat(
-      conversationId: conversationId,
-      amount: 2,
-      reason: 'repeated_targeting',
-    );
-  }
+  if (newCount == 3) {
+  await addConversationSpikeHeat(
+    conversationId: conversationId,
+    amount: 2,
+    reason: 'repeated_targeting',
+  );
+
+  await ref.set({
+    'repeatedTargetingActive': true,
+    'repeatedTargetingTriggeredAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
 }
 
 Future<void> addConversationEscalation({
