@@ -1643,12 +1643,12 @@ String activeConversationBanner({
     return 'pause';
   }
 
-  if (burstCoachActive) {
-  return 'burst';
-  }
-
   if (targetingCoachActive) {
   return 'targeting';
+  }
+
+  if (burstCoachActive) {
+  return 'burst';
   }
 
   if (toneBand == 'pause' && !isSendLocked) {
@@ -11830,6 +11830,15 @@ final sendAnyway = await _showSafetyCoachDialog(
           time: DateTime.now(),
         ),
       );
+    }
+
+    if (state.activeChildId != null && otherChildId.isNotEmpty) {
+  await state.recordTargetingConcern(
+    conversationId: widget.conversationId,
+    senderChildId: state.activeChildId!,
+    targetChildId: otherChildId,
+    reason: 'sent_after_coaching',
+  );
     }
 
     if (state.alertsSafetyCoach) {
