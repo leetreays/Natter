@@ -11920,11 +11920,12 @@ final sendAnyway = await _showSafetyCoachDialog(
         parentId: state.activeParentId!,
         childId: state.activeChildId!,
         signal: ChildSignalEvent(
-          type: 'safetyCoach',
-          context: 'rewrite_used',
-          severity: 'gentle',
-          time: DateTime.now(),
-        ),
+  type: 'safetyCoach',
+  context: 'rewrite_used',
+  severity: 'gentle',
+  category: 'positive',
+  time: DateTime.now(),
+)
       );
     }
 
@@ -12085,11 +12086,12 @@ await state.recordEscalationEvent(
     parentId: state.activeParentId!,
     childId: state.activeChildId!,
     signal: ChildSignalEvent(
-      type: 'safetyCoach',
-      context: 'rewrite_used',
-      severity: 'gentle',
-      time: DateTime.now(),
-    ),
+  type: 'safetyCoach',
+  context: 'rewrite_used',
+  severity: 'gentle',
+  category: 'positive',
+  time: DateTime.now(),
+)
   );
         }
 
