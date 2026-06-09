@@ -1224,12 +1224,9 @@ Future<void> clearExpiredTargetingWindow(String conversationId) async {
 
   await ref.set({
     'targetingCount': 0,
-    'targetingChildId': FieldValue.delete(),
-    'targetedChildId': FieldValue.delete(),
-    'targetingWindowStartedAt': FieldValue.delete(),
-    'lastTargetingReason': FieldValue.delete(),
-    'repeatedTargetingActive': false,
-    'continuedTargetingActive': false,
+'targetingWindowStartedAt': FieldValue.delete(),
+'repeatedTargetingActive': false,
+'continuedTargetingActive': false,
   }, SetOptions(merge: true));
 }
 
