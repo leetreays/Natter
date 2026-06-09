@@ -1209,6 +1209,30 @@ Future<void> applyRepairDecay(
   }, SetOptions(merge: true));
 }
 
+Future<void> clearExpiredTargetingWindow(String conversationId) async {
+  final ref = conversationsRef().doc(conversationId);
+  final snap = await ref.get();
+  final data = snap.data() ?? {};
+
+  final startedAt = data['targetingWindowStartedAt'];
+
+  if (startedAt is! Timestamp) return;
+
+  final age = DateTime.now().difference(startedAt.toDate());
+
+  if (age.inHours < 24) return;
+
+  await ref.set({
+    'targetingCount': 0,
+    'targetingChildId': FieldValue.delete(),
+    'targetedChildId': FieldValue.delete(),
+    'targetingWindowStartedAt': FieldValue.delete(),
+    'lastTargetingReason': FieldValue.delete(),
+    'repeatedTargetingActive': false,
+    'continuedTargetingActive': false,
+  }, SetOptions(merge: true));
+}
+
 Future<void> recordTargetingConcern({
   required String conversationId,
   required String senderChildId,
@@ -11638,6 +11662,7 @@ await state.applyRepairDecay(widget.conversationId);
 await state.applyEscalationChainDecay(
   widget.conversationId,
 );
+await state.clearExpiredTargetingWindow(widget.conversationId);
     
 final conversationSnap = await state
     .conversationsRef()
@@ -12281,7 +12306,7 @@ String _smoothedBanner(String activeBanner) {
     }
   });
   }
-
+  
 Widget _buildRecoveryChip({
   required IconData icon,
   required Color color,
