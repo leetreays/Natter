@@ -281,12 +281,14 @@ class ChildSignalEvent {
   final String type;
   final String context;
   final String severity;
+  final String category;
   final DateTime time;
 
   const ChildSignalEvent({
     required this.type,
     required this.context,
     this.severity = 'gentle',
+    this.category = 'guidance',
     required this.time,
   });
 
@@ -295,6 +297,7 @@ class ChildSignalEvent {
       'type': type,
       'context': context,
       'severity': severity,
+      'category': category,
       'createdAt': FieldValue.serverTimestamp(),
     };
   }
