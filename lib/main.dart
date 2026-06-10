@@ -1278,26 +1278,6 @@ Future<void> recordTargetingConcern({
     'lastTargetingReason': reason,
   }, SetOptions(merge: true));
 
-  final senderParentId =
-    (data['participantParentIds'] is List &&
-            (data['participantParentIds'] as List).isNotEmpty)
-        ? (data['participantParentIds'] as List).first.toString()
-        : '';
-
-if (senderParentId.isNotEmpty) {
-  await recordChildSignal(
-    parentId: senderParentId,
-    childId: senderChildId,
-    signal: ChildSignalEvent(
-      type: 'repeatedTargeting',
-      context: 'repeated_targeting',
-      severity: 'strong',
-      category: 'guidance',
-      time: DateTime.now(),
-    ),
-  );
-}
-
   if (newCount == 3) {
   await addConversationSpikeHeat(
     conversationId: conversationId,
@@ -1317,6 +1297,26 @@ if (senderParentId.isNotEmpty) {
     'repeatedTargetingActive': true,
     'repeatedTargetingTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
+
+  final senderParentId =
+    (data['participantParentIds'] is List &&
+            (data['participantParentIds'] as List).isNotEmpty)
+        ? (data['participantParentIds'] as List).first.toString()
+        : '';
+
+if (senderParentId.isNotEmpty) {
+  await recordChildSignal(
+    parentId: senderParentId,
+    childId: senderChildId,
+    signal: ChildSignalEvent(
+      type: 'repeatedTargeting',
+      context: 'repeated_targeting',
+      severity: 'strong',
+      category: 'guidance',
+      time: DateTime.now(),
+    ),
+  );
+}
 }
 
   if (newCount == 5) {
@@ -1338,6 +1338,26 @@ if (senderParentId.isNotEmpty) {
     'continuedTargetingActive': true,
     'continuedTargetingTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
+
+  final senderParentId =
+    (data['participantParentIds'] is List &&
+            (data['participantParentIds'] as List).isNotEmpty)
+        ? (data['participantParentIds'] as List).first.toString()
+        : '';
+
+if (senderParentId.isNotEmpty) {
+  await recordChildSignal(
+    parentId: senderParentId,
+    childId: senderChildId,
+    signal: ChildSignalEvent(
+      type: 'friendshipConflict',
+      context: 'continued_targeting',
+      severity: 'strong',
+      category: 'guidance',
+      time: DateTime.now(),
+    ),
+  );
+}
   }
 }
 
