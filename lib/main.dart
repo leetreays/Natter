@@ -12269,6 +12269,23 @@ bool _canSend = true;
           .set({
         'sendPauseUntil': FieldValue.delete(),
       }, SetOptions(merge: true));
+      final state = AppStateScope.of(context);
+
+if (state.activeParentId != null && state.activeChildId != null) {
+  unawaited(
+    state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'pauseRespected',
+        context: 'pause_respected',
+        severity: 'gentle',
+        category: 'positive',
+        time: DateTime.now(),
+      ),
+    ),
+  );
+}
     },
   );
 }
