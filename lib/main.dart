@@ -11214,6 +11214,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _continuedTargetingCoachVisible = false;
   DateTime? _lastContinuedTargetingCoachShownAt;
   Timer? _continuedTargetingCoachHideTimer;
+  DateTime? _lastRecoverySignalAt;
  
     Future<bool> _showSafetyCoachDialog({
     required String suggestion,
@@ -13300,6 +13301,44 @@ final toneBand = state.conversationToneBand(
   escalationScore: escalationScore,
   repairMomentum: repairMomentum,
 );
+
+final hasRecovered =
+    (toneBand == 'cooling' || toneBand == 'calm') &&
+    repairMomentum >= 3;
+
+final recoveryTriggeredAt =
+    (conversationData['lastRepairAt'] as Timestamp?)
+        ?.toDate();
+
+if (hasRecovered &&
+    recoveryTriggeredAt != null &&
+    (_lastRecoverySignalAt == null ||
+        recoveryTriggeredAt.isAfter(_lastRecoverySignalAt!))) {
+
+  _lastRecoverySignalAt = recoveryTriggeredAt;
+
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!mounted) return;
+
+    final state = AppStateScope.of(context);
+
+    if (state.activeParentId != null &&
+        state.activeChildId != null) {
+
+      await state.recordChildSignal(
+        parentId: state.activeParentId!,
+        childId: state.activeChildId!,
+        signal: ChildSignalEvent(
+          type: 'conversationRecovered',
+          context: 'conversation_recovered',
+          severity: 'gentle',
+          category: 'positive',
+          time: DateTime.now(),
+        ),
+      );
+    }
+  });
+}
 
 final recoveryState =
     state.conversationRecoveryState(
