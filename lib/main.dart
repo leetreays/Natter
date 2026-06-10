@@ -11694,7 +11694,7 @@ void initState() {
   void _send() async {
     final state = AppStateScope.of(context);
 
-    _clearExpiredSendPause();
+    await _clearExpiredSendPause();
 
 await state.applySpikeHeatDecay(widget.conversationId);
 await state.applyEscalationDecay(widget.conversationId);
@@ -12331,7 +12331,7 @@ String _smoothedBanner(String activeBanner) {
   return _displayedBanner;
 }
 
-  void _clearExpiredSendPause() {
+  Future<void> _clearExpiredSendPause() async {
   if (_sendLockedUntil == null) return;
 
   final hasExpired = !DateTime.now().isBefore(_sendLockedUntil!);
@@ -12347,6 +12347,22 @@ String _smoothedBanner(String activeBanner) {
       feedback = null;
     }
   });
+    
+  final state = AppStateScope.of(context);
+
+if (state.activeParentId != null && state.activeChildId != null) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'pauseRespected',
+      context: 'pause_respected',
+      severity: 'gentle',
+      category: 'positive',
+      time: DateTime.now(),
+    ),
+  );
+}
   }
   
 Widget _buildRecoveryChip({
