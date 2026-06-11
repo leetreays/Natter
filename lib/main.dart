@@ -5002,6 +5002,45 @@ List<String> _patternsForChild(List<AlertEvent> signals) {
   return suggestions;
   }
 
+Map<String, dynamic> _growthMomentDisplay(
+  Map<String, dynamic> data,
+) {
+  final type = (data['type'] ?? '').toString();
+  final context = (data['context'] ?? '').toString();
+
+  if (type == 'pauseRespected' || context == 'pause_respected') {
+    return {
+      'title': 'Calm choice',
+      'message':
+          'A difficult moment was given time and space before continuing.',
+      'icon': Icons.self_improvement_rounded,
+    };
+  }
+
+  if (type == 'conversationRecovered' ||
+      context == 'conversation_recovered') {
+    return {
+      'title': 'Conversation recovered',
+      'message': 'A difficult conversation became calmer.',
+      'icon': Icons.eco_rounded,
+    };
+  }
+
+  if (context == 'rewrite_used') {
+    return {
+      'title': 'Kind rewrite',
+      'message': 'A message was rewritten after coaching.',
+      'icon': Icons.favorite_rounded,
+    };
+  }
+
+  return {
+    'title': 'Growth moment',
+    'message': 'Your child showed a positive communication skill.',
+    'icon': Icons.auto_awesome_rounded,
+  };
+}
+  
   List<String> _patternsForSignalDocs(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
@@ -5076,6 +5115,15 @@ List<String> _supportIdeasForSignalDocs(
   return suggestions;
 }
 
+List<QueryDocumentSnapshot<Map<String, dynamic>>> _growthMomentDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  return docs.where((doc) {
+    final data = doc.data();
+    return (data['category'] ?? '').toString() == 'positive';
+  }).toList();
+}
+  
 Widget _glanceCard({
   required String label,
   required String value,
@@ -6015,6 +6063,111 @@ const SizedBox(height: 18),
   },
 ),
     ],
+  ),
+),
+const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: _outerSectionDecoration(),
+  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: signalsStream,
+    builder: (context, snapshot) {
+      final docs = snapshot.data?.docs ?? [];
+      final firestorePatterns = _patternsForSignalDocs(docs);
+  const SizedBox(height: 18),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(20),
+  decoration: _outerSectionDecoration(),
+  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: signalsStream,
+    builder: (context, snapshot) {
+      final docs = snapshot.data?.docs ?? [];
+      final growthDocs = _growthMomentDocs(docs);
+
+      if (growthDocs.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Growth moments',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Positive signs that your child is learning how to handle digital friendships.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.72),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...growthDocs.take(4).map((doc) {
+            final display = _growthMomentDisplay(doc.data());
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: _innerCardDecoration(
+                color: const Color(0xFF2F4E68),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: _innerCardDecoration(
+                      color: const Color(0xFF2F4E68),
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      display['icon'] as IconData,
+                      color: NatterBrand.green,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          display['title'].toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          display['message'].toString(),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.78),
+                            fontWeight: FontWeight.w700,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      );
+    },
   ),
 ),
 const SizedBox(height: 18),
