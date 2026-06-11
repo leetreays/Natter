@@ -5020,8 +5020,8 @@ Map<String, dynamic> _growthMomentDisplay(
   if (type == 'conversationRecovered' ||
       context == 'conversation_recovered') {
     return {
-      'title': 'Conversation recovered',
-      'message': 'A difficult conversation became calmer.',
+      'title': 'Friendship recovered',
+      'message': 'A difficult friendship moment became calmer.',
       'icon': Icons.eco_rounded,
     };
   }
@@ -6076,7 +6076,21 @@ Container(
       final docs = snapshot.data?.docs ?? [];
       final growthDocs = _growthMomentDocs(docs);
 
-      if (growthDocs.isEmpty) {
+      final seenGrowthContexts = <String>{};
+
+final uniqueGrowthDocs = growthDocs.where((doc) {
+  final data = doc.data();
+  final context = (data['context'] ?? data['type'] ?? '').toString();
+
+  if (seenGrowthContexts.contains(context)) {
+    return false;
+  }
+
+  seenGrowthContexts.add(context);
+  return true;
+}).toList();
+
+      if (uniqueGrowthDocs.isEmpty) {
         return const SizedBox.shrink();
       }
 
@@ -6102,7 +6116,7 @@ Container(
             ),
           ),
           const SizedBox(height: 12),
-          ...growthDocs.take(4).map((doc) {
+          ...uniqueGrowthDocs.take(4).map((doc) {
             final display = _growthMomentDisplay(doc.data());
 
             return Container(
@@ -13455,6 +13469,20 @@ final recoveryTriggeredAt =
 
 final recoveryAlreadyLogged =
     conversationData['conversationRecoveredLogged'] == true;
+
+if ((toneBand == 'heated' || toneBand == 'pause') &&
+    recoveryAlreadyLogged) {
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!mounted) return;
+
+    await AppStateScope.of(context)
+        .conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'conversationRecoveredLogged': false,
+    }, SetOptions(merge: true));
+  });
+}
 
 if (hasRecovered &&
     !recoveryAlreadyLogged &&
