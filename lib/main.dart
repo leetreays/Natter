@@ -6074,16 +6074,6 @@ Container(
     stream: signalsStream,
     builder: (context, snapshot) {
       final docs = snapshot.data?.docs ?? [];
-      final firestorePatterns = _patternsForSignalDocs(docs);
-  const SizedBox(height: 18),
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(20),
-  decoration: _outerSectionDecoration(),
-  child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-    stream: signalsStream,
-    builder: (context, snapshot) {
-      final docs = snapshot.data?.docs ?? [];
       final growthDocs = _growthMomentDocs(docs);
 
       if (growthDocs.isEmpty) {
