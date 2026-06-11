@@ -13453,11 +13453,14 @@ final recoveryTriggeredAt =
     (conversationData['lastRepairAt'] as Timestamp?)
         ?.toDate();
 
+final recoveryAlreadyLogged =
+    conversationData['conversationRecoveredLogged'] == true;
+
 if (hasRecovered &&
+    !recoveryAlreadyLogged &&
     recoveryTriggeredAt != null &&
     (_lastRecoverySignalAt == null ||
         recoveryTriggeredAt.isAfter(_lastRecoverySignalAt!))) {
-
   _lastRecoverySignalAt = recoveryTriggeredAt;
 
   WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -13465,9 +13468,14 @@ if (hasRecovered &&
 
     final state = AppStateScope.of(context);
 
+    await state.conversationsRef()
+        .doc(widget.conversationId)
+        .set({
+      'conversationRecoveredLogged': true,
+    }, SetOptions(merge: true));
+
     if (state.activeParentId != null &&
         state.activeChildId != null) {
-
       await state.recordChildSignal(
         parentId: state.activeParentId!,
         childId: state.activeChildId!,
