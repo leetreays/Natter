@@ -6020,6 +6020,12 @@ const SizedBox(height: 18),
   title = 'Friendship recovered';
   message = 'A difficult friendship moment became calmer.';
   icon = Icons.eco_rounded;
+        } else if (type == 'blockedWord' ||
+    context == 'message_blocked') {
+  title = 'Message stopped';
+  message =
+      'A message was stopped before it could be sent.';
+  icon = Icons.shield_rounded;
         } else {
           title = 'Gentle signal';
           message = 'A support signal was recorded for your child.';
