@@ -5928,7 +5928,7 @@ const SizedBox(height: 18),
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        'Recent signals',
+        'Guidance signals',
         style: TextStyle(
   color: Colors.white,
   fontSize: 20,
@@ -5982,6 +5982,9 @@ const SizedBox(height: 18),
         final data = doc.data();
         final type = (data['type'] ?? '').toString();
         final context = (data['context'] ?? '').toString();
+        debugPrint(
+  'Signal -> type=$type context=$context',
+);
         final severity = (data['severity'] ?? 'gentle').toString();
 
         String title;
