@@ -6001,10 +6001,6 @@ const SizedBox(height: 18),
           title = 'Protected delivery';
           message = 'A coached message was sent with extra care.';
           icon = Icons.lightbulb_rounded;
-        } else if (context == 'rewrite_used') {
-  title = 'Kind rewrite';
-  message = 'A message was rewritten after coaching.';
-  icon = Icons.favorite_rounded;
 } else if (type == 'pauseRespected' ||
     context == 'pause_respected') {
   title = 'Calm choice';
@@ -6016,7 +6012,6 @@ const SizedBox(height: 18),
   title = 'Friendship recovered';
   message = 'A difficult friendship moment became calmer.';
   icon = Icons.eco_rounded;
-        }
         } else {
           title = 'Gentle signal';
           message = 'A support signal was recorded for your child.';
