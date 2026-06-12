@@ -5048,12 +5048,85 @@ Map<String, dynamic> _growthMomentDisplay(
       .where((d) => (d.data()['type'] ?? '') == 'quietHours')
       .length;
 
+  final positiveCount = docs.where((d) {
+    return (d.data()['category'] ?? '') == 'positive';
+  }).length;
+
+  final coachingCount = docs.where((d) {
+    return (d.data()['category'] ?? '') == 'coaching';
+  }).length;
+
   final guidanceCount = docs.where((d) {
-    final type = (d.data()['type'] ?? '').toString();
-    return type == 'blockedWord' || type == 'safetyCoach';
+    return (d.data()['category'] ?? '') == 'guidance';
+  }).length;
+
+  final rewriteCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'rewrite_used';
+  }).length;
+
+  final calmChoiceCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'pause_respected';
+  }).length;
+
+  final friendshipRecoveryCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'conversation_recovered';
+  }).length;
+
+  final blockedCount = docs.where((d) {
+    final data = d.data();
+    return data['type'] == 'blockedWord' ||
+        data['context'] == 'message_blocked';
   }).length;
 
   final items = <String>[];
+
+  if (positiveCount > 0) {
+    items.add(
+      positiveCount == 1
+          ? 'Growth: one positive digital choice was recorded recently.'
+          : 'Growth: several positive digital choices were recorded recently.',
+    );
+  }
+
+  if (rewriteCount > 0) {
+    items.add(
+      rewriteCount == 1
+          ? 'Reflection: one message was rewritten after coaching.'
+          : 'Reflection: a few messages were rewritten after coaching.',
+    );
+  }
+
+  if (friendshipRecoveryCount > 0) {
+    items.add(
+      friendshipRecoveryCount == 1
+          ? 'Friendship repair: one difficult moment became calmer.'
+          : 'Friendship repair: difficult moments became calmer.',
+    );
+  }
+
+  if (calmChoiceCount > 0) {
+    items.add(
+      calmChoiceCount == 1
+          ? 'Calm choices: one pause helped create space before replying.'
+          : 'Calm choices: pauses helped create space before replying.',
+    );
+  }
+
+  if (coachingCount > 0) {
+    items.add(
+      coachingCount == 1
+          ? 'Message coaching: Natter helped guide one tricky message.'
+          : 'Message coaching: Natter helped guide a few tricky messages.',
+    );
+  }
+
+  if (guidanceCount > 0 || blockedCount > 0) {
+    items.add(
+      blockedCount == 1
+          ? 'Stronger guidance: one message was stopped before sending.'
+          : 'Stronger guidance: some messages needed extra support before sending.',
+    );
+  }
 
   if (quietHoursCount > 0) {
     items.add(
@@ -5063,23 +5136,15 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  if (guidanceCount > 0) {
-    items.add(
-      guidanceCount == 1
-          ? 'Message guidance: Natter helped with one tricky moment.'
-          : 'Message guidance: Natter helped with a few tricky moments.',
-    );
-  }
-
   if (items.isEmpty) {
     items.add(
       'Overall rhythm: no support signals have been recorded recently.',
     );
   }
 
-  return items;
+  return items.take(4).toList();
 }
-
+  
 List<String> _supportIdeasForSignalDocs(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
@@ -5087,22 +5152,41 @@ List<String> _supportIdeasForSignalDocs(
       .where((d) => (d.data()['type'] ?? '') == 'quietHours')
       .length;
 
-  final trickyMessageCount = docs.where((d) {
-    final type = (d.data()['type'] ?? '').toString();
-    return type == 'blockedWord' || type == 'safetyCoach';
+  final coachingCount = docs.where((d) {
+    return (d.data()['category'] ?? '') == 'coaching';
+  }).length;
+
+  final guidanceCount = docs.where((d) {
+    return (d.data()['category'] ?? '') == 'guidance';
+  }).length;
+
+  final positiveCount = docs.where((d) {
+    return (d.data()['category'] ?? '') == 'positive';
   }).length;
 
   final suggestions = <String>[];
 
-  if (quietHoursCount > 0) {
+  if (positiveCount >= 3) {
     suggestions.add(
-      'You might want to talk about winding down before bed.',
+      'You might celebrate some positive digital choices your child made recently.',
     );
   }
 
-  if (trickyMessageCount > 0) {
+  if (quietHoursCount > 0) {
     suggestions.add(
-      'Your child may be learning how to handle difficult messages online.',
+      'You might want to talk about healthy routines and winding down before bed.',
+    );
+  }
+
+  if (coachingCount > 0) {
+    suggestions.add(
+      'Your child may be learning how to handle difficult online moments with support.',
+    );
+  }
+
+  if (guidanceCount > 0) {
+    suggestions.add(
+      'A calm conversation about how messages can affect others may be helpful.',
     );
   }
 
