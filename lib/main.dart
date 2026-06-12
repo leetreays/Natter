@@ -12019,8 +12019,9 @@ if (adjustedLevel == SafetyLevel.block) {
       signal: ChildSignalEvent(
         type: 'blockedWord',
         context: 'message_blocked',
-        severity: 'strong',
-        time: DateTime.now(),
+severity: 'strong',
+category: 'guidance',
+time: DateTime.now(),
       ),
     );
   }
@@ -12097,17 +12098,18 @@ final sendAnyway = await _showSafetyCoachDialog(
     state.recordCoachedMessageSentAnyway();
 
     if (state.activeParentId != null && state.activeChildId != null) {
-      await state.recordChildSignal(
-        parentId: state.activeParentId!,
-        childId: state.activeChildId!,
-        signal: ChildSignalEvent(
-          type: 'safetyCoach',
-          context: 'sent_with_protected_delivery',
-          severity: 'gentle',
-          time: DateTime.now(),
-        ),
-      );
-    }
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'safetyCoach',
+      context: 'sent_with_protected_delivery',
+      severity: 'gentle',
+      category: 'coaching',
+      time: DateTime.now(),
+    ),
+  );
+}
 
     if (state.activeChildId != null && otherChildId.isNotEmpty) {
   await state.recordTargetingConcern(
@@ -12271,11 +12273,12 @@ await state.recordEscalationEvent(
       type: 'safetyCoach',
       context: 'sent_with_protected_delivery',
       severity: 'gentle',
+      category: 'coaching',
       time: DateTime.now(),
     ),
   );
-        }
-
+      }
+        
         if (state.activeChildId != null && otherChildId.isNotEmpty) {
   await state.recordTargetingConcern(
     conversationId: widget.conversationId,
