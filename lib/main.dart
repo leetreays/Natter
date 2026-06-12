@@ -5962,7 +5962,7 @@ const SizedBox(height: 18),
 
     final docs = snapshot.data?.docs ?? [];
 
-    if (docs.isEmpty) {
+    if (recentSignalDocs.isEmpty) {
       return Text(
         'No gentle signals have been logged recently.',
         style: TextStyle(
@@ -5972,8 +5972,13 @@ const SizedBox(height: 18),
       );
     }
 
+    final recentSignalDocs = docs.where((doc) {
+  final data = doc.data();
+  return (data['category'] ?? '').toString() != 'positive';
+}).toList();
+    
     return Column(
-      children: docs.take(5).map((doc) {
+      children: recentSignalDocs.take(5).map((doc) {
         final data = doc.data();
         final type = (data['type'] ?? '').toString();
         final context = (data['context'] ?? '').toString();
