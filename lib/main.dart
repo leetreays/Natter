@@ -5142,7 +5142,7 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  return items.take(4).toList();
+  return items.take(3).toList();
 }
   
 List<String> _supportIdeasForSignalDocs(
