@@ -5080,7 +5080,7 @@ Map<String, dynamic> _growthMomentDisplay(
 
   final items = <String>[];
 
-  if (positiveCount > 0) {
+  if (positiveCount >= 3) {
     items.add(
       positiveCount == 1
           ? 'Growth: one positive digital choice was recorded recently.'
@@ -5088,7 +5088,7 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  if (rewriteCount > 0) {
+  if (rewriteCount >= 2) {
     items.add(
       rewriteCount == 1
           ? 'Reflection: one message was rewritten after coaching.'
@@ -5096,7 +5096,7 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  if (friendshipRecoveryCount > 0) {
+  if (friendshipRecoveryCount >= 1) {
     items.add(
       friendshipRecoveryCount == 1
           ? 'Friendship repair: one difficult moment became calmer.'
@@ -5104,7 +5104,7 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  if (calmChoiceCount > 0) {
+  if (calmChoiceCount >= 1) {
     items.add(
       calmChoiceCount == 1
           ? 'Calm choices: one pause helped create space before replying.'
@@ -5112,7 +5112,7 @@ Map<String, dynamic> _growthMomentDisplay(
     );
   }
 
-  if (coachingCount > 0) {
+  if (coachingCount >= 2) {
     items.add(
       coachingCount == 1
           ? 'Message coaching: Natter helped guide one tricky message.'
@@ -5178,7 +5178,7 @@ List<String> _supportIdeasForSignalDocs(
     );
   }
 
-  if (coachingCount > 0) {
+  if (coachingCount >= 2) {
     suggestions.add(
       'Your child may be learning how to handle difficult online moments with support.',
     );
