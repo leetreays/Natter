@@ -5795,6 +5795,7 @@ StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
 
     final firestoreQuietCount = signalCounts['quiet'] ?? 0;
     final firestoreGuidanceCount = signalCounts['guidance'] ?? 0;
+    final firestoreConnectionCount = signalCounts['connection'] ?? 0;
     final firestorePositiveCount = signalDocs.where((d) {
   return (d.data()['category'] ?? '').toString() == 'positive';
 }).length;
