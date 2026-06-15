@@ -5359,9 +5359,11 @@ String _insightHeadline({
 Map<String, double> _buildInsightFractions({
   required int quiet,
   required int guidance,
-  required int connection,
+  required int positive,
 }) {
-  final total = quiet + guidance + connection;
+  final positiveWithBaseline = positive > 0 ? positive + 2 : 2;
+
+  final total = quiet + guidance + positiveWithBaseline;
 
   if (total == 0) {
     return {
@@ -5372,7 +5374,7 @@ Map<String, double> _buildInsightFractions({
   }
 
   return {
-    'positive': connection / total,
+    'positive': positiveWithBaseline / total,
     'guidance': guidance / total,
     'quiet': quiet / total,
   };
@@ -5793,7 +5795,9 @@ StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
 
     final firestoreQuietCount = signalCounts['quiet'] ?? 0;
     final firestoreGuidanceCount = signalCounts['guidance'] ?? 0;
-    final firestoreConnectionCount = signalCounts['connection'] ?? 0;
+    final firestorePositiveCount = signalDocs.where((d) {
+  return (d.data()['category'] ?? '').toString() == 'positive';
+}).length;
     final firestoreSignalCount = signalCounts['total'] ?? 0;
 
     final firestoreInsightHeadline = _insightHeadline(
@@ -5803,10 +5807,10 @@ StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
     );
 
     final firestoreInsight = _buildInsightFractions(
-      quiet: firestoreQuietCount,
-      guidance: firestoreGuidanceCount,
-      connection: firestoreConnectionCount,
-    );
+  quiet: firestoreQuietCount,
+  guidance: firestoreGuidanceCount,
+  positive: firestorePositiveCount,
+);
 
     final firestoreShowWeeklyNote = _shouldShowWeeklyNote();
 
