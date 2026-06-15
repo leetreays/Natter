@@ -5161,6 +5161,93 @@ List<QueryDocumentSnapshot<Map<String, dynamic>>> _recentSignalDocs(
         timestamp.isAfter(cutoff);
   }).toList();
 }
+
+String _weeklySummaryText(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final positiveCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'positive';
+  }).length;
+
+  final coachingCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'coaching';
+  }).length;
+
+  final guidanceCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'guidance';
+  }).length;
+
+  final quietCount = docs.where((d) {
+    return (d.data()['type'] ?? '').toString() == 'quietHours';
+  }).length;
+
+  final rewriteCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() == 'rewrite_used';
+  }).length;
+
+  final recoveryCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() ==
+        'conversation_recovered';
+  }).length;
+
+  final calmChoiceCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() == 'pause_respected';
+  }).length;
+
+  final sentences = <String>[];
+
+  if (positiveCount >= 3) {
+    sentences.add(
+      '${child.name} showed several positive communication skills recently, including moments of reflection, calm and friendship repair.',
+    );
+  } else if (positiveCount > 0) {
+    sentences.add(
+      '${child.name} showed some positive digital communication choices recently.',
+    );
+  } else {
+    sentences.add(
+      'Things have been fairly quiet recently, with no major growth moments recorded yet.',
+    );
+  }
+
+  if (rewriteCount > 0) {
+    sentences.add(
+      'Natter noticed that ${child.name} chose a kinder rewrite when prompted.',
+    );
+  }
+
+  if (recoveryCount > 0) {
+    sentences.add(
+      'A difficult friendship moment became calmer, which is a positive sign of repair.',
+    );
+  }
+
+  if (calmChoiceCount > 0) {
+    sentences.add(
+      'There were signs that taking time and space helped a conversation settle.',
+    );
+  }
+
+  if (coachingCount > 0) {
+    sentences.add(
+      'Natter also provided coaching during a few tricky message moments.',
+    );
+  }
+
+  if (guidanceCount > 0) {
+    sentences.add(
+      'Some messages needed stronger support before being sent.',
+    );
+  }
+
+  if (quietCount > 0) {
+    sentences.add(
+      'Quiet-time reminders also came up, which may be worth checking in on gently.',
+    );
+  }
+
+  return sentences.take(4).join(' ');
+}
   
 List<String> _supportIdeasForSignalDocs(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
@@ -6021,6 +6108,52 @@ const SizedBox(height: 16),
         ),
       ),
     ],
+      ),
+    );
+  },
+),
+const SizedBox(height: 18),
+      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: signalsStream,
+  builder: (context, snapshot) {
+    final allDocs = snapshot.data?.docs ?? [];
+    final docs = _recentSignalDocs(allDocs);
+    final summary = _weeklySummaryText(docs);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: _outerSectionDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.green.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Weekly summary',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            summary,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.78),
+              fontWeight: FontWeight.w700,
+              height: 1.45,
+            ),
+          ),
+        ],
       ),
     );
   },
