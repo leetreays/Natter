@@ -5144,6 +5144,23 @@ Map<String, dynamic> _growthMomentDisplay(
 
   return items.take(3).toList();
 }
+
+List<QueryDocumentSnapshot<Map<String, dynamic>>> _recentSignalDocs(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final cutoff = DateTime.now().subtract(
+    const Duration(days: 21),
+  );
+
+  return docs.where((doc) {
+    final timestamp =
+        (doc.data()['createdAt'] as Timestamp?)
+            ?.toDate();
+
+    return timestamp != null &&
+        timestamp.isAfter(cutoff);
+  }).toList();
+}
   
 List<String> _supportIdeasForSignalDocs(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
@@ -6049,7 +6066,8 @@ const SizedBox(height: 18),
       );
     }
 
-    final docs = snapshot.data?.docs ?? [];
+    final allDocs = snapshot.data?.docs ?? [];
+    final docs = _recentSignalDocs(allDocs);
 
     final recentSignalDocs = docs.where((doc) {
   final data = doc.data();
@@ -6187,7 +6205,8 @@ Container(
   child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
     stream: signalsStream,
     builder: (context, snapshot) {
-      final docs = snapshot.data?.docs ?? [];
+      final allDocs = snapshot.data?.docs ?? [];
+      final docs = _recentSignalDocs(allDocs);
       final growthDocs = _growthMomentDocs(docs);
 
       final seenGrowthContexts = <String>{};
@@ -6296,7 +6315,8 @@ Container(
   child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
     stream: signalsStream,
     builder: (context, snapshot) {
-      final docs = snapshot.data?.docs ?? [];
+      final allDocs = snapshot.data?.docs ?? [];
+      final docs = _recentSignalDocs(allDocs);
       final firestorePatterns = _patternsForSignalDocs(docs);
 
       return Column(
