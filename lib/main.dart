@@ -12304,8 +12304,9 @@ if (adjustedLevel == SafetyLevel.protect) {
       signal: ChildSignalEvent(
         type: 'safetyCoach',
         context: 'protected_delivery_recommended',
-        severity: 'gentle',
-        time: DateTime.now(),
+severity: 'gentle',
+category: 'coaching',
+time: DateTime.now(),
       ),
     );
   }
@@ -12320,6 +12321,51 @@ final refreshedData = refreshedConversation.data() ?? {};
 final escalationChain =
     (refreshedData['recentEscalationChain'] ?? 0) as num;
 
+Future<void> recordProtectedDeliveryReasonSignal() async {
+  if (state.activeParentId == null || state.activeChildId == null) {
+    return;
+  }
+
+  final suggestion = (safety.suggestion ?? '').toLowerCase();
+  final reason = (safety.reason ?? '').toLowerCase();
+
+  if (reason.contains('fast') ||
+      reason.contains('burst') ||
+      suggestion.contains('chance to reply') ||
+      suggestion.contains('slow')) {
+    await state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'messageBurst',
+        context: 'message_burst',
+        severity: 'gentle',
+        category: 'coaching',
+        time: DateTime.now(),
+      ),
+    );
+    return;
+  }
+
+  if (reason.contains('target') ||
+      reason.contains('friendship') ||
+      reason.contains('repeated') ||
+      suggestion.contains('reset') ||
+      suggestion.contains('leaving someone out')) {
+    await state.recordChildSignal(
+      parentId: state.activeParentId!,
+      childId: state.activeChildId!,
+      signal: ChildSignalEvent(
+        type: 'repeatedTargeting',
+        context: 'repeated_targeting',
+        severity: 'strong',
+        category: 'guidance',
+        time: DateTime.now(),
+      ),
+    );
+  }
+}
+  
 final sendAnyway = await _showSafetyCoachDialog(
   suggestion: safety.suggestion ??
     'I’m upset. Can we talk about this calmly?',
@@ -12334,6 +12380,7 @@ final sendAnyway = await _showSafetyCoachDialog(
 
   if (sendAnyway) {
     state.recordCoachedMessageSentAnyway();
+    await recordProtectedDeliveryReasonSignal();
 
     if (state.activeParentId != null && state.activeChildId != null) {
   await state.recordChildSignal(
