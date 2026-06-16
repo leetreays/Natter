@@ -6222,9 +6222,6 @@ const SizedBox(height: 18),
         final data = doc.data();
         final type = (data['type'] ?? '').toString();
         final context = (data['context'] ?? '').toString();
-        debugPrint(
-  'Signal -> type=$type context=$context',
-);
         final severity = (data['severity'] ?? 'gentle').toString();
 
         String title;
@@ -6232,45 +6229,44 @@ const SizedBox(height: 18),
         IconData icon;
 
         if (type == 'quietHours') {
-          title = 'Quiet hours';
-          message = 'Your child tried to use Natter during quiet hours.';
-          icon = Icons.nightlight_round;
-        } else if (type == 'blockedWord') {
-          title = 'Message stopped';
-          message = 'A message was stopped before sending.';
-          icon = Icons.shield_rounded;
-        } else if (type == 'safetyCoach' &&
-            context == 'rewrite_used') {
-          title = 'Kind rewrite';
-          message = 'Your child chose a kinder version of a message.';
-          icon = Icons.favorite_rounded;
-        } else if (type == 'safetyCoach' &&
-            context == 'sent_with_protected_delivery') {
-          title = 'Protected delivery';
-          message = 'A coached message was sent with extra care.';
-          icon = Icons.lightbulb_rounded;
-} else if (type == 'pauseRespected' ||
-    context == 'pause_respected') {
-  title = 'Calm choice';
-  message =
-      'A difficult moment was given time and space before continuing.';
-  icon = Icons.self_improvement_rounded;
-} else if (type == 'conversationRecovered' ||
-    context == 'conversation_recovered') {
-  title = 'Friendship recovered';
-  message = 'A difficult friendship moment became calmer.';
-  icon = Icons.eco_rounded;
-        } else if (type == 'blockedWord' ||
+  title = 'Quiet hours';
+  message = 'Your child tried to use Natter during quiet hours.';
+  icon = Icons.nightlight_round;
+} else if (type == 'blockedWord' ||
     context == 'message_blocked') {
   title = 'Message stopped';
-  message =
-      'A message was stopped before it could be sent.';
+  message = 'A message was stopped before it could be sent.';
   icon = Icons.shield_rounded;
-        } else {
-          title = 'Gentle signal';
-          message = 'A support signal was recorded for your child.';
-          icon = Icons.info_rounded;
-        }
+} else if (type == 'safetyCoach' &&
+    context == 'sent_with_protected_delivery') {
+  title = 'Protected delivery';
+  message =
+      'A message was sent after Natter suggested a kinder alternative.';
+  icon = Icons.lightbulb_rounded;
+} else if (type == 'repeatedTargeting' ||
+    context == 'repeated_targeting') {
+  title = 'Friendship guidance';
+  message =
+      'Natter noticed a friendship that may need a little extra care.';
+  icon = Icons.volunteer_activism_rounded;
+} else if (type == 'friendshipConflict' ||
+    context == 'continued_targeting') {
+  title = 'Friendship support';
+  message =
+      'A friendship showed repeated difficult moments and may need support.';
+  icon = Icons.health_and_safety_rounded;
+} else if (type == 'messageBurst' ||
+    context == 'message_burst') {
+  title = 'Fast messaging';
+  message =
+      'Natter noticed a burst of quick messages and encouraged a slower pace.';
+  icon = Icons.speed_rounded;
+} else {
+  title = 'Guidance moment';
+  message =
+      'Natter noticed a moment that may benefit from gentle support.';
+  icon = Icons.lightbulb_rounded;
+}
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
