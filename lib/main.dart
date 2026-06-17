@@ -12372,6 +12372,7 @@ if (targetingActive) {
     ),
   );
 }
+}
   
 final sendAnyway = await _showSafetyCoachDialog(
   suggestion: safety.suggestion ??
