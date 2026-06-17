@@ -12323,47 +12323,54 @@ final escalationChain =
 
 Future<void> recordProtectedDeliveryReasonSignal() async {
   if (state.activeParentId == null || state.activeChildId == null) {
-    return;
-  }
+  return;
+}
 
-  final suggestion = (safety.suggestion ?? '').toLowerCase();
-  final reason = (safety.reason ?? '').toLowerCase();
+final conversationSnap = await state
+    .conversationsRef()
+    .doc(widget.conversationId)
+    .get();
 
-  if (reason.contains('fast') ||
-      reason.contains('burst') ||
-      suggestion.contains('chance to reply') ||
-      suggestion.contains('slow')) {
-    await state.recordChildSignal(
-      parentId: state.activeParentId!,
-      childId: state.activeChildId!,
-      signal: ChildSignalEvent(
-        type: 'messageBurst',
-        context: 'message_burst',
-        severity: 'gentle',
-        category: 'coaching',
-        time: DateTime.now(),
-      ),
-    );
-    return;
-  }
+final conversationData = conversationSnap.data() ?? {};
 
-  if (reason.contains('target') ||
-      reason.contains('friendship') ||
-      reason.contains('repeated') ||
-      suggestion.contains('reset') ||
-      suggestion.contains('leaving someone out')) {
-    await state.recordChildSignal(
-      parentId: state.activeParentId!,
-      childId: state.activeChildId!,
-      signal: ChildSignalEvent(
-        type: 'repeatedTargeting',
-        context: 'repeated_targeting',
-        severity: 'strong',
-        category: 'guidance',
-        time: DateTime.now(),
-      ),
-    );
-  }
+final burstActive =
+    conversationData['burstCoachActive'] == true ||
+    ((conversationData['recentMessageBurstCount'] ?? 0) as num) >= 4;
+
+final targetingCount =
+    (conversationData['targetingCount'] ?? 0) as num;
+
+final targetingActive =
+    conversationData['repeatedTargetingActive'] == true ||
+    conversationData['continuedTargetingActive'] == true ||
+    targetingCount >= 3;
+
+if (burstActive) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'messageBurst',
+      context: 'message_burst',
+      severity: 'gentle',
+      category: 'coaching',
+      time: DateTime.now(),
+    ),
+  );
+}
+
+if (targetingActive) {
+  await state.recordChildSignal(
+    parentId: state.activeParentId!,
+    childId: state.activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'repeatedTargeting',
+      context: 'repeated_targeting',
+      severity: 'strong',
+      category: 'guidance',
+      time: DateTime.now(),
+    ),
+  );
 }
   
 final sendAnyway = await _showSafetyCoachDialog(
