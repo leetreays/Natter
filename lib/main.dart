@@ -8018,8 +8018,6 @@ class JourneyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = AppStateScope.of(context);
-
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Journey'),
@@ -8027,14 +8025,287 @@ class JourneyScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(14),
         children: [
-          const ChatsScreen()._levelCard(state),
+          _treeHeroCard(),
           const SizedBox(height: 12),
-          const ChatsScreen()._profileCard(context, state),
+          _growthRootsCard(),
           const SizedBox(height: 12),
-          const ChatsScreen()._dailyQuestCard(state),
-          const SizedBox(height: 12),
-          const ChatsScreen()._friendCodeCard(context, state),
+          _journeyMemoriesCard(),
           const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  Widget _treeHeroCard() {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10254A),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.green.withOpacity(0.12),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          const Text(
+            'Your Tree',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Every thoughtful choice helps your tree grow.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.78),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 22),
+          Container(
+            width: 132,
+            height: 132,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: NatterBrand.green.withOpacity(0.12),
+              border: Border.all(
+                color: NatterBrand.green.withOpacity(0.35),
+                width: 2,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              '🌱',
+              style: TextStyle(fontSize: 68),
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Text(
+            'Seedling',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Your journey towards confident, kind digital communication has begun.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.72),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _growthRootsCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF182E57),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.10),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Growth Roots',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'These roots grow as you practise kind, thoughtful communication.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.72),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _rootTile(
+            icon: Icons.chat_bubble_rounded,
+            title: 'Communication',
+            subtitle: 'Finding words that are clear and kind.',
+          ),
+          _rootTile(
+            icon: Icons.self_improvement_rounded,
+            title: 'Reflection',
+            subtitle: 'Taking a moment before replying.',
+          ),
+          _rootTile(
+            icon: Icons.volunteer_activism_rounded,
+            title: 'Friendship',
+            subtitle: 'Helping friendships recover and grow.',
+          ),
+          _rootTile(
+            icon: Icons.nightlight_round,
+            title: 'Digital Habits',
+            subtitle: 'Learning healthy routines online.',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rootTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: NatterBrand.green, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            'Beginning',
+            style: TextStyle(
+              color: NatterBrand.yellow.withOpacity(0.95),
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _journeyMemoriesCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF182E57),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.10),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Journey Memories',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 21,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Special moments from your digital journey will appear here.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.72),
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 14),
+          _memoryTile('🌱', 'First steps', 'Your Natter journey has begun.'),
+          _memoryTile('💛', 'Kind rewrite', 'Coming soon.'),
+          _memoryTile('🌿', 'Friendship repair', 'Coming soon.'),
+        ],
+      ),
+    );
+  }
+
+  Widget _memoryTile(String emoji, String title, String subtitle) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
