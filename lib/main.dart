@@ -5270,23 +5270,62 @@ List<String> _supportIdeasForSignalDocs(
       .where((d) => (d.data()['type'] ?? '') == 'quietHours')
       .length;
 
-  final coachingCount = docs.where((d) {
-    return (d.data()['category'] ?? '') == 'coaching';
-  }).length;
-
-  final guidanceCount = docs.where((d) {
-    return (d.data()['category'] ?? '') == 'guidance';
-  }).length;
-
   final positiveCount = docs.where((d) {
     return (d.data()['category'] ?? '') == 'positive';
   }).length;
 
+  final protectedDeliveryCount = docs.where((d) {
+    return (d.data()['context'] ?? '') ==
+        'sent_with_protected_delivery';
+  }).length;
+
+  final blockedCount = docs.where((d) {
+    final data = d.data();
+    return data['type'] == 'blockedWord' ||
+        data['context'] == 'message_blocked';
+  }).length;
+
+  final burstCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'message_burst';
+  }).length;
+
+  final repeatedTargetingCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'repeated_targeting';
+  }).length;
+
+  final continuedTargetingCount = docs.where((d) {
+    return (d.data()['context'] ?? '') == 'continued_targeting';
+  }).length;
+
   final suggestions = <String>[];
 
-  if (positiveCount >= 3) {
+  if (continuedTargetingCount > 0) {
     suggestions.add(
-      'You might celebrate some positive digital choices your child made recently.',
+      'You might ask: “Has any friendship felt difficult recently?”',
+    );
+  }
+
+  if (repeatedTargetingCount > 0) {
+    suggestions.add(
+      'You might gently check whether one friendship needs a little extra care.',
+    );
+  }
+
+  if (blockedCount > 0) {
+    suggestions.add(
+      'A calm conversation about how messages can affect others may be helpful.',
+    );
+  }
+
+  if (protectedDeliveryCount >= 2) {
+    suggestions.add(
+      'You might ask: “Was anything hard to say kindly today?”',
+    );
+  }
+
+  if (burstCount > 0) {
+    suggestions.add(
+      'You might ask: “Was something feeling urgent or frustrating today?”',
     );
   }
 
@@ -5296,25 +5335,19 @@ List<String> _supportIdeasForSignalDocs(
     );
   }
 
-  if (coachingCount >= 2) {
+  if (positiveCount >= 3) {
     suggestions.add(
-      'Your child may be learning how to handle difficult online moments with support.',
-    );
-  }
-
-  if (guidanceCount > 0) {
-    suggestions.add(
-      'A calm conversation about how messages can affect others may be helpful.',
+      'You might celebrate some positive digital choices your child made recently.',
     );
   }
 
   if (suggestions.isEmpty) {
     suggestions.add(
-      'No support signals have been recorded yet. A gentle check-in can still help your child feel supported.',
+      'No support signals have been recorded recently. A gentle check-in can still help your child feel supported.',
     );
   }
 
-  return suggestions;
+  return suggestions.take(3).toList();
 }
 
 List<QueryDocumentSnapshot<Map<String, dynamic>>> _growthMomentDocs(
