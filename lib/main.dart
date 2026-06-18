@@ -1858,6 +1858,20 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
     'burstCoachActive': true,
     'burstCoachTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
+
+  if (activeParentId != null && activeChildId != null) {
+  await recordChildSignal(
+    parentId: activeParentId!,
+    childId: activeChildId!,
+    signal: ChildSignalEvent(
+      type: 'messageBurst',
+      context: 'message_burst',
+      severity: 'gentle',
+      category: 'coaching',
+      time: DateTime.now(),
+    ),
+  );
+  }
   }
 }
   final cooldownAmount = isFlagged ? 0 : 2;
@@ -12345,20 +12359,6 @@ final targetingActive =
     conversationData['continuedTargetingActive'] == true ||
     targetingCount >= 3;
 
-if (burstActive) {
-  await state.recordChildSignal(
-    parentId: state.activeParentId!,
-    childId: state.activeChildId!,
-    signal: ChildSignalEvent(
-      type: 'messageBurst',
-      context: 'message_burst',
-      severity: 'gentle',
-      category: 'coaching',
-      time: DateTime.now(),
-    ),
-  );
-}
-
 if (targetingActive) {
   await state.recordChildSignal(
     parentId: state.activeParentId!,
@@ -12371,6 +12371,7 @@ if (targetingActive) {
       time: DateTime.now(),
     ),
   );
+  return;
 }
 }
   
