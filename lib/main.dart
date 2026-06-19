@@ -8067,11 +8067,11 @@ class JourneyScreen extends StatelessWidget {
   }
 
  String _rootStage(int score) {
-  if (score >= 12) return 'Strong';
-  if (score >= 6) return 'Growing';
-  if (score >= 2) return 'Sprouting';
-  return 'Beginning';
-}
+  if (score >= 50) return 'Strong';
+if (score >= 20) return 'Growing';
+if (score >= 5) return 'Sprouting';
+return 'Beginning';
+ }
 
 Map<String, int> _journeyRootScores(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
@@ -8098,10 +8098,6 @@ Map<String, int> _journeyRootScores(
 
     if (context == 'conversation_recovered') {
       friendship += 3;
-    }
-
-    if (category == 'positive') {
-      friendship += 1;
     }
 
     if (type == 'quietHours') {
