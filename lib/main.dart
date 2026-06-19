@@ -8018,24 +8018,135 @@ class JourneyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = AppStateScope.of(context);
+    
     return BrandScaffold(
       appBar: AppBar(
         title: const BrandedAppBarTitle(title: 'Journey'),
       ),
-      child: ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
-          _treeHeroCard(),
-          const SizedBox(height: 12),
-          _growthRootsCard(),
-          const SizedBox(height: 12),
-          _journeyMemoriesCard(),
-          const SizedBox(height: 80),
-        ],
-      ),
+      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: state.signalsStream(),
+  builder: (context, snapshot) {
+    final docs = snapshot.data?.docs ?? [];
+    final scores = _journeyRootScores(docs);
+
+    final communicationStage =
+        _rootStage(scores['communication'] ?? 0);
+    final reflectionStage =
+        _rootStage(scores['reflection'] ?? 0);
+    final friendshipStage =
+        _rootStage(scores['friendship'] ?? 0);
+    final habitsStage =
+        _rootStage(scores['habits'] ?? 0);
+
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        _treeHeroCard(),
+        const SizedBox(height: 12),
+        _growthRootsCard(
+          communicationStage: communicationStage,
+          reflectionStage: reflectionStage,
+          friendshipStage: friendshipStage,
+          habitsStage: habitsStage,
+        ),
+        const SizedBox(height: 12),
+        _journeyMemoriesCard(),
+        const SizedBox(height: 80),
+      ],
+    );
+  },
+),
     );
   }
 
+ String _rootStage(int score) {
+  if (score >= 12) return 'Strong';
+  if (score >= 6) return 'Growing';
+  if (score >= 2) return 'Sprouting';
+  return 'Beginning';
+}
+
+Map<String, int> _journeyRootScores(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  int communication = 0;
+  int reflection = 0;
+  int friendship = 0;
+  int habits = 0;
+
+  for (final doc in docs) {
+    final data = doc.data();
+    final type = (data['type'] ?? '').toString();
+    final context = (data['context'] ?? '').toString();
+    final category = (data['category'] ?? '').toString();
+
+    if (context == 'rewrite_used') {
+      communication += 2;
+      reflection += 1;
+    }
+
+    if (context == 'pause_respected') {
+      reflection += 3;
+    }
+
+    if (context == 'conversation_recovered') {
+      friendship += 3;
+    }
+
+    if (category == 'positive') {
+      friendship += 1;
+    }
+
+    if (type == 'quietHours') {
+      habits += 1;
+    }
+  }
+
+  return {
+    'communication': communication,
+    'reflection': reflection,
+    'friendship': friendship,
+    'habits': habits,
+  };
+}
+
+String _communicationMessage(String stage) {
+  if (stage == 'Strong') return 'You often choose thoughtful words.';
+  if (stage == 'Growing') return 'Your communication skills are developing.';
+  if (stage == 'Sprouting') {
+    return 'You are beginning to practise kind communication.';
+  }
+  return 'Finding words that are clear and kind.';
+}
+
+String _reflectionMessage(String stage) {
+  if (stage == 'Strong') return 'You often take time before replying.';
+  if (stage == 'Growing') return 'You are learning to pause and think.';
+  if (stage == 'Sprouting') {
+    return 'You are beginning to notice when a pause helps.';
+  }
+  return 'Taking a moment before replying.';
+}
+
+String _friendshipMessage(String stage) {
+  if (stage == 'Strong') return 'You are building caring friendship habits.';
+  if (stage == 'Growing') return 'You are learning how friendships recover.';
+  if (stage == 'Sprouting') {
+    return 'You are beginning to help friendships grow.';
+  }
+  return 'Helping friendships recover and grow.';
+}
+
+String _habitsMessage(String stage) {
+  if (stage == 'Strong') return 'You are building healthy digital routines.';
+  if (stage == 'Growing') return 'Your digital habits are developing.';
+  if (stage == 'Sprouting') {
+    return 'You are beginning to learn healthy routines online.';
+  }
+  return 'Learning healthy routines online.';
+}
+  
   Widget _treeHeroCard() {
     return Container(
       padding: const EdgeInsets.all(22),
@@ -8115,7 +8226,12 @@ class JourneyScreen extends StatelessWidget {
     );
   }
 
-  Widget _growthRootsCard() {
+  Widget _growthRootsCard({
+  required String communicationStage,
+  required String reflectionStage,
+  required String friendshipStage,
+  required String habitsStage,
+}) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -8147,35 +8263,40 @@ class JourneyScreen extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           _rootTile(
-            icon: Icons.chat_bubble_rounded,
-            title: 'Communication',
-            subtitle: 'Finding words that are clear and kind.',
-          ),
+  icon: Icons.chat_bubble_rounded,
+  title: 'Communication',
+  subtitle: _communicationMessage(communicationStage),
+  stage: communicationStage,
+),
           _rootTile(
-            icon: Icons.self_improvement_rounded,
-            title: 'Reflection',
-            subtitle: 'Taking a moment before replying.',
-          ),
+  icon: Icons.self_improvement_rounded,
+  title: 'Reflection',
+  subtitle: _reflectionMessage(reflectionStage),
+  stage: reflectionStage,
+),
           _rootTile(
-            icon: Icons.volunteer_activism_rounded,
-            title: 'Friendship',
-            subtitle: 'Helping friendships recover and grow.',
-          ),
+  icon: Icons.volunteer_activism_rounded,
+  title: 'Friendship',
+  subtitle: _friendshipMessage(friendshipStage),
+  stage: friendshipStage,
+),
           _rootTile(
-            icon: Icons.nightlight_round,
-            title: 'Digital Habits',
-            subtitle: 'Learning healthy routines online.',
-          ),
+  icon: Icons.nightlight_round,
+  title: 'Digital Habits',
+  subtitle: _habitsMessage(habitsStage),
+  stage: habitsStage,
+),
         ],
       ),
     );
   }
 
   Widget _rootTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required String stage,
+}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -8214,7 +8335,7 @@ class JourneyScreen extends StatelessWidget {
             ),
           ),
           Text(
-            'Beginning',
+            stage,
             style: TextStyle(
               color: NatterBrand.yellow.withOpacity(0.95),
               fontWeight: FontWeight.w900,
