@@ -8141,7 +8141,7 @@ List<Map<String, String>> _recentNourishment(
     }
   }
 
-  return items.take(3).toList();
+  return items.take(1).toList();
 }
 
 String _communicationMessage(String stage) {
@@ -8269,7 +8269,7 @@ String _habitsMessage(String stage) {
       ),
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text(
           'Recently nourished by',
@@ -8283,7 +8283,8 @@ String _habitsMessage(String stage) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(
-              children: [
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
                 Text(
                   item['emoji'] ?? '🌱',
                   style: const TextStyle(fontSize: 18),
