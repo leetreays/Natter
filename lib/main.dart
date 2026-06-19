@@ -8067,10 +8067,10 @@ class JourneyScreen extends StatelessWidget {
   }
 
  String _rootStage(int score) {
-  if (score >= 50) return 'Strong';
-if (score >= 20) return 'Growing';
-if (score >= 5) return 'Sprouting';
-return 'Beginning';
+  if (score >= 120) return 'Strong';
+  if (score >= 50) return 'Growing';
+  if (score >= 10) return 'Sprouting';
+  return 'Beginning';
  }
 
 Map<String, int> _journeyRootScores(
