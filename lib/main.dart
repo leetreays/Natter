@@ -8059,7 +8059,7 @@ class JourneyScreen extends StatelessWidget {
           habitsStage: habitsStage,
         ),
         const SizedBox(height: 12),
-        _journeyMemoriesCard(),
+        _journeyMemoriesCard(docs),
         const SizedBox(height: 80),
       ],
     );
@@ -8069,12 +8069,12 @@ class JourneyScreen extends StatelessWidget {
   }
 
  String _rootStage(int score) {
-  if (score >= 120) return 'Strong';
-  if (score >= 50) return 'Growing';
-  if (score >= 10) return 'Sprouting';
-  return 'Beginning';
+  if (score >= 120) return 'Deep roots';
+  if (score >= 50) return 'Roots spreading';
+  if (score >= 10) return 'Small roots';
+  return 'Seeds planted';
  }
-
+  
 Map<String, int> _journeyRootScores(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
@@ -8115,33 +8115,35 @@ Map<String, int> _journeyRootScores(
   };
 }
 
-List<Map<String, String>> _recentNourishment(
+Map<String, String>? _recentNourishment(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
-  final items = <Map<String, String>>[];
-
   for (final doc in docs) {
     final context = (doc.data()['context'] ?? '').toString();
 
     if (context == 'rewrite_used') {
-      items.add({
+      return {
         'emoji': '💛',
-        'title': 'Kind words',
-      });
-    } else if (context == 'pause_respected') {
-      items.add({
+        'text': 'Your tree grew stronger because you chose kinder words.',
+      };
+    }
+
+    if (context == 'pause_respected') {
+      return {
         'emoji': '🧘',
-        'title': 'Calm pause',
-      });
-    } else if (context == 'conversation_recovered') {
-      items.add({
+        'text': 'Your tree grew stronger because you took a calm pause.',
+      };
+    }
+
+    if (context == 'conversation_recovered') {
+      return {
         'emoji': '🌿',
-        'title': 'Friendship repair',
-      });
+        'text': 'Your tree grew stronger because a friendship moment became calmer.',
+      };
     }
   }
 
-  return items.take(1).toList();
+  return null;
 }
 
 String _communicationMessage(String stage) {
@@ -8181,7 +8183,7 @@ String _habitsMessage(String stage) {
 }
   
   Widget _treeHeroCard({
-  required List<Map<String, String>> nourishment,
+  required Map<String, String>? nourishment,
 }) {
     return Container(
       padding: const EdgeInsets.all(22),
@@ -8256,11 +8258,11 @@ String _habitsMessage(String stage) {
               height: 1.35,
             ),
           ),
-          if (nourishment.isNotEmpty) ...[
+          if (nourishment != null) ...[
   const SizedBox(height: 18),
   Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white.withOpacity(0.07),
       borderRadius: BorderRadius.circular(18),
@@ -8269,38 +8271,21 @@ String _habitsMessage(String stage) {
       ),
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
-          'Recently nourished by',
+        Text(
+          nourishment['emoji'] ?? '🌱',
+          style: const TextStyle(fontSize: 28),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          nourishment['text'] ?? 'Your tree is growing.',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
+            color: Colors.white.withOpacity(0.78),
+            fontWeight: FontWeight.w800,
+            height: 1.35,
           ),
         ),
-        const SizedBox(height: 10),
-        ...nourishment.map((item) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-                Text(
-                  item['emoji'] ?? '🌱',
-                  style: const TextStyle(fontSize: 18),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  item['title'] ?? 'Growth moment',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.76),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
       ],
     ),
   ),
@@ -8431,45 +8416,89 @@ String _habitsMessage(String stage) {
     );
   }
 
-  Widget _journeyMemoriesCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF182E57),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.10),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Journey Memories',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 21,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Special moments from your digital journey will appear here.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 14),
-          _memoryTile('🌱', 'First steps', 'Your Natter journey has begun.'),
-          _memoryTile('💛', 'Kind rewrite', 'Coming soon.'),
-          _memoryTile('🌿', 'Friendship repair', 'Coming soon.'),
-        ],
-      ),
-    );
+  Widget _journeyMemoriesCard(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final memories = <Map<String, String>>[];
+
+  bool hasContext(String value) {
+    return docs.any((d) => (d.data()['context'] ?? '').toString() == value);
   }
 
+  if (hasContext('rewrite_used')) {
+    memories.add({
+      'emoji': '💛',
+      'title': 'Kind rewrite',
+      'subtitle': 'You chose kinder words.',
+    });
+  }
+
+  if (hasContext('pause_respected')) {
+    memories.add({
+      'emoji': '🧘',
+      'title': 'Calm pause',
+      'subtitle': 'You took time before continuing.',
+    });
+  }
+
+  if (hasContext('conversation_recovered')) {
+    memories.add({
+      'emoji': '🌿',
+      'title': 'Friendship repair',
+      'subtitle': 'A difficult friendship moment became calmer.',
+    });
+  }
+
+  if (memories.isEmpty) {
+    memories.add({
+      'emoji': '🌱',
+      'title': 'First steps',
+      'subtitle': 'Your Natter journey has begun.',
+    });
+  }
+
+  return Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: const Color(0xFF182E57),
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Journey Memories',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 21,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Special moments from your digital journey appear here.',
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.72),
+            fontWeight: FontWeight.w700,
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 14),
+        ...memories.take(4).map((memory) {
+          return _memoryTile(
+            memory['emoji']!,
+            memory['title']!,
+            memory['subtitle']!,
+          );
+        }),
+      ],
+    ),
+  );
+  }
+  
   Widget _memoryTile(String emoji, String title, String subtitle) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
