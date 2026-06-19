@@ -8025,7 +8025,13 @@ class JourneyScreen extends StatelessWidget {
         title: const BrandedAppBarTitle(title: 'Journey'),
       ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-  stream: state.signalsStream(),
+  stream: FirebaseFirestore.instance
+    .collection('parents')
+    .doc(state.activeParentId)
+    .collection('children')
+    .doc(state.activeChildId)
+    .collection('signals')
+    .snapshots(),
   builder: (context, snapshot) {
     final docs = snapshot.data?.docs ?? [];
     final scores = _journeyRootScores(docs);
