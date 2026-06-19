@@ -8048,7 +8048,9 @@ class JourneyScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(14),
       children: [
-        _treeHeroCard(),
+        _treeHeroCard(
+  nourishment: _recentNourishment(docs),
+),
         const SizedBox(height: 12),
         _growthRootsCard(
           communicationStage: communicationStage,
@@ -8113,6 +8115,35 @@ Map<String, int> _journeyRootScores(
   };
 }
 
+List<Map<String, String>> _recentNourishment(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final items = <Map<String, String>>[];
+
+  for (final doc in docs) {
+    final context = (doc.data()['context'] ?? '').toString();
+
+    if (context == 'rewrite_used') {
+      items.add({
+        'emoji': '💛',
+        'title': 'Kind words',
+      });
+    } else if (context == 'pause_respected') {
+      items.add({
+        'emoji': '🧘',
+        'title': 'Calm pause',
+      });
+    } else if (context == 'conversation_recovered') {
+      items.add({
+        'emoji': '🌿',
+        'title': 'Friendship repair',
+      });
+    }
+  }
+
+  return items.take(3).toList();
+}
+
 String _communicationMessage(String stage) {
   if (stage == 'Strong') return 'You often choose thoughtful words.';
   if (stage == 'Growing') return 'Your communication skills are developing.';
@@ -8149,7 +8180,9 @@ String _habitsMessage(String stage) {
   return 'Learning healthy routines online.';
 }
   
-  Widget _treeHeroCard() {
+  Widget _treeHeroCard({
+  required List<Map<String, String>> nourishment,
+}) {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -8223,6 +8256,54 @@ String _habitsMessage(String stage) {
               height: 1.35,
             ),
           ),
+          if (nourishment.isNotEmpty) ...[
+  const SizedBox(height: 18),
+  Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.07),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recently nourished by',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...nourishment.map((item) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              children: [
+                Text(
+                  item['emoji'] ?? '🌱',
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  item['title'] ?? 'Growth moment',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.76),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    ),
+  ),
+],
         ],
       ),
     );
