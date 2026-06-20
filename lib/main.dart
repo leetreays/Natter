@@ -8038,7 +8038,7 @@ class JourneyScreen extends StatelessWidget {
     final growth =
     _treeGrowth(docs);
 
-    const journeyTestGrowthBoost = 40;
+    const journeyTestGrowthBoost = 80;
 
 final boostedGrowth = {
   ...growth,
