@@ -8054,6 +8054,7 @@ class JourneyScreen extends StatelessWidget {
   nourishment: _recentNourishment(docs),
   growth: growth,
   treeEmoji: _treeEmoji(growth),
+  growthMessage: _treeGrowthMessage(growth),
 ),
         const SizedBox(height: 12),
         _growthRootsCard(
@@ -8172,6 +8173,28 @@ String _treeEmoji(Map<String, int> growth) {
   return '🌱';
 }
 
+String _treeGrowthMessage(Map<String, int> growth) {
+  final total =
+      (growth['leaves'] ?? 0) +
+      (growth['branches'] ?? 0) +
+      (growth['flowers'] ?? 0) +
+      (growth['roots'] ?? 0);
+
+  if (total >= 80) {
+    return 'Your roots are strong and your tree is flourishing.';
+  }
+
+  if (total >= 40) {
+    return 'Your tree is growing stronger with every thoughtful choice.';
+  }
+
+  if (total >= 15) {
+    return 'Your tree is taking root and beginning to grow.';
+  }
+
+  return 'Your journey towards confident, kind digital communication has begun.';
+}
+
 Map<String, String>? _recentNourishment(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
@@ -8243,6 +8266,7 @@ String _habitsMessage(String stage) {
   required Map<String, String>? nourishment,
   required Map<String, int> growth,
   required String treeEmoji,
+  required String growthMessage,
 }) {
     return Container(
       padding: const EdgeInsets.all(22),
@@ -8309,7 +8333,7 @@ String _habitsMessage(String stage) {
           ),
           const SizedBox(height: 6),
           Text(
-            'Your journey towards confident, kind digital communication has begun.',
+          growthMessage,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white.withOpacity(0.72),
