@@ -8038,6 +8038,13 @@ class JourneyScreen extends StatelessWidget {
     final growth =
     _treeGrowth(docs);
 
+    const journeyTestGrowthBoost = 0;
+
+final boostedGrowth = {
+  ...growth,
+  'leaves': (growth['leaves'] ?? 0) + journeyTestGrowthBoost,
+};
+
     final communicationStage =
         _rootStage(scores['communication'] ?? 0);
     final reflectionStage =
@@ -8052,10 +8059,10 @@ class JourneyScreen extends StatelessWidget {
       children: [
         _treeHeroCard(
   nourishment: _recentNourishment(docs),
-  growth: growth,
-  treeEmoji: _treeEmoji(growth),
-  growthMessage: _treeGrowthMessage(growth),
-),
+  growth: boostedGrowth,
+  treeEmoji: _treeEmoji(boostedGrowth),
+growthMessage: _treeGrowthMessage(boostedGrowth),
+          ),
         const SizedBox(height: 12),
         _growthRootsCard(
           communicationStage: communicationStage,
@@ -8344,9 +8351,24 @@ String _habitsMessage(String stage) {
               ),
             ),
             alignment: Alignment.center,
-            child: Text(
-  treeEmoji,
-  style: const TextStyle(fontSize: 68),
+            child: AnimatedSwitcher(
+  duration: const Duration(milliseconds: 900),
+  switchInCurve: Curves.easeOutBack,
+  switchOutCurve: Curves.easeIn,
+  transitionBuilder: (child, animation) {
+    return ScaleTransition(
+      scale: animation,
+      child: FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+    );
+  },
+  child: Text(
+    treeEmoji,
+    key: ValueKey(treeEmoji),
+    style: const TextStyle(fontSize: 68),
+  ),
 ),
           ),
           const SizedBox(height: 18),
