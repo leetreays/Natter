@@ -8350,9 +8350,9 @@ String _habitsMessage(String stage) {
 ),
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
   _treeVariantName(growth),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.w900,
