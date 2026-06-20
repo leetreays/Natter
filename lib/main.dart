@@ -8053,6 +8053,7 @@ class JourneyScreen extends StatelessWidget {
         _treeHeroCard(
   nourishment: _recentNourishment(docs),
   growth: growth,
+  treeEmoji: _treeEmoji(growth),
 ),
         const SizedBox(height: 12),
         _growthRootsCard(
@@ -8158,6 +8159,19 @@ Map<String, int> _treeGrowth(
   };
 }
 
+String _treeEmoji(Map<String, int> growth) {
+  final leaves = growth['leaves'] ?? 0;
+  final branches = growth['branches'] ?? 0;
+  final flowers = growth['flowers'] ?? 0;
+  final roots = growth['roots'] ?? 0;
+
+  final total = leaves + branches + flowers + roots;
+
+  if (total >= 80) return '🌳';
+  if (total >= 35) return '🌿';
+  return '🌱';
+}
+
 Map<String, String>? _recentNourishment(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
 ) {
@@ -8228,6 +8242,7 @@ String _habitsMessage(String stage) {
   Widget _treeHeroCard({
   required Map<String, String>? nourishment,
   required Map<String, int> growth,
+  required String treeEmoji,
 }) {
     return Container(
       padding: const EdgeInsets.all(22),
@@ -8278,10 +8293,10 @@ String _habitsMessage(String stage) {
               ),
             ),
             alignment: Alignment.center,
-            child: const Text(
-              '🌱',
-              style: TextStyle(fontSize: 68),
-            ),
+            child: Text(
+  treeEmoji,
+  style: const TextStyle(fontSize: 68),
+),
           ),
           const SizedBox(height: 18),
           const Text(
@@ -8302,54 +8317,6 @@ String _habitsMessage(String stage) {
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 18),
-
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.07),
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.08),
-    ),
-  ),
-  child: Column(
-    children: [
-      Text(
-        '🍃 Leaves: ${growth['leaves']}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        '🌿 Branches: ${growth['branches']}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        '🌸 Flowers: ${growth['flowers']}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 6),
-      Text(
-        '🌱 Roots: ${growth['roots']}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    ],
-  ),
-),
           if (nourishment != null) ...[
   const SizedBox(height: 18),
   Container(
