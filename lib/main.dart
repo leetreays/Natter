@@ -8457,11 +8457,13 @@ String _habitsMessage(String stage) {
       ),
     );
   },
-  child: Text(
-    treeEmoji,
-    key: ValueKey(treeEmoji),
-    style: const TextStyle(fontSize: 58),
-  ),
+  child: Image.asset(
+  'assets/trees/seedling_1.png',
+  key: const ValueKey('seedling_1'),
+  width: 110,
+  height: 110,
+  fit: BoxFit.contain,
+),
 ),
           ),
           const SizedBox(height: 18),
