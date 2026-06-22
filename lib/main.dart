@@ -8458,7 +8458,7 @@ String _habitsMessage(String stage) {
     );
   },
   child: Image.asset(
-  'assets/trees/seedling_1.png',
+  'assets/seedling_1.png',
   key: const ValueKey('seedling_1'),
   width: 110,
   height: 110,
