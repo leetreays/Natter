@@ -8460,8 +8460,8 @@ String _habitsMessage(String stage) {
   child: Image.asset(
   'assets/seedling_1.png',
   key: const ValueKey('seedling_1'),
-  width: 110,
-  height: 110,
+  width: 150,
+  height: 150,
   fit: BoxFit.contain,
 ),
 ),
