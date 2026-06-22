@@ -8444,8 +8444,24 @@ String _habitsMessage(String stage) {
               ),
             ),
             alignment: Alignment.center,
-            child: JourneyTreeWidget(
-  stage: _treeVisualStage(growth),
+            child: AnimatedSwitcher(
+  duration: const Duration(milliseconds: 900),
+  switchInCurve: Curves.easeOutBack,
+  switchOutCurve: Curves.easeIn,
+  transitionBuilder: (child, animation) {
+    return ScaleTransition(
+      scale: animation,
+      child: FadeTransition(
+        opacity: animation,
+        child: child,
+      ),
+    );
+  },
+  child: Text(
+    treeEmoji,
+    key: ValueKey(treeEmoji),
+    style: const TextStyle(fontSize: 58),
+  ),
 ),
           ),
           const SizedBox(height: 18),
