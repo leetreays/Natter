@@ -1,3 +1,8 @@
+// TODO: REMOVE JOURNEY TESTING CODE
+// - journeyTestGrowthBoost
+// - temporary initState growth animation test
+// - temporary growth controls (if still present)
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
