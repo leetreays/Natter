@@ -8024,6 +8024,32 @@ class _JourneyScreenState extends State<JourneyScreen> {
   int journeyTestGrowthBoost = 0;
 
   @override
+void initState() {
+  super.initState();
+
+  Future.delayed(const Duration(seconds: 2), () {
+    if (!mounted) return;
+    setState(() {
+      journeyTestGrowthBoost = 40;
+    });
+  });
+
+  Future.delayed(const Duration(seconds: 4), () {
+    if (!mounted) return;
+    setState(() {
+      journeyTestGrowthBoost = 80;
+    });
+  });
+
+  Future.delayed(const Duration(seconds: 6), () {
+    if (!mounted) return;
+    setState(() {
+      journeyTestGrowthBoost = 120;
+    });
+  });
+}
+
+  @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
     
