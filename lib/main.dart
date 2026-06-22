@@ -8710,7 +8710,6 @@ String _habitsMessage(String stage) {
     );
   }
 }
-}
 
 class CeremonyScreen extends StatelessWidget {
   final String name;
