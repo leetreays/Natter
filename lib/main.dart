@@ -8271,6 +8271,26 @@ String _treeVariantName(Map<String, int> growth) {
   return 'Seedling';
 }
 
+String _treeVisualStage(Map<String, int> growth) {
+  final total =
+      (growth['leaves'] ?? 0) +
+      (growth['branches'] ?? 0) +
+      (growth['flowers'] ?? 0) +
+      (growth['roots'] ?? 0);
+
+  if (total >= 120) return 'sapling';
+
+  if (total >= 80) return 'flourishing_seedling';
+
+  if (total >= 55) return 'branching_seedling';
+
+  if (total >= 35) return 'strong_seedling';
+
+  if (total >= 15) return 'growing_seedling';
+
+  return 'seedling';
+}
+
 String _treeGrowthMessage(Map<String, int> growth) {
   final total =
       (growth['leaves'] ?? 0) +
@@ -8359,6 +8379,67 @@ String _habitsMessage(String stage) {
   }
   return 'Learning healthy routines online.';
 }
+
+class JourneyTreeWidget extends StatelessWidget {
+  final String stage;
+
+  const JourneyTreeWidget({
+    super.key,
+    required this.stage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    String emoji;
+
+    switch (stage) {
+      case 'sapling':
+        emoji = '🌳';
+        break;
+
+      case 'flourishing_seedling':
+        emoji = '🌿';
+        break;
+
+      case 'branching_seedling':
+        emoji = '🍃';
+        break;
+
+      case 'strong_seedling':
+        emoji = '🍃';
+        break;
+
+      case 'growing_seedling':
+        emoji = '🌱';
+        break;
+
+      default:
+        emoji = '🌱';
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 900),
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) {
+        return ScaleTransition(
+          scale: animation,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+      child: Text(
+        emoji,
+        key: ValueKey(stage),
+        style: const TextStyle(
+          fontSize: 58,
+        ),
+      ),
+    );
+  }
+}
   
   Widget _treeHeroCard({
   required Map<String, String>? nourishment,
@@ -8415,24 +8496,8 @@ String _habitsMessage(String stage) {
               ),
             ),
             alignment: Alignment.center,
-            child: AnimatedSwitcher(
-  duration: const Duration(milliseconds: 900),
-  switchInCurve: Curves.easeOutBack,
-  switchOutCurve: Curves.easeIn,
-  transitionBuilder: (child, animation) {
-    return ScaleTransition(
-      scale: animation,
-      child: FadeTransition(
-        opacity: animation,
-        child: child,
-      ),
-    );
-  },
-  child: Text(
-    treeEmoji,
-    key: ValueKey(treeEmoji),
-    style: const TextStyle(fontSize: 58),
-  ),
+            child: JourneyTreeWidget(
+  stage: _treeVisualStage(growth),
 ),
           ),
           const SizedBox(height: 18),
