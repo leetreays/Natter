@@ -8013,8 +8013,15 @@ AnimatedSwitcher(
   }
 }
 
-class JourneyScreen extends StatelessWidget {
+class JourneyScreen extends StatefulWidget {
   const JourneyScreen({super.key});
+
+  @override
+  State<JourneyScreen> createState() => _JourneyScreenState();
+}
+
+class _JourneyScreenState extends State<JourneyScreen> {
+  int journeyTestGrowthBoost = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -8037,8 +8044,6 @@ class JourneyScreen extends StatelessWidget {
     final scores = _journeyRootScores(docs);
     final growth =
     _treeGrowth(docs);
-
-    const journeyTestGrowthBoost = 40;
 
 final boostedGrowth = {
   ...growth,
@@ -8063,6 +8068,41 @@ final boostedGrowth = {
   treeEmoji: _treeEmoji(boostedGrowth),
 growthMessage: _treeGrowthMessage(boostedGrowth),
           ),
+        const SizedBox(height: 12),
+Container(
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.07),
+    borderRadius: BorderRadius.circular(18),
+  ),
+  child: Row(
+    children: [
+      Expanded(
+        child: Text(
+          'Test growth boost: $journeyTestGrowthBoost',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+      IconButton(
+        onPressed: () {
+          setState(() {
+            journeyTestGrowthBoost += 40;
+            if (journeyTestGrowthBoost > 160) {
+              journeyTestGrowthBoost = 0;
+            }
+          });
+        },
+        icon: const Icon(
+          Icons.auto_awesome_rounded,
+          color: Colors.white,
+        ),
+      ),
+    ],
+  ),
+),
         const SizedBox(height: 12),
         _growthRootsCard(
           communicationStage: communicationStage,
@@ -8669,6 +8709,7 @@ String _habitsMessage(String stage) {
       ),
     );
   }
+}
 }
 
 class CeremonyScreen extends StatelessWidget {
