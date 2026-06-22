@@ -8174,17 +8174,10 @@ String _treeEmoji(Map<String, int> growth) {
       (growth['flowers'] ?? 0) +
       (growth['roots'] ?? 0);
 
-  if (total >= 120) return '🌳';   // Sapling
-
-  if (total >= 80) return '🌿🌿';  // Flourishing seedling
-
-  if (total >= 55) return '🌿';    // Branching seedling
-
-  if (total >= 35) return '🍃';    // Strong seedling
-
-  if (total >= 15) return '🌱';    // Growing seedling
-
-  return '🌱';                     // First sprout
+  if (total >= 120) return '🌳';
+  if (total >= 80) return '🌿';
+  if (total >= 35) return '🍃';
+  return '🌱';
 }
 
 String _treeVariantName(Map<String, int> growth) {
@@ -8367,7 +8360,7 @@ String _habitsMessage(String stage) {
   child: Text(
     treeEmoji,
     key: ValueKey(treeEmoji),
-    style: const TextStyle(fontSize: 68),
+    style: const TextStyle(fontSize: 58),
   ),
 ),
           ),
