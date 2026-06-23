@@ -8026,33 +8026,6 @@ class JourneyScreen extends StatefulWidget {
 }
 
 class _JourneyScreenState extends State<JourneyScreen> {
-  int journeyTestGrowthBoost = 0;
-
-  @override
-void initState() {
-  super.initState();
-
-  Future.delayed(const Duration(seconds: 2), () {
-    if (!mounted) return;
-    setState(() {
-      journeyTestGrowthBoost = 40;
-    });
-  });
-
-  Future.delayed(const Duration(seconds: 4), () {
-    if (!mounted) return;
-    setState(() {
-      journeyTestGrowthBoost = 80;
-    });
-  });
-
-  Future.delayed(const Duration(seconds: 6), () {
-    if (!mounted) return;
-    setState(() {
-      journeyTestGrowthBoost = 120;
-    });
-  });
-}
 
   @override
   Widget build(BuildContext context) {
@@ -8076,11 +8049,6 @@ void initState() {
     final growth =
     _treeGrowth(docs);
 
-final boostedGrowth = {
-  ...growth,
-  'leaves': (growth['leaves'] ?? 0) + journeyTestGrowthBoost,
-};
-
     final communicationStage =
         _rootStage(scores['communication'] ?? 0);
     final reflectionStage =
@@ -8095,45 +8063,10 @@ final boostedGrowth = {
       children: [
         _treeHeroCard(
   nourishment: _recentNourishment(docs),
-  growth: boostedGrowth,
-  treeEmoji: _treeEmoji(boostedGrowth),
-growthMessage: _treeGrowthMessage(boostedGrowth),
+  growth: growth,
+treeEmoji: _treeEmoji(growth),
+growthMessage: _treeGrowthMessage(growth),
           ),
-        const SizedBox(height: 12),
-Container(
-  padding: const EdgeInsets.all(14),
-  decoration: BoxDecoration(
-    color: Colors.white.withOpacity(0.07),
-    borderRadius: BorderRadius.circular(18),
-  ),
-  child: Row(
-    children: [
-      Expanded(
-        child: Text(
-          'Test growth boost: $journeyTestGrowthBoost',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      IconButton(
-        onPressed: () {
-          setState(() {
-            journeyTestGrowthBoost += 40;
-            if (journeyTestGrowthBoost > 160) {
-              journeyTestGrowthBoost = 0;
-            }
-          });
-        },
-        icon: const Icon(
-          Icons.auto_awesome_rounded,
-          color: Colors.white,
-        ),
-      ),
-    ],
-  ),
-),
         const SizedBox(height: 12),
         _growthRootsCard(
           communicationStage: communicationStage,
