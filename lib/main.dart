@@ -8432,40 +8432,14 @@ String _habitsMessage(String stage) {
             ),
           ),
           const SizedBox(height: 22),
-          Container(
-            width: 132,
-            height: 132,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: NatterBrand.green.withOpacity(0.12),
-              border: Border.all(
-                color: NatterBrand.green.withOpacity(0.35),
-                width: 2,
-              ),
-            ),
-            alignment: Alignment.center,
-            child: AnimatedSwitcher(
-  duration: const Duration(milliseconds: 900),
-  switchInCurve: Curves.easeOutBack,
-  switchOutCurve: Curves.easeIn,
-  transitionBuilder: (child, animation) {
-    return ScaleTransition(
-      scale: animation,
-      child: FadeTransition(
-        opacity: animation,
-        child: child,
-      ),
-    );
-  },
+          SizedBox(
+  width: 200,
+  height: 200,
   child: Image.asset(
-  'assets/seedling_1.png',
-  key: const ValueKey('seedling_1'),
-  width: 150,
-  height: 150,
-  fit: BoxFit.contain,
+    'assets/seedling_1_circle.png',
+    fit: BoxFit.contain,
+  ),
 ),
-),
-          ),
           const SizedBox(height: 18),
           Text(
   _treeVariantName(growth),
