@@ -8433,8 +8433,8 @@ String _habitsMessage(String stage) {
           ),
           const SizedBox(height: 22),
           SizedBox(
-  width: 260,
-  height: 260,
+  width: 200,
+  height: 200,
   child: Image.asset(
     'assets/seedling_1_circle.png',
     fit: BoxFit.contain,
