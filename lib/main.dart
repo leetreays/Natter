@@ -1,8 +1,3 @@
-// TODO: REMOVE JOURNEY TESTING CODE
-// - journeyTestGrowthBoost
-// - temporary initState growth animation test
-// - temporary growth controls (if still present)
-
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -3001,17 +2996,17 @@ final profanityResult = checkHardBlockList(profanityPatterns);
 if (profanityResult != null) return profanityResult;
 
 const protectPatterns = {
-  'idiot': 'Can we talk kindly?',
-  'loser': 'Can we talk kindly?',
-  'stupid': 'Can we slow down?',
-  'dumb': 'Can we try speaking more kindly?',
-  'shut up': 'I need a minute to calm down.',
-  'i hate you': 'I’m really upset right now.',
+  'idiot': 'I’m upset. Can we talk about this calmly?',
+  'loser': 'That upset me. Can we talk without name-calling?',
+  'stupid': 'I don’t agree, but I can say that kindly.',
+  'dumb': 'I don’t agree, but I can say that kindly.',
+  'shut up': 'I need a minute before we keep talking.',
+  'i hate you': 'I’m really upset right now. I need some space.',
   'go away': 'I need a little space right now.',
-  'leave me alone': 'Can we pause this conversation for a bit?',
-  'nobody likes you': 'That felt hurtful. Can we reset?',
-  'everyone hates you': 'Can we try speaking more kindly?',
-  'no one wants you here': 'Let’s try to include everyone kindly.',
+  'leave me alone': 'I need a break from this conversation.',
+  'nobody likes you': 'That came out unkindly. Can we reset?',
+  'everyone hates you': 'That came out unkindly. Can we reset?',
+  'no one wants you here': 'Let’s try to include people kindly.',
 };
 
 for (final entry in protectPatterns.entries) {
@@ -3025,20 +3020,39 @@ for (final entry in protectPatterns.entries) {
 }
 
   const coachPatterns = {
-    'you can t play': 'That might make someone feel left out.',
-    'you cant play': 'That might make someone feel left out.',
-    'reply now': 'Try giving people time to respond calmly.',
-    'why are you ignoring me': 'That message could feel pressuring.',
-    'don t tell your parents': 'Secrets online can sometimes be unsafe.',
-    'dont tell your parents': 'Secrets online can sometimes be unsafe.',
-  };
+  'you can t play': 'That message could make someone feel left out.',
+  'you cant play': 'That message could make someone feel left out.',
+  'reply now': 'That message could make someone feel pressured.',
+  'answer me now': 'That message could make someone feel pressured.',
+  'why are you ignoring me': 'That message could make someone feel pressured.',
+  'don t tell your parents': 'Secrets online can sometimes be unsafe.',
+  'dont tell your parents': 'Secrets online can sometimes be unsafe.',
+};
+
+  String _coachSuggestionForPattern(String pattern) {
+  if (pattern.contains('play')) {
+    return 'Can we find a kinder way to include people?';
+  }
+
+  if (pattern.contains('reply') ||
+      pattern.contains('answer') ||
+      pattern.contains('ignoring')) {
+    return 'I’d like to talk, but I can give you time to reply.';
+  }
+
+  if (pattern.contains('parents')) {
+    return 'It is okay to talk to a trusted grown-up if something feels worrying.';
+  }
+
+  return 'Can we try saying that in a kinder way?';
+  }
 
   for (final entry in coachPatterns.entries) {
     if (safetyPatternMatches(text, lower, entry.key)) {
       return SafetyCheckResult(
         level: SafetyLevel.coach,
         reason: entry.value,
-        suggestion: 'Can we try saying that in a kinder way?',
+        suggestion: _coachSuggestionForPattern(entry.key),
       );
     }
   }
