@@ -13156,10 +13156,9 @@ final sendAnyway = await _showSafetyCoachDialog(
       ));
     }
 
-    await state.adjustConversationFriendshipHealth(
+    await state.recordConversationOutcome(
   conversationId: widget.conversationId,
-  amount: -1,
-  reason: 'protected_delivery',
+  outcome: 'protected_delivery',
 );
 
     await _sendMessageNow(text, flagged: true);
