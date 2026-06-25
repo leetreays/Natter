@@ -1696,6 +1696,55 @@ Future<void> adjustConversationFriendshipHealth({
 }
 }
 
+Future<void> recordConversationOutcome({
+  required String conversationId,
+  required String outcome,
+}) async {
+  int friendshipAmount = 0;
+  String reason = outcome;
+
+  switch (outcome) {
+    case 'kind_rewrite':
+      friendshipAmount = 2;
+      break;
+
+    case 'protected_delivery':
+      friendshipAmount = -1;
+      break;
+
+    case 'blocked_message':
+      friendshipAmount = -2;
+      break;
+
+    case 'conversation_recovered':
+      friendshipAmount = 4;
+      break;
+
+    case 'pause_respected':
+      friendshipAmount = 1;
+      break;
+
+    case 'repeated_targeting':
+      friendshipAmount = -5;
+      break;
+
+    case 'continued_targeting':
+      friendshipAmount = -8;
+      break;
+
+    default:
+      friendshipAmount = 0;
+  }
+
+  if (friendshipAmount != 0) {
+    await adjustConversationFriendshipHealth(
+      conversationId: conversationId,
+      amount: friendshipAmount,
+      reason: reason,
+    );
+  }
+}
+
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
   required String friendshipId,
 }) async* {
