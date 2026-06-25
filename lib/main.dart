@@ -12992,11 +12992,10 @@ if (adjustedLevel == SafetyLevel.block) {
   reason: 'blocked_message',
 );
 
-  await state.adjustConversationFriendshipHealth(
+  await state.recordConversationOutcome(
   conversationId: widget.conversationId,
-  amount: -2,
-  reason: 'blocked_message',
-);
+  outcome: 'blocked_message',
+); 
 
   if (state.activeParentId != null &&
       state.activeChildId != null) {
