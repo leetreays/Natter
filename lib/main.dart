@@ -13329,10 +13329,9 @@ await state.recordEscalationEvent(
       } else {
         state.recordKindRewrite();
 
-      await state.adjustConversationFriendshipHealth(
+      await state.recordConversationOutcome(
   conversationId: widget.conversationId,
-  amount: 2,
-  reason: 'kind_rewrite',
+  outcome: 'kind_rewrite',
 );
 
         if (state.activeParentId != null && state.activeChildId != null) {
