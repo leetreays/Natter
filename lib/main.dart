@@ -2854,6 +2854,12 @@ bool safetyPatternMatches(
     return true;
   }
 
+  if (condensedPattern.length <= 3) {
+  return normalisedText
+      .split(RegExp(r'\s+'))
+      .contains(pattern);
+  }
+
   final raw = originalText
       .toLowerCase()
       .replaceAll('0', 'o')
