@@ -14551,13 +14551,18 @@ if (hasRecovered &&
     final state = AppStateScope.of(context);
 
     await state.conversationsRef()
-        .doc(widget.conversationId)
-        .set({
-      'conversationRecoveredLogged': true,
-    }, SetOptions(merge: true));
+    .doc(widget.conversationId)
+    .set({
+  'conversationRecoveredLogged': true,
+}, SetOptions(merge: true));
 
-    if (state.activeParentId != null &&
-        state.activeChildId != null) {
+await state.recordConversationOutcome(
+  conversationId: widget.conversationId,
+  outcome: 'conversation_recovered',
+);
+
+if (state.activeParentId != null &&
+    state.activeChildId != null) {
       await state.recordChildSignal(
         parentId: state.activeParentId!,
         childId: state.activeChildId!,
