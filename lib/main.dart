@@ -13105,6 +13105,12 @@ if (targetingActive) {
       time: DateTime.now(),
     ),
   );
+
+  await state.recordConversationOutcome(
+    conversationId: widget.conversationId,
+    outcome: 'repeated_targeting',
+  );
+
   return;
 }
 }
