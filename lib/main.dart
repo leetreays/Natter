@@ -13497,13 +13497,7 @@ if (state.activeParentId != null && state.activeChildId != null) {
       ),
     ),
   );
-}
-      unawaited(
-  state.recordConversationOutcome(
-    conversationId: widget.conversationId,
-    outcome: 'pause_respected',
-  ),
-);
+} 
     },
   );
 }
