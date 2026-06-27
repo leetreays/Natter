@@ -1701,36 +1701,42 @@ Future<void> recordConversationOutcome({
   required String outcome,
 }) async {
   int friendshipAmount = 0;
-  String reason = outcome;
+int repairAmount = 0;
+String reason = outcome;
 
   switch (outcome) {
-    case 'kind_rewrite':
-      friendshipAmount = 2;
-      break;
+case 'kind_rewrite':
+  friendshipAmount = 2;
+  repairAmount = 2;
+  break;
 
-    case 'protected_delivery':
-      friendshipAmount = -1;
-      break;
+case 'protected_delivery':
+  friendshipAmount = -1;
+  break;
 
-    case 'blocked_message':
-      friendshipAmount = -2;
-      break;
+case 'blocked_message':
+  friendshipAmount = -2;
+  repairAmount = -2;
+  break;
 
-    case 'conversation_recovered':
-      friendshipAmount = 4;
-      break;
+case 'conversation_recovered':
+  friendshipAmount = 4;
+  repairAmount = 5;
+  break;
 
-    case 'pause_respected':
-      friendshipAmount = 1;
-      break;
+case 'pause_respected':
+  friendshipAmount = 0;
+  break;
 
-    case 'repeated_targeting':
-      friendshipAmount = -5;
-      break;
+case 'repeated_targeting':
+  friendshipAmount = -5;
+  repairAmount = -5;
+  break;
 
-    case 'continued_targeting':
-      friendshipAmount = -8;
-      break;
+case 'continued_targeting':
+  friendshipAmount = -8;
+  repairAmount = -8;
+  break;
 
     default:
       friendshipAmount = 0;
@@ -1742,6 +1748,13 @@ Future<void> recordConversationOutcome({
       amount: friendshipAmount,
       reason: reason,
     );
+  }
+  if (repairAmount != 0) {
+  await adjustConversationRepairMomentum(
+    conversationId: conversationId,
+    amount: repairAmount,
+    reason: reason,
+  );
   }
 }
 
