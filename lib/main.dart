@@ -1731,16 +1731,13 @@ Future<int> adjustConversationRepairMomentum({
 }) async {
   final ref = conversationsRef().doc(conversationId);
 
-  int updatedRepairMomentum = 0;
-
-  await FirebaseFirestore.instance.runTransaction((transaction) async {
+  final updatedRepairMomentum =
+      await FirebaseFirestore.instance.runTransaction<int>((transaction) async {
     final snap = await transaction.get(ref);
     final data = snap.data() ?? {};
 
     final current = (data['repairMomentum'] ?? 0) as num;
-    final updated = (current + amount).clamp(0, 100);
-
-    updatedRepairMomentum = updated.toInt();
+    final updated = (current + amount).clamp(0, 100).toInt();
 
     transaction.set(
       ref,
@@ -1751,6 +1748,8 @@ Future<int> adjustConversationRepairMomentum({
       },
       SetOptions(merge: true),
     );
+
+    return updated;
   });
 
   return updatedRepairMomentum;
@@ -1816,8 +1815,6 @@ if (repairAmount != 0) {
     reason: reason,
   );
 }
-  
-  await Future.delayed(const Duration(milliseconds: 250));
 
 await checkConversationMilestones(
   conversationId: conversationId,
