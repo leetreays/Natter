@@ -1770,17 +1770,13 @@ case 'conversation_recovered':
   repairAmount = ConversationOutcomeValues.conversationRecoveredRepair;
   break;
 
-case 'pause_respected':
-  friendshipAmount = ConversationOutcomeValues.pauseRespectedFriendship;
-  break;
-
 case 'repeated_targeting':
   friendshipAmount = ConversationOutcomeValues.repeatedTargetingFriendship;
   repairAmount = ConversationOutcomeValues.repeatedTargetingRepair;
   break;
 
 case 'continued_targeting':
-  friendshipAmount = ConversationOutcomeValues.continuedatargetingFriendship;
+  friendshipAmount = ConversationOutcomeValues.continuedTargetingFriendship;
   repairAmount = ConversationOutcomeValues.continuedTargetingRepair;
   break;
 
