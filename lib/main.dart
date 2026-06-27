@@ -1828,6 +1828,8 @@ await checkConversationMilestones(
 
 Future<void> checkConversationMilestones({
   required String conversationId,
+  int? friendshipHealthOverride,
+  int? repairMomentumOverride,
 }) async {
   final snap = await conversationsRef()
       .doc(conversationId)
@@ -1838,10 +1840,12 @@ Future<void> checkConversationMilestones({
   final data = snap.data()!;
 
   final friendshipHealth =
-      (data['friendshipHealth'] ?? 0) as num;
+    friendshipHealthOverride ??
+    ((data['friendshipHealth'] ?? 0) as num).toInt();
 
   final repairMomentum =
-      (data['repairMomentum'] ?? 0) as num;
+    repairMomentumOverride ??
+    ((data['repairMomentum'] ?? 0) as num).toInt();
 
   await conversationsRef().doc(conversationId).set({
   'milestoneCheckDebug': {
