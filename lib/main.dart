@@ -1798,20 +1798,24 @@ case 'continued_targeting':
       friendshipAmount = 0;
   }
 
-  if (friendshipAmount != 0) {
-    await adjustConversationFriendshipHealth(
-      conversationId: conversationId,
-      amount: friendshipAmount,
-      reason: reason,
-    );
-  }
-  if (repairAmount != 0) {
-  await adjustConversationRepairMomentum(
+  int? updatedFriendshipHealth;
+
+if (friendshipAmount != 0) {
+  updatedFriendshipHealth = await adjustConversationFriendshipHealth(
+    conversationId: conversationId,
+    amount: friendshipAmount,
+    reason: reason,
+  );
+}
+  int? updatedRepairMomentum;
+
+if (repairAmount != 0) {
+  updatedRepairMomentum = await adjustConversationRepairMomentum(
     conversationId: conversationId,
     amount: repairAmount,
     reason: reason,
   );
-  }
+}
   
   await Future.delayed(const Duration(milliseconds: 250));
 
