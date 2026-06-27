@@ -1826,6 +1826,14 @@ Future<void> checkConversationMilestones({
   final repairMomentum =
       (data['repairMomentum'] ?? 0) as num;
 
+  await conversationsRef().doc(conversationId).set({
+  'milestoneCheckDebug': {
+    'friendshipHealth': friendshipHealth,
+    'repairMomentum': repairMomentum,
+    'checkedAt': FieldValue.serverTimestamp(),
+  },
+}, SetOptions(merge: true));
+
   final recoveringMilestoneAwarded =
     data['recoveringMilestoneAwarded'] == true;
 
