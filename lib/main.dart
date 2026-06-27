@@ -1625,7 +1625,7 @@ String friendshipStageDescriptionForMoment(String stage) {
   }
 }
   
-Future<void> adjustConversationFriendshipHealth({
+Future<int> adjustConversationFriendshipHealth({
   required String conversationId,
   required int amount,
   required String reason,
@@ -1718,6 +1718,8 @@ Future<void> adjustConversationFriendshipHealth({
   } catch (e) {
   debugPrint('Friendship mirror write failed: $e');
 }
+
+  return (result['updated'] as num).toInt();
 }
 
 Future<int> adjustConversationRepairMomentum({
