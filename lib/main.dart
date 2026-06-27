@@ -1846,6 +1846,23 @@ Future<void> checkConversationMilestones({
 }
 }
 
+Future<void> recordMeaningfulMoment({
+  required String conversationId,
+  required String type,
+  required String title,
+  required String description,
+}) async {
+  final conversationRef =
+      conversationsRef().doc(conversationId);
+
+  await conversationRef.collection('meaningful_moments').add({
+    'type': type,
+    'title': title,
+    'description': description,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+}
+
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
   required String friendshipId,
 }) async* {
