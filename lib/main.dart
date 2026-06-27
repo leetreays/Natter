@@ -1800,6 +1800,28 @@ case 'continued_targeting':
   }
 }
 
+Future<void> checkConversationMilestones({
+  required String conversationId,
+}) async {
+  final snap = await conversationsRef()
+      .doc(conversationId)
+      .get();
+
+  if (!snap.exists) return;
+
+  final data = snap.data()!;
+
+  final friendshipHealth =
+      (data['friendshipHealth'] ?? 0) as num;
+
+  final repairMomentum =
+      (data['repairMomentum'] ?? 0) as num;
+
+  // Placeholder.
+  // This method will become the "decision maker"
+  // for celebrations, nudges and journey growth.
+}
+
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
   required String friendshipId,
 }) async* {
