@@ -1696,6 +1696,33 @@ Future<void> adjustConversationFriendshipHealth({
 }
 }
 
+Future<void> adjustConversationRepairMomentum({
+  required String conversationId,
+  required int amount,
+  required String reason,
+}) async {
+  final ref = conversationsRef().doc(conversationId);
+
+  await FirebaseFirestore.instance.runTransaction((transaction) async {
+    final snap = await transaction.get(ref);
+    final data = snap.data() ?? {};
+
+    final current = (data['repairMomentum'] ?? 0) as num;
+
+    final updated = (current + amount).clamp(0, 100);
+
+    transaction.set(
+      ref,
+      {
+        'repairMomentum': updated,
+        'lastRepairMomentumReason': reason,
+        'lastRepairMomentumAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  });
+}
+
 Future<void> recordConversationOutcome({
   required String conversationId,
   required String outcome,
