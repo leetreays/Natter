@@ -1843,6 +1843,12 @@ Future<void> checkConversationMilestones({
   'lastConversationMilestoneAt':
       FieldValue.serverTimestamp(),
 }, SetOptions(merge: true));
+    await recordMeaningfulMoment(
+  conversationId: conversationId,
+  type: 'recovering_friendship',
+  title: 'Friendship recovering',
+  description: 'This friendship has started to recover after a difficult moment.',
+);
 }
 }
 
