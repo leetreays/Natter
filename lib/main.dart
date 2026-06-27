@@ -1826,13 +1826,23 @@ Future<void> checkConversationMilestones({
   final repairMomentum =
       (data['repairMomentum'] ?? 0) as num;
 
-  if (friendshipHealth >=
+  final recoveringMilestoneAwarded =
+    data['recoveringMilestoneAwarded'] == true;
+
+  if (!recoveringMilestoneAwarded &&
+    friendshipHealth >=
         ConversationMilestones.recoveringFriendshipHealth &&
     repairMomentum >=
         ConversationMilestones.recoveringRepairMomentum) {
-  debugPrint(
-    'Conversation milestone reached: recovering friendship.',
-  );
+  await conversationsRef()
+    .doc(conversationId)
+    .set({
+  'recoveringMilestoneAwarded': true,
+  'lastConversationMilestone':
+      'recovering_friendship',
+  'lastConversationMilestoneAt':
+      FieldValue.serverTimestamp(),
+}, SetOptions(merge: true));
 }
 }
 
