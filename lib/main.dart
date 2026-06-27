@@ -666,6 +666,25 @@ int unreadCountFor(String childId) {
   }
 }
 
+class ConversationOutcomeValues {
+  static const int kindRewriteFriendship = 2;
+  static const int kindRewriteRepair = 2;
+
+  static const int protectedDeliveryFriendship = -1;
+
+  static const int blockedMessageFriendship = -2;
+  static const int blockedMessageRepair = -2;
+
+  static const int conversationRecoveredFriendship = 4;
+  static const int conversationRecoveredRepair = 5;
+
+  static const int repeatedTargetingFriendship = -5;
+  static const int repeatedTargetingRepair = -5;
+
+  static const int continuedTargetingFriendship = -8;
+  static const int continuedTargetingRepair = -8;
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
@@ -1733,36 +1752,36 @@ String reason = outcome;
 
   switch (outcome) {
 case 'kind_rewrite':
-  friendshipAmount = 2;
-  repairAmount = 2;
+  friendshipAmount = ConversationOutcomeValues.kindRewriteFriendship;
+  repairAmount = ConversationOutcomeValues.kindRewriteRepair;
   break;
 
 case 'protected_delivery':
-  friendshipAmount = -1;
+  friendshipAmount = ConversationOutcomeValues.protectedDeliveryFriendship;
   break;
 
 case 'blocked_message':
-  friendshipAmount = -2;
-  repairAmount = -2;
+  friendshipAmount = ConversationOutcomeValues.blockedMessageFriendship;
+  repairAmount = ConversationOutcomeValues.blockedMessageRepair;
   break;
 
 case 'conversation_recovered':
-  friendshipAmount = 4;
-  repairAmount = 5;
+  friendshipAmount = ConversationOutcomeValues.conversationRecoveredFriendship;
+  repairAmount = ConversationOutcomeValues.conversationRecoveredRepair;
   break;
 
 case 'pause_respected':
-  friendshipAmount = 0;
+  friendshipAmount = ConversationOutcomeValues.pauseRespectedFriendship;
   break;
 
 case 'repeated_targeting':
-  friendshipAmount = -5;
-  repairAmount = -5;
+  friendshipAmount = ConversationOutcomeValues.repeatedTargetingFriendship;
+  repairAmount = ConversationOutcomeValues.repeatedTargetingRepair;
   break;
 
 case 'continued_targeting':
-  friendshipAmount = -8;
-  repairAmount = -8;
+  friendshipAmount = ConversationOutcomeValues.continuedatargetingFriendship;
+  repairAmount = ConversationOutcomeValues.continuedTargetingRepair;
   break;
 
     default:
