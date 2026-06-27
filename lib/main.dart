@@ -1821,6 +1821,8 @@ if (repairAmount != 0) {
 
 await checkConversationMilestones(
   conversationId: conversationId,
+  friendshipHealthOverride: updatedFriendshipHealth,
+  repairMomentumOverride: updatedRepairMomentum,
 );
 }
 
