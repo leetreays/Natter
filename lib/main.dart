@@ -1734,7 +1734,6 @@ Future<int> adjustConversationRepairMomentum({
     final data = snap.data() ?? {};
 
     final current = (data['repairMomentum'] ?? 0) as num;
-
     final updated = (current + amount).clamp(0, 100);
 
     updatedRepairMomentum = updated.toInt();
@@ -1748,9 +1747,9 @@ Future<int> adjustConversationRepairMomentum({
       },
       SetOptions(merge: true),
     );
-
-    return updatedRepairMomentum;
   });
+
+  return updatedRepairMomentum;
 }
 
 Future<void> recordConversationOutcome({
