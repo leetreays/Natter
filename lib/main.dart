@@ -1685,7 +1685,9 @@ Future<int> adjustConversationFriendshipHealth({
   );
 
   final friendshipId = result['friendshipId'].toString();
-  if (friendshipId.isEmpty) return;
+  if (friendshipId.isEmpty) {
+  return (result['updated'] as num).toInt();
+  }
 
   try {
     final friendshipRef =
