@@ -685,6 +685,11 @@ class ConversationOutcomeValues {
   static const int continuedTargetingRepair = -8;
 }
 
+class ConversationMilestones {
+  static const int recoveringFriendshipHealth = 50;
+  static const int recoveringRepairMomentum = 15;
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
@@ -1817,9 +1822,14 @@ Future<void> checkConversationMilestones({
   final repairMomentum =
       (data['repairMomentum'] ?? 0) as num;
 
-  // Placeholder.
-  // This method will become the "decision maker"
-  // for celebrations, nudges and journey growth.
+  if (friendshipHealth >=
+        ConversationMilestones.recoveringFriendshipHealth &&
+    repairMomentum >=
+        ConversationMilestones.recoveringRepairMomentum) {
+  debugPrint(
+    'Conversation milestone reached: recovering friendship.',
+  );
+}
 }
 
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
