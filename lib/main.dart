@@ -1803,6 +1803,10 @@ case 'continued_targeting':
     reason: reason,
   );
   }
+  
+  await checkConversationMilestones(
+  conversationId: conversationId,
+);
 }
 
 Future<void> checkConversationMilestones({
