@@ -1804,7 +1804,9 @@ case 'continued_targeting':
   );
   }
   
-  await checkConversationMilestones(
+  await Future.delayed(const Duration(milliseconds: 250));
+
+await checkConversationMilestones(
   conversationId: conversationId,
 );
 }
