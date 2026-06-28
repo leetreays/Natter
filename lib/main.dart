@@ -1857,16 +1857,22 @@ Future<void> checkConversationMilestones({
     repairMomentumOverride ??
     ((data['repairMomentum'] ?? 0) as num).toInt();
 
+  final recoveringMilestoneAwarded =
+    data['recoveringMilestoneAwarded'] == true;
+
   await conversationsRef().doc(conversationId).set({
   'milestoneCheckDebug': {
     'friendshipHealth': friendshipHealth,
     'repairMomentum': repairMomentum,
     'checkedAt': FieldValue.serverTimestamp(),
+    'recoveringMilestoneAwarded': recoveringMilestoneAwarded,
+'healthThreshold': ConversationMilestones.recoveringFriendshipHealth,
+'repairThreshold': ConversationMilestones.recoveringRepairMomentum,
+'wouldAwardRecovering': !recoveringMilestoneAwarded &&
+    friendshipHealth >= ConversationMilestones.recoveringFriendshipHealth &&
+    repairMomentum >= ConversationMilestones.recoveringRepairMomentum,
   },
 }, SetOptions(merge: true));
-
-  final recoveringMilestoneAwarded =
-    data['recoveringMilestoneAwarded'] == true;
 
   if (!recoveringMilestoneAwarded &&
     friendshipHealth >=
