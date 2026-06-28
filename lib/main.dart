@@ -1801,15 +1801,6 @@ case 'continued_targeting':
       friendshipAmount = 0;
   }
 
-  await conversationsRef().doc(conversationId).set({
-  'outcomeEngineDebug': {
-    'outcome': outcome,
-    'friendshipAmount': friendshipAmount,
-    'repairAmount': repairAmount,
-    'calledAt': FieldValue.serverTimestamp(),
-  },
-}, SetOptions(merge: true));
-
   int? updatedFriendshipHealth;
 
 if (friendshipAmount != 0) {
@@ -1860,20 +1851,6 @@ Future<void> checkConversationMilestones({
   final recoveringMilestoneAwarded =
     data['recoveringMilestoneAwarded'] == true;
 
-  await conversationsRef().doc(conversationId).set({
-  'milestoneCheckDebug': {
-    'friendshipHealth': friendshipHealth,
-    'repairMomentum': repairMomentum,
-    'checkedAt': FieldValue.serverTimestamp(),
-    'recoveringMilestoneAwarded': recoveringMilestoneAwarded,
-'healthThreshold': ConversationMilestones.recoveringFriendshipHealth,
-'repairThreshold': ConversationMilestones.recoveringRepairMomentum,
-'wouldAwardRecovering': !recoveringMilestoneAwarded &&
-    friendshipHealth >= ConversationMilestones.recoveringFriendshipHealth &&
-    repairMomentum >= ConversationMilestones.recoveringRepairMomentum,
-  },
-}, SetOptions(merge: true));
-
   if (!recoveringMilestoneAwarded &&
     friendshipHealth >=
         ConversationMilestones.recoveringFriendshipHealth &&
@@ -1890,11 +1867,6 @@ await conversationRef.set({
   'recoveringMilestoneAwarded': true,
   'lastConversationMilestone': 'recovering_friendship',
   'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
-  'meaningfulMomentDebug': {
-    'created': true,
-    'type': 'recovering_friendship',
-    'createdAt': FieldValue.serverTimestamp(),
-  },
 }, SetOptions(merge: true));
 
 await momentRef.set({
