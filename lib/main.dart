@@ -1474,6 +1474,10 @@ Future<void> recordConversationRepair(
           FieldValue.increment(-1),
     }, SetOptions(merge: true));
   }
+  await checkConversationMilestones(
+  conversationId: conversationId,
+  repairMomentumOverride: repairMomentum.toInt(),
+);
 }
 
 bool shouldShowRepairFeedback(
