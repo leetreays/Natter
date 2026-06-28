@@ -1886,7 +1886,7 @@ batch.set(
   conversationRef,
   {
     'recoveringMilestoneAwarded': true,
-    'lastConversationMilestone': 'recovering_friendship_BATCH_TEST',
+    'lastConversationMilestone': 'recovering_friendship',
     'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
     'meaningfulMomentDebug': {
       'created': true,
