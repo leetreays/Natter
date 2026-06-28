@@ -1797,6 +1797,15 @@ case 'continued_targeting':
       friendshipAmount = 0;
   }
 
+  await conversationsRef().doc(conversationId).set({
+  'outcomeEngineDebug': {
+    'outcome': outcome,
+    'friendshipAmount': friendshipAmount,
+    'repairAmount': repairAmount,
+    'calledAt': FieldValue.serverTimestamp(),
+  },
+}, SetOptions(merge: true));
+
   int? updatedFriendshipHealth;
 
 if (friendshipAmount != 0) {
