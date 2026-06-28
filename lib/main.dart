@@ -1873,21 +1873,43 @@ Future<void> checkConversationMilestones({
         ConversationMilestones.recoveringFriendshipHealth &&
     repairMomentum >=
         ConversationMilestones.recoveringRepairMomentum) {
-  await conversationsRef()
-    .doc(conversationId)
-    .set({
-  'recoveringMilestoneAwarded': true,
-  'lastConversationMilestone':
-      'recovering_friendship',
-  'lastConversationMilestoneAt':
-      FieldValue.serverTimestamp(),
-}, SetOptions(merge: true));
-    await recordMeaningfulMoment(
-  conversationId: conversationId,
-  type: 'recovering_friendship',
-  title: 'Friendship recovering',
-  description: 'This friendship has started to recover after a difficult moment.',
+  final conversationRef =
+    conversationsRef().doc(conversationId);
+
+final momentRef = conversationRef
+    .collection('meaningful_moments')
+    .doc();
+
+final batch = FirebaseFirestore.instance.batch();
+
+batch.set(
+  conversationRef,
+  {
+    'recoveringMilestoneAwarded': true,
+    'lastConversationMilestone': 'recovering_friendship',
+    'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
+    'meaningfulMomentDebug': {
+      'created': true,
+      'momentId': momentRef.id,
+      'type': 'recovering_friendship',
+      'createdAt': FieldValue.serverTimestamp(),
+    },
+  },
+  SetOptions(merge: true),
 );
+
+batch.set(
+  momentRef,
+  {
+    'type': 'recovering_friendship',
+    'title': 'Friendship recovering',
+    'description':
+        'This friendship has started to recover after a difficult moment.',
+    'createdAt': FieldValue.serverTimestamp(),
+  },
+);
+
+await batch.commit();
 }
 }
 
