@@ -1886,36 +1886,25 @@ final momentRef = conversationRef
     .collection('meaningful_moments')
     .doc();
 
-final batch = FirebaseFirestore.instance.batch();
-
-batch.set(
-  conversationRef,
-  {
-    'recoveringMilestoneAwarded': true,
-    'lastConversationMilestone': 'recovering_friendship',
-    'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
-    'meaningfulMomentDebug': {
-      'created': true,
-      'momentId': momentRef.id,
-      'type': 'recovering_friendship',
-      'createdAt': FieldValue.serverTimestamp(),
-    },
-  },
-  SetOptions(merge: true),
-);
-
-batch.set(
-  momentRef,
-  {
+await conversationRef.set({
+  'recoveringMilestoneAwarded': true,
+  'lastConversationMilestone': 'recovering_friendship',
+  'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
+  'meaningfulMomentDebug': {
+    'created': true,
     'type': 'recovering_friendship',
-    'title': 'Friendship recovering',
-    'description':
-        'This friendship has started to recover after a difficult moment.',
     'createdAt': FieldValue.serverTimestamp(),
   },
-);
+}, SetOptions(merge: true));
 
-await batch.commit();
+await momentRef.set({
+  'type': 'recovering_friendship',
+  'title': 'Friendship recovering',
+  'description':
+      'This friendship has started to recover after a difficult moment.',
+  'createdAt': FieldValue.serverTimestamp(),
+});
+
 }
 }
 
