@@ -1921,13 +1921,6 @@ if (!firstRepairMomentAwarded &&
   await recordMeaningfulMoment(
   conversationId: conversationId,
   type: 'first_repair_moment',
-  title: 'First repair moment',
-  description:
-      'This friendship started to repair after a difficult moment.',
-  importance: 15,
-  celebrate: true,
-  icon: 'sprout',
-  colour: 'green',
 );
 }
 
@@ -1952,13 +1945,6 @@ await conversationRef.set({
 await recordMeaningfulMoment(
   conversationId: conversationId,
   type: 'recovering_friendship',
-  title: 'Friendship recovering',
-  description:
-      'This friendship has started to recover after a difficult moment.',
-  importance: 50,
-  celebrate: true,
-  icon: 'tree',
-  colour: 'gold',
 );
 
 }
@@ -1967,16 +1953,6 @@ await recordMeaningfulMoment(
 Future<void> recordMeaningfulMoment({
   required String conversationId,
   required String type,
-  required String title,
-  required String description,
-
-  int importance = 10,
-  String category = 'friendship',
-
-  bool celebrate = false,
-
-  String icon = 'sparkles',
-  String colour = 'blue',
 }) async {
   final conversationRef =
       conversationsRef().doc(conversationId);
