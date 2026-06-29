@@ -1870,13 +1870,17 @@ if (!firstRepairMomentAwarded &&
     'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
-  await momentRef.set({
-    'type': 'first_repair_moment',
-    'title': 'First repair moment',
-    'description':
-        'This friendship started to repair after a difficult moment.',
-    'createdAt': FieldValue.serverTimestamp(),
-  });
+  await recordMeaningfulMoment(
+  conversationId: conversationId,
+  type: 'first_repair_moment',
+  title: 'First repair moment',
+  description:
+      'This friendship started to repair after a difficult moment.',
+  importance: 15,
+  celebrate: true,
+  icon: 'sprout',
+  colour: 'green',
+);
 }
 
   if (!recoveringMilestoneAwarded &&
@@ -1897,13 +1901,17 @@ await conversationRef.set({
   'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
 }, SetOptions(merge: true));
 
-await momentRef.set({
-  'type': 'recovering_friendship',
-  'title': 'Friendship recovering',
-  'description':
+await recordMeaningfulMoment(
+  conversationId: conversationId,
+  type: 'recovering_friendship',
+  title: 'Friendship recovering',
+  description:
       'This friendship has started to recover after a difficult moment.',
-  'createdAt': FieldValue.serverTimestamp(),
-});
+  importance: 50,
+  celebrate: true,
+  icon: 'tree',
+  colour: 'gold',
+);
 
 }
 }
