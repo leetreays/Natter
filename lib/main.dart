@@ -691,6 +691,30 @@ class ConversationMilestones {
   static const int firstRepairMomentum = 3;
 }
 
+class MeaningfulMomentDefinition {
+  final String title;
+  final String description;
+
+  final int importance;
+
+  final String category;
+
+  final bool celebrate;
+
+  final String icon;
+  final String colour;
+
+  const MeaningfulMomentDefinition({
+    required this.title,
+    required this.description,
+    required this.importance,
+    required this.category,
+    required this.celebrate,
+    required this.icon,
+    required this.colour,
+  });
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
