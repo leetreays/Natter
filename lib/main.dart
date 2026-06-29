@@ -688,6 +688,7 @@ class ConversationOutcomeValues {
 class ConversationMilestones {
   static const int recoveringFriendshipHealth = 50;
   static const int recoveringRepairMomentum = 15;
+  static const int firstRepairMomentum = 3;
 }
 
 class ParentChildProfile {
@@ -1850,6 +1851,33 @@ Future<void> checkConversationMilestones({
 
   final recoveringMilestoneAwarded =
     data['recoveringMilestoneAwarded'] == true;
+
+  final firstRepairMomentAwarded =
+    data['firstRepairMomentAwarded'] == true;
+
+if (!firstRepairMomentAwarded &&
+    repairMomentum >= ConversationMilestones.firstRepairMomentum) {
+  final conversationRef =
+      conversationsRef().doc(conversationId);
+
+  final momentRef = conversationRef
+      .collection('meaningful_moments')
+      .doc();
+
+  await conversationRef.set({
+    'firstRepairMomentAwarded': true,
+    'lastConversationMilestone': 'first_repair_moment',
+    'lastConversationMilestoneAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  await momentRef.set({
+    'type': 'first_repair_moment',
+    'title': 'First repair moment',
+    'description':
+        'This friendship started to repair after a difficult moment.',
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+}
 
   if (!recoveringMilestoneAwarded &&
     friendshipHealth >=
