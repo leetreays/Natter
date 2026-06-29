@@ -715,6 +715,30 @@ class MeaningfulMomentDefinition {
   });
 }
 
+const meaningfulMomentRegistry = {
+  'first_repair_moment': MeaningfulMomentDefinition(
+    title: 'First repair moment',
+    description:
+        'This friendship started to repair after a difficult moment.',
+    importance: 15,
+    category: 'friendship',
+    celebrate: true,
+    icon: 'sprout',
+    colour: 'green',
+  ),
+
+  'recovering_friendship': MeaningfulMomentDefinition(
+    title: 'Friendship recovering',
+    description:
+        'This friendship has started to recover after a difficult moment.',
+    importance: 50,
+    category: 'friendship',
+    celebrate: true,
+    icon: 'tree',
+    colour: 'gold',
+  ),
+};
+
 class ParentChildProfile {
   final String childId;
   final String name;
