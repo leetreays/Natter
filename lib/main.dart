@@ -727,6 +727,7 @@ const meaningfulMomentRegistry = {
     celebrate: true,
     icon: 'sprout',
     colour: 'green',
+    journeyStage: 1,
   ),
 
   'recovering_friendship': MeaningfulMomentDefinition(
@@ -738,14 +739,8 @@ const meaningfulMomentRegistry = {
     celebrate: true,
     icon: 'tree',
     colour: 'gold',
+    journeyStage: 2,
   ),
-
-  'first_repair_moment':
-journeyStage: 1,
-
-'recovering_friendship':
-journeyStage: 2,
-  
 };
 
 class ParentChildProfile {
