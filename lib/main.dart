@@ -696,6 +696,7 @@ class MeaningfulMomentDefinition {
   final String description;
 
   final int importance;
+  final int journeyStage;
 
   final String category;
 
@@ -712,6 +713,7 @@ class MeaningfulMomentDefinition {
     required this.celebrate,
     required this.icon,
     required this.colour,
+    required this.journeyStage,
   });
 }
 
@@ -737,6 +739,13 @@ const meaningfulMomentRegistry = {
     icon: 'tree',
     colour: 'gold',
   ),
+
+  'first_repair_moment':
+journeyStage: 1,
+
+'recovering_friendship':
+journeyStage: 2,
+  
 };
 
 class ParentChildProfile {
@@ -1972,6 +1981,7 @@ if (definition == null) {
 
 'importance': definition.importance,
 'category': definition.category,
+'journeyStage': definition.journeyStage,
 
 'celebrate': definition.celebrate,
 
