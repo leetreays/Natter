@@ -1913,16 +1913,33 @@ Future<void> recordMeaningfulMoment({
   required String type,
   required String title,
   required String description,
+
+  int importance = 10,
+  String category = 'friendship',
+
+  bool celebrate = false,
+
+  String icon = 'sparkles',
+  String colour = 'blue',
 }) async {
   final conversationRef =
       conversationsRef().doc(conversationId);
 
   await conversationRef.collection('meaningful_moments').add({
-    'type': type,
-    'title': title,
-    'description': description,
-    'createdAt': FieldValue.serverTimestamp(),
-  });
+  'type': type,
+  'title': title,
+  'description': description,
+
+  'importance': importance,
+  'category': category,
+
+  'celebrate': celebrate,
+
+  'icon': icon,
+  'colour': colour,
+
+  'createdAt': FieldValue.serverTimestamp(),
+});
 }
 
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
