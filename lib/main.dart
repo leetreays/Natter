@@ -1981,18 +1981,26 @@ Future<void> recordMeaningfulMoment({
   final conversationRef =
       conversationsRef().doc(conversationId);
 
+  final definition = meaningfulMomentRegistry[type];
+
+if (definition == null) {
+  throw Exception(
+    'Unknown Meaningful Moment type: $type',
+  );
+}
+
   await conversationRef.collection('meaningful_moments').add({
   'type': type,
-  'title': title,
-  'description': description,
+  'title': definition.title,
+'description': definition.description,
 
-  'importance': importance,
-  'category': category,
+'importance': definition.importance,
+'category': definition.category,
 
-  'celebrate': celebrate,
+'celebrate': definition.celebrate,
 
-  'icon': icon,
-  'colour': colour,
+'icon': definition.icon,
+'colour': definition.colour,
 
   'createdAt': FieldValue.serverTimestamp(),
 });
