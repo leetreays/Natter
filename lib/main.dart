@@ -7303,25 +7303,263 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
     required this.childId,
   });
 
+  String _emojiForIcon(String icon) {
+    switch (icon) {
+      case 'sprout':
+        return '🌱';
+      case 'tree':
+        return '🌳';
+      default:
+        return '✨';
+    }
+  }
+
+  String _formatMomentDate(dynamic value) {
+    if (value is! Timestamp) return '';
+
+    final date = value.toDate();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BrandScaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF063B55),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF073F5A),
+        elevation: 0,
         title: const BrandedAppBarTitle(
           title: 'Friendship Journey',
         ),
       ),
-      child: ListView(
-        padding: const EdgeInsets.all(14),
-        children: const [
-          Text(
-            'Friendship moments will appear here soon.',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF073F5A),
+              Color(0xFF062F48),
+            ],
           ),
-        ],
+        ),
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collectionGroup('meaningful_moments')
+              .where('participantChildIds', arrayContains: childId)
+              .where('showToParent', isEqualTo: true)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            final docs = snapshot.data?.docs ?? [];
+
+            docs.sort((a, b) {
+              final aTime = a.data()['createdAt'];
+              final bTime = b.data()['createdAt'];
+
+              if (aTime is Timestamp && bTime is Timestamp) {
+                return bTime.compareTo(aTime);
+              }
+
+              return 0;
+            });
+
+            return ListView(
+              padding: const EdgeInsets.all(18),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text(
+                        '💛',
+                        style: TextStyle(fontSize: 34),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          'A private, respectful story of how friendships grow.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.92),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            height: 1.25,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Friendship moments',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                if (docs.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.10),
+                      ),
+                    ),
+                    child: Text(
+                      'Friendship moments will appear here when a friendship reaches a meaningful stage.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  )
+                else
+                  ...docs.map((doc) {
+                    final data = doc.data();
+
+                    final icon =
+                        _emojiForIcon((data['icon'] ?? '').toString());
+
+                    final title =
+                        (data['title'] ?? 'Friendship moment').toString();
+
+                    final description =
+                        (data['description'] ?? '').toString();
+
+                    final importance =
+                        (data['importance'] ?? 0).toString();
+
+                    final journeyStage =
+                        (data['journeyStage'] ?? 0).toString();
+
+                    final date =
+                        _formatMomentDate(data['createdAt']);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.10),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            icon,
+                            style: const TextStyle(fontSize: 34),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        title,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: NatterBrand.green.withOpacity(0.18),
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        'Stage $journeyStage',
+                                        style: const TextStyle(
+                                          color: NatterBrand.green,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.78),
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  '⭐ Importance $importance${date.isNotEmpty ? '  •  $date' : ''}',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.72),
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: Text(
+                    'These moments focus on the health of the friendship, not individual messages. Your child’s conversations remain private.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
