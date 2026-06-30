@@ -1973,6 +1973,18 @@ if (definition == null) {
   );
 }
 
+  final conversationSnap =
+    await conversationRef.get();
+
+final conversationData =
+    conversationSnap.data() ?? {};
+
+final participantChildIds =
+    List<String>.from(conversationData['participantChildIds'] ?? []);
+
+final participantNames =
+    List<String>.from(conversationData['participantNames'] ?? []);
+
   await conversationRef.collection('meaningful_moments').add({
   'type': type,
   'title': definition.title,
@@ -1987,6 +1999,10 @@ if (definition == null) {
 
 'icon': definition.icon,
 'colour': definition.colour,
+
+    'conversationId': conversationId,
+'participantChildIds': participantChildIds,
+'participantNames': participantNames,
 
   'createdAt': FieldValue.serverTimestamp(),
 });
