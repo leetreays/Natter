@@ -7295,6 +7295,38 @@ StreamBuilder<List<ChildContactRequest>>(
 }
 }
 
+class ParentFriendshipJourneyScreen extends StatelessWidget {
+  final String childId;
+
+  const ParentFriendshipJourneyScreen({
+    super.key,
+    required this.childId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(
+          title: 'Friendship Journey',
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(14),
+        children: const [
+          Text(
+            'Friendship moments will appear here soon.',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ChildAccessCodeScreen extends StatefulWidget {
   const ChildAccessCodeScreen({super.key});
 
