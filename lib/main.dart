@@ -7017,6 +7017,64 @@ Container(
         ),
       ),
       const SizedBox(height: 10),
+Container(
+  padding: const EdgeInsets.all(16),
+  decoration: _innerCardDecoration(
+    color: const Color(0xFF2D466F),
+  ),
+  child: Row(
+    children: [
+      const Icon(
+        Icons.timeline_rounded,
+        color: NatterBrand.green,
+      ),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Friendship Journey',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'See how friendships are growing over time.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.78),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+      TextButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            calmRoute(
+              ParentFriendshipJourneyScreen(
+                childId: child.childId,
+              ),
+            ),
+          );
+        },
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Open'),
+            SizedBox(width: 4),
+            Icon(Icons.chevron_right, size: 18),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+      const SizedBox(height: 10),
       Container(
         padding: const EdgeInsets.all(16),
         decoration: _innerCardDecoration(
