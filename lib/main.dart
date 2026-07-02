@@ -7326,6 +7326,28 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
+  BoxDecoration _outerSectionDecoration() {
+  return BoxDecoration(
+    color: const Color(0xFF243A67),
+    borderRadius: BorderRadius.circular(24),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  );
+}
+
+BoxDecoration _innerCardDecoration({
+  required Color color,
+}) {
+  return BoxDecoration(
+    color: color,
+    borderRadius: BorderRadius.circular(22),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.10),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
