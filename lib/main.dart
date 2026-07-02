@@ -7491,25 +7491,38 @@ switch (currentJourneyStage) {
                   padding: const EdgeInsets.all(20),
                   decoration: _outerSectionDecoration(),
                   child: Row(
-                    children: [
-                      const Text(
-                        '💛',
-                        style: TextStyle(fontSize: 34),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          'Every friendship has a story. This journey celebrates how relationships grow through kindness, repair and trust.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.92),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            height: 1.25,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+  children: [
+    Text(
+      headerEmoji,
+      style: const TextStyle(fontSize: 42),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            headerTitle,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            headerSubtitle,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.80),
+              fontWeight: FontWeight.w700,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+)
                 ),
                 const SizedBox(height: 18),
                 const Text(
