@@ -7343,9 +7343,9 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF073F5A),
-              Color(0xFF062F48),
-            ],
+  Color(0xFF073F5A),
+  Color(0xFF063B55),
+],
           ),
         ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -7379,13 +7379,7 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.10),
-                    ),
-                  ),
+                  decoration: _outerSectionDecoration(),
                   child: Row(
                     children: [
                       const Text(
@@ -7395,7 +7389,7 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
-                          'A private, respectful story of how friendships grow.',
+                          'Every friendship has a story. This journey celebrates how relationships grow through kindness, repair and trust.',
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.92),
                             fontSize: 18,
@@ -7421,13 +7415,9 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
                 if (docs.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.10),
-                      ),
-                    ),
+                    decoration: _innerCardDecoration(
+  color: const Color(0xFF2D466F),
+),
                     child: Text(
                       'Friendship moments will appear here when a friendship reaches a meaningful stage.',
                       style: TextStyle(
@@ -7462,13 +7452,9 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.10),
-                        ),
-                      ),
+                      decoration: _innerCardDecoration(
+  color: const Color(0xFF2D466F),
+),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -7540,13 +7526,7 @@ class ParentFriendshipJourneyScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.10),
-                    ),
-                  ),
+                  decoration: _outerSectionDecoration(),
                   child: Text(
                     'These moments focus on the health of the friendship, not individual messages. Your child’s conversations remain private.',
                     style: TextStyle(
