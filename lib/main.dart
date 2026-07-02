@@ -7443,6 +7443,47 @@ Widget _upcomingMilestoneCard({
               return 0;
             });
 
+            final currentJourneyStage = docs.isEmpty
+    ? 0
+    : docs
+        .map((d) => (d.data()['journeyStage'] ?? 0) as int)
+        .reduce((a, b) => a > b ? a : b);
+
+            String headerEmoji = '🌱';
+String headerTitle = 'Every friendship starts somewhere.';
+String headerSubtitle =
+    'Kindness, repair and trust help friendships grow over time.';
+
+switch (currentJourneyStage) {
+  case 1:
+    headerEmoji = '🌱';
+    headerTitle = 'This friendship is growing.';
+    headerSubtitle =
+        'Kind moments are helping this friendship take root.';
+    break;
+
+  case 2:
+    headerEmoji = '🌳';
+    headerTitle = 'This friendship is becoming stronger.';
+    headerSubtitle =
+        'Repair and consistent kindness are helping this friendship flourish.';
+    break;
+
+  case 3:
+    headerEmoji = '💛';
+    headerTitle = 'This friendship is trusted.';
+    headerSubtitle =
+        'This relationship has been built on respect and positive communication.';
+    break;
+
+  case 4:
+    headerEmoji = '🌈';
+    headerTitle = 'This friendship is flourishing.';
+    headerSubtitle =
+        'A wonderful example of healthy digital friendship.';
+    break;
+}
+
             return ListView(
               padding: const EdgeInsets.all(18),
               children: [
