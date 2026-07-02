@@ -7348,6 +7348,53 @@ BoxDecoration _innerCardDecoration({
   );
 }
 
+Widget _upcomingMilestoneCard({
+  required String icon,
+  required String title,
+  required String description,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(18),
+    decoration: _innerCardDecoration(
+      color: const Color(0xFF2D466F),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          icon,
+          style: const TextStyle(fontSize: 28),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -7425,7 +7472,7 @@ BoxDecoration _innerCardDecoration({
                 ),
                 const SizedBox(height: 18),
                 const Text(
-                  'Friendship moments',
+                  'Journey So Far',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -7434,21 +7481,36 @@ BoxDecoration _innerCardDecoration({
                 ),
                 const SizedBox(height: 12),
 
-                if (docs.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: _innerCardDecoration(
-  color: const Color(0xFF2D466F),
-),
-                    child: Text(
-                      'Friendship moments will appear here when a friendship reaches a meaningful stage.',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.78),
-                        fontWeight: FontWeight.w700,
-                        height: 1.35,
-                      ),
-                    ),
-                  )
+                if (docs.isEmpty) {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: _innerCardDecoration(
+      color: const Color(0xFF2D466F),
+    ),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '🌱 Every friendship starts somewhere.',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        SizedBox(height: 12),
+        Text(
+          'As children show kindness, repair mistakes and build trust together, their friendship journey will begin to appear here.',
+          style: TextStyle(
+            color: Colors.white70,
+            height: 1.5,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+    
                 else
                   ...docs.map((doc) {
                     final data = doc.data();
@@ -7471,79 +7533,109 @@ BoxDecoration _innerCardDecoration({
                     final date =
                         _formatMomentDate(data['createdAt']);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(18),
-                      decoration: _innerCardDecoration(
-  color: const Color(0xFF2D466F),
-),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            icon,
-                            style: const TextStyle(fontSize: 34),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: NatterBrand.green.withOpacity(0.18),
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        'Stage $journeyStage',
-                                        style: const TextStyle(
-                                          color: NatterBrand.green,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  description,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.78),
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.35,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  '⭐ Importance $importance${date.isNotEmpty ? '  •  $date' : ''}',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.72),
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    final isLast = docs.indexOf(doc) == docs.length - 1;
+
+return Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    SizedBox(
+      width: 46,
+      child: Column(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: NatterBrand.green.withOpacity(0.18),
+              border: Border.all(
+                color: NatterBrand.green.withOpacity(0.65),
+                width: 2,
+              ),
+            ),
+            child: Text(
+              icon,
+              style: const TextStyle(fontSize: 20),
+            ),
+          ),
+          if (!isLast)
+            Container(
+              width: 2,
+              height: 86,
+              color: Colors.white.withOpacity(0.18),
+            ),
+        ],
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(18),
+        decoration: _innerCardDecoration(
+          color: const Color(0xFF2D466F),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (date.isNotEmpty)
+              Text(
+                date,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.68),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            if (date.isNotEmpty) const SizedBox(height: 6),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.78),
+                fontWeight: FontWeight.w700,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ],
+);
                   }),
+
+                const SizedBox(height: 18),
+const Text(
+  'Coming Up',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 24,
+    fontWeight: FontWeight.w900,
+  ),
+),
+const SizedBox(height: 12),
+_upcomingMilestoneCard(
+  icon: '🔒',
+  title: 'Trusted friendship',
+  description:
+      'Built through repeated kindness, repair and respectful choices.',
+),
+const SizedBox(height: 10),
+_upcomingMilestoneCard(
+  icon: '🌈',
+  title: 'Friendship flourishing',
+  description:
+      'A friendship that has grown stronger through consistent care.',
+),
 
                 const SizedBox(height: 12),
                 Container(
