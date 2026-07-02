@@ -7034,7 +7034,7 @@ Container(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Friendship Journey',
+              'Friendships',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w900,
@@ -7042,7 +7042,7 @@ Container(
             ),
             const SizedBox(height: 4),
             Text(
-              'See how friendships are growing over time.',
+              'Explore your child's trusted friendships and see how each relationship is growing over time.',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.78),
                 fontWeight: FontWeight.w700,
@@ -7056,8 +7056,8 @@ Container(
           Navigator.push(
             context,
             calmRoute(
-              ParentFriendshipJourneyScreen(
-                childId: child.childId,
+              ParentFriendshipsScreen(
+  childId: child.childId,
               ),
             ),
           );
@@ -7293,6 +7293,38 @@ StreamBuilder<List<ChildContactRequest>>(
   ),
 );
 }
+}
+
+class ParentFriendshipsScreen extends StatelessWidget {
+  final String childId;
+
+  const ParentFriendshipsScreen({
+    super.key,
+    required this.childId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BrandScaffold(
+      appBar: AppBar(
+        title: const BrandedAppBarTitle(
+          title: 'Friendships',
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(18),
+        children: const [
+          Text(
+            'Trusted friendships will appear here.',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ParentFriendshipJourneyScreen extends StatelessWidget {
