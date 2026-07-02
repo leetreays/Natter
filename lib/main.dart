@@ -7042,7 +7042,7 @@ Container(
             ),
             const SizedBox(height: 4),
             Text(
-              'Explore your child's trusted friendships and see how each relationship is growing over time.',
+              "Explore your child's friendships and see how each relationship grows over time.",
               style: TextStyle(
                 color: Colors.white.withOpacity(0.78),
                 fontWeight: FontWeight.w700,
