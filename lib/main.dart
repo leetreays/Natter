@@ -7481,8 +7481,8 @@ Widget _upcomingMilestoneCard({
                 ),
                 const SizedBox(height: 12),
 
-                if (docs.isEmpty) {
-  return Container(
+                if (docs.isEmpty)
+  Container(
     padding: const EdgeInsets.all(20),
     decoration: _innerCardDecoration(
       color: const Color(0xFF2D466F),
@@ -7508,10 +7508,8 @@ Widget _upcomingMilestoneCard({
         ),
       ],
     ),
-  );
-}
-    
-                else
+  )
+else
                   ...docs.map((doc) {
                     final data = doc.data();
 
