@@ -7303,25 +7303,167 @@ class ParentFriendshipsScreen extends StatelessWidget {
     required this.childId,
   });
 
+  String _friendNameFromData(Map<String, dynamic> data) {
+    final children = data['children'];
+
+    if (children is Map) {
+      for (final entry in children.entries) {
+        if (entry.key.toString() == childId) continue;
+
+        final childData = entry.value;
+        if (childData is Map && childData['name'] != null) {
+          return childData['name'].toString();
+        }
+      }
+    }
+
+    return 'Friend';
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BrandScaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF062F48),
       appBar: AppBar(
+        backgroundColor: const Color(0xFF073F5A),
+        elevation: 0,
         title: const BrandedAppBarTitle(
           title: 'Friendships',
         ),
       ),
-      child: ListView(
-        padding: const EdgeInsets.all(18),
-        children: const [
-          Text(
-            'Trusted friendships will appear here.',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF073F5A),
+              Color(0xFF063B55),
+            ],
           ),
-        ],
+        ),
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('friendships')
+              .where('childIds', arrayContains: childId)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+
+            final docs = snapshot.data?.docs ?? [];
+
+            return ListView(
+              padding: const EdgeInsets.all(18),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF243A67),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.10),
+                    ),
+                  ),
+                  child: const Text(
+                    'A calm view of your child’s approved friendships. These pages focus on growth, not private messages.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Friendships',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (docs.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D466F),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.10),
+                      ),
+                    ),
+                    child: Text(
+                      'Approved friendships will appear here.',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.78),
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  )
+                else
+                  ...docs.map((doc) {
+                    final data = doc.data();
+                    final friendName = _friendNameFromData(data);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D466F),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.10),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            '🌱',
+                            style: TextStyle(fontSize: 30),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  friendName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Friendship journey',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.72),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white70,
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
