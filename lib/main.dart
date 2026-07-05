@@ -7328,7 +7328,6 @@ class ParentFriendshipsScreen extends StatelessWidget {
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,
-        elevation: 0,
         title: const BrandedAppBarTitle(
           title: 'Friendships',
         ),
