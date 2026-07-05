@@ -7405,13 +7405,13 @@ class ParentFriendshipsScreen extends StatelessWidget {
                     return GestureDetector(
   onTap: () {
     Navigator.push(
-      context,
-      calmRoute(
-        ParentFriendshipJourneyScreen(
-          childId: childId,
-        ),
-      ),
-    );
+  context,
+  MaterialPageRoute(
+    builder: (_) => ParentFriendshipJourneyScreen(
+      childId: childId,
+    ),
+  ),
+);
   },
   child: Container(
     margin: const EdgeInsets.only(bottom: 12),
