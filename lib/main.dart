@@ -7322,26 +7322,17 @@ class ParentFriendshipsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF062F48),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF073F5A),
+    return ParentBrandScaffold(
+  appBar: AppBar(
+    backgroundColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
         elevation: 0,
         title: const BrandedAppBarTitle(
           title: 'Friendships',
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF073F5A),
-              Color(0xFF063B55),
-            ],
-          ),
-        ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collection('friendships')
@@ -7362,7 +7353,7 @@ class ParentFriendshipsScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF243A67),
+                    color: const Color(0xFF21345C),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.10),
@@ -7392,7 +7383,7 @@ class ParentFriendshipsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2D466F),
+                      color: const Color(0xFF21345C),
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(
                         color: Colors.white.withOpacity(0.10),
@@ -7427,7 +7418,7 @@ class ParentFriendshipsScreen extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: const Color(0xFF2D466F),
+      color: const Color(0xFF21345C),
       borderRadius: BorderRadius.circular(22),
       border: Border.all(
         color: Colors.white.withOpacity(0.10),
@@ -7475,7 +7466,6 @@ class ParentFriendshipsScreen extends StatelessWidget {
               ],
             );
           },
-        ),
       ),
     );
   }
