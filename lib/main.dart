@@ -7412,53 +7412,65 @@ class ParentFriendshipsScreen extends StatelessWidget {
                     final data = doc.data();
                     final friendName = _friendNameFromData(data);
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2D466F),
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.10),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Text(
-                            '🌱',
-                            style: TextStyle(fontSize: 30),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  friendName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Friendship journey',
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.72),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: Colors.white70,
-                          ),
-                        ],
-                      ),
-                    );
+                    return GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      calmRoute(
+        ParentFriendshipJourneyScreen(
+          childId: childId,
+        ),
+      ),
+    );
+  },
+  child: Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: const Color(0xFF2D466F),
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    ),
+    child: Row(
+      children: [
+        const Text(
+          '🌱',
+          style: TextStyle(fontSize: 30),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                friendName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Friendship journey',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(
+          Icons.chevron_right_rounded,
+          color: Colors.white70,
+        ),
+      ],
+    ),
+  ),
+);
                   }),
               ],
             );
