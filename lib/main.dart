@@ -7572,26 +7572,16 @@ Widget _upcomingMilestoneCard({
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF063B55),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF073F5A),
-        elevation: 0,
+    return ParentBrandScaffold(
+  appBar: AppBar(
+    backgroundColor: Colors.transparent,
+    surfaceTintColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
         title: const BrandedAppBarTitle(
           title: 'Friendship Journey',
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-  Color(0xFF073F5A),
-  Color(0xFF063B55),
-],
-          ),
-        ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: FirebaseFirestore.instance
               .collectionGroup('meaningful_moments')
@@ -7881,7 +7871,6 @@ _upcomingMilestoneCard(
             );
           },
         ),
-      ),
     );
   }
 }
