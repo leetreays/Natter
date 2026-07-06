@@ -7470,13 +7470,22 @@ class ParentFriendshipsScreen extends StatelessWidget {
   }
 }
 
-class ParentFriendshipJourneyScreen extends StatelessWidget {
+class ParentFriendshipJourneyScreen extends StatefulWidget {
   final String childId;
 
   const ParentFriendshipJourneyScreen({
     super.key,
     required this.childId,
   });
+
+  @override
+  State<ParentFriendshipJourneyScreen> createState() =>
+      _ParentFriendshipJourneyScreenState();
+}
+
+class _ParentFriendshipJourneyScreenState
+    extends State<ParentFriendshipJourneyScreen> {
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _momentsStream;
 
   String _emojiForIcon(String icon) {
     switch (icon) {
@@ -7571,6 +7580,17 @@ Widget _upcomingMilestoneCard({
 }
 
   @override
+void initState() {
+  super.initState();
+
+  _momentsStream = FirebaseFirestore.instance
+      .collectionGroup('meaningful_moments')
+      .where('participantChildIds', arrayContains: widget.childId)
+      .where('showToParent', isEqualTo: true)
+      .snapshots();
+}
+
+  @override
   Widget build(BuildContext context) {
     return ParentBrandScaffold(
   appBar: AppBar(
@@ -7583,11 +7603,7 @@ Widget _upcomingMilestoneCard({
         ),
       ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
-              .collectionGroup('meaningful_moments')
-              .where('participantChildIds', arrayContains: childId)
-              .where('showToParent', isEqualTo: true)
-              .snapshots(),
+          stream: _momentsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
