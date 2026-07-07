@@ -7310,7 +7310,6 @@ class ParentFriendshipsScreen extends StatefulWidget {
 
 class _ParentFriendshipsScreenState
     extends State<ParentFriendshipsScreen> {
-  bool _isPopping = false;
 
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _friendshipsStream;
 
@@ -7343,17 +7342,7 @@ class _ParentFriendshipsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-  canPop: !_isPopping,
-  onPopInvokedWithResult: (didPop, result) {
-    if (didPop) {
-      _isPopping = true;
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) _isPopping = false;
-      });
-    }
-  },
-  child: ParentBrandScaffold(
+    return ParentBrandScaffold(
   appBar: AppBar(
     backgroundColor: Colors.transparent,
     surfaceTintColor: Colors.transparent,
