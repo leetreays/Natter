@@ -7295,7 +7295,7 @@ StreamBuilder<List<ChildContactRequest>>(
 }
 }
 
-class ParentFriendshipsScreen extends StatelessWidget {
+class ParentFriendshipsScreen extends StatefulWidget {
   final String childId;
 
   const ParentFriendshipsScreen({
@@ -7303,12 +7303,33 @@ class ParentFriendshipsScreen extends StatelessWidget {
     required this.childId,
   });
 
+  @override
+  State<ParentFriendshipsScreen> createState() =>
+      _ParentFriendshipsScreenState();
+}
+
+class _ParentFriendshipsScreenState
+    extends State<ParentFriendshipsScreen> {
+  bool _isPopping = false;
+
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _friendshipsStream;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _friendshipsStream = FirebaseFirestore.instance
+        .collection('friendships')
+        .where('childIds', arrayContains: widget.childId)
+        .snapshots();
+  }
+
   String _friendNameFromData(Map<String, dynamic> data) {
     final children = data['children'];
 
     if (children is Map) {
       for (final entry in children.entries) {
-        if (entry.key.toString() == childId) continue;
+        if (entry.key.toString() == widget.childId) continue;
 
         final childData = entry.value;
         if (childData is Map && childData['name'] != null) {
@@ -7322,7 +7343,17 @@ class ParentFriendshipsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ParentBrandScaffold(
+    return PopScope(
+  canPop: !_isPopping,
+  onPopInvokedWithResult: (didPop, result) {
+    if (didPop) {
+      _isPopping = true;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _isPopping = false;
+      });
+    }
+  },
+  child: ParentBrandScaffold(
   appBar: AppBar(
     backgroundColor: Colors.transparent,
     surfaceTintColor: Colors.transparent,
@@ -7333,9 +7364,9 @@ class ParentFriendshipsScreen extends StatelessWidget {
         ),
       ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: FirebaseFirestore.instance
+          stream: _friendshipsStream,
               .collection('friendships')
-              .where('childIds', arrayContains: childId)
+              .where('childIds', arrayContains: widget.childId)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -7408,7 +7439,7 @@ class ParentFriendshipsScreen extends StatelessWidget {
   context,
   MaterialPageRoute(
     builder: (_) => ParentFriendshipJourneyScreen(
-      childId: childId,
+      childId: widget.childId,
     ),
   ),
 );
