@@ -7353,10 +7353,8 @@ class _ParentFriendshipsScreenState
         ),
       ),
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _friendshipsStream,
-              .collection('friendships')
-              .where('childIds', arrayContains: widget.childId)
-              .snapshots(),
+  stream: _friendshipsStream,
+  builder: (context, snapshot) {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
