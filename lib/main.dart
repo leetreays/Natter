@@ -7308,9 +7308,7 @@ class ParentFriendshipsScreen extends StatefulWidget {
       _ParentFriendshipsScreenState();
 }
 
-class _ParentFriendshipsScreenState
-    extends State<ParentFriendshipsScreen> {
-
+class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _friendshipsStream;
 
   @override
@@ -7340,149 +7338,162 @@ class _ParentFriendshipsScreenState
     return 'Friend';
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return ParentBrandScaffold(
-  appBar: AppBar(
-    backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-        title: const BrandedAppBarTitle(
-          title: 'Friendships',
-        ),
-      ),
-        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-  stream: _friendshipsStream,
-  builder: (context, snapshot) {
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-
-            final docs = snapshot.data?.docs ?? [];
-
-            return ListView(
-              padding: const EdgeInsets.all(18),
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF21345C),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.10),
-                    ),
-                  ),
-                  child: const Text(
-                    'A calm view of your child’s approved friendships. These pages focus on growth, not private messages.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Friendships',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                if (docs.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF21345C),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.10),
-                      ),
-                    ),
-                    child: Text(
-                      'Approved friendships will appear here.',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.78),
-                        fontWeight: FontWeight.w700,
-                        height: 1.35,
-                      ),
-                    ),
-                  )
-                else
-                  ...docs.map((doc) {
-                    final data = doc.data();
-                    final friendName = _friendNameFromData(data);
-
-                    return GestureDetector(
-  onTap: () {
-    Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => ParentFriendshipJourneyScreen(
-      childId: widget.childId,
-    ),
-  ),
-);
-  },
-  child: Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
+  BoxDecoration _parentCardDecoration({
+    double radius = 24,
+  }) {
+    return BoxDecoration(
       color: const Color(0xFF21345C),
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(radius),
       border: Border.all(
         color: Colors.white.withOpacity(0.10),
       ),
-    ),
-    child: Row(
-      children: [
-        const Text(
-          '🌱',
-          style: TextStyle(fontSize: 30),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ParentBrandScaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          'Friendships',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _friendshipsStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final docs = snapshot.data?.docs ?? [];
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                friendName,
-                style: const TextStyle(
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: _parentCardDecoration(),
+                child: Text(
+                  "A calm view of your child's approved friendships. These pages focus on growth, not private messages.",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.86),
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Friendships',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
+                  letterSpacing: 0.2,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Friendship journey',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              const SizedBox(height: 12),
+              if (docs.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: _parentCardDecoration(radius: 22),
+                  child: Text(
+                    'Approved friendships will appear here.',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.78),
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                    ),
+                  ),
+                )
+              else
+                ...docs.map((doc) {
+                  final data = doc.data();
+                  final friendName = _friendNameFromData(data);
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ParentFriendshipJourneyScreen(
+                            childId: widget.childId,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: _parentCardDecoration(radius: 22),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: NatterBrand.green.withOpacity(0.14),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: NatterBrand.green.withOpacity(0.32),
+                              ),
+                            ),
+                            child: const Text(
+                              '🌱',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  friendName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Open friendship journey',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.70),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.white.withOpacity(0.72),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
             ],
-          ),
-        ),
-        const Icon(
-          Icons.chevron_right_rounded,
-          color: Colors.white70,
-        ),
-      ],
-    ),
-  ),
-);
-                  }),
-              ],
-            );
-          },
+          );
+        },
       ),
     );
   }
