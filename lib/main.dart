@@ -7536,6 +7536,8 @@ class ParentFriendshipJourneyScreen extends StatefulWidget {
 class _ParentFriendshipJourneyScreenState
     extends State<ParentFriendshipJourneyScreen> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _momentsStream;
+  late final Stream<DocumentSnapshot<Map<String, dynamic>>> _friendshipStream;
+  
 
   String _emojiForIcon(String icon) {
     switch (icon) {
@@ -7687,9 +7689,29 @@ List<Widget> _comingUpCards(int currentJourneyStage) {
   ];
 }
 
+int _journeyStageNumberFromFriendshipStage(String stage) {
+  switch (stage) {
+    case 'flourishing':
+      return 4;
+    case 'trusted':
+      return 3;
+    case 'strong':
+      return 2;
+    case 'growing':
+      return 1;
+    default:
+      return 0;
+  }
+}
+
   @override
 void initState() {
   super.initState();
+
+  _friendshipStream = FirebaseFirestore.instance
+      .collection('friendships')
+      .doc(widget.friendshipId)
+      .snapshots();
 
   _momentsStream = FirebaseFirestore.instance
       .collection('friendships')
@@ -7711,9 +7733,19 @@ void initState() {
           title: 'Friendship Journey',
         ),
       ),
-        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-          stream: _momentsStream,
-          builder: (context, snapshot) {
+        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: _friendshipStream,
+  builder: (context, friendshipSnapshot) {
+    final friendshipData = friendshipSnapshot.data?.data() ?? {};
+    final friendshipStage =
+        (friendshipData['friendshipStage'] ?? 'seedling').toString();
+
+    final currentJourneyStage =
+        _journeyStageNumberFromFriendshipStage(friendshipStage);
+
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _momentsStream,
+      builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -7732,12 +7764,6 @@ void initState() {
 
               return 0;
             });
-
-            final currentJourneyStage = docs.isEmpty
-    ? 0
-    : docs
-        .map((d) => (d.data()['journeyStage'] ?? 0) as int)
-        .reduce((a, b) => a > b ? a : b);
 
             String headerEmoji = '🌱';
 String headerTitle = 'Every friendship starts somewhere.';
@@ -7971,21 +7997,25 @@ const SizedBox(height: 12),
 const SizedBox(height: 12),
 
 Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: _outerSectionDecoration(),
-                  child: Text(
-                    'These moments focus on the health of the friendship, not individual messages. Your child’s conversations remain private.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.78),
-                      fontWeight: FontWeight.w700,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
+  padding: const EdgeInsets.all(18),
+  decoration: _outerSectionDecoration(),
+  child: Text(
+    'These moments focus on the health of the friendship, not individual messages. Your child’s conversations remain private.',
+    style: TextStyle(
+      color: Colors.white.withOpacity(0.78),
+      fontWeight: FontWeight.w700,
+      height: 1.35,
+    ),
+  ),
+),
               ],
             );
           },
-        ),
+        );
+      },
+    ),
+  },
+),
     );
   }
 }
