@@ -7828,12 +7828,6 @@ void initState() {
               return 0;
             });
 
-            String headerEmoji = '🌱';
-String headerTitle = 'Every friendship starts somewhere.';
-String headerSubtitle =
-    'Kindness, repair and trust help friendships grow over time.';
-
-switch (currentJourneyStage) {
 final stageDefinition =
     FriendshipStageRegistry.fromKey(friendshipStage);
 
@@ -8033,10 +8027,9 @@ const Text(
 ),
 const SizedBox(height: 12),
                 
-_comingUpCards(stageDefinition.order)
+..._comingUpCards(stageDefinition.order),
 
 const SizedBox(height: 12),
-
 Container(
   padding: const EdgeInsets.all(18),
   decoration: _outerSectionDecoration(),
@@ -8055,8 +8048,10 @@ Container(
         );
       },
     ),
-  );
-}
+  },
+),
+    );
+  }
 }
 
 class ChildAccessCodeScreen extends StatefulWidget {
