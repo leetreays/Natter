@@ -8014,10 +8014,8 @@ Container(
         );
       },
     ),
-  },
-),
-    );
-  }
+  );
+}
 }
 
 class ChildAccessCodeScreen extends StatefulWidget {
