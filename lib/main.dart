@@ -747,6 +747,77 @@ const meaningfulMomentRegistry = {
   ),
 };
 
+class FriendshipStageDefinition {
+  final String key;
+
+  final String title;
+  final String subtitle;
+
+  final String shortLabel;
+
+  final String emoji;
+
+  final int order;
+
+  const FriendshipStageDefinition({
+    required this.key,
+    required this.title,
+    required this.subtitle,
+    required this.shortLabel,
+    required this.emoji,
+    required this.order,
+  });
+}
+
+class FriendshipStageRegistry {
+  static const Map<String, FriendshipStageDefinition> stages = {
+
+    'growing': FriendshipStageDefinition(
+      key: 'growing',
+      title: 'This friendship is growing.',
+      subtitle:
+          'Kind moments are helping this friendship take root.',
+      shortLabel: 'Growing friendship',
+      emoji: '🌱',
+      order: 1,
+    ),
+
+    'strong': FriendshipStageDefinition(
+      key: 'strong',
+      title: 'This friendship is becoming stronger.',
+      subtitle:
+          'Repair and consistent kindness are helping this friendship grow.',
+      shortLabel: 'Friendship recovering',
+      emoji: '🌳',
+      order: 2,
+    ),
+
+    'trusted': FriendshipStageDefinition(
+      key: 'trusted',
+      title: 'This friendship is trusted.',
+      subtitle:
+          'Respect and positive communication are building lasting trust.',
+      shortLabel: 'Trusted friendship',
+      emoji: '💛',
+      order: 3,
+    ),
+
+    'flourishing': FriendshipStageDefinition(
+      key: 'flourishing',
+      title: 'This friendship is flourishing.',
+      subtitle:
+          'A wonderful example of healthy digital friendship.',
+      shortLabel: 'Friendship flourishing',
+      emoji: '🌈',
+      order: 4,
+    ),
+  };
+
+  static FriendshipStageDefinition fromKey(String key) {
+    return stages[key] ?? stages['growing']!;
+  }
+}
+
 class ParentChildProfile {
   final String childId;
   final String name;
@@ -7340,21 +7411,13 @@ class _ParentFriendshipsScreenState
   }
 
   String _relationshipSubtitle(Map<String, dynamic> data) {
-  final stage = (data['friendshipStage'] ?? 'seedling').toString();
+  final stage =
+      FriendshipStageRegistry.fromKey(
+        (data['friendshipStage'] ?? 'growing').toString(),
+      );
 
-  switch (stage) {
-    case 'flourishing':
-      return '🌈 Friendship flourishing';
-    case 'trusted':
-      return '💛 Trusted friendship';
-    case 'strong':
-      return '🌳 Strong friendship';
-    case 'growing':
-      return '🌱 Growing friendship';
-    default:
-      return '🌱 Growing friendship';
-  }
-  }
+  return '${stage.emoji} ${stage.shortLabel}';
+}
 
   BoxDecoration _parentCardDecoration({
     double radius = 24,
@@ -7771,34 +7834,12 @@ String headerSubtitle =
     'Kindness, repair and trust help friendships grow over time.';
 
 switch (currentJourneyStage) {
-  case 1:
-    headerEmoji = '🌱';
-    headerTitle = 'This friendship is growing.';
-    headerSubtitle =
-        'Kind moments are helping this friendship take root.';
-    break;
+final stageDefinition =
+    FriendshipStageRegistry.fromKey(friendshipStage);
 
-  case 2:
-    headerEmoji = '🌳';
-    headerTitle = 'This friendship is becoming stronger.';
-    headerSubtitle =
-        'Repair and consistent kindness are helping this friendship flourish.';
-    break;
-
-  case 3:
-    headerEmoji = '💛';
-    headerTitle = 'This friendship is trusted.';
-    headerSubtitle =
-        'This relationship has been built on respect and positive communication.';
-    break;
-
-  case 4:
-    headerEmoji = '🌈';
-    headerTitle = 'This friendship is flourishing.';
-    headerSubtitle =
-        'A wonderful example of healthy digital friendship.';
-    break;
-}
+final headerEmoji = stageDefinition.emoji;
+final headerTitle = stageDefinition.title;
+final headerSubtitle = stageDefinition.subtitle;
 
             return ListView(
               padding: const EdgeInsets.all(18),
@@ -7992,7 +8033,7 @@ const Text(
 ),
 const SizedBox(height: 12),
                 
-..._comingUpCards(currentJourneyStage),
+_comingUpCards(stageDefinition.order)
 
 const SizedBox(height: 12),
 
