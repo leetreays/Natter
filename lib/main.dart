@@ -7843,7 +7843,34 @@ if (children.length >= 2) {
 
   return ListView(
               padding: const EdgeInsets.all(18),
-    const Text(
+              children: [
+                Padding(
+  padding: const EdgeInsets.only(bottom: 22),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$headerEmoji ${stageDefinition.shortLabel}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'Every friendship grows through kindness, repair and trust.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontSize: 15,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
+),
+               const Text(
   'Current Relationship',
   style: TextStyle(
     color: Colors.white,
@@ -7852,11 +7879,8 @@ if (children.length >= 2) {
     letterSpacing: 0.2,
   ),
 ),
-const SizedBox(height: 12),
-              children: [
+const SizedBox(height: 12), 
                 Container(
-                 Padding(
-  padding: const EdgeInsets.only(bottom: 22),
                   padding: const EdgeInsets.all(20),
                   decoration: _outerSectionDecoration(),
                   child: Row(
@@ -7893,30 +7917,6 @@ const SizedBox(height: 12),
   ],
 )
                 ),
-                  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        'Every friendship grows through kindness, repair and trust.',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.78),
-          fontSize: 15,
-          height: 1.5,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ],
-  ),
-), 
                 const SizedBox(height: 18),
                 const Text(
                   'Journey So Far',
