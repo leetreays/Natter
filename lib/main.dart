@@ -7308,7 +7308,8 @@ class ParentFriendshipsScreen extends StatefulWidget {
       _ParentFriendshipsScreenState();
 }
 
-class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
+class _ParentFriendshipsScreenState
+    extends State<ParentFriendshipsScreen> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> _friendshipsStream;
 
   @override
@@ -7336,6 +7337,23 @@ class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
     }
 
     return 'Friend';
+  }
+
+  String _relationshipSubtitle(Map<String, dynamic> data) {
+  final stage = (data['friendshipStage'] ?? 'seedling').toString();
+
+  switch (stage) {
+    case 'flourishing':
+      return '🌈 Friendship flourishing';
+    case 'trusted':
+      return '💛 Trusted friendship';
+    case 'strong':
+      return '🌳 Strong friendship';
+    case 'growing':
+      return '🌱 Growing friendship';
+    default:
+      return '🌱 Growing friendship';
+  }
   }
 
   BoxDecoration _parentCardDecoration({
@@ -7431,8 +7449,9 @@ class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => ParentFriendshipJourneyScreen(
-                            childId: widget.childId,
-                          ),
+  childId: widget.childId,
+  friendshipId: doc.id,
+),
                         ),
                       );
                     },
@@ -7473,7 +7492,7 @@ class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Open friendship journey',
+                                  _relationshipSubtitle(data),
                                   style: TextStyle(
                                     color: Colors.white.withOpacity(0.70),
                                     fontWeight: FontWeight.w700,
@@ -7501,10 +7520,12 @@ class _ParentFriendshipsScreenState extends State<ParentFriendshipsScreen> {
 
 class ParentFriendshipJourneyScreen extends StatefulWidget {
   final String childId;
+  final String friendshipId;
 
   const ParentFriendshipJourneyScreen({
     super.key,
     required this.childId,
+    required this.friendshipId,
   });
 
   @override
@@ -7608,13 +7629,72 @@ Widget _upcomingMilestoneCard({
   );
 }
 
+List<Widget> _comingUpCards(int currentJourneyStage) {
+  if (currentJourneyStage >= 4) {
+    return [
+      _upcomingMilestoneCard(
+        icon: '🌟',
+        title: 'Keep nurturing this friendship',
+        description:
+            'This friendship is flourishing. The next step is consistency, care and continued trust.',
+      ),
+    ];
+  }
+
+  if (currentJourneyStage >= 3) {
+    return [
+      _upcomingMilestoneCard(
+        icon: '🌈',
+        title: 'Friendship flourishing',
+        description:
+            'A friendship that has grown stronger through consistent care.',
+      ),
+    ];
+  }
+
+  if (currentJourneyStage >= 2) {
+    return [
+      _upcomingMilestoneCard(
+        icon: '💛',
+        title: 'Trusted friendship',
+        description:
+            'Built through repeated kindness, repair and respectful choices.',
+      ),
+      const SizedBox(height: 10),
+      _upcomingMilestoneCard(
+        icon: '🌈',
+        title: 'Friendship flourishing',
+        description:
+            'A friendship that has grown stronger through consistent care.',
+      ),
+    ];
+  }
+
+  return [
+    _upcomingMilestoneCard(
+      icon: '🌳',
+      title: 'Friendship recovering',
+      description:
+          'A friendship that keeps growing after a difficult moment.',
+    ),
+    const SizedBox(height: 10),
+    _upcomingMilestoneCard(
+      icon: '💛',
+      title: 'Trusted friendship',
+      description:
+          'Built through repeated kindness, repair and respectful choices.',
+    ),
+  ];
+}
+
   @override
 void initState() {
   super.initState();
 
   _momentsStream = FirebaseFirestore.instance
-      .collectionGroup('meaningful_moments')
-      .where('participantChildIds', arrayContains: widget.childId)
+      .collection('friendships')
+      .doc(widget.friendshipId)
+      .collection('friendship_moments')
       .where('showToParent', isEqualTo: true)
       .snapshots();
 }
@@ -7885,22 +7965,12 @@ const Text(
   ),
 ),
 const SizedBox(height: 12),
-_upcomingMilestoneCard(
-  icon: '🔒',
-  title: 'Trusted friendship',
-  description:
-      'Built through repeated kindness, repair and respectful choices.',
-),
-const SizedBox(height: 10),
-_upcomingMilestoneCard(
-  icon: '🌈',
-  title: 'Friendship flourishing',
-  description:
-      'A friendship that has grown stronger through consistent care.',
-),
+                
+..._comingUpCards(currentJourneyStage),
 
-                const SizedBox(height: 12),
-                Container(
+const SizedBox(height: 12),
+
+Container(
                   padding: const EdgeInsets.all(18),
                   decoration: _outerSectionDecoration(),
                   child: Text(
