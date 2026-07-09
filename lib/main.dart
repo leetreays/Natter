@@ -7786,54 +7786,33 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-    return ParentBrandScaffold(
+return ParentBrandScaffold(
   appBar: AppBar(
     backgroundColor: Colors.transparent,
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,
-        title: const BrandedAppBarTitle(
-          title: 'Friendship Journey',
-        ),
-      ),
-        child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-  stream: _friendshipStream,
-  builder: (context, friendshipSnapshot) {
-    final friendshipData = friendshipSnapshot.data?.data() ?? {};
-    final friendshipStage =
-        (friendshipData['friendshipStage'] ?? 'seedling').toString();
+    title: const BrandedAppBarTitle(
+      title: 'Friendship Journey',
+    ),
+  ),
+  child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+    stream: _friendshipStream,
+    builder: (context, friendshipSnapshot) {
+      final friendshipData = friendshipSnapshot.data?.data() ?? {};
+      final friendshipStage =
+          (friendshipData['friendshipStage'] ?? 'growing').toString();
 
-    final currentJourneyStage =
-        _journeyStageNumberFromFriendshipStage(friendshipStage);
+      final stageDefinition =
+          FriendshipStageRegistry.fromKey(friendshipStage);
 
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: _momentsStream,
-      builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+      final headerEmoji = stageDefinition.emoji;
+      final headerTitle = stageDefinition.title;
+      final headerSubtitle = stageDefinition.subtitle;
 
-            final docs = snapshot.data?.docs ?? [];
-
-            docs.sort((a, b) {
-              final aTime = a.data()['createdAt'];
-              final bTime = b.data()['createdAt'];
-
-              if (aTime is Timestamp && bTime is Timestamp) {
-                return bTime.compareTo(aTime);
-              }
-
-              return 0;
-            });
-
-final stageDefinition =
-    FriendshipStageRegistry.fromKey(friendshipStage);
-
-final headerEmoji = stageDefinition.emoji;
-final headerTitle = stageDefinition.title;
-final headerSubtitle = stageDefinition.subtitle;
+      return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: _momentsStream,
+        builder: (context, snapshot) {
 
             return ListView(
               padding: const EdgeInsets.all(18),
@@ -8048,10 +8027,8 @@ Container(
         );
       },
     ),
-  },
-),
-    );
-  }
+  );
+}
 }
 
 class ChildAccessCodeScreen extends StatefulWidget {
