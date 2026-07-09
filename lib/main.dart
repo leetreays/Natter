@@ -7792,14 +7792,29 @@ return ParentBrandScaffold(
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,
-    title: const BrandedAppBarTitle(
-      title: 'Friendship Journey',
-    ),
+    title: BrandedAppBarTitle(
+  title: relationshipTitle,
+),
   ),
   child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
     stream: _friendshipStream,
     builder: (context, friendshipSnapshot) {
       final friendshipData = friendshipSnapshot.data?.data() ?? {};
+      final children =
+    Map<String, dynamic>.from(friendshipData['children'] ?? {});
+
+String relationshipTitle = 'Friendship';
+
+if (children.length >= 2) {
+  final names = children.values
+      .map((c) => (c as Map)['name']?.toString() ?? '')
+      .where((n) => n.isNotEmpty)
+      .toList();
+
+  if (names.length >= 2) {
+    relationshipTitle = '${names[0]} & ${names[1]}';
+  }
+}
       final friendshipStage =
           (friendshipData['friendshipStage'] ?? 'growing').toString();
 
@@ -7828,8 +7843,20 @@ return ParentBrandScaffold(
 
   return ListView(
               padding: const EdgeInsets.all(18),
+    const Text(
+  'Current Relationship',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 0.2,
+  ),
+),
+const SizedBox(height: 12),
               children: [
                 Container(
+                 Padding(
+  padding: const EdgeInsets.only(bottom: 22),
                   padding: const EdgeInsets.all(20),
                   decoration: _outerSectionDecoration(),
                   child: Row(
@@ -7866,6 +7893,30 @@ return ParentBrandScaffold(
   ],
 )
                 ),
+                  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        'Every friendship grows through kindness, repair and trust.',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontSize: 15,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
+), 
                 const SizedBox(height: 18),
                 const Text(
                   'Journey So Far',
