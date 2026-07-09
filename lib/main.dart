@@ -7792,8 +7792,8 @@ return ParentBrandScaffold(
     surfaceTintColor: Colors.transparent,
     elevation: 0,
     scrolledUnderElevation: 0,
-    title: BrandedAppBarTitle(
-  title: relationshipTitle,
+    title: const BrandedAppBarTitle(
+  title: 'Friendship Journey',
 ),
   ),
   child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
