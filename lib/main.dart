@@ -7813,8 +7813,20 @@ return ParentBrandScaffold(
       return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _momentsStream,
         builder: (context, snapshot) {
+  final docs = snapshot.data?.docs ?? [];
 
-            return ListView(
+  docs.sort((a, b) {
+    final aTime = a.data()['createdAt'];
+    final bTime = b.data()['createdAt'];
+
+    if (aTime is Timestamp && bTime is Timestamp) {
+      return bTime.compareTo(aTime);
+    }
+
+    return 0;
+  });
+
+  return ListView(
               padding: const EdgeInsets.all(18),
               children: [
                 Container(
