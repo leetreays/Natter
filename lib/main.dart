@@ -8104,46 +8104,47 @@ const SizedBox(height: 12),
 Container(
   padding: const EdgeInsets.all(18),
   decoration: _outerSectionDecoration(),
-  Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    const Row(
-      children: [
-        Icon(
-          Icons.lock_outline_rounded,
-          color: NatterBrand.green,
-          size: 22,
-        ),
-        SizedBox(width: 10),
-        Text(
-          'Privacy Promise',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Row(
+        children: [
+          Icon(
+            Icons.lock_outline_rounded,
+            color: NatterBrand.green,
+            size: 22,
           ),
+          SizedBox(width: 10),
+          Text(
+            'Privacy Promise',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 16),
+      const Text(
+        "Your child's conversations remain private.",
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
         ),
-      ],
-    ),
-    const SizedBox(height: 16),
-    Text(
-      "Your child's conversations remain private.",
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-        fontWeight: FontWeight.w800,
       ),
-    ),
-    const SizedBox(height: 12),
-    Text(
-      "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships—not conversations.",
-      style: TextStyle(
-        color: Colors.white.withOpacity(0.78),
-        height: 1.55,
-        fontWeight: FontWeight.w600,
+      const SizedBox(height: 12),
+      Text(
+        "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships—not conversations.",
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          height: 1.55,
+          fontWeight: FontWeight.w600,
+        ),
       ),
-    ),
-  ],
+    ],
+  ),
 ),
               ],
             );
