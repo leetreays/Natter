@@ -7842,26 +7842,34 @@ if (children.length >= 2) {
   });
 
   return ListView(
-              padding: const EdgeInsets.all(18),
-              children: [
-                Padding(
-  padding: const EdgeInsets.only(bottom: 22),
+              pPadding(
+  padding: const EdgeInsets.only(bottom: 28),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        '$headerEmoji ${stageDefinition.shortLabel}',
+        relationshipTitle,
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 28,
+          fontSize: 30,
           fontWeight: FontWeight.w900,
+          letterSpacing: -0.4,
         ),
       ),
       const SizedBox(height: 8),
       Text(
-        'Every friendship grows through kindness, repair and trust.',
+        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+        style: const TextStyle(
+          color: NatterBrand.green,
+          fontSize: 17,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      const SizedBox(height: 10),
+      Text(
+        'Built through kindness, repair and trust.',
         style: TextStyle(
-          color: Colors.white.withOpacity(0.78),
+          color: Colors.white.withOpacity(0.76),
           fontSize: 15,
           height: 1.5,
           fontWeight: FontWeight.w600,
