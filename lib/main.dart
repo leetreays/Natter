@@ -7882,58 +7882,73 @@ if (children.length >= 2) {
     ),
 
     const Text(
-      'Current Relationship',
-      style: TextStyle(
-        color: Colors.white,
-        fontSize: 22,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 0.2,
-      ),
-    ),
-    const SizedBox(height: 12),
+  'Current Relationship',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+    letterSpacing: 0.1,
+  ),
+),
+const SizedBox(height: 14),
 
-    Container(
-      padding: const EdgeInsets.all(20),
-      decoration: _outerSectionDecoration(),
-      child: Row(
-        children: [
-          Text(
-            headerEmoji,
-            style: const TextStyle(fontSize: 42),
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.symmetric(
+    horizontal: 24,
+    vertical: 26,
+  ),
+  decoration: _outerSectionDecoration(),
+  child: Column(
+    children: [
+      Container(
+        width: 76,
+        height: 76,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: NatterBrand.green.withOpacity(0.12),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: NatterBrand.green.withOpacity(0.30),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  headerTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  headerSubtitle,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.80),
-                    fontWeight: FontWeight.w700,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
+        ),
+        child: Text(
+          headerEmoji,
+          style: const TextStyle(
+            fontSize: 46,
+            height: 1,
           ),
-        ],
+        ),
       ),
-    ),
+      const SizedBox(height: 18),
+      Text(
+        headerTitle,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.w900,
+          height: 1.25,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        headerSubtitle,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          height: 1.5,
+        ),
+      ),
+    ],
+  ),
+),
 
-    const SizedBox(height: 18),
-
-    const Text(
-      'Journey So Far',
+const SizedBox(height: 28),
+const Text(
+  'Journey So Far',
       style: TextStyle(
         color: Colors.white,
         fontSize: 24,
