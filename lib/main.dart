@@ -7653,7 +7653,7 @@ Widget _upcomingMilestoneCard({
   required String description,
 }) {
   return Container(
-    padding: const EdgeInsets.all(18),
+    padding: const EdgeInsets.all(22),
     decoration: _innerCardDecoration(
       color: const Color(0xFF2D466F),
     ),
@@ -7677,7 +7677,7 @@ Widget _upcomingMilestoneCard({
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 10),
               Text(
                 description,
                 style: TextStyle(
@@ -7700,8 +7700,8 @@ List<Widget> _comingUpCards(int currentJourneyStage) {
       _upcomingMilestoneCard(
         icon: '🌟',
         title: 'Keep nurturing this friendship',
-        description:
-            'This friendship is flourishing. The next step is consistency, care and continued trust.',
+description:
+    'Healthy friendships continue to grow through everyday acts of kindness, encouragement and trust.',
       ),
     ];
   }
@@ -7711,8 +7711,8 @@ List<Widget> _comingUpCards(int currentJourneyStage) {
       _upcomingMilestoneCard(
         icon: '🌈',
         title: 'Friendship flourishing',
-        description:
-            'A friendship that has grown stronger through consistent care.',
+description:
+    'Continued care, encouragement and respect help friendships flourish over time.',
       ),
     ];
   }
@@ -7721,9 +7721,9 @@ List<Widget> _comingUpCards(int currentJourneyStage) {
     return [
       _upcomingMilestoneCard(
         icon: '💛',
-        title: 'Trusted friendship',
-        description:
-            'Built through repeated kindness, repair and respectful choices.',
+        title: 'Growing trust',
+description:
+    'Shared kindness and positive communication help trust develop naturally over time.',
       ),
       const SizedBox(height: 10),
       _upcomingMilestoneCard(
@@ -7738,9 +7738,9 @@ List<Widget> _comingUpCards(int currentJourneyStage) {
   return [
     _upcomingMilestoneCard(
       icon: '🌳',
-      title: 'Friendship recovering',
-      description:
-          'A friendship that keeps growing after a difficult moment.',
+      title: 'Growing stronger',
+description:
+    'As kindness and understanding continue, this friendship can become even stronger after difficult moments.',
     ),
     const SizedBox(height: 10),
     _upcomingMilestoneCard(
@@ -8089,7 +8089,7 @@ return Row(
 
                 const SizedBox(height: 18),
 const Text(
-  'Coming Up',
+  'Looking Ahead',
   style: TextStyle(
     color: Colors.white,
     fontSize: 24,
