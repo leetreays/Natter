@@ -7842,101 +7842,107 @@ if (children.length >= 2) {
   });
 
   return ListView(
-              pPadding(
-  padding: const EdgeInsets.only(bottom: 28),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        relationshipTitle,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 30,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.4,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
-        style: const TextStyle(
-          color: NatterBrand.green,
-          fontSize: 17,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      const SizedBox(height: 10),
-      Text(
-        'Built through kindness, repair and trust.',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.76),
-          fontSize: 15,
-          height: 1.5,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ],
-  ),
-),
-               const Text(
-  'Current Relationship',
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: 22,
-    fontWeight: FontWeight.w900,
-    letterSpacing: 0.2,
-  ),
-),
-const SizedBox(height: 12), 
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: _outerSectionDecoration(),
-                  child: Row(
+  padding: const EdgeInsets.all(18),
   children: [
-    Text(
-      headerEmoji,
-      style: const TextStyle(fontSize: 42),
-    ),
-    const SizedBox(width: 16),
-    Expanded(
+    Padding(
+      padding: const EdgeInsets.only(bottom: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            headerTitle,
+            relationshipTitle,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 22,
+              fontSize: 30,
               fontWeight: FontWeight.w900,
+              letterSpacing: -0.4,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            headerSubtitle,
+            '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+            style: const TextStyle(
+              color: NatterBrand.green,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Built through kindness, repair and trust.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.80),
-              fontWeight: FontWeight.w700,
-              height: 1.4,
+              color: Colors.white.withOpacity(0.76),
+              fontSize: 15,
+              height: 1.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
       ),
     ),
-  ],
-)
-                ),
-                const SizedBox(height: 18),
-                const Text(
-                  'Journey So Far',
-                  style: TextStyle(
+
+    const Text(
+      'Current Relationship',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 22,
+        fontWeight: FontWeight.w900,
+        letterSpacing: 0.2,
+      ),
+    ),
+    const SizedBox(height: 12),
+
+    Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _outerSectionDecoration(),
+      child: Row(
+        children: [
+          Text(
+            headerEmoji,
+            style: const TextStyle(fontSize: 42),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  headerTitle,
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
+                Text(
+                  headerSubtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.80),
+                    fontWeight: FontWeight.w700,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
 
-                if (docs.isEmpty)
+    const SizedBox(height: 18),
+
+    const Text(
+      'Journey So Far',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 24,
+        fontWeight: FontWeight.w900,
+      ),
+    ),
+    const SizedBox(height: 12),
+
+    if (docs.isEmpty)
   Container(
     padding: const EdgeInsets.all(20),
     decoration: _innerCardDecoration(
