@@ -7955,11 +7955,11 @@ const Text(
         fontWeight: FontWeight.w900,
       ),
     ),
-    const SizedBox(height: 12),
+    const SizedBox(height: 16),
 
     if (docs.isEmpty)
   Container(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(24),
     decoration: _innerCardDecoration(
       color: const Color(0xFF2D466F),
     ),
@@ -7967,7 +7967,7 @@ const Text(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '🌱 Every friendship starts somewhere.',
+  '🌱 The story begins.',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -7976,10 +7976,10 @@ const Text(
         ),
         SizedBox(height: 12),
         Text(
-          'As children show kindness, repair mistakes and build trust together, their friendship journey will begin to appear here.',
+          'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.'
           style: TextStyle(
             color: Colors.white70,
-            height: 1.5,
+            height: 1.6,
           ),
         ),
       ],
