@@ -7976,7 +7976,7 @@ const Text(
         ),
         SizedBox(height: 12),
         Text(
-          'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.'
+          'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.',
           style: TextStyle(
             color: Colors.white70,
             height: 1.6,
