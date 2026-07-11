@@ -7847,43 +7847,46 @@ if (children.length >= 2) {
   padding: const EdgeInsets.all(18),
   children: [
     Padding(
-      padding: const EdgeInsets.only(bottom: 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-  relationshipTitle,
-  style: const TextStyle(
-    color: Colors.white,
-    fontSize: 28,
-    fontWeight: FontWeight.w900,
-    letterSpacing: -0.3,
-    height: 1.15,
-  ),
-),
-          const SizedBox(height: 8),
-          Text(
-  '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
-  style: const TextStyle(
-    color: NatterBrand.green,
-    fontSize: 16,
-    fontWeight: FontWeight.w800,
-    height: 1.25,
-  ),
-),
-          const SizedBox(height: 10),
-          Text(
-            'Built through kindness, repair and trust.',
-            style: TextStyle(
-  color: Colors.white.withOpacity(0.72),
-  fontSize: 14,
-  height: 1.5,
-  fontWeight: FontWeight.w600,
-),
-          ),
-        ],
+  padding: const EdgeInsets.only(bottom: 32),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        relationshipTitle,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.3,
+          height: 1.15,
+        ),
       ),
-    ),
+      const SizedBox(height: 12),
+      Text(
+        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: NatterBrand.green,
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          height: 1.25,
+        ),
+      ),
+      const SizedBox(height: 14),
+      Text(
+        'Built through kindness, repair and trust.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.72),
+          fontSize: 14,
+          height: 1.5,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ],
+  ),
+),
 
     const Text(
   'Current Relationship',
