@@ -150,6 +150,71 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
+class ParentTypography {
+  const ParentTypography._();
+
+  static const pageTitle = TextStyle(
+    color: Colors.white,
+    fontSize: 26,
+    fontWeight: FontWeight.w900,
+    height: 1.15,
+    letterSpacing: -0.2,
+  );
+
+  static const sectionTitle = TextStyle(
+    color: Colors.white,
+    fontSize: 20,
+    fontWeight: FontWeight.w900,
+    height: 1.2,
+  );
+
+  static const cardTitle = TextStyle(
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: FontWeight.w900,
+    height: 1.25,
+  );
+
+  static const body = TextStyle(
+    color: Colors.white70,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    height: 1.6,
+  );
+
+  static const emphasis = TextStyle(
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: FontWeight.w800,
+    height: 1.45,
+  );
+
+  static const caption = TextStyle(
+    color: Colors.white60,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+    height: 1.45,
+  );
+}
+
+class ParentSpacing {
+  const ParentSpacing._();
+
+  static const xs = 8.0;
+  static const sm = 12.0;
+  static const md = 18.0;
+  static const lg = 24.0;
+  static const xl = 32.0;
+}
+
+class ParentRadius {
+  const ParentRadius._();
+
+  static const card = 24.0;
+  static const innerCard = 22.0;
+  static const pill = 100.0;
+}
+
 class Friend {
   final String name;
   final String schoolName;
@@ -7664,29 +7729,19 @@ Widget _upcomingMilestoneCard({
           icon,
           style: const TextStyle(fontSize: 28),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(height: ParentSpacing.sm),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-  color: Colors.white,
-  fontSize: 18,
-  fontWeight: FontWeight.w900,
-  height: 1.25,
-),
+                style: ParentTypography.cardTitle,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: ParentSpacing.xs),
               Text(
                 description,
-                style: TextStyle(
-  color: Colors.white.withOpacity(0.74),
-  fontSize: 14,
-  fontWeight: FontWeight.w600,
-  height: 1.5,
-),
+                style: ParentTypography.body,
               ),
             ],
           ),
@@ -7727,7 +7782,7 @@ description:
 description:
     'Shared kindness and positive communication help trust develop naturally over time.',
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: ParentSpacing.xs),
       _upcomingMilestoneCard(
         icon: '🌈',
         title: 'Friendship flourishing',
@@ -7744,7 +7799,7 @@ description:
 description:
     'As kindness and understanding continue, this friendship can become even stronger after difficult moments.',
     ),
-    const SizedBox(height: 10),
+    const SizedBox(height: ParentSpacing.xs),
     _upcomingMilestoneCard(
       icon: '💛',
       title: 'Trusted friendship',
@@ -7854,15 +7909,9 @@ if (children.length >= 2) {
       Text(
         relationshipTitle,
         textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.3,
-          height: 1.15,
-        ),
+        style: ParentTypography.pageTitle,
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: ParentSpacing.sm),
       Text(
         '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
         textAlign: TextAlign.center,
@@ -7873,32 +7922,21 @@ if (children.length >= 2) {
           height: 1.25,
         ),
       ),
-      const SizedBox(height: 14),
+      const SizedBox(height: ParentSpacing.sm),
       Text(
-        'Built through kindness, repair and trust.',
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.72),
-          fontSize: 14,
-          height: 1.5,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+  'Built through kindness, repair and trust.',
+  textAlign: TextAlign.center,
+  style: ParentTypography.caption,
+),
     ],
   ),
 ),
 
     const Text(
   'Current Relationship',
-  style: const TextStyle(
-  color: Colors.white,
-  fontSize: 21,
-  fontWeight: FontWeight.w900,
-  letterSpacing: 0.1,
-  height: 1.2,
+  style: ParentTypography.sectionTitle,
 ),
-),
-const SizedBox(height: 14),
+const SizedBox(height: ParentSpacing.sm),
 
 Container(
   width: double.infinity,
@@ -7928,44 +7966,28 @@ Container(
           ),
         ),
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: ParentSpacing.md),
       Text(
-        headerTitle,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.w900,
-          height: 1.25,
-        ),
-      ),
-      const SizedBox(height: 12),
-      Text(
-        headerSubtitle,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-  color: Colors.white.withOpacity(0.76),
-  fontSize: 15,
-  fontWeight: FontWeight.w600,
-  height: 1.5,
+  headerTitle,
+  textAlign: TextAlign.center,
+  style: ParentTypography.cardTitle,
 ),
-      ),
+      const SizedBox(height: ParentSpacing.sm),
+      Text(
+  headerSubtitle,
+  textAlign: TextAlign.center,
+  style: ParentTypography.body,
+),
     ],
   ),
 ),
 
-const SizedBox(height: 28),
+const SizedBox(height: ParentSpacing.lg),
 const Text(
   'Journey So Far',
-      style: const TextStyle(
-  color: Colors.white,
-  fontSize: 21,
-  fontWeight: FontWeight.w900,
-  letterSpacing: 0.1,
-  height: 1.2,
-),
+      style: ParentTypography.sectionTitle,
     ),
-    const SizedBox(height: 16),
+    const SizedBox(height: ParentSpacing.md),
 
     if (docs.isEmpty)
   Container(
@@ -7976,24 +7998,14 @@ const Text(
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
   '🌱 The story begins.',
-          style: const TextStyle(
-  color: Colors.white,
-  fontSize: 19,
-  fontWeight: FontWeight.w900,
-  height: 1.3,
+  style: ParentTypography.cardTitle,
 ),
-        ),
         SizedBox(height: 12),
         Text(
           'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.',
-          style: const TextStyle(
-  color: Colors.white70,
-  fontSize: 15,
-  fontWeight: FontWeight.w500,
-  height: 1.6,
-),
+          style: ParentTypography.body,
         ),
       ],
     ),
@@ -8055,7 +8067,7 @@ return Row(
         ],
       ),
     ),
-    const SizedBox(width: 10),
+    const SizedBox(height: ParentSpacing.xs),
     Expanded(
       child: Container(
         margin: const EdgeInsets.only(bottom: 18),
@@ -8076,22 +8088,14 @@ return Row(
               ),
             if (date.isNotEmpty) const SizedBox(height: 6),
             Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-            const SizedBox(height: 8),
+  title,
+  style: ParentTypography.cardTitle,
+),
+            const SizedBox(height: ParentSpacing.xs),
             Text(
-              description,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.78),
-                fontWeight: FontWeight.w700,
-                height: 1.35,
-              ),
-            ),
+  description,
+  style: ParentTypography.body,
+),
           ],
         ),
       ),
@@ -8100,22 +8104,16 @@ return Row(
 );
                   }),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: ParentSpacing.md),
 const Text(
   'Looking Ahead',
-  style: const TextStyle(
-  color: Colors.white,
-  fontSize: 21,
-  fontWeight: FontWeight.w900,
-  letterSpacing: 0.1,
-  height: 1.2,
+  style: ParentTypography.sectionTitle,
 ),
-),
-const SizedBox(height: 12),
+const SizedBox(height: ParentSpacing.sm),
                 
 ..._comingUpCards(stageDefinition.order),
 
-const SizedBox(height: 12),
+const SizedBox(height: ParentSpacing.sm),
 Container(
   padding: const EdgeInsets.all(18),
   decoration: _outerSectionDecoration(),
@@ -8132,33 +8130,19 @@ Container(
           SizedBox(width: 10),
           Text(
             'Privacy Promise',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
+            style: ParentTypography.cardTitle,
           ),
         ],
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: ParentSpacing.md),
       const Text(
         "Your child's conversations remain private.",
-        style: const TextStyle(
-  color: Colors.white,
-  fontSize: 15,
-  fontWeight: FontWeight.w800,
-  height: 1.4,
-),
+        style: ParentTypography.emphasis,
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: ParentSpacing.sm),
       Text(
         "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships—not conversations.",
-        style: TextStyle(
-  color: Colors.white.withOpacity(0.74),
-  fontSize: 14,
-  height: 1.55,
-  fontWeight: FontWeight.w600,
-),
+        style: ParentTypography.body,
       ),
     ],
   ),
