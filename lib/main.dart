@@ -155,56 +155,57 @@ class ParentTypography {
 
   static const pageTitle = TextStyle(
     color: Colors.white,
-    fontSize: 24,
-    fontWeight: FontWeight.w900,
-    height: 1.15,
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    height: 1.2,
     letterSpacing: -0.2,
   );
 
   static const sectionTitle = TextStyle(
     color: Colors.white,
-    fontSize: 19,
-    fontWeight: FontWeight.w900,
-    height: 1.2,
+    fontSize: 17,
+    fontWeight: FontWeight.w800,
+    height: 1.25,
   );
 
   static const cardTitle = TextStyle(
     color: Colors.white,
-    fontSize: 18,
-    fontWeight: FontWeight.w900,
-    height: 1.25,
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+    height: 1.3,
   );
 
   static const body = TextStyle(
     color: Colors.white70,
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
     height: 1.55,
   );
 
   static const emphasis = TextStyle(
     color: Colors.white,
-    fontSize: 15,
-    fontWeight: FontWeight.w800,
-    height: 1.4,
+    fontSize: 13,
+    fontWeight: FontWeight.w700,
+    height: 1.45,
   );
 
   static const caption = TextStyle(
     color: Colors.white60,
-    fontSize: 13,
-    fontWeight: FontWeight.w600,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
     height: 1.4,
   );
 }
 
 class ParentSpacing {
+class ParentSpacing {
   const ParentSpacing._();
 
-  static const xs = 8.0;
-  static const sm = 12.0;
-  static const md = 18.0;
-  static const lg = 24.0;
-  static const xl = 32.0;
+  static const xs = 6.0;
+  static const sm = 10.0;
+  static const md = 14.0;
+  static const lg = 18.0;
+  static const xl = 26.0;
 }
 
 class ParentRadius {
@@ -257,7 +258,7 @@ class ParentCard extends StatelessWidget {
   const ParentCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
+    this.padding = const EdgeInsets.all(16),
     this.decoration,
   });
 
@@ -281,8 +282,8 @@ class ParentIconCircle extends StatelessWidget {
   const ParentIconCircle({
     super.key,
     required this.emoji,
-    this.size = 48,
-    this.emojiSize = 28,
+    this.size = 40,
+    this.emojiSize = 22,
     this.accent = NatterBrand.green,
   });
 
@@ -7836,8 +7837,8 @@ Widget _upcomingMilestoneCard({
       children: [
         ParentIconCircle(
   emoji: icon,
-  size: 42,
-  emojiSize: 24,
+  size: 38,
+  emojiSize: 21,
 ),
         const SizedBox(height: ParentSpacing.sm),
         Expanded(
@@ -8026,11 +8027,11 @@ if (children.length >= 2) {
         '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: NatterBrand.green,
-          fontSize: 16,
-          fontWeight: FontWeight.w800,
-          height: 1.25,
-        ),
+  color: NatterBrand.green,
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  height: 1.25,
+),
       ),
       const SizedBox(height: ParentSpacing.sm),
       Text(
@@ -8055,8 +8056,8 @@ ParentCard(
     children: [
       ParentIconCircle(
   emoji: headerEmoji,
-  size: 52,
-  emojiSize: 32,
+  size: 42,
+  emojiSize: 24,
 ),
       const SizedBox(width: ParentSpacing.md),
       Expanded(
