@@ -240,10 +240,10 @@ class ParentCardStyle {
 
   static BoxDecoration subtle() {
     return BoxDecoration(
-      color: Colors.white.withOpacity(0.06),
+      color: Colors.white.withOpacity(0.035),
       borderRadius: BorderRadius.circular(ParentRadius.innerCard),
       border: Border.all(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withOpacity(0.05),
       ),
     );
   }
@@ -8042,18 +8042,20 @@ if (children.length >= 2) {
   ),
 ),
 
-    const Text(
-  'Current Relationship',
-  style: ParentTypography.sectionTitle,
-),
-const SizedBox(height: ParentSpacing.sm),
-
-ParentCard(
-  padding: const EdgeInsets.all(20),
-  child: Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
+Container(
+  padding: const EdgeInsets.all(18),
+  decoration: ParentCardStyle.subtle(),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Expanded(
+      const Text(
+        'Current Relationship',
+        style: ParentTypography.sectionTitle,
+      ),
+      const SizedBox(height: ParentSpacing.md),
+
+      ParentCard(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -8073,135 +8075,142 @@ ParentCard(
   ),
 ),
 
-const SizedBox(height: ParentSpacing.xl),
-const Text(
-  'Journey So Far',
-      style: ParentTypography.sectionTitle,
-    ),
-    const SizedBox(height: ParentSpacing.md),
+const SizedBox(height: ParentSpacing.lg),
 
-    if (docs.isEmpty)
-  ParentCard(
-  padding: const EdgeInsets.all(20),
-    child: const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-  '🌱 The story begins.',
-  style: ParentTypography.cardTitle,
-),
-        SizedBox(height: 12),
-        Text(
-          'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.',
-          style: ParentTypography.body,
-        ),
-      ],
-    ),
-  )
-else
-                  ...docs.map((doc) {
-                    final data = doc.data();
-
-                    final icon =
-                        _emojiForIcon((data['icon'] ?? '').toString());
-
-                    final title =
-                        (data['title'] ?? 'Friendship moment').toString();
-
-                    final description =
-                        (data['description'] ?? '').toString();
-
-                    final importance =
-                        (data['importance'] ?? 0).toString();
-
-                    final journeyStage =
-                        (data['journeyStage'] ?? 0).toString();
-
-                    final date =
-                        _formatMomentDate(data['createdAt']);
-
-                    final isLast = docs.indexOf(doc) == docs.length - 1;
-
-return Row(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    SizedBox(
-      width: 46,
-      child: Column(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: NatterBrand.green.withOpacity(0.18),
-              border: Border.all(
-                color: NatterBrand.green.withOpacity(0.65),
-                width: 2,
-              ),
-            ),
-            child: Text(
-              icon,
-              style: const TextStyle(fontSize: 20),
-            ),
-          ),
-          if (!isLast)
-            Container(
-              width: 2,
-              height: 86,
-              color: Colors.white.withOpacity(0.18),
-            ),
-        ],
+Container(
+  padding: const EdgeInsets.all(18),
+  decoration: ParentCardStyle.subtle(),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Journey So Far',
+        style: ParentTypography.sectionTitle,
       ),
-    ),
-    const SizedBox(height: ParentSpacing.xs),
-    Expanded(
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 18),
-        padding: const EdgeInsets.all(18),
-        decoration: _innerCardDecoration(
-          color: const Color(0xFF2D466F),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (date.isNotEmpty)
+      const SizedBox(height: ParentSpacing.md),
+
+      if (docs.isEmpty)
+        const ParentCard(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                date,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.68),
-                  fontWeight: FontWeight.w800,
+                '🌱 The story begins.',
+                style: ParentTypography.cardTitle,
+              ),
+              SizedBox(height: ParentSpacing.sm),
+              Text(
+                'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.',
+                style: ParentTypography.body,
+              ),
+            ],
+          ),
+        )
+      else
+        ...docs.map((doc) {
+          final data = doc.data();
+
+          final icon =
+              _emojiForIcon((data['icon'] ?? '').toString());
+
+          final title =
+              (data['title'] ?? 'Friendship moment').toString();
+
+          final description =
+              (data['description'] ?? '').toString();
+
+          final date = _formatMomentDate(data['createdAt']);
+
+          final isLast = docs.indexOf(doc) == docs.length - 1;
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 40,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: NatterBrand.green.withOpacity(0.14),
+                        border: Border.all(
+                          color: NatterBrand.green.withOpacity(0.40),
+                        ),
+                      ),
+                      child: Text(
+                        icon,
+                        style: const TextStyle(fontSize: 17),
+                      ),
+                    ),
+                    if (!isLast)
+                      Container(
+                        width: 1.5,
+                        height: 76,
+                        color: Colors.white.withOpacity(0.12),
+                      ),
+                  ],
                 ),
               ),
-            if (date.isNotEmpty) const SizedBox(height: 6),
-            Text(
-  title,
-  style: ParentTypography.cardTitle,
+              const SizedBox(width: ParentSpacing.sm),
+              Expanded(
+                child: ParentCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (date.isNotEmpty)
+                        Text(
+                          date,
+                          style: ParentTypography.caption,
+                        ),
+                      if (date.isNotEmpty)
+                        const SizedBox(height: ParentSpacing.xs),
+                      Text(
+                        title,
+                        style: ParentTypography.cardTitle,
+                      ),
+                      const SizedBox(height: ParentSpacing.xs),
+                      Text(
+                        description,
+                        style: ParentTypography.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        }),
+    ],
+  ),
 ),
-            const SizedBox(height: ParentSpacing.xs),
-            Text(
-  description,
-  style: ParentTypography.body,
-),
-          ],
-        ),
+
+const SizedBox(height: ParentSpacing.lg),
+
+Container(
+  padding: const EdgeInsets.all(18),
+  decoration: ParentCardStyle.subtle(),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Looking Ahead',
+        style: ParentTypography.sectionTitle,
       ),
-    ),
-  ],
-);
-                  }),
+      const SizedBox(height: ParentSpacing.md),
 
-                const SizedBox(height: ParentSpacing.md),
-const Text(
-  'Looking Ahead',
-  style: ParentTypography.sectionTitle,
+      ..._comingUpCards(stageDefinition.order),
+    ],
+  ),
 ),
-const SizedBox(height: ParentSpacing.sm),
-                
-..._comingUpCards(stageDefinition.order),
 
 const SizedBox(height: ParentSpacing.sm),
+   
 ParentCard(
   padding: const EdgeInsets.all(20),
   decoration: ParentCardStyle.section(),
