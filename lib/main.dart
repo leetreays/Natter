@@ -8055,25 +8055,11 @@ ParentCard(
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      Container(
-        width: 66,
-        height: 66,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: NatterBrand.green.withOpacity(0.10),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: NatterBrand.green.withOpacity(0.28),
-          ),
-        ),
-        child: Text(
-          headerEmoji,
-          style: const TextStyle(
-            fontSize: 40,
-            height: 1,
-          ),
-        ),
-      ),
+      ParentIconCircle(
+  emoji: headerEmoji,
+  size: 52,
+  emojiSize: 32,
+),
       const SizedBox(width: ParentSpacing.md),
       Expanded(
         child: Column(
