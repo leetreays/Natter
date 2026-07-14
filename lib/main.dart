@@ -7940,49 +7940,52 @@ const SizedBox(height: ParentSpacing.sm),
 
 Container(
   width: double.infinity,
-  padding: const EdgeInsets.symmetric(
-    horizontal: 24,
-    vertical: 26,
-  ),
+  padding: const EdgeInsets.all(ParentSpacing.lg),
   decoration: _outerSectionDecoration(),
-  child: Column(
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
     children: [
       Container(
-        width: 76,
-        height: 76,
+        width: 66,
+        height: 66,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: NatterBrand.green.withOpacity(0.12),
+          color: NatterBrand.green.withOpacity(0.10),
           shape: BoxShape.circle,
           border: Border.all(
-            color: NatterBrand.green.withOpacity(0.30),
+            color: NatterBrand.green.withOpacity(0.28),
           ),
         ),
         child: Text(
           headerEmoji,
           style: const TextStyle(
-            fontSize: 46,
+            fontSize: 40,
             height: 1,
           ),
         ),
       ),
-      const SizedBox(height: ParentSpacing.md),
-      Text(
-  headerTitle,
-  textAlign: TextAlign.center,
-  style: ParentTypography.cardTitle,
-),
-      const SizedBox(height: ParentSpacing.sm),
-      Text(
-  headerSubtitle,
-  textAlign: TextAlign.center,
-  style: ParentTypography.body,
-),
+      const SizedBox(width: ParentSpacing.md),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              headerTitle,
+              style: ParentTypography.cardTitle,
+            ),
+            const SizedBox(height: ParentSpacing.sm),
+            Text(
+              headerSubtitle,
+              style: ParentTypography.body,
+            ),
+          ],
+        ),
+      ),
     ],
   ),
 ),
 
-const SizedBox(height: ParentSpacing.lg),
+const SizedBox(height: ParentSpacing.xl),
 const Text(
   'Journey So Far',
       style: ParentTypography.sectionTitle,
