@@ -8023,7 +8023,7 @@ if (children.length >= 2) {
       ),
       const SizedBox(height: ParentSpacing.sm),
       Text(
-        '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+        stageDefinition.shortLabel,
         textAlign: TextAlign.center,
         style: const TextStyle(
   color: NatterBrand.green,
@@ -8053,12 +8053,6 @@ ParentCard(
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      ParentIconCircle(
-  emoji: headerEmoji,
-  size: 42,
-  emojiSize: 24,
-),
-      const SizedBox(width: ParentSpacing.md),
       Expanded(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
