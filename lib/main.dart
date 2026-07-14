@@ -7831,33 +7831,36 @@ Widget _upcomingMilestoneCard({
 }) {
   return ParentCard(
   padding: const EdgeInsets.all(20),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    child: Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        ParentIconCircle(
-  emoji: icon,
-  size: 38,
-  emojiSize: 21,
-),
-        const SizedBox(height: ParentSpacing.sm),
+        const Icon(
+          Icons.auto_awesome_rounded,
+          color: NatterBrand.yellow,
+          size: 20,
+        ),
+        const SizedBox(width: ParentSpacing.sm),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: ParentTypography.cardTitle,
-              ),
-              const SizedBox(height: ParentSpacing.xs),
-              Text(
-                description,
-                style: ParentTypography.body,
-              ),
-            ],
+          child: Text(
+            title,
+            style: ParentTypography.cardTitle,
           ),
         ),
       ],
     ),
+    const SizedBox(height: ParentSpacing.sm),
+    Padding(
+      padding: const EdgeInsets.only(left: 30),
+      child: Text(
+        description,
+        style: ParentTypography.body,
+      ),
+    ),
+  ],
+),
   );
 }
 
