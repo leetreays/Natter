@@ -155,7 +155,7 @@ class ParentTypography {
 
   static const pageTitle = TextStyle(
     color: Colors.white,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: FontWeight.w900,
     height: 1.15,
     letterSpacing: -0.2,
@@ -163,7 +163,7 @@ class ParentTypography {
 
   static const sectionTitle = TextStyle(
     color: Colors.white,
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: FontWeight.w900,
     height: 1.2,
   );
@@ -179,21 +179,21 @@ class ParentTypography {
     color: Colors.white70,
     fontSize: 15,
     fontWeight: FontWeight.w600,
-    height: 1.6,
+    height: 1.55,
   );
 
   static const emphasis = TextStyle(
     color: Colors.white,
     fontSize: 15,
     fontWeight: FontWeight.w800,
-    height: 1.45,
+    height: 1.4,
   );
 
   static const caption = TextStyle(
     color: Colors.white60,
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    height: 1.45,
+    height: 1.4,
   );
 }
 
@@ -213,6 +213,118 @@ class ParentRadius {
   static const card = 24.0;
   static const innerCard = 22.0;
   static const pill = 100.0;
+}
+
+class ParentCardStyle {
+  const ParentCardStyle._();
+
+  static BoxDecoration standard() {
+    return BoxDecoration(
+      color: const Color(0xFF2D466F),
+      borderRadius: BorderRadius.circular(ParentRadius.card),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    );
+  }
+
+  static BoxDecoration section() {
+    return BoxDecoration(
+      color: const Color(0xFF243A67),
+      borderRadius: BorderRadius.circular(ParentRadius.card),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.10),
+      ),
+    );
+  }
+
+  static BoxDecoration subtle() {
+    return BoxDecoration(
+      color: Colors.white.withOpacity(0.06),
+      borderRadius: BorderRadius.circular(ParentRadius.innerCard),
+      border: Border.all(
+        color: Colors.white.withOpacity(0.08),
+      ),
+    );
+  }
+}
+
+class ParentCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final BoxDecoration? decoration;
+
+  const ParentCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    this.decoration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: decoration ?? ParentCardStyle.standard(),
+      child: child,
+    );
+  }
+}
+
+class ParentIconCircle extends StatelessWidget {
+  final String emoji;
+  final double size;
+  final double emojiSize;
+  final Color accent;
+
+  const ParentIconCircle({
+    super.key,
+    required this.emoji,
+    this.size = 48,
+    this.emojiSize = 28,
+    this.accent = NatterBrand.green,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.10),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: accent.withOpacity(0.28),
+        ),
+      ),
+      child: Text(
+        emoji,
+        style: TextStyle(
+          fontSize: emojiSize,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
+
+class ParentSectionTitle extends StatelessWidget {
+  final String text;
+
+  const ParentSectionTitle(
+    this.text, {
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: ParentTypography.sectionTitle,
+    );
+  }
 }
 
 class Friend {
@@ -7938,10 +8050,8 @@ if (children.length >= 2) {
 ),
 const SizedBox(height: ParentSpacing.sm),
 
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(ParentSpacing.lg),
-  decoration: _outerSectionDecoration(),
+ParentCard(
+  padding: const EdgeInsets.all(20),
   child: Row(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
