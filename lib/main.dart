@@ -7840,7 +7840,7 @@ Widget _upcomingMilestoneCard({
         const Icon(
           Icons.auto_awesome_rounded,
           color: NatterBrand.yellow,
-          size: 20,
+          size: 18,
         ),
         const SizedBox(width: ParentSpacing.sm),
         Expanded(
@@ -7852,12 +7852,9 @@ Widget _upcomingMilestoneCard({
       ],
     ),
     const SizedBox(height: ParentSpacing.sm),
-    Padding(
-      padding: const EdgeInsets.only(left: 30),
-      child: Text(
-        description,
-        style: ParentTypography.body,
-      ),
+    Text(
+      description,
+      style: ParentTypography.body,
     ),
   ],
 ),
