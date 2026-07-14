@@ -7829,18 +7829,16 @@ Widget _upcomingMilestoneCard({
   required String title,
   required String description,
 }) {
-  return Container(
-    padding: const EdgeInsets.all(22),
-    decoration: _innerCardDecoration(
-      color: const Color(0xFF2D466F),
-    ),
+  return ParentCard(
+  padding: const EdgeInsets.all(20),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          icon,
-          style: const TextStyle(fontSize: 28),
-        ),
+        ParentIconCircle(
+  emoji: icon,
+  size: 42,
+  emojiSize: 24,
+),
         const SizedBox(height: ParentSpacing.sm),
         Expanded(
           child: Column(
@@ -8089,11 +8087,8 @@ const Text(
     const SizedBox(height: ParentSpacing.md),
 
     if (docs.isEmpty)
-  Container(
-    padding: const EdgeInsets.all(24),
-    decoration: _innerCardDecoration(
-      color: const Color(0xFF2D466F),
-    ),
+  ParentCard(
+  padding: const EdgeInsets.all(20),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -8213,9 +8208,9 @@ const SizedBox(height: ParentSpacing.sm),
 ..._comingUpCards(stageDefinition.order),
 
 const SizedBox(height: ParentSpacing.sm),
-Container(
-  padding: const EdgeInsets.all(18),
-  decoration: _outerSectionDecoration(),
+ParentCard(
+  padding: const EdgeInsets.all(20),
+  decoration: ParentCardStyle.section(),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -8240,7 +8235,7 @@ Container(
       ),
       const SizedBox(height: ParentSpacing.sm),
       Text(
-        "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships—not conversations.",
+        "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships — not conversations.",
         style: ParentTypography.body,
       ),
     ],
