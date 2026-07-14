@@ -198,7 +198,6 @@ class ParentTypography {
 }
 
 class ParentSpacing {
-class ParentSpacing {
   const ParentSpacing._();
 
   static const xs = 6.0;
