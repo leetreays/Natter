@@ -7643,7 +7643,7 @@ class _ParentFriendshipsScreenState
             padding: const EdgeInsets.all(16),
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(ParentSpacing.lg),
                 decoration: _parentCardDecoration(),
                 child: Text(
                   "A calm view of your child's approved friendships. These pages focus on growth, not private messages.",
@@ -7654,17 +7654,16 @@ class _ParentFriendshipsScreenState
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              const Text(
-                'Friendships',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: ParentSpacing.lg),
+              Container(
+  padding: const EdgeInsets.all(18),
+  decoration: ParentCardStyle.subtle(),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+      const ParentSectionTitle('Friendships'),
+      const SizedBox(height: ParentSpacing.md),
               if (docs.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(18),
@@ -7750,6 +7749,9 @@ class _ParentFriendshipsScreenState
                     ),
                   );
                 }),
+               ],
+              ),
+             ),
             ],
           );
         },
