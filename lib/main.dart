@@ -1972,6 +1972,22 @@ String friendshipStageDescriptionForMoment(String stage) {
       return 'A friendship milestone was reached.';
   }
 }
+
+String? meaningfulMomentTypeForFriendshipStage(String stage) {
+  switch (stage) {
+    case 'strong':
+      return 'growing_trust';
+
+    case 'trusted':
+      return 'trusted_friendship';
+
+    case 'flourishing':
+      return 'friendship_flourishing';
+
+    default:
+      return null;
+  }
+}
   
 Future<int> adjustConversationFriendshipHealth({
   required String conversationId,
