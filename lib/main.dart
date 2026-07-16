@@ -922,6 +922,45 @@ const meaningfulMomentRegistry = {
     journeyStage: 2,
     showToParent: true,
   ),
+
+  'growing_trust': MeaningfulMomentDefinition(
+  title: 'Growing trust',
+  description:
+      'This friendship has shown consistent kindness and positive communication over time.',
+  importance: 60,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'sprout',
+  colour: 'green',
+  journeyStage: 3,
+  showToParent: true,
+),
+
+'trusted_friendship': MeaningfulMomentDefinition(
+  title: 'Trusted friendship',
+  description:
+      'This friendship has become a dependable source of encouragement and support.',
+  importance: 75,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'shield',
+  colour: 'blue',
+  journeyStage: 4,
+  showToParent: true,
+),
+
+'friendship_flourishing': MeaningfulMomentDefinition(
+  title: 'Friendship flourishing',
+  description:
+      'This friendship has become a wonderful example of healthy digital friendship.',
+  importance: 100,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'tree',
+  colour: 'gold',
+  journeyStage: 5,
+  showToParent: true,
+),
 };
 
 class FriendshipStageDefinition {
