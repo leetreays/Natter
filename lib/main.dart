@@ -2270,45 +2270,75 @@ Future<void> recordMeaningfulMoment({
 
   final definition = meaningfulMomentRegistry[type];
 
-if (definition == null) {
-  throw Exception(
-    'Unknown Meaningful Moment type: $type',
+  if (definition == null) {
+    throw Exception(
+      'Unknown Meaningful Moment type: $type',
+    );
+  }
+
+  final conversationSnap = await conversationRef.get();
+
+  if (!conversationSnap.exists) return;
+
+  final conversationData =
+      conversationSnap.data() ?? {};
+
+  final friendshipId =
+      (conversationData['friendshipId'] ?? '').toString();
+
+  final participantChildIds = List<String>.from(
+    conversationData['participantChildIds'] ?? const [],
   );
-}
 
-  final conversationSnap =
-    await conversationRef.get();
+  final participantNames = List<String>.from(
+    conversationData['participantNames'] ?? const [],
+  );
 
-final conversationData =
-    conversationSnap.data() ?? {};
-
-final participantChildIds =
-    List<String>.from(conversationData['participantChildIds'] ?? []);
-
-final participantNames =
-    List<String>.from(conversationData['participantNames'] ?? []);
-
-  await conversationRef.collection('meaningful_moments').add({
-  'type': type,
-  'title': definition.title,
-'description': definition.description,
-
-'importance': definition.importance,
-'category': definition.category,
-'journeyStage': definition.journeyStage,
-
-'celebrate': definition.celebrate,
-'showToParent': definition.showToParent,
-
-'icon': definition.icon,
-'colour': definition.colour,
-
+  final momentData = <String, dynamic>{
+    'type': type,
+    'title': definition.title,
+    'description': definition.description,
+    'importance': definition.importance,
+    'category': definition.category,
+    'journeyStage': definition.journeyStage,
+    'celebrate': definition.celebrate,
+    'showToParent': definition.showToParent,
+    'icon': definition.icon,
+    'colour': definition.colour,
     'conversationId': conversationId,
-'participantChildIds': participantChildIds,
-'participantNames': participantNames,
+    'friendshipId': friendshipId,
+    'participantChildIds': participantChildIds,
+    'participantNames': participantNames,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
 
-  'createdAt': FieldValue.serverTimestamp(),
-});
+  final batch = FirebaseFirestore.instance.batch();
+
+  final conversationMomentRef = conversationRef
+      .collection('meaningful_moments')
+      .doc(type);
+
+  batch.set(
+    conversationMomentRef,
+    momentData,
+    SetOptions(merge: true),
+  );
+
+  if (friendshipId.isNotEmpty) {
+    final friendshipMomentRef = FirebaseFirestore.instance
+        .collection('friendships')
+        .doc(friendshipId)
+        .collection('friendship_moments')
+        .doc(type);
+
+    batch.set(
+      friendshipMomentRef,
+      momentData,
+      SetOptions(merge: true),
+    );
+  }
+
+  await batch.commit();
 }
 
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
