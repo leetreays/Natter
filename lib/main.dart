@@ -2068,19 +2068,18 @@ Future<int> adjustConversationFriendshipHealth({
     }, SetOptions(merge: true));
 
     if (result['stageChanged'] == true) {
-      await friendshipRef.collection('friendship_moments').add({
-  'type': 'stage_milestone',
-  'fromStage': result['previousStage'],
-  'toStage': result['newStage'],
-  'title': friendshipStageTitleForMoment(
-    result['newStage'].toString(),
-  ),
-  'description': friendshipStageDescriptionForMoment(
-    result['newStage'].toString(),
-  ),
-  'createdAt': FieldValue.serverTimestamp(),
-});
-    }
+  final newStage = result['newStage'].toString();
+
+  final momentType =
+      meaningfulMomentTypeForFriendshipStage(newStage);
+
+  if (momentType != null) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: momentType,
+    );
+  }
+}
   } catch (e) {
   debugPrint('Friendship mirror write failed: $e');
 }
