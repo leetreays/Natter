@@ -2358,6 +2358,15 @@ if (existingMoment.exists) {
   }
 
   await batch.commit();
+
+  if (type == 'friendship_begun') {
+  await conversationRef.set(
+    {
+      'friendshipJourneyStarted': true,
+    },
+    SetOptions(merge: true),
+  );
+  }
 }
 
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
