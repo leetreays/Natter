@@ -2559,6 +2559,23 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   );
   }
   }
+    final existingHeat =
+    (conversationData['spikeHeat'] ?? 0) as num;
+
+final existingEscalation =
+    (conversationData['conversationEscalationScore'] ?? 0) as num;
+
+final qualifiesForKindnessPattern =
+    updatedBurstCount < 4 &&
+    existingHeat <= 0 &&
+    existingEscalation <= 0;
+
+if (qualifiesForKindnessPattern) {
+  await conversationsRef().doc(conversationId).set({
+    'consistentKindnessCount': FieldValue.increment(1),
+    'lastConsistentKindnessAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
 }
   final cooldownAmount = isFlagged ? 0 : 2;
 
