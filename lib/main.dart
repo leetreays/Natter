@@ -2560,7 +2560,34 @@ if (!isFlagged) {
     );
   }
 
-  unawaited(recordConversationRepair(conversationId));
+  if (!isFlagged) {
+  final friendshipJourneyStarted =
+      conversationData['friendshipJourneyStarted'] == true;
+
+  if (!friendshipJourneyStarted) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'friendship_begun',
+    );
+  }
+
+  final hasRepairContext =
+      ((conversationData['conversationEscalationScore'] ?? 0) as num) > 0 ||
+      ((conversationData['spikeHeat'] ?? 0) as num) > 0 ||
+      ((conversationData['recentEscalationChain'] ?? 0) as num) > 0;
+
+  if (hasRepairContext) {
+    unawaited(recordConversationRepair(conversationId));
+  }
+
+  unawaited(
+    adjustConversationFriendshipHealth(
+      conversationId: conversationId,
+      amount: 1,
+      reason: 'calm_message',
+    ),
+  );
+  }
 
   unawaited(
     adjustConversationFriendshipHealth(
