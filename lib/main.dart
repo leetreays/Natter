@@ -2548,7 +2548,18 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
   }
 }
   final cooldownAmount = isFlagged ? 0 : 2;
-  if (!isFlagged) {
+
+if (!isFlagged) {
+  final friendshipJourneyStarted =
+      conversationData['friendshipJourneyStarted'] == true;
+
+  if (!friendshipJourneyStarted) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'friendship_begun',
+    );
+  }
+
   unawaited(recordConversationRepair(conversationId));
 
   unawaited(
