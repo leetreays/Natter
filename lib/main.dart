@@ -897,6 +897,19 @@ class MeaningfulMomentDefinition {
 }
 
 const meaningfulMomentRegistry = {
+  'friendship_begun': MeaningfulMomentDefinition(
+  title: 'Friendship begun',
+  description:
+      'The first conversation in this friendship began here.',
+  importance: 10,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'sprout',
+  colour: 'green',
+  journeyStage: 0,
+  showToParent: true,
+),
+  
   'first_repair_moment': MeaningfulMomentDefinition(
     title: 'First repair moment',
     description:
