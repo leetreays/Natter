@@ -2571,10 +2571,20 @@ final qualifiesForKindnessPattern =
     existingEscalation <= 0;
 
 if (qualifiesForKindnessPattern) {
+  final updatedKindnessCount =
+      ((conversationData['consistentKindnessCount'] ?? 0) as num) + 1;
+
   await conversationsRef().doc(conversationId).set({
-    'consistentKindnessCount': FieldValue.increment(1),
+    'consistentKindnessCount': updatedKindnessCount,
     'lastConsistentKindnessAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
+
+  if (updatedKindnessCount == 25) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'consistent_kindness',
+    );
+  }
 }
 }
   final cooldownAmount = isFlagged ? 0 : 2;
