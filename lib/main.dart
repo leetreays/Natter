@@ -2316,6 +2316,13 @@ Future<void> recordMeaningfulMoment({
   final conversationMomentRef = conversationRef
       .collection('meaningful_moments')
       .doc(type);
+  
+  final existingMoment =
+    await conversationMomentRef.get();
+
+if (existingMoment.exists) {
+  return;
+}
 
   batch.set(
     conversationMomentRef,
