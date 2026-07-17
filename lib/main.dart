@@ -949,6 +949,19 @@ const meaningfulMomentRegistry = {
   showToParent: true,
 ),
 
+  'consistent_kindness': MeaningfulMomentDefinition(
+  title: 'Consistent kindness',
+  description:
+      'This friendship has developed a consistent pattern of respectful communication.',
+  importance: 35,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'heart',
+  colour: 'blue',
+  journeyStage: 2,
+  showToParent: true,
+),
+
 'trusted_friendship': MeaningfulMomentDefinition(
   title: 'Trusted friendship',
   description:
