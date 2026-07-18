@@ -909,6 +909,19 @@ const meaningfulMomentRegistry = {
   journeyStage: 0,
   showToParent: true,
 ),
+
+'reconnected_friendship': MeaningfulMomentDefinition(
+  title: 'Friendship reconnected',
+  description:
+      'After some time apart, these friends found their way back to one another.',
+  importance: 30,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'link',
+  colour: 'green',
+  journeyStage: 1,
+  showToParent: true,
+),  
   
   'first_repair_moment': MeaningfulMomentDefinition(
     title: 'First repair moment',
