@@ -898,9 +898,9 @@ class MeaningfulMomentDefinition {
 
 const meaningfulMomentRegistry = {
   'friendship_begun': MeaningfulMomentDefinition(
-  title: 'Friendship begun',
+  title: 'A new friendship',
   description:
-      'The first conversation in this friendship began here.',
+      'Two children chose to become friends and began their first conversation together.',
   importance: 10,
   category: 'friendship',
   celebrate: true,
