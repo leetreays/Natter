@@ -2600,54 +2600,12 @@ if (qualifiesForKindnessPattern) {
   }
 }
 }
-  final cooldownAmount = isFlagged ? 0 : 2;
+final cooldownAmount = isFlagged ? 0 : 2;
 
 if (!isFlagged) {
-  final friendshipJourneyStarted =
-      conversationData['friendshipJourneyStarted'] == true;
-
-  if (!friendshipJourneyStarted) {
-    await recordMeaningfulMoment(
-      conversationId: conversationId,
-      type: 'friendship_begun',
-    );
-  }
-
-  if (!isFlagged) {
-  final friendshipJourneyStarted =
-      conversationData['friendshipJourneyStarted'] == true;
-
-  if (!friendshipJourneyStarted) {
-    await recordMeaningfulMoment(
-      conversationId: conversationId,
-      type: 'friendship_begun',
-    );
-  }
-
-  final hasRepairContext =
-      ((conversationData['conversationEscalationScore'] ?? 0) as num) > 0 ||
-      ((conversationData['spikeHeat'] ?? 0) as num) > 0 ||
-      ((conversationData['recentEscalationChain'] ?? 0) as num) > 0;
-
-  if (hasRepairContext) {
-    unawaited(recordConversationRepair(conversationId));
-  }
-
-  unawaited(
-    adjustConversationFriendshipHealth(
-      conversationId: conversationId,
-      amount: 1,
-      reason: 'calm_message',
-    ),
-  );
-  }
-
-  unawaited(
-    adjustConversationFriendshipHealth(
-      conversationId: conversationId,
-      amount: 1,
-      reason: 'calm_message',
-    ),
+  await processFriendshipEventsAfterCalmMessage(
+    conversationId: conversationId,
+    conversationData: conversationData,
   );
 }
 
@@ -2671,6 +2629,40 @@ if (currentHeat < 0) {
 }
   
   return true;
+}
+
+Future<void> processFriendshipEventsAfterCalmMessage({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) async {
+  final friendshipJourneyStarted =
+      conversationData['friendshipJourneyStarted'] == true;
+
+  if (!friendshipJourneyStarted) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'friendship_begun',
+    );
+  }
+
+  final hasRepairContext =
+      ((conversationData['conversationEscalationScore'] ?? 0) as num) > 0 ||
+      ((conversationData['spikeHeat'] ?? 0) as num) > 0 ||
+      ((conversationData['recentEscalationChain'] ?? 0) as num) > 0;
+
+  if (hasRepairContext) {
+    unawaited(
+      recordConversationRepair(conversationId),
+    );
+  }
+
+  unawaited(
+    adjustConversationFriendshipHealth(
+      conversationId: conversationId,
+      amount: 1,
+      reason: 'calm_message',
+    ),
+  );
 }
 
 Future<void> setTyping({
