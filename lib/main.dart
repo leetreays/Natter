@@ -2578,27 +2578,11 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
 final existingEscalation =
     (conversationData['conversationEscalationScore'] ?? 0) as num;
 
-final qualifiesForKindnessPattern =
-    updatedBurstCount < 4 &&
-    existingHeat <= 0 &&
-    existingEscalation <= 0;
-
-if (qualifiesForKindnessPattern) {
-  final updatedKindnessCount =
-      ((conversationData['consistentKindnessCount'] ?? 0) as num) + 1;
-
-  await conversationsRef().doc(conversationId).set({
-    'consistentKindnessCount': updatedKindnessCount,
-    'lastConsistentKindnessAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  if (updatedKindnessCount == 25) {
-    await recordMeaningfulMoment(
-      conversationId: conversationId,
-      type: 'consistent_kindness',
-    );
-  }
-}
+await processConsistentKindness(
+  conversationId: conversationId,
+  conversationData: conversationData,
+  updatedBurstCount: updatedBurstCount.toInt(),
+);
 }
 final cooldownAmount = isFlagged ? 0 : 2;
 
@@ -2681,6 +2665,40 @@ void processFriendshipRepair({
   if (hasRepairContext) {
     unawaited(
       recordConversationRepair(conversationId),
+    );
+  }
+}
+
+Future<void> processConsistentKindness({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+  required int updatedBurstCount,
+}) async {
+  final existingHeat =
+      (conversationData['spikeHeat'] ?? 0) as num;
+
+  final existingEscalation =
+      (conversationData['conversationEscalationScore'] ?? 0) as num;
+
+  final qualifiesForKindnessPattern =
+      updatedBurstCount < 4 &&
+      existingHeat <= 0 &&
+      existingEscalation <= 0;
+
+  if (!qualifiesForKindnessPattern) return;
+
+  final updatedKindnessCount =
+      ((conversationData['consistentKindnessCount'] ?? 0) as num) + 1;
+
+  await conversationsRef().doc(conversationId).set({
+    'consistentKindnessCount': updatedKindnessCount,
+    'lastConsistentKindnessAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  if (updatedKindnessCount == 25) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'consistent_kindness',
     );
   }
 }
