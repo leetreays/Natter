@@ -2635,26 +2635,15 @@ Future<void> processFriendshipEventsAfterCalmMessage({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
-  final friendshipJourneyStarted =
-      conversationData['friendshipJourneyStarted'] == true;
+  await processFriendshipBeginning(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 
-  if (!friendshipJourneyStarted) {
-    await recordMeaningfulMoment(
-      conversationId: conversationId,
-      type: 'friendship_begun',
-    );
-  }
-
-  final hasRepairContext =
-      ((conversationData['conversationEscalationScore'] ?? 0) as num) > 0 ||
-      ((conversationData['spikeHeat'] ?? 0) as num) > 0 ||
-      ((conversationData['recentEscalationChain'] ?? 0) as num) > 0;
-
-  if (hasRepairContext) {
-    unawaited(
-      recordConversationRepair(conversationId),
-    );
-  }
+  processFriendshipRepair(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 
   unawaited(
     adjustConversationFriendshipHealth(
@@ -2669,10 +2658,31 @@ Future<void> processFriendshipBeginning({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
-  await processFriendshipBeginning(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+  final friendshipJourneyStarted =
+      conversationData['friendshipJourneyStarted'] == true;
+
+  if (!friendshipJourneyStarted) {
+    await recordMeaningfulMoment(
+      conversationId: conversationId,
+      type: 'friendship_begun',
+    );
+  }
+}
+
+void processFriendshipRepair({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) {
+  final hasRepairContext =
+      ((conversationData['conversationEscalationScore'] ?? 0) as num) > 0 ||
+      ((conversationData['spikeHeat'] ?? 0) as num) > 0 ||
+      ((conversationData['recentEscalationChain'] ?? 0) as num) > 0;
+
+  if (hasRepairContext) {
+    unawaited(
+      recordConversationRepair(conversationId),
+    );
+  }
 }
 
 Future<void> setTyping({
