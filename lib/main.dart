@@ -2641,6 +2641,11 @@ Future<void> processRelationshipAfterCalmMessage({
   conversationData: conversationData,
 );
 
+  await processFriendshipReconnection(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
+
   processFriendshipRepair(
   conversationId: conversationId,
   conversationData: conversationData,
@@ -2714,6 +2719,34 @@ Future<void> processConsistentKindness({
       type: 'consistent_kindness',
     );
   }
+}
+
+Future<void> processFriendshipReconnection({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) async {
+  final friendshipJourneyStarted =
+      conversationData['friendshipJourneyStarted'] == true;
+
+  if (!friendshipJourneyStarted) return;
+
+  final lastHealthyConversationAt =
+      (conversationData['lastHealthyConversationAt'] as Timestamp?)
+          ?.toDate();
+
+  if (lastHealthyConversationAt == null) return;
+
+  final daysSinceHealthyConversation =
+      DateTime.now()
+          .difference(lastHealthyConversationAt)
+          .inDays;
+
+  if (daysSinceHealthyConversation < 30) return;
+
+  await recordMeaningfulMoment(
+    conversationId: conversationId,
+    type: 'reconnected_friendship',
+  );
 }
 
 Future<void> setTyping({
