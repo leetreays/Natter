@@ -2632,28 +2632,38 @@ void processRelationshipGrowth({
   );
 }
 
-Future<void> processRelationshipAfterHealthyMessage({
+Future<void> processFriendshipChapters({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
   await checkForFriendshipBeginning(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
   await checkForFriendshipReconnection(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
   checkForFriendshipRepair(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
+}
+
+Future<void> processRelationshipAfterHealthyMessage({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) async {
+  await processFriendshipChapters(
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
   processRelationshipGrowth(
-  conversationId: conversationId,
-);
+    conversationId: conversationId,
+  );
 }
 
 Future<void> checkForFriendshipBeginning({
