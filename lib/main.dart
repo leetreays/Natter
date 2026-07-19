@@ -2587,10 +2587,10 @@ await processConsistentKindness(
 final cooldownAmount = isFlagged ? 0 : 2;
 
 if (!isFlagged) {
-  await processFriendshipEventsAfterCalmMessage(
-    conversationId: conversationId,
-    conversationData: conversationData,
-  );
+  await processRelationshipAfterCalmMessage(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 }
 
 await conversationsRef().doc(conversationId).set({
