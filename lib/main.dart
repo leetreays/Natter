@@ -2615,6 +2615,18 @@ if (currentHeat < 0) {
   return true;
 }
 
+void processRelationshipGrowth({
+  required String conversationId,
+}) {
+  unawaited(
+    adjustConversationFriendshipHealth(
+      conversationId: conversationId,
+      amount: 1,
+      reason: 'calm_message',
+    ),
+  );
+}
+
 Future<void> processRelationshipAfterCalmMessage({
   required String conversationId,
   required Map<String, dynamic> conversationData,
@@ -2629,13 +2641,9 @@ Future<void> processRelationshipAfterCalmMessage({
   conversationData: conversationData,
 );
 
-  unawaited(
-    adjustConversationFriendshipHealth(
-      conversationId: conversationId,
-      amount: 1,
-      reason: 'calm_message',
-    ),
-  );
+  processRelationshipGrowth(
+  conversationId: conversationId,
+);
 }
 
 Future<void> processFriendshipBeginning({
