@@ -2521,6 +2521,11 @@ final conversationUpdate = <Object, Object?>{
   FieldPath(['unreadCounts', activeChildId!]): 0,
 };
 
+if (!isFlagged) {
+  conversationUpdate['lastHealthyConversationAt'] =
+      FieldValue.serverTimestamp();
+}
+
 if (otherChildId.isNotEmpty) {
   conversationUpdate[FieldPath(['unreadCounts', otherChildId])] =
       FieldValue.increment(1);
