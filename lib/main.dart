@@ -2631,7 +2631,7 @@ if (currentHeat < 0) {
   return true;
 }
 
-Future<void> processFriendshipEventsAfterCalmMessage({
+Future<void> processRelationshipAfterCalmMessage({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
