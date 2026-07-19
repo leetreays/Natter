@@ -2583,7 +2583,7 @@ await conversationsRef().doc(conversationId).update(conversationUpdate);
 final existingEscalation =
     (conversationData['conversationEscalationScore'] ?? 0) as num;
 
-await processConsistentKindness(
+await checkForConsistentKindness(
   conversationId: conversationId,
   conversationData: conversationData,
   updatedBurstCount: updatedBurstCount.toInt(),
@@ -2592,7 +2592,7 @@ await processConsistentKindness(
 final cooldownAmount = isFlagged ? 0 : 2;
 
 if (!isFlagged) {
-  await processRelationshipAfterCalmMessage(
+  await processRelationshipAfterHealthyMessage(
   conversationId: conversationId,
   conversationData: conversationData,
 );
@@ -2632,21 +2632,21 @@ void processRelationshipGrowth({
   );
 }
 
-Future<void> processRelationshipAfterCalmMessage({
+Future<void> processRelationshipAfterHealthyMessage({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
-  await processFriendshipBeginning(
+  await checkForFriendshipBeginning(
   conversationId: conversationId,
   conversationData: conversationData,
 );
 
-  await processFriendshipReconnection(
+  await checkForFriendshipReconnection(
   conversationId: conversationId,
   conversationData: conversationData,
 );
 
-  processFriendshipRepair(
+  checkForFriendshipRepair(
   conversationId: conversationId,
   conversationData: conversationData,
 );
@@ -2656,7 +2656,7 @@ Future<void> processRelationshipAfterCalmMessage({
 );
 }
 
-Future<void> processFriendshipBeginning({
+Future<void> checkForFriendshipBeginning({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
@@ -2671,7 +2671,7 @@ Future<void> processFriendshipBeginning({
   }
 }
 
-void processFriendshipRepair({
+void checkForFriendshipRepair({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) {
@@ -2687,7 +2687,7 @@ void processFriendshipRepair({
   }
 }
 
-Future<void> processConsistentKindness({
+Future<void> checkForConsistentKindness({
   required String conversationId,
   required Map<String, dynamic> conversationData,
   required int updatedBurstCount,
@@ -2721,7 +2721,7 @@ Future<void> processConsistentKindness({
   }
 }
 
-Future<void> processFriendshipReconnection({
+Future<void> checkForFriendshipReconnection({
   required String conversationId,
   required Map<String, dynamic> conversationData,
 }) async {
