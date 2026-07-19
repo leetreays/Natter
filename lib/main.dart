@@ -2665,6 +2665,16 @@ Future<void> processFriendshipEventsAfterCalmMessage({
   );
 }
 
+Future<void> processFriendshipBeginning({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) async {
+  await processFriendshipBeginning(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
+}
+
 Future<void> setTyping({
   required String conversationId,
 }) async {
