@@ -2385,14 +2385,15 @@ if (existingMoment.exists) {
 
   await batch.commit();
 
-  if (type == 'friendship_begun') {
+if (type == 'friendship_begun') {
   await conversationRef.set(
     {
       'friendshipJourneyStarted': true,
+      'friendshipJourneyStartedAt': FieldValue.serverTimestamp(),
     },
     SetOptions(merge: true),
   );
-  }
+}
 }
 
 Stream<List<Map<String, dynamic>>> friendshipMomentsStream({
