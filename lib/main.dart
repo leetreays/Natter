@@ -2651,19 +2651,24 @@ Future<void> processFriendshipChapters({
   required Map<String, dynamic> conversationData,
 }) async {
   await checkForFriendshipBeginning(
-    conversationId: conversationId,
-    conversationData: conversationData,
-  );
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 
-  await checkForFriendshipReconnection(
-    conversationId: conversationId,
-    conversationData: conversationData,
-  );
+await checkForFriendshipReconnection(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 
-  checkForFriendshipRepair(
-    conversationId: conversationId,
-    conversationData: conversationData,
-  );
+await checkForOneMonthTogether(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
+
+checkForFriendshipRepair(
+  conversationId: conversationId,
+  conversationData: conversationData,
+);
 }
 
 Future<void> processRelationshipAfterHealthyMessage({
@@ -2770,6 +2775,35 @@ Future<void> checkForFriendshipReconnection({
   await recordMeaningfulMoment(
     conversationId: conversationId,
     type: 'reconnected_friendship',
+  );
+}
+
+Future<void> checkForOneMonthTogether({
+  required String conversationId,
+  required Map<String, dynamic> conversationData,
+}) async {
+  if (!(conversationData['friendshipJourneyStarted'] ?? false)) {
+    return;
+  }
+
+  final startedAt =
+      conversationData['friendshipJourneyStartedAt'];
+
+  if (startedAt is! Timestamp) {
+    return;
+  }
+
+  final daysTogether = DateTime.now()
+      .difference(startedAt.toDate())
+      .inDays;
+
+  if (daysTogether < 30) {
+    return;
+  }
+
+  await recordMeaningfulMoment(
+    conversationId: conversationId,
+    type: 'one_month_together',
   );
 }
 
