@@ -2655,12 +2655,12 @@ Future<void> processFriendshipChapters({
   conversationData: conversationData,
 );
 
-await checkForFriendshipReconnection(
+await checkForOneMonthTogether(
   conversationId: conversationId,
   conversationData: conversationData,
 );
 
-await checkForOneMonthTogether(
+await checkForFriendshipReconnection(
   conversationId: conversationId,
   conversationData: conversationData,
 );
