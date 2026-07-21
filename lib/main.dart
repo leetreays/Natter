@@ -922,6 +922,19 @@ const meaningfulMomentRegistry = {
   journeyStage: 1,
   showToParent: true,
 ),  
+
+  'one_month_together': MeaningfulMomentDefinition(
+  title: 'One month together',
+  description:
+      'This friendship journey has continued for a whole month.',
+  importance: 25,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'calendar',
+  colour: 'blue',
+  journeyStage: 1,
+  showToParent: true,
+),
   
   'first_repair_moment': MeaningfulMomentDefinition(
     title: 'First repair moment',
