@@ -2543,6 +2543,9 @@ Future<bool> sendMessageToConversation({
     conversationData['blockedByChildIds'] ?? const [],
   );
 
+  final positiveMoment =
+    analysePositiveMoment(message);
+
   String otherChildId = '';
   for (final id in participantChildIds) {
     if (id != activeChildId) {
@@ -2654,6 +2657,7 @@ if (!isFlagged) {
   await processRelationshipAfterHealthyMessage(
   conversationId: conversationId,
   conversationData: conversationData,
+  positiveMoment: positiveMoment,
 );
 }
 
@@ -2694,35 +2698,38 @@ void processRelationshipGrowth({
 Future<void> processFriendshipChapters({
   required String conversationId,
   required Map<String, dynamic> conversationData,
+  required PositiveMoment positiveMoment,
 }) async {
   await checkForFriendshipBeginning(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
-await checkForOneMonthTogether(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+  await checkForOneMonthTogether(
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
-await checkForFriendshipReconnection(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+  await checkForFriendshipReconnection(
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 
-checkForFriendshipRepair(
-  conversationId: conversationId,
-  conversationData: conversationData,
-);
+  checkForFriendshipRepair(
+    conversationId: conversationId,
+    conversationData: conversationData,
+  );
 }
 
 Future<void> processRelationshipAfterHealthyMessage({
   required String conversationId,
   required Map<String, dynamic> conversationData,
+  required PositiveMoment positiveMoment,
 }) async {
   await processFriendshipChapters(
     conversationId: conversationId,
     conversationData: conversationData,
+    positiveMoment: positiveMoment,
   );
 
   processRelationshipGrowth(
