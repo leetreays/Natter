@@ -843,6 +843,51 @@ int unreadCountFor(String childId) {
   }
 }
 
+class PositiveMoment {
+  final bool encouraging;
+
+  const PositiveMoment({
+    this.encouraging = false,
+  });
+}
+
+PositiveMoment analysePositiveMoment(String message) {
+  final normalised = message.toLowerCase().trim();
+
+  const encouragementPatterns = [
+    'good luck',
+    'you can do it',
+    "you've got this",
+    'you got this',
+    'well done',
+    'proud of you',
+    "don't give up",
+    "i'm here for you",
+    'im here for you',
+    "hope you're okay",
+    'hope you are okay',
+    "you'll be fine",
+    'you will be fine',
+    'that was amazing',
+  ];
+
+  const conflictingPatterns = [
+    'idiot',
+    'loser',
+    'shut up',
+    'hate you',
+    'whatever',
+  ];
+
+  final encouraging =
+      encouragementPatterns.any(normalised.contains) &&
+      !conflictingPatterns.any(normalised.contains);
+
+  return PositiveMoment(
+    encouraging: encouraging,
+  );
+}
+
 class ConversationOutcomeValues {
   static const int kindRewriteFriendship = 2;
   static const int kindRewriteRepair = 2;
