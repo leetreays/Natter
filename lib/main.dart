@@ -2723,6 +2723,11 @@ Future<void> processFriendshipChapters({
     conversationData: conversationData,
   );
 
+  await checkForThereWhenItMattered(
+  conversationId: conversationId,
+  positiveMoment: positiveMoment,
+);
+
   await checkForFriendshipReconnection(
     conversationId: conversationId,
     conversationData: conversationData,
@@ -2869,6 +2874,20 @@ Future<void> checkForOneMonthTogether({
   await recordMeaningfulMoment(
     conversationId: conversationId,
     type: 'one_month_together',
+  );
+}
+
+Future<void> checkForThereWhenItMattered({
+  required String conversationId,
+  required PositiveMoment positiveMoment,
+}) async {
+  if (!positiveMoment.encouraging) {
+    return;
+  }
+
+  await recordMeaningfulMoment(
+    conversationId: conversationId,
+    type: 'there_when_it_mattered',
   );
 }
 
