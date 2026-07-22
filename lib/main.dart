@@ -1033,6 +1033,19 @@ const meaningfulMomentRegistry = {
   showToParent: true,
 ),
 
+'there_when_it_mattered': MeaningfulMomentDefinition(
+  title: 'There when it mattered',
+  description:
+      'An encouraging message helped a friend through an important moment.',
+  importance: 40,
+  category: 'friendship',
+  celebrate: true,
+  icon: 'heart',
+  colour: 'blue',
+  journeyStage: 2,
+  showToParent: true,
+),
+
 'trusted_friendship': MeaningfulMomentDefinition(
   title: 'Trusted friendship',
   description:
