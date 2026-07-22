@@ -2544,7 +2544,7 @@ Future<bool> sendMessageToConversation({
   );
 
   final positiveMoment =
-    analysePositiveMoment(message);
+    analysePositiveMoment(trimmed);
 
   String otherChildId = '';
   for (final id in participantChildIds) {
