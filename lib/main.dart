@@ -362,6 +362,11 @@ class NatterJourneyScaffold extends StatelessWidget {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
