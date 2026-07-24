@@ -163,6 +163,8 @@ class NatterJourneyScaffold extends StatelessWidget {
     this.showProgress = true,
     this.buttonEnabled = true,
     this.isLoading = false,
+    this.secondaryButtonText,
+    this.onSecondaryButtonPressed,
     this.onBack,
   });
 
@@ -182,6 +184,9 @@ class NatterJourneyScaffold extends StatelessWidget {
   final bool showProgress;
   final bool buttonEnabled;
   final bool isLoading;
+
+  final String? secondaryButtonText;
+  final VoidCallback? onSecondaryButtonPressed;
 
   final VoidCallback? onBack;
 
@@ -346,6 +351,29 @@ class NatterJourneyScaffold extends StatelessWidget {
               ),
       ),
     ),
+
+    if (secondaryButtonText != null &&
+    onSecondaryButtonPressed != null) ...[
+  const SizedBox(height: 18),
+
+  TextButton(
+    onPressed: onSecondaryButtonPressed,
+    style: TextButton.styleFrom(
+      foregroundColor: Colors.white.withValues(alpha: 0.78),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 10,
+      ),
+    ),
+    child: Text(
+      secondaryButtonText!,
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+],
 
     if (showProgress) ...[
       const SizedBox(height: 20),
@@ -5181,27 +5209,37 @@ class FamilyJourneyWelcomeScreen extends StatelessWidget {
   const FamilyJourneyWelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return NatterJourneyScaffold(
-      stage: JourneyStage.welcome,
-      title: 'Every friendship begins\nwith a conversation.',
-      subtitle: 'Welcome to Natter.',
-      buttonText: "Let's Begin",
-      showProgress: true,
-      onButtonPressed: () async {
-  await Future.delayed(
-    const Duration(milliseconds: 300),
-  );
+Widget build(BuildContext context) {
+  return NatterJourneyScaffold(
+    stage: JourneyStage.welcome,
+    title: 'Every friendship begins\nwith a conversation.',
+    subtitle: 'Welcome to Natter.',
+    buttonText: "Let's Begin",
+    showProgress: true,
+    secondaryButtonText: 'I have a Natter Code',
+    onButtonPressed: () async {
+      await Future.delayed(
+        const Duration(milliseconds: 300),
+      );
 
-  Navigator.push(
-    context,
-    calmRoute(
-      const FamilyJourneyCreateFamilyScreen(),
-    ),
+      if (!context.mounted) return;
+
+      Navigator.push(
+        context,
+        calmRoute(
+          const FamilyJourneyCreateFamilyScreen(),
+        ),
+      );
+    },
+    onSecondaryButtonPressed: () {
+      Navigator.push(
+        context,
+        calmRoute(
+          const ChildJourneyCodeScreen(),
+        ),
+      );
+    },
   );
-},
-    );
-  }
 }
 
 class FamilyJourneyCreateFamilyScreen extends StatefulWidget {
