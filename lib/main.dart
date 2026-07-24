@@ -150,6 +150,390 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
+class NatterJourneyScaffold extends StatelessWidget {
+  const NatterJourneyScaffold({
+    super.key,
+    required this.stage,
+    required this.logo,
+    required this.title,
+    required this.buttonText,
+    required this.onButtonPressed,
+    this.eyebrow,
+    this.subtitle,
+    this.child,
+    this.showProgress = true,
+    this.buttonEnabled = true,
+    this.isLoading = false,
+    this.onBack,
+  });
+
+  final JourneyStage stage;
+
+  /// Pass the real Natter logo widget or Image.asset here.
+  final Widget logo;
+
+  final String title;
+  final String? eyebrow;
+  final String? subtitle;
+
+  final Widget? child;
+
+  final String buttonText;
+  final VoidCallback onButtonPressed;
+
+  final bool showProgress;
+  final bool buttonEnabled;
+  final bool isLoading;
+
+  final VoidCallback? onBack;
+
+  static const Color _nightNavy = Color(0xFF06112E);
+  static const Color _softWhite = Color(0xFFF8FAFC);
+  static const Color _warmWhite = Color(0xFFF4F0E6);
+  static const Color _natterGreen = Color(0xFFA4D35A);
+
+  @override
+  Widget build(BuildContext context) {
+    final colours = stage.backgroundColours;
+
+    return Scaffold(
+      backgroundColor: colours.first,
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeInOutCubic,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: colours,
+            stops: const [0.0, 0.58, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: _JourneyAtmosphere(),
+              ),
+            ),
+
+            SafeArea(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 700;
+
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 760,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          isWide ? 48 : 24,
+                          20,
+                          isWide ? 48 : 24,
+                          24,
+                        ),
+                        child: Column(
+                          children: [
+                            _buildHeader(context),
+
+                            Expanded(
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight - 210,
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isWide ? 44 : 0,
+                                      vertical: 28,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        if (eyebrow != null &&
+                                            eyebrow!.trim().isNotEmpty) ...[
+                                          Text(
+                                            eyebrow!.toUpperCase(),
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              color: Color(0xBFFFFFFF),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              letterSpacing: 1.8,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                        ],
+
+                                        Text(
+                                          title,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: _softWhite,
+                                            fontSize: isWide ? 42 : 34,
+                                            height: 1.12,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: -0.8,
+                                          ),
+                                        ),
+
+                                        if (subtitle != null &&
+                                            subtitle!.trim().isNotEmpty) ...[
+                                          const SizedBox(height: 20),
+                                          ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                              maxWidth: 480,
+                                            ),
+                                            child: Text(
+                                              subtitle!,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                color: Color(0xCCFFFFFF),
+                                                fontSize: 16,
+                                                height: 1.55,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+
+                                        if (child != null) ...[
+                                          const SizedBox(height: 32),
+                                          child!,
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            if (showProgress) ...[
+                              _JourneyProgressIndicator(
+                                currentIndex: stage.index,
+                                totalSteps: JourneyStage.values.length,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+
+                            SizedBox(
+                              width: double.infinity,
+                              height: 54,
+                              child: FilledButton(
+                                onPressed:
+                                    buttonEnabled && !isLoading
+                                        ? onButtonPressed
+                                        : null,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: _warmWhite,
+                                  foregroundColor: _nightNavy,
+                                  disabledBackgroundColor:
+                                      _warmWhite.withValues(alpha: 0.48),
+                                  disabledForegroundColor:
+                                      _nightNavy.withValues(alpha: 0.55),
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                ),
+                                child:
+                                    isLoading
+                                        ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.2,
+                                            color: _nightNavy,
+                                          ),
+                                        )
+                                        : Text(
+                                          buttonText,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: SizedBox(
+              width: 46,
+              height: 46,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: logo,
+              ),
+            ),
+          ),
+
+          if (onBack != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: onBack,
+                tooltip: 'Back',
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: _softWhite,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JourneyProgressIndicator extends StatelessWidget {
+  const _JourneyProgressIndicator({
+    required this.currentIndex,
+    required this.totalSteps,
+  });
+
+  final int currentIndex;
+  final int totalSteps;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Step ${currentIndex + 1} of $totalSteps',
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          totalSteps,
+          (index) {
+            final isCompleted = index <= currentIndex;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeOutCubic,
+              width: isCompleted ? 18 : 7,
+              height: 7,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color:
+                    isCompleted
+                        ? const Color(0xFFF4F0E6)
+                        : const Color(0x59FFFFFF),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _JourneyAtmosphere extends StatelessWidget {
+  const _JourneyAtmosphere();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned(
+          top: 112,
+          left: MediaQuery.sizeOf(context).width * 0.34,
+          child: const _JourneyLight(
+            size: 7,
+            colour: Color(0xFFE2BE68),
+          ),
+        ),
+        Positioned(
+          top: 84,
+          left: MediaQuery.sizeOf(context).width * 0.49,
+          child: const _JourneyLight(
+            size: 9,
+            colour: Color(0xFFE2BE68),
+          ),
+        ),
+        Positioned(
+          top: 126,
+          left: MediaQuery.sizeOf(context).width * 0.61,
+          child: const _JourneyLight(
+            size: 7,
+            colour: Color(0xFFE2BE68),
+          ),
+        ),
+        Positioned(
+          left: -80,
+          right: -80,
+          bottom: -150,
+          child: Container(
+            height: 310,
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                radius: 0.9,
+                colors: [
+                  Color(0x4D06112E),
+                  Color(0xCC06112E),
+                ],
+              ),
+              borderRadius: BorderRadius.vertical(
+                top: Radius.elliptical(500, 180),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _JourneyLight extends StatelessWidget {
+  const _JourneyLight({
+    required this.size,
+    required this.colour,
+  });
+
+  final double size;
+  final Color colour;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: colour,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: colour.withValues(alpha: 0.42),
+            blurRadius: 14,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ParentTypography {
   const ParentTypography._();
 
@@ -5350,6 +5734,70 @@ ChildJourneyStatus journeyStatusForChild({
     icon: Icons.explore_rounded,
     color: NatterBrand.blue,
   );
+}
+
+enum JourneyStage {
+  welcome,
+  createFamily,
+  welcomeChild,
+  preparePath,
+  ready,
+}
+
+extension JourneyStageDetails on JourneyStage {
+  int get index {
+    switch (this) {
+      case JourneyStage.welcome:
+        return 0;
+      case JourneyStage.createFamily:
+        return 1;
+      case JourneyStage.welcomeChild:
+        return 2;
+      case JourneyStage.preparePath:
+        return 3;
+      case JourneyStage.ready:
+        return 4;
+    }
+  }
+
+  List<Color> get backgroundColours {
+    switch (this) {
+      case JourneyStage.welcome:
+        return const [
+          Color(0xFF061121),
+          Color(0xFF142943),
+          Color(0xFF27465B),
+        ];
+
+      case JourneyStage.createFamily:
+        return const [
+          Color(0xFF13233A),
+          Color(0xFF294158),
+          Color(0xFF4F6977),
+        ];
+
+      case JourneyStage.welcomeChild:
+        return const [
+          Color(0xFF2B4055),
+          Color(0xFF587080),
+          Color(0xFF89999C),
+        ];
+
+      case JourneyStage.preparePath:
+        return const [
+          Color(0xFF4E6573),
+          Color(0xFF849596),
+          Color(0xFFB7B4A5),
+        ];
+
+      case JourneyStage.ready:
+        return const [
+          Color(0xFF7C9298),
+          Color(0xFFB8B9AA),
+          Color(0xFFDED2B5),
+        ];
+    }
+  }
 }
 
 class ParentHomeScreen extends StatelessWidget {
