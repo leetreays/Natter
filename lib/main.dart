@@ -311,51 +311,50 @@ class NatterJourneyScaffold extends StatelessWidget {
                             ),
 
                             SizedBox(
-                              width: double.infinity,
-                              height: 54,
-                              child: FilledButton(
-                                onPressed:
-                                    buttonEnabled && !isLoading
-                                        ? onButtonPressed
-                                        : null,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: _warmWhite,
-                                  foregroundColor: _nightNavy,
-                                  disabledBackgroundColor:
-                                      _warmWhite.withValues(alpha: 0.48),
-                                  disabledForegroundColor:
-                                      _nightNavy.withValues(alpha: 0.55),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(28),
-                                  ),
-                                ),
-                                child:
-                                    isLoading
-                                        ? const SizedBox(
-                                          width: 22,
-                                          height: 22,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2.2,
-                                            color: _nightNavy,
-                                          ),
-                                        )
-                                        : Text(
-                                          buttonText,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                ),
+  width: double.infinity,
+  height: 54,
+  child: FilledButton(
+    onPressed: buttonEnabled && !isLoading
+        ? onButtonPressed
+        : null,
+    style: FilledButton.styleFrom(
+      backgroundColor: _warmWhite,
+      foregroundColor: _nightNavy,
+      disabledBackgroundColor:
+          _warmWhite.withValues(alpha: 0.48),
+      disabledForegroundColor:
+          _nightNavy.withValues(alpha: 0.55),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+    ),
+    child: isLoading
+        ? const SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.2,
+              color: _nightNavy,
+            ),
+          )
+        : Text(
+            buttonText,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+  ),
+),
 
-                                if (showProgress) ...[
-                              _JourneyProgressIndicator(
-                                currentIndex: stage.index,
-                                totalSteps: JourneyStage.values.length,
-                              ),
-                              const SizedBox(height: 20),
-                            ],
+if (showProgress) ...[
+  const SizedBox(height: 20),
+  _JourneyProgressIndicator(
+    currentIndex: stage.index,
+    totalSteps: JourneyStage.values.length,
+  ),
+],
                                 
                               ),
                             ),
