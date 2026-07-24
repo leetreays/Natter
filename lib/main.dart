@@ -5188,17 +5188,18 @@ class FamilyJourneyWelcomeScreen extends StatelessWidget {
       subtitle: 'Welcome to Natter.',
       buttonText: "Let's Begin",
       showProgress: true,
-      onButtonPressed: () {
-        await Future.delayed(
-  const Duration(milliseconds: 300),
-);
-        Navigator.push(
-          context,
-          calmRoute(
-            const FamilyJourneyCreateFamilyScreen(),
-          ),
-        );
-      },
+      onButtonPressed: () async {
+  await Future.delayed(
+    const Duration(milliseconds: 300),
+  );
+
+  Navigator.push(
+    context,
+    calmRoute(
+      const FamilyJourneyCreateFamilyScreen(),
+    ),
+  );
+},
     );
   }
 }
