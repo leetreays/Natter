@@ -5264,7 +5264,7 @@ class _ChildJourneyCodeScreenState
       subtitle:
           'Enter the code your parent gave you to connect this device.',
       buttonText: 'Continue',
-      primaryButtonEnabled: _isComplete,
+      buttonEnabled: _isComplete,
       showProgress: false,
       onButtonPressed: () {
         // Code verification will be added next.
