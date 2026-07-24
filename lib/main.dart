@@ -154,7 +154,6 @@ class NatterJourneyScaffold extends StatelessWidget {
   const NatterJourneyScaffold({
     super.key,
     required this.stage,
-    required this.logo,
     required this.title,
     required this.buttonText,
     required this.onButtonPressed,
@@ -170,7 +169,6 @@ class NatterJourneyScaffold extends StatelessWidget {
   final JourneyStage stage;
 
   /// Pass the real Natter logo widget or Image.asset here.
-  final Widget logo;
 
   final String title;
   final String? eyebrow;
@@ -375,18 +373,18 @@ class NatterJourneyScaffold extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
-      height: 52,
+      height: 72,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Center(
             child: SizedBox(
-              width: 46,
-              height: 46,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: logo,
-              ),
+              width: 60,
+              height: 60,
+              child: Image.asset(
+  'assets/natter-logo.png',
+  fit: BoxFit.contain,
+),
             ),
           ),
 
