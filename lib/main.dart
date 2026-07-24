@@ -310,14 +310,6 @@ class NatterJourneyScaffold extends StatelessWidget {
                               ),
                             ),
 
-                            if (showProgress) ...[
-                              _JourneyProgressIndicator(
-                                currentIndex: stage.index,
-                                totalSteps: JourneyStage.values.length,
-                              ),
-                              const SizedBox(height: 20),
-                            ],
-
                             SizedBox(
                               width: double.infinity,
                               height: 54,
@@ -355,6 +347,15 @@ class NatterJourneyScaffold extends StatelessWidget {
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
+
+                                if (showProgress) ...[
+                              _JourneyProgressIndicator(
+                                currentIndex: stage.index,
+                                totalSteps: JourneyStage.values.length,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+                                
                               ),
                             ),
                           ],
@@ -5115,6 +5116,113 @@ class BrandedAppBarTitle extends StatelessWidget {
 }
 
 // ===== Screens =====
+
+enum JourneyStage {
+  welcome,
+  createFamily,
+  welcomeChild,
+  preparePath,
+  ready,
+}
+
+extension JourneyStageDetails on JourneyStage {
+  int get index {
+    switch (this) {
+      case JourneyStage.welcome:
+        return 0;
+      case JourneyStage.createFamily:
+        return 1;
+      case JourneyStage.welcomeChild:
+        return 2;
+      case JourneyStage.preparePath:
+        return 3;
+      case JourneyStage.ready:
+        return 4;
+    }
+  }
+
+  List<Color> get backgroundColours {
+    switch (this) {
+      case JourneyStage.welcome:
+        return const [
+          Color(0xFF061121),
+          Color(0xFF142943),
+          Color(0xFF27465B),
+        ];
+
+      case JourneyStage.createFamily:
+        return const [
+          Color(0xFF13233A),
+          Color(0xFF294158),
+          Color(0xFF4F6977),
+        ];
+
+      case JourneyStage.welcomeChild:
+        return const [
+          Color(0xFF2B4055),
+          Color(0xFF587080),
+          Color(0xFF89999C),
+        ];
+
+      case JourneyStage.preparePath:
+        return const [
+          Color(0xFF4E6573),
+          Color(0xFF849596),
+          Color(0xFFB7B4A5),
+        ];
+
+      case JourneyStage.ready:
+        return const [
+          Color(0xFF7C9298),
+          Color(0xFFB8B9AA),
+          Color(0xFFDED2B5),
+        ];
+    }
+  }
+}
+
+class FamilyJourneyWelcomeScreen extends StatelessWidget {
+  const FamilyJourneyWelcomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.welcome,
+      title: "Every friendship begins\nwith a conversation.",
+      subtitle: "Welcome to Natter.",
+      buttonText: "Begin",
+      onButtonPressed: () async {
+  await Future.delayed(
+    const Duration(milliseconds: 180),
+  );
+
+  if (!context.mounted) return;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) =>
+          const FamilyJourneyCreateFamilyScreen(),
+    ),
+  );
+}
+    );
+  }
+}
+
+class FamilyJourneyCreateFamilyScreen extends StatelessWidget {
+  const FamilyJourneyCreateFamilyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Text("Create Family Screen"),
+      ),
+    );
+  }
+}
+
 class StartupRouterScreen extends StatefulWidget {
   const StartupRouterScreen({super.key});
 
@@ -5180,9 +5288,9 @@ Future<void> _start() async {
     }
 
     Navigator.pushReplacement(
-      context,
-      calmRoute(const GatewayScreen()),
-    );
+  context,
+  calmRoute(const FamilyJourneyWelcomeScreen()),
+);
   }
 
   @override
@@ -5732,70 +5840,6 @@ ChildJourneyStatus journeyStatusForChild({
     icon: Icons.explore_rounded,
     color: NatterBrand.blue,
   );
-}
-
-enum JourneyStage {
-  welcome,
-  createFamily,
-  welcomeChild,
-  preparePath,
-  ready,
-}
-
-extension JourneyStageDetails on JourneyStage {
-  int get index {
-    switch (this) {
-      case JourneyStage.welcome:
-        return 0;
-      case JourneyStage.createFamily:
-        return 1;
-      case JourneyStage.welcomeChild:
-        return 2;
-      case JourneyStage.preparePath:
-        return 3;
-      case JourneyStage.ready:
-        return 4;
-    }
-  }
-
-  List<Color> get backgroundColours {
-    switch (this) {
-      case JourneyStage.welcome:
-        return const [
-          Color(0xFF061121),
-          Color(0xFF142943),
-          Color(0xFF27465B),
-        ];
-
-      case JourneyStage.createFamily:
-        return const [
-          Color(0xFF13233A),
-          Color(0xFF294158),
-          Color(0xFF4F6977),
-        ];
-
-      case JourneyStage.welcomeChild:
-        return const [
-          Color(0xFF2B4055),
-          Color(0xFF587080),
-          Color(0xFF89999C),
-        ];
-
-      case JourneyStage.preparePath:
-        return const [
-          Color(0xFF4E6573),
-          Color(0xFF849596),
-          Color(0xFFB7B4A5),
-        ];
-
-      case JourneyStage.ready:
-        return const [
-          Color(0xFF7C9298),
-          Color(0xFFB8B9AA),
-          Color(0xFFDED2B5),
-        ];
-    }
-  }
 }
 
 class ParentHomeScreen extends StatelessWidget {
