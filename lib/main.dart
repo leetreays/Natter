@@ -5184,24 +5184,21 @@ class FamilyJourneyWelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.welcome,
-      title: "Every friendship begins\nwith a conversation.",
-      subtitle: "Welcome to Natter.",
-      buttonText: "Begin",
-      onButtonPressed: () async {
-  await Future.delayed(
-    const Duration(milliseconds: 180),
-  );
-
-  if (!context.mounted) return;
-
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) =>
-          const FamilyJourneyCreateFamilyScreen(),
-    ),
-  );
-}
+      title: 'Every friendship begins\nwith a conversation.',
+      subtitle: 'Welcome to Natter.',
+      buttonText: "Let's Begin",
+      showProgress: true,
+      onButtonPressed: () {
+        await Future.delayed(
+  const Duration(milliseconds: 300),
+);
+        Navigator.push(
+          context,
+          calmRoute(
+            const FamilyJourneyCreateFamilyScreen(),
+          ),
+        );
+      },
     );
   }
 }
