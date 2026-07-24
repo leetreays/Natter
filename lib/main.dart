@@ -5252,7 +5252,7 @@ class _FamilyJourneyCreateFamilyScreenState
     return NatterJourneyScaffold(
       stage: JourneyStage.createFamily,
       title: "Let's begin with\nyour family.",
-      subtitle: "Every friendship has a home. Let's create yours.",
+      subtitle: "All friendships have a home. Let's create yours.",
       buttonText: "Continue",
       buttonEnabled: _canContinue,
       onButtonPressed: _continue,
