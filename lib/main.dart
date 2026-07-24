@@ -5242,6 +5242,76 @@ Widget build(BuildContext context) {
   );
 }
 
+class ChildJourneyCodeScreen extends StatelessWidget {
+  const ChildJourneyCodeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.welcome,
+      title: 'Your Natter journey\nstarts here.',
+      subtitle:
+          'Enter the code your parent gave you to connect this device.',
+      buttonText: 'Continue',
+      buttonEnabled: false,
+      showProgress: false,
+      onButtonPressed: () {},
+      onBack: () {
+        Navigator.pop(context);
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: TextField(
+          textCapitalization: TextCapitalization.characters,
+          textInputAction: TextInputAction.done,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 4,
+          ),
+          decoration: InputDecoration(
+            hintText: 'NATTER CODE',
+            hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.38),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+            ),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 20,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: const BorderSide(
+                color: NatterBrand.blue,
+                width: 1.8,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class FamilyJourneyCreateFamilyScreen extends StatefulWidget {
   const FamilyJourneyCreateFamilyScreen({super.key});
 
