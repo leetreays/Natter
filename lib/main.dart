@@ -232,145 +232,136 @@ class NatterJourneyScaffold extends StatelessWidget {
                           isWide ? 48 : 24,
                           24,
                         ),
-                        child: Column(
-                          children: [
-                            _buildHeader(context),
+                       child: Column(
+  children: [
+    _buildHeader(context),
 
-                            Expanded(
-                              child: SingleChildScrollView(
-                                physics: const BouncingScrollPhysics(),
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight - 210,
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: isWide ? 44 : 0,
-                                      vertical: 28,
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        if (eyebrow != null &&
-                                            eyebrow!.trim().isNotEmpty) ...[
-                                          Text(
-                                            eyebrow!.toUpperCase(),
-                                            textAlign: TextAlign.center,
-                                            style: const TextStyle(
-                                              color: Color(0xBFFFFFFF),
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: 1.8,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 16),
-                                        ],
-
-                                        Text(
-                                          title,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            color: _softWhite,
-                                            fontSize: isWide ? 42 : 34,
-                                            height: 1.12,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: -0.8,
-                                          ),
-                                        ),
-
-                                        if (subtitle != null &&
-                                            subtitle!.trim().isNotEmpty) ...[
-                                          const SizedBox(height: 20),
-                                          ConstrainedBox(
-                                            constraints: const BoxConstraints(
-                                              maxWidth: 480,
-                                            ),
-                                            child: Text(
-                                              subtitle!,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                color: Color(0xCCFFFFFF),
-                                                fontSize: 16,
-                                                height: 1.55,
-                                                fontWeight: FontWeight.w400,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-
-                                        if (child != null) ...[
-                                          const SizedBox(height: 32),
-                                          child!,
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(
-  width: double.infinity,
-  height: 54,
-  child: FilledButton(
-    onPressed: buttonEnabled && !isLoading
-        ? onButtonPressed
-        : null,
-    style: FilledButton.styleFrom(
-      backgroundColor: _warmWhite,
-      foregroundColor: _nightNavy,
-      disabledBackgroundColor:
-          _warmWhite.withValues(alpha: 0.48),
-      disabledForegroundColor:
-          _nightNavy.withValues(alpha: 0.55),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
-    ),
-    child: isLoading
-        ? const SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.2,
-              color: _nightNavy,
+    Expanded(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: constraints.maxHeight - 210,
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isWide ? 44 : 0,
+              vertical: 28,
             ),
-          )
-        : Text(
-            buttonText,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (eyebrow != null &&
+                    eyebrow!.trim().isNotEmpty) ...[
+                  Text(
+                    eyebrow!.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xBFFFFFFF),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.8,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _softWhite,
+                    fontSize: isWide ? 42 : 34,
+                    height: 1.12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.8,
+                  ),
+                ),
+
+                if (subtitle != null &&
+                    subtitle!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 480,
+                    ),
+                    child: Text(
+                      subtitle!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xCCFFFFFF),
+                        fontSize: 16,
+                        height: 1.55,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+
+                if (child != null) ...[
+                  const SizedBox(height: 32),
+                  child!,
+                ],
+              ],
             ),
           ),
-  ),
-),
+        ),
+      ),
+    ),
 
-if (showProgress) ...[
-  const SizedBox(height: 20),
-  _JourneyProgressIndicator(
-    currentIndex: stage.index,
-    totalSteps: JourneyStage.values.length,
-  ),
-],
-                                
-                              ),
-                            ),
-                          ],
-                        ),
+    SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: FilledButton(
+        onPressed: buttonEnabled && !isLoading
+            ? onButtonPressed
+            : null,
+        style: FilledButton.styleFrom(
+          backgroundColor: _warmWhite,
+          foregroundColor: _nightNavy,
+          disabledBackgroundColor:
+              _warmWhite.withValues(alpha: 0.48),
+          disabledForegroundColor:
+              _nightNavy.withValues(alpha: 0.55),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  color: _nightNavy,
+                ),
+              )
+            : Text(
+                buttonText,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+      ),
+    ),
+
+    if (showProgress) ...[
+      const SizedBox(height: 20),
+      _JourneyProgressIndicator(
+        currentIndex: stage.index,
+        totalSteps: JourneyStage.values.length,
+      ),
+    ],
+  ],
+),
                       ),
                     ),
                   );
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
