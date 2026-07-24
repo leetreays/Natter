@@ -5204,15 +5204,140 @@ class FamilyJourneyWelcomeScreen extends StatelessWidget {
   }
 }
 
-class FamilyJourneyCreateFamilyScreen extends StatelessWidget {
+class FamilyJourneyCreateFamilyScreen extends StatefulWidget {
   const FamilyJourneyCreateFamilyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text("Create Family Screen"),
+  State<FamilyJourneyCreateFamilyScreen> createState() =>
+      _FamilyJourneyCreateFamilyScreenState();
+}
+
+class _FamilyJourneyCreateFamilyScreenState
+    extends State<FamilyJourneyCreateFamilyScreen> {
+  final TextEditingController _familyNameController =
+      TextEditingController();
+
+  bool get _canContinue =>
+      _familyNameController.text.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _familyNameController.dispose();
+    super.dispose();
+  }
+
+  void _continue() async {
+    final familyName = _familyNameController.text.trim();
+
+    if (familyName.isEmpty) return;
+
+    await Future.delayed(
+      const Duration(milliseconds: 180),
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      calmRoute(
+        FamilyJourneyWelcomeChildScreen(
+          familyName: familyName,
+        ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.createFamily,
+      title: "Let's begin with\nyour family.",
+      subtitle: "Every friendship has a home. Let's create yours.",
+      buttonText: "Continue",
+      buttonEnabled: _canContinue,
+      onButtonPressed: _continue,
+      onBack: () {
+        Navigator.pop(context);
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: TextField(
+          controller: _familyNameController,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.done,
+          onChanged: (_) {
+            setState(() {});
+          },
+          onSubmitted: (_) {
+            if (_canContinue) {
+              _continue();
+            }
+          },
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: "Family name",
+            hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.48),
+              fontWeight: FontWeight.w500,
+            ),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 20,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: const BorderSide(
+                color: NatterBrand.blue,
+                width: 1.8,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FamilyJourneyWelcomeChildScreen extends StatelessWidget {
+  const FamilyJourneyWelcomeChildScreen({
+    super.key,
+    required this.familyName,
+  });
+
+  final String familyName;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.welcomeChild,
+      title: "Now, let's welcome\nyour child.",
+      subtitle: "A space made for them, within $familyName.",
+      buttonText: "Continue",
+      onButtonPressed: () {},
+      onBack: () {
+        Navigator.pop(context);
+      },
     );
   }
 }
