@@ -347,6 +347,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
+                                ),
 
                                 if (showProgress) ...[
                               _JourneyProgressIndicator(
