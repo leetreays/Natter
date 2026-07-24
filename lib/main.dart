@@ -5241,6 +5241,7 @@ Widget build(BuildContext context) {
     },
   );
 }
+}
 
 class ChildJourneyCodeScreen extends StatelessWidget {
   const ChildJourneyCodeScreen({super.key});
