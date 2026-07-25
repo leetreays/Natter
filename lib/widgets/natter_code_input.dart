@@ -76,39 +76,67 @@ class _NatterCodeInputState
     );
   }
 
-    Widget _buildCell(int index) {
-    return Padding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 4),
-      child: SizedBox(
-        width: 46,
-        child: TextField(
-          controller: _controllers[index],
-          focusNode: _focusNodes[index],
-          textAlign: TextAlign.center,
-          maxLength: 1,
-          textCapitalization:
-              TextCapitalization.characters,
-          inputFormatters: [
-            FilteringTextInputFormatter
-                .allow(RegExp(r'[a-zA-Z0-9]')),
-            UpperCaseTextFormatter(),
-          ],
-          decoration: const InputDecoration(
-            counterText: '',
-          ),
-          onChanged: (value) {
-            if (value.isNotEmpty &&
-                index < widget.length - 1) {
-              _focusNodes[index + 1].requestFocus();
-            }
-
-            _notifyChanged();
-          },
+   Widget _buildCell(int index) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 4),
+    child: SizedBox(
+      width: 46,
+      height: 58,
+      child: TextField(
+        controller: _controllers[index],
+        focusNode: _focusNodes[index],
+        textAlign: TextAlign.center,
+        textAlignVertical: TextAlignVertical.center,
+        maxLength: 1,
+        textCapitalization: TextCapitalization.characters,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          height: 1,
         ),
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(
+            RegExp(r'[a-zA-Z0-9]'),
+          ),
+          UpperCaseTextFormatter(),
+        ],
+        decoration: InputDecoration(
+          counterText: '',
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
+          filled: true,
+          fillColor: const Color(0xFF162A50),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.18),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(
+              color: Colors.white.withOpacity(0.18),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(
+              color: Color(0xFF3DA6F3),
+              width: 2,
+            ),
+          ),
+        ),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < widget.length - 1) {
+            _focusNodes[index + 1].requestFocus();
+          }
+
+          _notifyChanged();
+        },
       ),
-    );
-  }
+    ),
+  );
 }
 
 class UpperCaseTextFormatter
