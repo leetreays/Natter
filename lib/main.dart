@@ -5252,10 +5252,47 @@ class ChildJourneyCodeScreen extends StatefulWidget {
       _ChildJourneyCodeScreenState();
 }
 
+  Future<void> _verifyCode() async {
+  setState(() {
+    _isVerifying = true;
+    _error = null;
+  });
+
+  try {
+    final doc = await FirebaseFirestore.instance
+        .collection('child_access_codes')
+        .doc(_code)
+        .get();
+
+    if (!doc.exists) {
+      setState(() {
+        _error = 'That Natter Code could not be found.';
+        _isVerifying = false;
+      });
+      return;
+    }
+
+    final data = doc.data()!;
+
+    final String childId = data['childId'];
+    final String parentId = data['parentId'];
+
+    // We'll use these in the next step.
+  } catch (e) {
+    setState(() {
+      _error = 'Something went wrong. Please try again.';
+      _isVerifying = false;
+    });
+  }
+}
+
 class _ChildJourneyCodeScreenState
     extends State<ChildJourneyCodeScreen> {
   String _code = '';
   bool _isComplete = false;
+  bool _isVerifying = false;
+  String? _error;
+
 
   @override
   Widget build(BuildContext context) {
@@ -5265,11 +5302,9 @@ class _ChildJourneyCodeScreenState
       subtitle:
           'Enter the code your parent gave you to connect this device.',
       buttonText: 'Continue',
-      buttonEnabled: _isComplete,
+      buttonEnabled: _isComplete && !_isVerifying,
       showProgress: false,
-      onButtonPressed: () {
-        // Code verification will be added next.
-      },
+      onButtonPressed: _verifyCode,
       onBack: () {
         Navigator.pop(context);
       },
