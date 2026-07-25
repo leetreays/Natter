@@ -9,6 +9,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'widgets/natter_code_input.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
