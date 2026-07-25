@@ -5252,47 +5252,116 @@ class ChildJourneyCodeScreen extends StatefulWidget {
       _ChildJourneyCodeScreenState();
 }
 
-  Future<void> _verifyCode() async {
+class _ChildJourneyCodeScreenState
+    extends State<ChildJourneyCodeScreen> {
+String _code = '';
+bool _isComplete = false;
+
+bool _loading = false;
+String? _error;
+
+Future<void> _continue() async {
+  final state = AppStateScope.of(context);
+
   setState(() {
-    _isVerifying = true;
+    _loading = true;
     _error = null;
   });
 
   try {
-    final doc = await FirebaseFirestore.instance
-        .collection('child_access_codes')
-        .doc(_code)
-        .get();
+    setState(() {
+      _error = 'Signing in...';
+    });
 
-    if (!doc.exists) {
-      setState(() {
-        _error = 'That Natter Code could not be found.';
-        _isVerifying = false;
-      });
-      return;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await FirebaseAuth.instance.signOut();
     }
 
-    final data = doc.data()!;
+    final childUser = await ensureSignedIn();
 
-    final String childId = data['childId'];
-    final String parentId = data['parentId'];
+    setState(() {
+      _error = 'Looking up code...';
+    });
 
-    // We'll use these in the next step.
+    final result = await state.findChildByAccessCode(_code);
+
+    if (result == null) {
+      throw Exception('That code was not recognised.');
+    }
+
+    setState(() {
+      _error = 'Remembering child...';
+    });
+
+    await state.hydrateChildOnboardingState();
+
+    final incomingChildId = result['childId']!;
+
+    if (state.activeChildId != null &&
+        state.activeChildId != incomingChildId) {
+      await state.clearChildOnboardingState();
+    }
+
+    await state.rememberChildDevice(
+      parentId: result['parentId']!,
+      childId: incomingChildId,
+      childName: result['childName']!,
+      childAvatar: result['avatar'] ?? 'owl',
+      childFriendCode: result['friendCode'] ?? '',
+    );
+
+    setState(() {
+      _error = 'Linking device...';
+    });
+
+    await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(result['parentId']!)
+        .collection('children')
+        .doc(result['childId']!)
+        .set({
+      'linkedDevice': true,
+      'linkedAuthUid': childUser.uid,
+    }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    await state.hydrateChildOnboardingState();
+    await state.hydrateChildRiteStateFromFirestore();
+    await state.loadQuietHoursForActiveChild();
+
+    if (!state.hasCompletedChildRite) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          PromiseScreen(
+            name: state.effectiveChildName,
+          ),
+        ),
+        (_) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          const ChatsScreen(),
+        ),
+        (_) => false,
+      );
+    }
   } catch (e) {
     setState(() {
-      _error = 'Something went wrong. Please try again.';
-      _isVerifying = false;
+      _error = e.toString().replaceFirst('Exception: ', '');
     });
+  } finally {
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 }
-
-class _ChildJourneyCodeScreenState
-    extends State<ChildJourneyCodeScreen> {
-  String _code = '';
-  bool _isComplete = false;
-  bool _isVerifying = false;
-  String? _error;
-
 
   @override
   Widget build(BuildContext context) {
@@ -5302,9 +5371,9 @@ class _ChildJourneyCodeScreenState
       subtitle:
           'Enter the code your parent gave you to connect this device.',
       buttonText: 'Continue',
-      buttonEnabled: _isComplete && !_isVerifying,
+      buttonEnabled: _isComplete && !_loading,
       showProgress: false,
-      onButtonPressed: _verifyCode,
+      onButtonPressed: _continue,
       onBack: () {
         Navigator.pop(context);
       },
