@@ -14,13 +14,10 @@ class NatterCodeInput extends StatefulWidget {
   final VoidCallback? onCompleted;
 
   @override
-  State<NatterCodeInput> createState() =>
-      _NatterCodeInputState();
+  State<NatterCodeInput> createState() => _NatterCodeInputState();
 }
 
-class _NatterCodeInputState
-    extends State<NatterCodeInput> {
-
+class _NatterCodeInputState extends State<NatterCodeInput> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
 
@@ -52,10 +49,8 @@ class _NatterCodeInputState
     super.dispose();
   }
 
-    void _notifyChanged() {
-    final code = _controllers
-        .map((c) => c.text)
-        .join();
+  void _notifyChanged() {
+    final code = _controllers.map((controller) => controller.text).join();
 
     widget.onChanged(code);
 
@@ -64,11 +59,10 @@ class _NatterCodeInputState
     }
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment:
-          MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         widget.length,
         (index) => _buildCell(index),
@@ -76,72 +70,71 @@ class _NatterCodeInputState
     );
   }
 
-   Widget _buildCell(int index) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4),
-    child: SizedBox(
-      width: 46,
-      height: 58,
-      child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        textAlign: TextAlign.center,
-        textAlignVertical: TextAlignVertical.center,
-        maxLength: 1,
-        textCapitalization: TextCapitalization.characters,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 22,
-          fontWeight: FontWeight.w800,
-          height: 1,
-        ),
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(
-            RegExp(r'[a-zA-Z0-9]'),
+  Widget _buildCell(int index) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: SizedBox(
+        width: 46,
+        height: 58,
+        child: TextField(
+          controller: _controllers[index],
+          focusNode: _focusNodes[index],
+          textAlign: TextAlign.center,
+          textAlignVertical: TextAlignVertical.center,
+          maxLength: 1,
+          textCapitalization: TextCapitalization.characters,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            height: 1,
           ),
-          UpperCaseTextFormatter(),
-        ],
-        decoration: InputDecoration(
-          counterText: '',
-          isDense: true,
-          contentPadding: EdgeInsets.zero,
-          filled: true,
-          fillColor: const Color(0xFF162A50),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.18),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(
+              RegExp(r'[a-zA-Z0-9]'),
+            ),
+            UpperCaseTextFormatter(),
+          ],
+          decoration: InputDecoration(
+            counterText: '',
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+            filled: true,
+            fillColor: const Color(0xFF162A50),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: Colors.white.withOpacity(0.18),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(
+                color: Colors.white.withOpacity(0.18),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: Color(0xFF3DA6F3),
+                width: 2,
+              ),
             ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.18),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: Color(0xFF3DA6F3),
-              width: 2,
-            ),
-          ),
-        ),
-        onChanged: (value) {
-          if (value.isNotEmpty && index < widget.length - 1) {
-            _focusNodes[index + 1].requestFocus();
-          }
+          onChanged: (value) {
+            if (value.isNotEmpty && index < widget.length - 1) {
+              _focusNodes[index + 1].requestFocus();
+            }
 
-          _notifyChanged();
-        },
+            _notifyChanged();
+          },
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
-class UpperCaseTextFormatter
-    extends TextInputFormatter {
-
+class UpperCaseTextFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
@@ -149,6 +142,8 @@ class UpperCaseTextFormatter
   ) {
     return newValue.copyWith(
       text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+      composing: TextRange.empty,
     );
   }
 }
