@@ -397,6 +397,75 @@ class NatterJourneyScaffold extends StatelessWidget {
     );
   }
 
+  if (_status != null) ...[
+  const SizedBox(height: 16),
+  Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      ),
+      const SizedBox(width: 10),
+      Flexible(
+        child: Text(
+          _status!,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    ],
+  ),
+],
+
+  if (_error != null) ...[
+  const SizedBox(height: 18),
+  Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 14,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.redAccent.withOpacity(0.12),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: Colors.redAccent.withOpacity(0.35),
+      ),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(
+          Icons.info_outline_rounded,
+          color: Colors.white,
+          size: 20,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            _error!,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+],
+
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
       height: 72,
@@ -9490,9 +9559,13 @@ class ChildAccessCodeScreen extends StatefulWidget {
 
 class _ChildAccessCodeScreenState extends State<ChildAccessCodeScreen> {
   final _codeController = TextEditingController();
-  bool _loading = false;
-  String? _error;
+  String _code = '';
+bool _isComplete = false;
 
+bool _loading = false;
+String? _status;
+String? _error;
+  
   @override
   void dispose() {
     _codeController.dispose();
@@ -9504,6 +9577,7 @@ Future<void> _continue() async {
 
   setState(() {
     _loading = true;
+    _status = 'Signing in...';
     _error = null;
   });
 
@@ -9519,9 +9593,11 @@ Future<void> _continue() async {
 
     final childUser = await ensureSignedIn();
 
-    setState(() {
-      _error = 'Looking up code...';
-    });
+    if (mounted) {
+  setState(() {
+    _status = 'Looking up code...';
+  });
+    }
 
     final result = await state.findChildByAccessCode(_codeController.text);
 
@@ -9529,9 +9605,11 @@ Future<void> _continue() async {
       throw Exception('That code was not recognised.');
     }
 
-    setState(() {
-      _error = 'Remembering child...';
-    });
+    if (mounted) {
+  setState(() {
+    _status = 'Remembering child...';
+  });
+    }
 
     await state.hydrateChildOnboardingState();
 
@@ -9550,9 +9628,11 @@ Future<void> _continue() async {
       childFriendCode: result['friendCode'] ?? '',
     );
 
-    setState(() {
-      _error = 'Linking device...';
-    });
+    if (mounted) {
+  setState(() {
+    _status = 'Linking device...';
+  });
+    }
 
     await FirebaseFirestore.instance
         .collection('parents')
@@ -9590,15 +9670,19 @@ Future<void> _continue() async {
       );
     }
   } catch (e) {
+  if (!mounted) return;
+
+  setState(() {
+    _status = null;
+    _error = e.toString().replaceFirst('Exception: ', '');
+  });
+} finally {
+  if (mounted) {
     setState(() {
-      _error = e.toString().replaceFirst('Exception: ', '');
+      _loading = false;
+      _status = null;
     });
-  } finally {
-    if (mounted) {
-      setState(() {
-        _loading = false;
-      });
-    }
+  }
   }
 }
 
