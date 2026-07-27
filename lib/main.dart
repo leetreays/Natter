@@ -5405,9 +5405,7 @@ Future<void> _continue() async {
             HapticFeedback.lightImpact();
           },
         ),
-      ),
-    );
-    if (_status != null) ...[
+        if (_status != null) ...[
   const SizedBox(height: 16),
   Row(
     mainAxisAlignment: MainAxisAlignment.center,
@@ -5475,6 +5473,8 @@ Future<void> _continue() async {
     ),
   ),
 ],
+      ),
+    );
   }
 }
 
