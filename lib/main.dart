@@ -5482,9 +5482,9 @@ Future<void> _continue() async {
     ],
   ),
 ),
-      ),
-  },
-},
+      );
+  }
+}
 
 class FamilyJourneyCreateFamilyScreen extends StatefulWidget {
   const FamilyJourneyCreateFamilyScreen({super.key});
