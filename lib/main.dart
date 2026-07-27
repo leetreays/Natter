@@ -5390,93 +5390,101 @@ Future<void> _continue() async {
         Navigator.pop(context);
       },
       child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 460,
-        ),
-        child: NatterCodeInput(
-          length: 6,
-          onChanged: (value) {
-            setState(() {
-              _code = value;
-              _isComplete = value.length == 6;
-            });
-          },
-          onCompleted: () {
-            HapticFeedback.lightImpact();
-          },
-        ),
-        if (_status != null) ...[
-  const SizedBox(height: 16),
-  Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      const SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.white,
-        ),
-      ),
-      const SizedBox(width: 10),
-      Flexible(
-        child: Text(
-          _status!,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    ],
+  constraints: const BoxConstraints(
+    maxWidth: 460,
   ),
-],
-
-  if (_error != null) ...[
-  const SizedBox(height: 18),
-  Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 14,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.redAccent.withOpacity(0.12),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: Colors.redAccent.withOpacity(0.35),
+  child: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      NatterCodeInput(
+        length: 6,
+        onChanged: (value) {
+  setState(() {
+    _code = value;
+    _isComplete = value.length == 6;
+    _error = null;
+    _status = null;
+  });
+},
+        onCompleted: () {
+          HapticFeedback.lightImpact();
+        },
       ),
-    ),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Icon(
-          Icons.info_outline_rounded,
-          color: Colors.white,
-          size: 20,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            _error!,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+
+      if (_status != null) ...[
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
             ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                _status!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+
+      if (_error != null) ...[
+        const SizedBox(height: 18),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.redAccent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.redAccent.withOpacity(0.35),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _error!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
-    ),
+    ],
   ),
-],
+),
       ),
-    );
-  }
-}
+  },
+},
 
 class FamilyJourneyCreateFamilyScreen extends StatefulWidget {
   const FamilyJourneyCreateFamilyScreen({super.key});
