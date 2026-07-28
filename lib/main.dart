@@ -5533,9 +5533,9 @@ class _FamilyJourneyCreateFamilyScreenState
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.createFamily,
-      title: "Let's begin with\nyour family.",
-      subtitle: "All friendships have a home. Let's create yours.",
-      buttonText: "Continue",
+      title: "Create Your\nFamily",
+      subtitle: "Every friendship begins somewhere.\nLet's create your family's home.",
+      buttonText: "Create My Family",
       buttonEnabled: _canContinue,
       onButtonPressed: _continue,
       onBack: () {
@@ -5564,7 +5564,7 @@ class _FamilyJourneyCreateFamilyScreenState
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
-            hintText: "Family name",
+            hintText: "e.g. The Smith Family",
             hintStyle: TextStyle(
               color: Colors.white.withValues(alpha: 0.48),
               fontWeight: FontWeight.w500,
@@ -5601,7 +5601,7 @@ class _FamilyJourneyCreateFamilyScreenState
   }
 }
 
-class FamilyJourneyWelcomeChildScreen extends StatelessWidget {
+class FamilyJourneyWelcomeChildScreen extends StatefulWidget {
   const FamilyJourneyWelcomeChildScreen({
     super.key,
     required this.familyName,
@@ -5610,12 +5610,137 @@ class FamilyJourneyWelcomeChildScreen extends StatelessWidget {
   final String familyName;
 
   @override
+  State<FamilyJourneyWelcomeChildScreen> createState() =>
+      _FamilyJourneyWelcomeChildScreenState();
+}
+
+class _FamilyJourneyWelcomeChildScreenState
+    extends State<FamilyJourneyWelcomeChildScreen> {
+  final TextEditingController _childNameController =
+      TextEditingController();
+
+  bool get _canContinue =>
+      _childNameController.text.trim().isNotEmpty;
+
+  @override
+  void dispose() {
+    _childNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continue() async {
+    final childName = _childNameController.text.trim();
+
+    if (childName.isEmpty) return;
+
+    await Future.delayed(
+      const Duration(milliseconds: 180),
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      calmRoute(
+        FamilyJourneyPreparePathScreen(
+          familyName: widget.familyName,
+          childName: childName,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.welcomeChild,
       title: "Now, let's welcome\nyour child.",
-      subtitle: "A space made for them, within $familyName.",
-      buttonText: "Continue",
+      subtitle:
+          "A space made for them, within ${widget.familyName}.",
+      buttonText: "Welcome My Child",
+      buttonEnabled: _canContinue,
+      onButtonPressed: _continue,
+      onBack: () {
+        Navigator.pop(context);
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: TextField(
+          controller: _childNameController,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.done,
+          onChanged: (_) {
+            setState(() {});
+          },
+          onSubmitted: (_) {
+            if (_canContinue) {
+              _continue();
+            }
+          },
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+          decoration: InputDecoration(
+            hintText: "Child's first name",
+            hintStyle: TextStyle(
+              color: Colors.white.withValues(alpha: 0.48),
+              fontWeight: FontWeight.w500,
+            ),
+            filled: true,
+            fillColor: Colors.white.withValues(alpha: 0.10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 22,
+              vertical: 20,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: BorderSide(
+                color: Colors.white.withValues(alpha: 0.12),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(22),
+              borderSide: const BorderSide(
+                color: NatterBrand.blue,
+                width: 1.8,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FamilyJourneyPreparePathScreen extends StatelessWidget {
+  const FamilyJourneyPreparePathScreen({
+    super.key,
+    required this.familyName,
+    required this.childName,
+  });
+
+  final String familyName;
+  final String childName;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.preparePath,
+      title: "Prepare the path\nfor $childName.",
+      subtitle:
+          "Set the boundaries that will help them feel safe and flourish.",
+      buttonText: "Prepare Their Space",
       onButtonPressed: () {},
       onBack: () {
         Navigator.pop(context);
