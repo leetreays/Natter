@@ -5723,7 +5723,7 @@ class _FamilyJourneyWelcomeChildScreenState
   }
 }
 
-class FamilyJourneyPreparePathScreen extends StatelessWidget {
+class FamilyJourneyPreparePathScreen extends StatefulWidget {
   const FamilyJourneyPreparePathScreen({
     super.key,
     required this.familyName,
@@ -5734,13 +5734,184 @@ class FamilyJourneyPreparePathScreen extends StatelessWidget {
   final String childName;
 
   @override
+  State<FamilyJourneyPreparePathScreen> createState() =>
+      _FamilyJourneyPreparePathScreenState();
+}
+
+class _FamilyJourneyPreparePathScreenState
+    extends State<FamilyJourneyPreparePathScreen> {
+  bool _quietHoursEnabled = true;
+
+  TimeOfDay _quietStart = const TimeOfDay(
+    hour: 20,
+    minute: 0,
+  );
+
+  TimeOfDay _quietEnd = const TimeOfDay(
+    hour: 7,
+    minute: 0,
+  );
+
+  Future<void> _pickStartTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _quietStart,
+    );
+
+    if (picked == null || !mounted) return;
+
+    setState(() {
+      _quietStart = picked;
+    });
+  }
+
+  Future<void> _pickEndTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _quietEnd,
+    );
+
+    if (picked == null || !mounted) return;
+
+    setState(() {
+      _quietEnd = picked;
+    });
+  }
+
+  Future<void> _continue() async {
+    await Future.delayed(
+      const Duration(milliseconds: 180),
+    );
+
+    if (!mounted) return;
+
+    Navigator.push(
+      context,
+      calmRoute(
+        FamilyJourneyReadyScreen(
+          familyName: widget.familyName,
+          childName: widget.childName,
+          quietHoursEnabled: _quietHoursEnabled,
+          quietStartHour: _quietStart.hour,
+          quietStartMinute: _quietStart.minute,
+          quietEndHour: _quietEnd.hour,
+          quietEndMinute: _quietEnd.minute,
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.preparePath,
-      title: "Prepare the path\nfor $childName.",
+      title: "Prepare the path\nfor ${widget.childName}.",
       subtitle:
-          "Set the boundaries that will help them feel safe and flourish.",
+          "Set a calm daily rhythm that helps them feel safe and flourish.",
       buttonText: "Prepare Their Space",
+      onButtonPressed: _continue,
+      onBack: () {
+        Navigator.pop(context);
+      },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.12),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: _quietHoursEnabled,
+                onChanged: (value) {
+                  setState(() {
+                    _quietHoursEnabled = value;
+                  });
+                },
+                title: const Text(
+                  "Quiet Hours",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                subtitle: Text(
+                  "Pause sending during sleep and family time.",
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              if (_quietHoursEnabled) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TimeButton(
+                        label: "Start",
+                        time: _quietStart,
+                        onPick: _pickStartTime,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _TimeButton(
+                        label: "End",
+                        time: _quietEnd,
+                        onPick: _pickEndTime,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FamilyJourneyReadyScreen extends StatelessWidget {
+  const FamilyJourneyReadyScreen({
+    super.key,
+    required this.familyName,
+    required this.childName,
+    required this.quietHoursEnabled,
+    required this.quietStartHour,
+    required this.quietStartMinute,
+    required this.quietEndHour,
+    required this.quietEndMinute,
+  });
+
+  final String familyName;
+  final String childName;
+
+  final bool quietHoursEnabled;
+  final int quietStartHour;
+  final int quietStartMinute;
+  final int quietEndHour;
+  final int quietEndMinute;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.ready,
+      title: "Your family\nis ready.",
+      subtitle:
+          "You've prepared the path.\nNow it's ${childName}'s turn to take the first step.",
+      buttonText: "Invite My Child",
       onButtonPressed: () {},
       onBack: () {
         Navigator.pop(context);
