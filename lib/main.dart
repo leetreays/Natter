@@ -14483,26 +14483,89 @@ isBlocked
   child: SafeArea(
     child: GestureDetector(
       onTap: () async {
-        try {
-          await AppStateScope.of(context).clearRememberedDeviceMode();
-
-          if (!context.mounted) return;
-
-          Navigator.pushAndRemoveUntil(
-            context,
-            calmRoute(const GatewayScreen()),
-            (_) => false,
-          );
-        } catch (e) {
-          if (!context.mounted) return;
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Could not reset this device: $e'),
+  final shouldExit = await showDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    builder: (dialogContext) {
+      return AlertDialog(
+        backgroundColor: NatterBrand.navy,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        title: const Text(
+          'Leave Natter?',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        content: const Text(
+          'Are you sure you want to leave this child space?',
+          style: TextStyle(
+            color: Colors.white70,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text(
+              'Stay here',
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          );
-        }
-      },
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: NatterBrand.pink,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: const Text(
+              'Leave',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (shouldExit != true) return;
+  if (!context.mounted) return;
+
+  try {
+    await AppStateScope.of(context).clearRememberedDeviceMode();
+
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(const GatewayScreen()),
+      (_) => false,
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Could not reset this device: $e'),
+      ),
+    );
+  }
+},
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
