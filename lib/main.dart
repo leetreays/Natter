@@ -14553,7 +14553,7 @@ isBlocked
 
     Navigator.pushAndRemoveUntil(
       context,
-      calmRoute(const GatewayScreen()),
+      calmRoute(const FamilyJourneyWelcomeScreen()),
       (_) => false,
     );
   } catch (e) {
