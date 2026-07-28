@@ -5828,10 +5828,10 @@ class _FamilyJourneyPreparePathScreenState
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.preparePath,
-title: "Prepare the path\nfor ${widget.childName}.",
+title: "Prepare their space.",
 subtitle:
-    "Choose the daily routine that will help ${widget.childName} feel safe, rested and ready to connect.",
-buttonText: "Continue to Account Setup",
+    "Every friendship needs a safe place to grow. Choose the daily rhythm that will help ${widget.childName} feel safe, rested and ready to connect.",
+buttonText: "Continue",
 onButtonPressed: _continue,
       onBack: () {
         Navigator.pop(context);
@@ -6104,8 +6104,8 @@ class _FamilyJourneyCreateAccountScreenState
       stage: JourneyStage.createAccount,
       title: 'Create your\nparent account.',
       subtitle:
-          'Your secure place to support ${widget.childName} without reading their conversations.',
-      buttonText: 'Create My Account',
+          'One last step. Create your secure parent space and we'll prepare everything for ${widget.childName}.',
+      buttonText: 'Prepare ${widget.childName}'s Space',
       buttonEnabled: _canContinue && !_loading,
       isLoading: _loading,
       onButtonPressed: _createAccountAndFamily,
