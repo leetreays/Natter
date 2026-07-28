@@ -1557,29 +1557,32 @@ class ParentChildProfile {
   final String name;
   final String avatar;
   final String accessCode;
+  final String friendCode;
   final bool linkedDevice;
 
   const ParentChildProfile({
-    required this.childId,
-    required this.name,
-    required this.avatar,
-    required this.accessCode,
-    required this.linkedDevice,
-  });
+  required this.childId,
+  required this.name,
+  required this.avatar,
+  required this.accessCode,
+  required this.friendCode,
+  required this.linkedDevice,
+});
 
   factory ParentChildProfile.fromDoc(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
-    final data = doc.data() ?? {};
+  DocumentSnapshot<Map<String, dynamic>> doc,
+) {
+  final data = doc.data() ?? {};
 
-    return ParentChildProfile(
-      childId: doc.id,
-      name: (data['name'] ?? '').toString(),
-      avatar: (data['avatar'] ?? 'owl').toString(),
-      accessCode: (data['accessCode'] ?? '').toString(),
-      linkedDevice: data['linkedDevice'] == true,
-    );
-  }
+  return ParentChildProfile(
+    childId: doc.id,
+    name: (data['name'] ?? '').toString(),
+    avatar: (data['avatar'] ?? 'owl').toString(),
+    accessCode: (data['accessCode'] ?? '').toString(),
+    friendCode: (data['friendCode'] ?? '').toString(),
+    linkedDevice: data['linkedDevice'] == true,
+  );
+}
 }
 
 class NudgeSuggestion {
@@ -4817,7 +4820,7 @@ User? currentAuthUser() {
   return FirebaseAuth.instance.currentUser;
 }
 
-Future<String> createChildProfile({
+Future<ParentChildProfile> createChildProfile({
   required String name,
   String avatar = 'owl',
 }) async {
@@ -4875,8 +4878,18 @@ await FirebaseFirestore.instance
     'createdAt': FieldValue.serverTimestamp(),
   });
 
+  final createdChild = ParentChildProfile(
+    childId: childRef.id,
+    name: trimmedName,
+    avatar: avatar,
+    accessCode: accessCode,
+    friendCode: friendCode,
+    linkedDevice: false,
+  );
+
   notifyListeners();
-  return accessCode;
+
+  return createdChild;
 }
 
   void recordCoachedMessageSentAnyway() {
@@ -5147,24 +5160,27 @@ enum JourneyStage {
   createFamily,
   welcomeChild,
   preparePath,
+  createAccount,
   ready,
 }
 
 extension JourneyStageDetails on JourneyStage {
   int get index {
-    switch (this) {
-      case JourneyStage.welcome:
-        return 0;
-      case JourneyStage.createFamily:
-        return 1;
-      case JourneyStage.welcomeChild:
-        return 2;
-      case JourneyStage.preparePath:
-        return 3;
-      case JourneyStage.ready:
-        return 4;
-    }
+  switch (this) {
+    case JourneyStage.welcome:
+      return 0;
+    case JourneyStage.createFamily:
+      return 1;
+    case JourneyStage.welcomeChild:
+      return 2;
+    case JourneyStage.preparePath:
+      return 3;
+    case JourneyStage.createAccount:
+      return 4;
+    case JourneyStage.ready:
+      return 5;
   }
+}
 
   List<Color> get backgroundColours {
     switch (this) {
@@ -5194,6 +5210,13 @@ extension JourneyStageDetails on JourneyStage {
           Color(0xFF4E6573),
           Color(0xFF849596),
           Color(0xFFB7B4A5),
+        ];
+
+      case JourneyStage.createAccount:
+        return const [
+          Color(0xFF667D88),
+          Color(0xFF9EA8A3),
+          Color(0xFFC8C1AC),
         ];
 
       case JourneyStage.ready:
@@ -5788,15 +5811,15 @@ class _FamilyJourneyPreparePathScreenState
     Navigator.push(
       context,
       calmRoute(
-        FamilyJourneyReadyScreen(
-          familyName: widget.familyName,
-          childName: widget.childName,
-          quietHoursEnabled: _quietHoursEnabled,
-          quietStartHour: _quietStart.hour,
-          quietStartMinute: _quietStart.minute,
-          quietEndHour: _quietEnd.hour,
-          quietEndMinute: _quietEnd.minute,
-        ),
+        FamilyJourneyCreateAccountScreen(
+  familyName: widget.familyName,
+  childName: widget.childName,
+  quietHoursEnabled: _quietHoursEnabled,
+  quietStartHour: _quietStart.hour,
+  quietStartMinute: _quietStart.minute,
+  quietEndHour: _quietEnd.hour,
+  quietEndMinute: _quietEnd.minute,
+)
       ),
     );
   }
@@ -5805,11 +5828,11 @@ class _FamilyJourneyPreparePathScreenState
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.preparePath,
-      title: "Prepare the path\nfor ${widget.childName}.",
-      subtitle:
-          "Set a calm daily rhythm that helps them feel safe and flourish.",
-      buttonText: "Prepare Their Space",
-      onButtonPressed: _continue,
+title: "Prepare the path\nfor ${widget.childName}.",
+subtitle:
+    "Choose the daily routine that will help ${widget.childName} feel safe, rested and ready to connect.",
+buttonText: "Continue to Account Setup",
+onButtonPressed: _continue,
       onBack: () {
         Navigator.pop(context);
       },
@@ -5883,8 +5906,8 @@ class _FamilyJourneyPreparePathScreenState
   }
 }
 
-class FamilyJourneyReadyScreen extends StatelessWidget {
-  const FamilyJourneyReadyScreen({
+class FamilyJourneyCreateAccountScreen extends StatefulWidget {
+  const FamilyJourneyCreateAccountScreen({
     super.key,
     required this.familyName,
     required this.childName,
@@ -5905,17 +5928,484 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
   final int quietEndMinute;
 
   @override
+  State<FamilyJourneyCreateAccountScreen> createState() =>
+      _FamilyJourneyCreateAccountScreenState();
+}
+
+class _FamilyJourneyCreateAccountScreenState
+    extends State<FamilyJourneyCreateAccountScreen> {
+  final TextEditingController _parentNameController =
+      TextEditingController();
+
+  final TextEditingController _emailController =
+      TextEditingController();
+
+  final TextEditingController _passwordController =
+      TextEditingController();
+
+  bool _loading = false;
+  bool _obscurePassword = true;
+  String? _error;
+
+  bool get _canContinue {
+    final parentName = _parentNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    return parentName.isNotEmpty &&
+        email.isNotEmpty &&
+        password.length >= 6;
+  }
+
+  @override
+  void dispose() {
+    _parentNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _createAccountAndFamily() async {
+    if (!_canContinue || _loading) return;
+
+    final state = AppStateScope.of(context);
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      // 1. Create the Firebase parent account and parent document.
+      final user = await state.signUpParent(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        displayName: _parentNameController.text.trim(),
+      );
+
+      // 2. Add the family information to that existing parent document.
+      await FirebaseFirestore.instance
+          .collection('parents')
+          .doc(user.uid)
+          .set({
+        'familyName': widget.familyName,
+        'onboardingCompleted': false,
+        'familyCreatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // 3. Reuse the existing child-profile creation engine.
+      final createdChild = await state.createChildProfile(
+        name: widget.childName,
+      );
+
+      // 4. Save the Quiet Hours selected earlier in onboarding.
+      await state.saveQuietHoursForChild(
+        parentId: user.uid,
+        childId: createdChild.childId,
+        enabled: widget.quietHoursEnabled,
+        start: TimeOfDay(
+          hour: widget.quietStartHour,
+          minute: widget.quietStartMinute,
+        ),
+        end: TimeOfDay(
+          hour: widget.quietEndHour,
+          minute: widget.quietEndMinute,
+        ),
+      );
+
+      // 5. Mark the parent journey as complete.
+      await FirebaseFirestore.instance
+          .collection('parents')
+          .doc(user.uid)
+          .set({
+        'onboardingCompleted': true,
+        'onboardingCompletedAt': FieldValue.serverTimestamp(),
+        'firstChildId': createdChild.childId,
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+
+      // 6. Pass the complete child profile to the celebration screen.
+      Navigator.pushReplacement(
+        context,
+        calmRoute(
+          FamilyJourneyReadyScreen(
+            familyName: widget.familyName,
+            child: createdChild,
+          ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = e.message ??
+            'We could not create your parent account.';
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = e
+            .toString()
+            .replaceFirst('Exception: ', '');
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
+  }
+
+  InputDecoration _fieldDecoration({
+    required String hintText,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: TextStyle(
+        color: Colors.white.withValues(alpha: 0.48),
+        fontWeight: FontWeight.w500,
+      ),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: 0.10),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 22,
+        vertical: 20,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(22),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(22),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(22),
+        borderSide: const BorderSide(
+          color: NatterBrand.blue,
+          width: 1.8,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.createAccount,
+      title: 'Create your\nparent account.',
+      subtitle:
+          'Your secure place to support ${widget.childName} without reading their conversations.',
+      buttonText: 'Create My Account',
+      buttonEnabled: _canContinue && !_loading,
+      isLoading: _loading,
+      onButtonPressed: _createAccountAndFamily,
+      onBack: _loading
+          ? null
+          : () {
+              Navigator.pop(context);
+            },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _parentNameController,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.next,
+              onChanged: (_) {
+                setState(() {
+                  _error = null;
+                });
+              },
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: _fieldDecoration(
+                hintText: 'Your name',
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              onChanged: (_) {
+                setState(() {
+                  _error = null;
+                });
+              },
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: _fieldDecoration(
+                hintText: 'Email address',
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              textInputAction: TextInputAction.done,
+              autocorrect: false,
+              enableSuggestions: false,
+              onChanged: (_) {
+                setState(() {
+                  _error = null;
+                });
+              },
+              onSubmitted: (_) {
+                if (_canContinue) {
+                  _createAccountAndFamily();
+                }
+              },
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: _fieldDecoration(
+                hintText: 'Create a password',
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword =
+                          !_obscurePassword;
+                    });
+                  },
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Use at least 6 characters.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.62),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 18),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(
+                    alpha: 0.12,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(
+                      alpha: 0.35,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FamilyJourneyReadyScreen extends StatelessWidget {
+  const FamilyJourneyReadyScreen({
+    super.key,
+    required this.familyName,
+    required this.child,
+  });
+
+  final String familyName;
+  final ParentChildProfile child;
+
+  Future<void> _copyCode(
+    BuildContext context,
+  ) async {
+    await Clipboard.setData(
+      ClipboardData(
+        text: child.accessCode,
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Natter Code copied.',
+        ),
+      ),
+    );
+  }
+
+  void _enterParentSpace(
+    BuildContext context,
+  ) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(
+        const ParentHomeScreen(),
+      ),
+      (_) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return NatterJourneyScaffold(
       stage: JourneyStage.ready,
-      title: "Your family\nis ready.",
+      title: 'Your family\nis ready.',
       subtitle:
-          "You've prepared the path.\nNow it's ${childName}'s turn to take the first step.",
-      buttonText: "Invite My Child",
-      onButtonPressed: () {},
-      onBack: () {
-        Navigator.pop(context);
+          '${child.name} now has a place in $familyName.\nUse this code to begin their journey.',
+      buttonText: 'Enter Parent Space',
+      onButtonPressed: () {
+        _enterParentSpace(context);
       },
+      onBack: null,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 22,
+                vertical: 24,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(
+                  alpha: 0.12,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(
+                    alpha: 0.16,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${child.name}'s Natter Code",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(
+                        alpha: 0.74,
+                      ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SelectableText(
+                    child.accessCode,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Enter this code on the device ${child.name} will use.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(
+                        alpha: 0.72,
+                      ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextButton.icon(
+              onPressed: () {
+                _copyCode(context);
+              },
+              icon: const Icon(
+                Icons.copy_rounded,
+                size: 19,
+              ),
+              label: const Text(
+                'Copy Natter Code',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -10200,10 +10690,12 @@ class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
     });
 
     try {
-      final accessCode = await state.createChildProfile(
+      final createdChild = await state.createChildProfile(
   name: _nameController.text,
   avatar: _selectedAvatar,
 );
+
+final accessCode = createdChild.accessCode;
 
 if (!mounted) return;
 
