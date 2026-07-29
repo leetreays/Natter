@@ -6175,8 +6175,8 @@ class _FamilyJourneyCreateAccountScreenState
       stage: JourneyStage.createAccount,
       title: 'Create your\nparent account.',
       subtitle:
-          'One last step. Create your secure parent space and we'll prepare everything for ${widget.childName}.',
-      buttonText: 'Prepare ${widget.childName}'s Space',
+          "One last step. Create your secure parent space and we'll prepare everything for ${widget.childName}.",
+      buttonText: "Prepare ${widget.childName}'s Space",
       buttonEnabled: _canContinue && !_loading,
       isLoading: _loading,
       onButtonPressed: _createAccountAndFamily,
@@ -6335,12 +6335,10 @@ class _FamilyJourneyCreateAccountScreenState
 class FamilyJourneyReadyScreen extends StatelessWidget {
   const FamilyJourneyReadyScreen({
     super.key,
-    required this.familyName,
-    required this.child,
+    required this.journey,
   });
 
-  final String familyName;
-  final ParentChildProfile child;
+  final FamilyJourneyData journey;
 
   Future<void> _copyCode(
     BuildContext context,
@@ -6380,7 +6378,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
       stage: JourneyStage.ready,
       title: 'Your family\nis ready.',
       subtitle:
-          '${child.name} now has a place in $familyName.\nUse this code to begin their journey.',
+          '${journey.childName} now has a place in $journey.familyName.\nUse this code to begin their journey.',
       buttonText: 'Enter Parent Space',
       onButtonPressed: () {
         _enterParentSpace(context);
@@ -6414,7 +6412,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "${child.name}'s Natter Code",
+                    "${journey.childName}'s Natter Code",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(
@@ -6437,7 +6435,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Enter this code on the device ${child.name} will use.',
+                    'Enter this code on the device ${journey.childName} will use.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(
