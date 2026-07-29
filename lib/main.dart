@@ -5888,7 +5888,7 @@ void initState() {
 Navigator.push(
   context,
   calmRoute(
-    FamilyJourneyReadyScreen(
+    FamilyJourneyCreateAccountScreen(
       journey: updatedJourney,
     ),
   ),
@@ -5980,23 +5980,10 @@ onButtonPressed: _continue,
 class FamilyJourneyCreateAccountScreen extends StatefulWidget {
   const FamilyJourneyCreateAccountScreen({
     super.key,
-    required this.familyName,
-    required this.childName,
-    required this.quietHoursEnabled,
-    required this.quietStartHour,
-    required this.quietStartMinute,
-    required this.quietEndHour,
-    required this.quietEndMinute,
+    required this.journey,
   });
 
-  final String familyName;
-  final String childName;
-
-  final bool quietHoursEnabled;
-  final int quietStartHour;
-  final int quietStartMinute;
-  final int quietEndHour;
-  final int quietEndMinute;
+  final FamilyJourneyData journey;
 
   @override
   State<FamilyJourneyCreateAccountScreen> createState() =>
@@ -6059,28 +6046,28 @@ class _FamilyJourneyCreateAccountScreenState
           .collection('parents')
           .doc(user.uid)
           .set({
-        'familyName': widget.familyName,
+        'familyName': widget.journey.familyName,
         'onboardingCompleted': false,
         'familyCreatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       // 3. Reuse the existing child-profile creation engine.
       final createdChild = await state.createChildProfile(
-        name: widget.childName,
+        name: widget.journey.childName,
       );
 
       // 4. Save the Quiet Hours selected earlier in onboarding.
       await state.saveQuietHoursForChild(
         parentId: user.uid,
         childId: createdChild.childId,
-        enabled: widget.quietHoursEnabled,
+        enabled: widget.journey.quietHoursEnabled,
         start: TimeOfDay(
-          hour: widget.quietStartHour,
-          minute: widget.quietStartMinute,
+          hour: widget.journey.quietStartHour,
+          minute: widget.journey.quietStartMinute,
         ),
         end: TimeOfDay(
-          hour: widget.quietEndHour,
-          minute: widget.quietEndMinute,
+          hour: widget.journey.quietEndHour,
+          minute: widget.journey.quietEndMinute,
         ),
       );
 
@@ -6175,8 +6162,8 @@ class _FamilyJourneyCreateAccountScreenState
       stage: JourneyStage.createAccount,
       title: 'Create your\nparent account.',
       subtitle:
-          "One last step. Create your secure parent space and we'll prepare everything for ${widget.childName}.",
-      buttonText: "Prepare ${widget.childName}'s Space",
+          "One last step. Create your secure parent space and we'll prepare everything for ${widget.journey.childName}.",
+      buttonText: "Prepare ${widget.journey.childName}'s Space",
       buttonEnabled: _canContinue && !_loading,
       isLoading: _loading,
       onButtonPressed: _createAccountAndFamily,
@@ -6332,47 +6319,6 @@ class _FamilyJourneyCreateAccountScreenState
   }
 }
 
-class FamilyJourneyReadyScreen extends StatelessWidget {
-  const FamilyJourneyReadyScreen({
-    super.key,
-    required this.journey,
-    required this.child,
-  });
-
-  final FamilyJourneyData journey;
-  final ParentChildProfile child;
-
-  Future<void> _copyCode(
-    BuildContext context,
-  ) async {
-    await Clipboard.setData(
-      ClipboardData(
-        text: child.accessCode,
-      ),
-    );
-
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Natter Code copied.',
-        ),
-      ),
-    );
-  }
-
-  void _enterParentSpace(
-    BuildContext context,
-  ) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      calmRoute(
-        const ParentHomeScreen(),
-      ),
-      (_) => false,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -6440,6 +6386,108 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                     'Enter this code on the device ${childName} will use.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
+class FamilyJourneyReadyScreen extends StatelessWidget {
+  const FamilyJourneyReadyScreen({
+    super.key,
+    required this.journey,
+    required this.child,
+  });
+
+  final FamilyJourneyData journey;
+  final ParentChildProfile child;
+
+  Future<void> _copyCode(BuildContext context) async {
+    await Clipboard.setData(
+      ClipboardData(
+        text: child.accessCode,
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Natter Code copied.'),
+      ),
+    );
+  }
+
+  void _enterParentSpace(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(
+        const ParentHomeScreen(),
+      ),
+      (_) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.ready,
+      title: "Your family\nis ready.",
+      subtitle:
+          "${child.name} now has a place in ${journey.familyName}.\nUse this code to begin their journey.",
+      buttonText: "Enter Parent Space",
+      onButtonPressed: () {
+        _enterParentSpace(context);
+      },
+      onBack: null,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 22,
+                vertical: 24,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(
+                  alpha: 0.12,
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(
+                    alpha: 0.16,
+                  ),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "${child.name}'s Natter Code",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(
+                        alpha: 0.74,
+                      ),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SelectableText(
+                    child.accessCode,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 6,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Enter this code on the device ${child.name} will use.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
                       color: Colors.white.withValues(
                         alpha: 0.72,
                       ),
@@ -6461,7 +6509,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                 size: 19,
               ),
               label: const Text(
-                'Copy Natter Code',
+                "Copy Natter Code",
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                 ),
