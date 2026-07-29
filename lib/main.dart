@@ -6101,9 +6101,9 @@ class _FamilyJourneyCreateAccountScreenState
         context,
         calmRoute(
           FamilyJourneyReadyScreen(
-            familyName: widget.familyName,
-            child: createdChild,
-          ),
+  journey: widget.journey,
+  child: createdChild,
+),
         ),
       );
     } on FirebaseAuthException catch (e) {
@@ -6336,9 +6336,11 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
   const FamilyJourneyReadyScreen({
     super.key,
     required this.journey,
+    required this.child,
   });
 
   final FamilyJourneyData journey;
+  final ParentChildProfile child;
 
   Future<void> _copyCode(
     BuildContext context,
@@ -6378,7 +6380,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
       stage: JourneyStage.ready,
       title: 'Your family\nis ready.',
       subtitle:
-          '${journey.childName} now has a place in $journey.familyName.\nUse this code to begin their journey.',
+          '${childName} now has a place in $journey.familyName.\nUse this code to begin their journey.',
       buttonText: 'Enter Parent Space',
       onButtonPressed: () {
         _enterParentSpace(context);
@@ -6412,7 +6414,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "${journey.childName}'s Natter Code",
+                    "${childName}'s Natter Code",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(
@@ -6435,7 +6437,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Enter this code on the device ${journey.childName} will use.',
+                    'Enter this code on the device ${childName} will use.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white.withValues(
