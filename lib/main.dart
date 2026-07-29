@@ -5155,6 +5155,68 @@ class BrandedAppBarTitle extends StatelessWidget {
 
 // ===== Screens =====
 
+class FamilyJourneyData {
+  const FamilyJourneyData({
+    this.familyName = '',
+    this.childName = '',
+    this.quietHoursEnabled = true,
+    this.quietStartHour = 20,
+    this.quietStartMinute = 0,
+    this.quietEndHour = 7,
+    this.quietEndMinute = 0,
+  });
+
+  final String familyName;
+  final String childName;
+
+  final bool quietHoursEnabled;
+
+  final int quietStartHour;
+  final int quietStartMinute;
+
+  final int quietEndHour;
+  final int quietEndMinute;
+
+  TimeOfDay get quietStart {
+    return TimeOfDay(
+      hour: quietStartHour,
+      minute: quietStartMinute,
+    );
+  }
+
+  TimeOfDay get quietEnd {
+    return TimeOfDay(
+      hour: quietEndHour,
+      minute: quietEndMinute,
+    );
+  }
+
+  FamilyJourneyData copyWith({
+    String? familyName,
+    String? childName,
+    bool? quietHoursEnabled,
+    int? quietStartHour,
+    int? quietStartMinute,
+    int? quietEndHour,
+    int? quietEndMinute,
+  }) {
+    return FamilyJourneyData(
+      familyName: familyName ?? this.familyName,
+      childName: childName ?? this.childName,
+      quietHoursEnabled:
+          quietHoursEnabled ?? this.quietHoursEnabled,
+      quietStartHour:
+          quietStartHour ?? this.quietStartHour,
+      quietStartMinute:
+          quietStartMinute ?? this.quietStartMinute,
+      quietEndHour:
+          quietEndHour ?? this.quietEndHour,
+      quietEndMinute:
+          quietEndMinute ?? this.quietEndMinute,
+    );
+  }
+}
+
 enum JourneyStage {
   welcome,
   createFamily,
@@ -5543,13 +5605,15 @@ class _FamilyJourneyCreateFamilyScreenState
     if (!mounted) return;
 
     Navigator.push(
-      context,
-      calmRoute(
-        FamilyJourneyWelcomeChildScreen(
-          familyName: familyName,
-        ),
+  context,
+  calmRoute(
+    FamilyJourneyWelcomeChildScreen(
+      journey: FamilyJourneyData(
+        familyName: familyName,
       ),
-    );
+    ),
+  ),
+);
   }
 
   @override
@@ -5627,11 +5691,11 @@ class _FamilyJourneyCreateFamilyScreenState
 class FamilyJourneyWelcomeChildScreen extends StatefulWidget {
   const FamilyJourneyWelcomeChildScreen({
     super.key,
-    required this.familyName,
+    required this.journey,
   });
 
-  final String familyName;
-
+  final FamilyJourneyData journey;
+  
   @override
   State<FamilyJourneyWelcomeChildScreen> createState() =>
       _FamilyJourneyWelcomeChildScreenState();
@@ -5663,14 +5727,15 @@ class _FamilyJourneyWelcomeChildScreenState
     if (!mounted) return;
 
     Navigator.push(
-      context,
-      calmRoute(
-        FamilyJourneyPreparePathScreen(
-          familyName: widget.familyName,
-          childName: childName,
-        ),
+  context,
+  calmRoute(
+    FamilyJourneyPreparePathScreen(
+      journey: widget.journey.copyWith(
+        childName: childName,
       ),
-    );
+    ),
+  ),
+);
   }
 
   @override
@@ -5679,7 +5744,7 @@ class _FamilyJourneyWelcomeChildScreenState
       stage: JourneyStage.welcomeChild,
       title: "Now, let's welcome\nyour child.",
       subtitle:
-          "A space made for them, within ${widget.familyName}.",
+    "A space made for them, within ${widget.journey.familyName}.",
       buttonText: "Welcome My Child",
       buttonEnabled: _canContinue,
       onButtonPressed: _continue,
@@ -5749,12 +5814,10 @@ class _FamilyJourneyWelcomeChildScreenState
 class FamilyJourneyPreparePathScreen extends StatefulWidget {
   const FamilyJourneyPreparePathScreen({
     super.key,
-    required this.familyName,
-    required this.childName,
+    required this.journey,
   });
 
-  final String familyName;
-  final String childName;
+  final FamilyJourneyData journey;
 
   @override
   State<FamilyJourneyPreparePathScreen> createState() =>
@@ -5763,17 +5826,23 @@ class FamilyJourneyPreparePathScreen extends StatefulWidget {
 
 class _FamilyJourneyPreparePathScreenState
     extends State<FamilyJourneyPreparePathScreen> {
-  bool _quietHoursEnabled = true;
+  late bool _quietHoursEnabled;
+late TimeOfDay _quietStart;
+late TimeOfDay _quietEnd;
 
-  TimeOfDay _quietStart = const TimeOfDay(
-    hour: 20,
-    minute: 0,
-  );
+@override
+void initState() {
+  super.initState();
 
-  TimeOfDay _quietEnd = const TimeOfDay(
-    hour: 7,
-    minute: 0,
-  );
+  _quietHoursEnabled =
+      widget.journey.quietHoursEnabled;
+
+  _quietStart =
+      widget.journey.quietStart;
+
+  _quietEnd =
+      widget.journey.quietEnd;
+}
 
   Future<void> _pickStartTime() async {
     final picked = await showTimePicker(
@@ -5808,20 +5877,22 @@ class _FamilyJourneyPreparePathScreenState
 
     if (!mounted) return;
 
-    Navigator.push(
-      context,
-      calmRoute(
-        FamilyJourneyCreateAccountScreen(
-  familyName: widget.familyName,
-  childName: widget.childName,
+    final updatedJourney = widget.journey.copyWith(
   quietHoursEnabled: _quietHoursEnabled,
   quietStartHour: _quietStart.hour,
   quietStartMinute: _quietStart.minute,
   quietEndHour: _quietEnd.hour,
   quietEndMinute: _quietEnd.minute,
-)
-      ),
-    );
+);
+
+Navigator.push(
+  context,
+  calmRoute(
+    FamilyJourneyReadyScreen(
+      journey: updatedJourney,
+    ),
+  ),
+);
   }
 
   @override
@@ -5830,7 +5901,7 @@ class _FamilyJourneyPreparePathScreenState
       stage: JourneyStage.preparePath,
 title: "Prepare their space.",
 subtitle:
-    "Every friendship needs a safe place to grow. Choose the daily rhythm that will help ${widget.childName} feel safe, rested and ready to connect.",
+    "Every friendship needs a safe place to grow. Choose the daily rhythm that will help ${widget.journey.childName} feel safe, rested and ready to connect.",
 buttonText: "Continue",
 onButtonPressed: _continue,
       onBack: () {
