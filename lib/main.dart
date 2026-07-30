@@ -5608,7 +5608,9 @@ Future<void> _continue() async {
       ),
 
       if (_status != null) ...[
-        NatterJourneyTheme.spaceMd,
+        const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -5620,7 +5622,9 @@ Future<void> _continue() async {
                 color: Colors.white,
               ),
             ),
-            NatterJourneyTheme.spaceSm,
+            const SizedBox(
+  height: NatterJourneyTheme.spaceSm,
+),
             Flexible(
               child: Text(
                 _status!,
@@ -5637,7 +5641,9 @@ Future<void> _continue() async {
       ],
 
       if (_error != null) ...[
-        NatterJourneyTheme.spaceLg,
+        const SizedBox(
+  height: NatterJourneyTheme.spaceLg,
+),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
@@ -5659,7 +5665,9 @@ Future<void> _continue() async {
                 color: Colors.white,
                 size: 20,
               ),
-              NatterJourneyTheme.spaceSm,
+              const SizedBox(
+  height: NatterJourneyTheme.spaceSm,
+),
               Expanded(
                 child: Text(
                   _error!,
@@ -6047,7 +6055,9 @@ onButtonPressed: _continue,
                 ),
               ),
               if (_quietHoursEnabled) ...[
-                NatterJourneyTheme.spaceMd,
+                const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
                 Row(
                   children: [
                     Expanded(
@@ -6057,7 +6067,9 @@ onButtonPressed: _continue,
                         onPick: _pickStartTime,
                       ),
                     ),
-                    NatterJourneyTheme.spaceSm,
+                    const SizedBox(
+  height: NatterJourneyTheme.spaceSm,
+),
                     Expanded(
                       child: _TimeButton(
                         label: "End",
@@ -6269,7 +6281,9 @@ InputDecoration _fieldDecoration({
   hintText: "Your name",
 ),
             ),
-            NatterJourneyTheme.spaceMd,
+            const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -6289,7 +6303,9 @@ InputDecoration _fieldDecoration({
   hintText: "Email address",
 ),
             ),
-            NatterJourneyTheme.spaceMd,
+            const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -6329,7 +6345,9 @@ InputDecoration _fieldDecoration({
                 ),
               ),
             ),
-            NatterJourneyTheme.spaceSm,
+            const SizedBox(
+  height: NatterJourneyTheme.spaceSm,
+),
             Text(
               'Use at least 6 characters.',
               textAlign: TextAlign.center,
@@ -6340,7 +6358,9 @@ InputDecoration _fieldDecoration({
               ),
             ),
             if (_error != null) ...[
-              NatterJourneyTheme.spaceLg,
+              const SizedBox(
+  height: NatterJourneyTheme.spaceLg,
+),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -6367,7 +6387,9 @@ InputDecoration _fieldDecoration({
                       color: Colors.white,
                       size: 20,
                     ),
-                    NatterJourneyTheme.spaceSm,
+                    const SizedBox(
+  height: NatterJourneyTheme.spaceSm,
+),
                     Expanded(
                       child: Text(
                         _error!,
@@ -6476,7 +6498,9 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  NatterJourneyTheme.spaceMd,
+                  const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
                   SelectableText(
                     child.accessCode,
                     textAlign: TextAlign.center,
@@ -6487,7 +6511,9 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                       letterSpacing: 6,
                     ),
                   ),
-                  NatterJourneyTheme.spaceMd,
+                  const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
                   Text(
                     "Enter this code on the device ${child.name} will use.",
                     textAlign: TextAlign.center,
@@ -6503,7 +6529,9 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                 ],
               ),
             ),
-            NatterJourneyTheme.spaceMd,
+            const SizedBox(
+  height: NatterJourneyTheme.spaceMd,
+),
             TextButton.icon(
               onPressed: () {
                 _copyCode(context);
