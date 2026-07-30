@@ -5769,7 +5769,7 @@ class _FamilyJourneyCreateFamilyScreenState
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
-          decoration: decoration: NatterJourneyTheme.textFieldDecoration(
+          decoration: NatterJourneyTheme.textFieldDecoration(
   hintText: "The Smith Family",
 ),
             filled: true,
@@ -5889,7 +5889,7 @@ class _FamilyJourneyWelcomeChildScreenState
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
-          decoration: decoration: NatterJourneyTheme.textFieldDecoration(
+          decoration: NatterJourneyTheme.textFieldDecoration(
   hintText: "Child's first name",
 ),
             filled: true,
