@@ -5397,6 +5397,7 @@ class NatterJourneyTheme {
           width: 1.8,
         ),
       ),
+      suffixIconColor: Colors.white.withValues(alpha: 0.72),
     );
   }
 }
@@ -5586,7 +5587,7 @@ Future<void> _continue() async {
       },
       child: ConstrainedBox(
   constraints: const BoxConstraints(
-    maxWidth: 460,
+    maxWidth: NatterJourneyTheme.formMaxWidth,
   ),
   child: Column(
     mainAxisSize: MainAxisSize.min,
@@ -5607,7 +5608,7 @@ Future<void> _continue() async {
       ),
 
       if (_status != null) ...[
-        const SizedBox(height: 16),
+        NatterJourneyTheme.spaceMd,
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -5619,7 +5620,7 @@ Future<void> _continue() async {
                 color: Colors.white,
               ),
             ),
-            const SizedBox(width: 10),
+            NatterJourneyTheme.spaceSm,
             Flexible(
               child: Text(
                 _status!,
@@ -5636,7 +5637,7 @@ Future<void> _continue() async {
       ],
 
       if (_error != null) ...[
-        const SizedBox(height: 18),
+        NatterJourneyTheme.spaceLg,
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
@@ -5658,7 +5659,7 @@ Future<void> _continue() async {
                 color: Colors.white,
                 size: 20,
               ),
-              const SizedBox(width: 10),
+              NatterJourneyTheme.spaceSm,
               Expanded(
                 child: Text(
                   _error!,
@@ -5740,7 +5741,7 @@ class _FamilyJourneyCreateFamilyScreenState
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: NatterJourneyTheme.formMaxWidth,
         ),
         child: TextField(
           controller: _familyNameController,
@@ -5760,12 +5761,9 @@ class _FamilyJourneyCreateFamilyScreenState
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
-          decoration: InputDecoration(
-            hintText: "e.g. The Smith Family",
-            hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.48),
-              fontWeight: FontWeight.w500,
-            ),
+          decoration: decoration: NatterJourneyTheme.textFieldDecoration(
+  hintText: "The Smith Family",
+),
             filled: true,
             fillColor: Colors.white.withValues(alpha: 0.10),
             contentPadding: const EdgeInsets.symmetric(
@@ -5863,7 +5861,7 @@ class _FamilyJourneyWelcomeChildScreenState
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: NatterJourneyTheme.formMaxWidth,
         ),
         child: TextField(
           controller: _childNameController,
@@ -5883,12 +5881,9 @@ class _FamilyJourneyWelcomeChildScreenState
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
-          decoration: InputDecoration(
-            hintText: "Child's first name",
-            hintStyle: TextStyle(
-              color: Colors.white.withValues(alpha: 0.48),
-              fontWeight: FontWeight.w500,
-            ),
+          decoration: decoration: NatterJourneyTheme.textFieldDecoration(
+  hintText: "Child's first name",
+),
             filled: true,
             fillColor: Colors.white.withValues(alpha: 0.10),
             contentPadding: const EdgeInsets.symmetric(
@@ -6019,17 +6014,11 @@ onButtonPressed: _continue,
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: NatterJourneyTheme.formMaxWidth,
         ),
         child: Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-            ),
-          ),
+          decoration: NatterJourneyTheme.journeyCard(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -6058,7 +6047,7 @@ onButtonPressed: _continue,
                 ),
               ),
               if (_quietHoursEnabled) ...[
-                const SizedBox(height: 16),
+                NatterJourneyTheme.spaceMd,
                 Row(
                   children: [
                     Expanded(
@@ -6068,7 +6057,7 @@ onButtonPressed: _continue,
                         onPick: _pickStartTime,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    NatterJourneyTheme.spaceSm,
                     Expanded(
                       child: _TimeButton(
                         label: "End",
@@ -6227,16 +6216,16 @@ class _FamilyJourneyCreateAccountScreenState
     }
   }
 
-  InputDecoration _fieldDecoration({
-    required String hintText,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      hintText: hintText,
-      hintStyle: TextStyle(
-        color: Colors.white.withValues(alpha: 0.48),
-        fontWeight: FontWeight.w500,
-      ),
+InputDecoration _fieldDecoration({
+  required String hintText,
+  Widget? suffixIcon,
+}) {
+  return NatterJourneyTheme.textFieldDecoration(
+    hintText: hintText,
+  ).copyWith(
+    suffixIcon: suffixIcon,
+  );
+}
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: Colors.white.withValues(alpha: 0.10),
@@ -6284,7 +6273,7 @@ class _FamilyJourneyCreateAccountScreenState
             },
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: NatterJourneyTheme.formMaxWidth,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -6304,11 +6293,11 @@ class _FamilyJourneyCreateAccountScreenState
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
-              decoration: _fieldDecoration(
-                hintText: 'Your name',
-              ),
+              decoration: NatterJourneyTheme.textFieldDecoration(
+  hintText: "Your name",
+),
             ),
-            const SizedBox(height: 14),
+            NatterJourneyTheme.spaceMd,
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -6324,11 +6313,11 @@ class _FamilyJourneyCreateAccountScreenState
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
               ),
-              decoration: _fieldDecoration(
-                hintText: 'Email address',
-              ),
+              decoration: NatterJourneyTheme.textFieldDecoration(
+  hintText: "Email address",
+),
             ),
-            const SizedBox(height: 14),
+            NatterJourneyTheme.spaceMd,
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -6368,7 +6357,7 @@ class _FamilyJourneyCreateAccountScreenState
                 ),
               ),
             ),
-            const SizedBox(height: 10),
+            NatterJourneyTheme.spaceSm,
             Text(
               'Use at least 6 characters.',
               textAlign: TextAlign.center,
@@ -6379,7 +6368,7 @@ class _FamilyJourneyCreateAccountScreenState
               ),
             ),
             if (_error != null) ...[
-              const SizedBox(height: 18),
+              NatterJourneyTheme.spaceLg,
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -6406,7 +6395,7 @@ class _FamilyJourneyCreateAccountScreenState
                       color: Colors.white,
                       size: 20,
                     ),
-                    const SizedBox(width: 10),
+                    NatterJourneyTheme.spaceSm,
                     Expanded(
                       child: Text(
                         _error!,
@@ -6479,7 +6468,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
       onBack: null,
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: 460,
+          maxWidth: NatterJourneyTheme.formMaxWidth,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -6515,7 +6504,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  NatterJourneyTheme.spaceMd,
                   SelectableText(
                     child.accessCode,
                     textAlign: TextAlign.center,
@@ -6526,7 +6515,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                       letterSpacing: 6,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  NatterJourneyTheme.spaceMd,
                   Text(
                     "Enter this code on the device ${child.name} will use.",
                     textAlign: TextAlign.center,
@@ -6542,7 +6531,7 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            NatterJourneyTheme.spaceMd,
             TextButton.icon(
               onPressed: () {
                 _copyCode(context);
