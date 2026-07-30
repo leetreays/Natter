@@ -6226,34 +6226,6 @@ InputDecoration _fieldDecoration({
     suffixIcon: suffixIcon,
   );
 }
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white.withValues(alpha: 0.10),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 22,
-        vertical: 20,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(22),
-        borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(22),
-        borderSide: BorderSide(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(22),
-        borderSide: const BorderSide(
-          color: NatterBrand.blue,
-          width: 1.8,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
