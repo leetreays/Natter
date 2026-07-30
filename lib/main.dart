@@ -5772,7 +5772,6 @@ class _FamilyJourneyCreateFamilyScreenState
           decoration: NatterJourneyTheme.textFieldDecoration(
   hintText: "The Smith Family",
 ),
-          ),
         ),
       ),
     );
@@ -5867,35 +5866,9 @@ class _FamilyJourneyWelcomeChildScreenState
           decoration: NatterJourneyTheme.textFieldDecoration(
   hintText: "Child's first name",
 ),
-            filled: true,
-            fillColor: Colors.white.withValues(alpha: 0.10),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 22,
-              vertical: 20,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: BorderSide(
-                color: Colors.white.withValues(alpha: 0.12),
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(22),
-              borderSide: const BorderSide(
-                color: NatterBrand.blue,
-                width: 1.8,
-              ),
-            ),
           ),
         ),
       ),
-    );
   }
 }
 
