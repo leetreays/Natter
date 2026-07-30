@@ -191,11 +191,6 @@ class NatterJourneyScaffold extends StatelessWidget {
 
   final VoidCallback? onBack;
 
-  static const Color _nightNavy = Color(0xFF06112E);
-  static const Color _softWhite = Color(0xFFF8FAFC);
-  static const Color _warmWhite = Color(0xFFF4F0E6);
-  static const Color _natterGreen = Color(0xFFA4D35A);
-
   @override
   Widget build(BuildContext context) {
     final colours = stage.backgroundColours;
@@ -203,8 +198,8 @@ class NatterJourneyScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: colours.first,
       body: AnimatedContainer(
-        duration: const Duration(milliseconds: 700),
-        curve: Curves.easeInOutCubic,
+        duration: NatterJourneyTheme.backgroundDuration,
+curve: NatterJourneyTheme.backgroundCurve,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -229,8 +224,8 @@ class NatterJourneyScaffold extends StatelessWidget {
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-                        maxWidth: 760,
-                      ),
+  maxWidth: NatterJourneyTheme.contentMaxWidth,
+),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(
                           isWide ? 48 : 24,
@@ -262,27 +257,18 @@ class NatterJourneyScaffold extends StatelessWidget {
                   Text(
                     eyebrow!.toUpperCase(),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xBFFFFFFF),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.8,
-                    ),
+                    style: NatterJourneyTheme.eyebrow,
                   ),
                   const SizedBox(height: 16),
                 ],
 
                 Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _softWhite,
-                    fontSize: isWide ? 42 : 34,
-                    height: 1.12,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.8,
-                  ),
-                ),
+  title,
+  textAlign: TextAlign.center,
+  style: isWide
+      ? NatterJourneyTheme.wideTitle
+      : NatterJourneyTheme.title,
+),
 
                 if (subtitle != null &&
                     subtitle!.trim().isNotEmpty) ...[
@@ -294,12 +280,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                     child: Text(
                       subtitle!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xCCFFFFFF),
-                        fontSize: 16,
-                        height: 1.55,
-                        fontWeight: FontWeight.w400,
-                      ),
+                      style: NatterJourneyTheme.subtitle,
                     ),
                   ),
                 ],
@@ -323,15 +304,17 @@ class NatterJourneyScaffold extends StatelessWidget {
             ? onButtonPressed
             : null,
         style: FilledButton.styleFrom(
-          backgroundColor: _warmWhite,
-          foregroundColor: _nightNavy,
-          disabledBackgroundColor:
-              _warmWhite.withValues(alpha: 0.48),
-          disabledForegroundColor:
-              _nightNavy.withValues(alpha: 0.55),
+          backgroundColor: NatterJourneyTheme.warmWhite,
+foregroundColor: NatterJourneyTheme.nightNavy,
+disabledBackgroundColor:
+    NatterJourneyTheme.warmWhite.withValues(alpha: 0.48),
+disabledForegroundColor:
+    NatterJourneyTheme.nightNavy.withValues(alpha: 0.55),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(
+  NatterJourneyTheme.buttonRadius,
+),
           ),
         ),
         child: isLoading
@@ -340,15 +323,12 @@ class NatterJourneyScaffold extends StatelessWidget {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2.2,
-                  color: _nightNavy,
+                  color: NatterJourneyTheme.nightNavy,
                 ),
               )
             : Text(
                 buttonText,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: NatterJourneyTheme.buttonLabel,
               ),
       ),
     ),
@@ -422,7 +402,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                 tooltip: 'Back',
                 icon: const Icon(
                   Icons.arrow_back_rounded,
-                  color: _softWhite,
+                  color: NatterJourneyTheme.softWhite,
                 ),
               ),
             ),
@@ -453,8 +433,8 @@ class _JourneyProgressIndicator extends StatelessWidget {
             final isCompleted = index <= currentIndex;
 
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutCubic,
+              duration: NatterJourneyTheme.progressDuration,
+curve: NatterJourneyTheme.progressCurve,
               width: isCompleted ? 18 : 7,
               height: 7,
               margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -5288,6 +5268,136 @@ extension JourneyStageDetails on JourneyStage {
           Color(0xFFDED2B5),
         ];
     }
+  }
+}
+
+class NatterJourneyTheme {
+  const NatterJourneyTheme._();
+
+  // Core colours
+  static const Color nightNavy = Color(0xFF06112E);
+  static const Color softWhite = Color(0xFFF8FAFC);
+  static const Color warmWhite = Color(0xFFF4F0E6);
+
+  // Journey accents
+  static const Color connectBlue = NatterBrand.blue;
+  static const Color protectPink = NatterBrand.pink;
+  static const Color growGreen = NatterBrand.green;
+  static const Color sparkGold = Color(0xFFE2BE68);
+
+  // Layout
+  static const double contentMaxWidth = 760;
+  static const double formMaxWidth = 460;
+
+  // Spacing
+  static const double spaceXs = 8;
+  static const double spaceSm = 12;
+  static const double spaceMd = 16;
+  static const double spaceLg = 20;
+  static const double spaceXl = 28;
+  static const double spaceXxl = 32;
+
+  // Shape
+  static const double fieldRadius = 22;
+  static const double cardRadius = 24;
+  static const double buttonRadius = 28;
+
+  // Motion
+  static const Duration backgroundDuration =
+      Duration(milliseconds: 700);
+
+  static const Duration progressDuration =
+      Duration(milliseconds: 350);
+
+  static const Curve backgroundCurve = Curves.easeInOutCubic;
+  static const Curve progressCurve = Curves.easeOutCubic;
+
+  // Typography
+  static const TextStyle eyebrow = TextStyle(
+    color: Color(0xBFFFFFFF),
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.8,
+  );
+
+  static const TextStyle title = TextStyle(
+    color: softWhite,
+    fontSize: 34,
+    height: 1.12,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.8,
+  );
+
+  static const TextStyle wideTitle = TextStyle(
+    color: softWhite,
+    fontSize: 42,
+    height: 1.12,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.8,
+  );
+
+  static const TextStyle subtitle = TextStyle(
+    color: Color(0xCCFFFFFF),
+    fontSize: 16,
+    height: 1.55,
+    fontWeight: FontWeight.w400,
+  );
+
+  static const TextStyle buttonLabel = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+  );
+
+  static const TextStyle secondaryButtonLabel = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+  );
+
+  static BoxDecoration journeyCard() {
+    return BoxDecoration(
+      color: Colors.white.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(cardRadius),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.12),
+      ),
+    );
+  }
+
+  static InputDecoration textFieldDecoration({
+    required String hintText,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      hintStyle: TextStyle(
+        color: Colors.white.withValues(alpha: 0.48),
+        fontWeight: FontWeight.w500,
+      ),
+      filled: true,
+      fillColor: Colors.white.withValues(alpha: 0.10),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 22,
+        vertical: 20,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(fieldRadius),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(fieldRadius),
+        borderSide: BorderSide(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(fieldRadius),
+        borderSide: const BorderSide(
+          color: connectBlue,
+          width: 1.8,
+        ),
+      ),
+    );
   }
 }
 
