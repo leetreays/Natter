@@ -5868,7 +5868,7 @@ class _FamilyJourneyWelcomeChildScreenState
 ),
           ),
         ),
-      ),
+      );
   }
 }
 
