@@ -6181,6 +6181,10 @@ class _FamilyJourneyCreateAccountScreenState
   final TextEditingController _passwordController =
       TextEditingController();
 
+  final FocusNode _parentNameFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
   bool _loading = false;
   bool _obscurePassword = true;
   String? _error;
@@ -6196,12 +6200,17 @@ class _FamilyJourneyCreateAccountScreenState
   }
 
   @override
-  void dispose() {
-    _parentNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+void dispose() {
+  _parentNameController.dispose();
+  _emailController.dispose();
+  _passwordController.dispose();
+
+  _parentNameFocusNode.dispose();
+  _emailFocusNode.dispose();
+  _passwordFocusNode.dispose();
+
+  super.dispose();
+}
 
   Future<void> _createAccountAndFamily() async {
     if (!_canContinue || _loading) return;
@@ -6332,55 +6341,67 @@ InputDecoration _fieldDecoration({
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: _parentNameController,
-              autofocus: true,
-              textCapitalization: TextCapitalization.words,
-              textInputAction: TextInputAction.next,
-              onChanged: (_) {
-                setState(() {
-                  _error = null;
-                });
-              },
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: NatterJourneyTheme.textFieldDecoration(
-  hintText: "Your name",
+  controller: _parentNameController,
+  focusNode: _parentNameFocusNode,
+  autofocus: true,
+  textCapitalization: TextCapitalization.words,
+  textInputAction: TextInputAction.next,
+  scrollPadding: const EdgeInsets.only(bottom: 180),
+  onChanged: (_) {
+    setState(() {
+      _error = null;
+    });
+  },
+  onSubmitted: (_) {
+    _emailFocusNode.requestFocus();
+  },
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+  ),
+  decoration: NatterJourneyTheme.textFieldDecoration(
+    hintText: "Your name",
+  ),
 ),
-            ),
             const SizedBox(
   height: NatterJourneyTheme.spaceMd,
 ),
             TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              autocorrect: false,
-              onChanged: (_) {
-                setState(() {
-                  _error = null;
-                });
-              },
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: NatterJourneyTheme.textFieldDecoration(
-  hintText: "Email address",
+  controller: _emailController,
+  focusNode: _emailFocusNode,
+  keyboardType: TextInputType.emailAddress,
+  textInputAction: TextInputAction.next,
+  scrollPadding: const EdgeInsets.only(bottom: 180),
+  autocorrect: false,
+  onChanged: (_) {
+    setState(() {
+      _error = null;
+    });
+  },
+  onSubmitted: (_) {
+    _passwordFocusNode.requestFocus();
+  },
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+  ),
+  decoration: NatterJourneyTheme.textFieldDecoration(
+    hintText: "Email address",
+  ),
 ),
-            ),
             const SizedBox(
   height: NatterJourneyTheme.spaceMd,
 ),
             TextField(
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              textInputAction: TextInputAction.done,
-              autocorrect: false,
-              enableSuggestions: false,
+  controller: _passwordController,
+  focusNode: _passwordFocusNode,
+  obscureText: _obscurePassword,
+  textInputAction: TextInputAction.done,
+  scrollPadding: const EdgeInsets.only(bottom: 180),
+  autocorrect: false,
+  enableSuggestions: false,
               onChanged: (_) {
                 setState(() {
                   _error = null;
