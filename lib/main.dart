@@ -171,8 +171,6 @@ class NatterJourneyScaffold extends StatelessWidget {
 
   final JourneyStage stage;
 
-  /// Pass the real Natter logo widget or Image.asset here.
-
   final String title;
   final String? eyebrow;
   final String? subtitle;
@@ -194,18 +192,15 @@ class NatterJourneyScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colours = stage.backgroundColours;
-
-    final keyboardInset =
-    MediaQuery.of(context).viewInsets.bottom;
-
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
     final keyboardVisible = keyboardInset > 0;
 
     return Scaffold(
-  resizeToAvoidBottomInset: false,
-  backgroundColor: colours.first,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: colours.first,
       body: AnimatedContainer(
         duration: NatterJourneyTheme.backgroundDuration,
-curve: NatterJourneyTheme.backgroundCurve,
+        curve: NatterJourneyTheme.backgroundCurve,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -222,180 +217,261 @@ curve: NatterJourneyTheme.backgroundCurve,
               ),
             ),
 
-            AnimatedPadding(
-  duration: const Duration(milliseconds: 220),
-  curve: Curves.easeOutCubic,
-  padding: EdgeInsets.only(
-    bottom: keyboardInset,
-  ),
-  child: SafeArea(
-    child: LayoutBuilder(
+            SafeArea(
+              child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 700;
 
                   return Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(
-  maxWidth: NatterJourneyTheme.contentMaxWidth,
-),
+                        maxWidth: NatterJourneyTheme.contentMaxWidth,
+                      ),
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(
                           isWide ? 48 : 24,
-                          20,
+                          12,
                           isWide ? 48 : 24,
-                          24,
+                          20,
                         ),
-                       child: Column(
-  children: [
-    _buildHeader(context),
+                        child: Column(
+                          children: [
+                            _buildJourneyHeader(
+                              context,
+                              keyboardVisible: keyboardVisible,
+                            ),
 
-    Expanded(
-      child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: constraints.maxHeight - 210,
-          ),
-          child: Padding(
-  padding: EdgeInsets.symmetric(
-    horizontal: isWide ? 44 : 0,
-    vertical: keyboardVisible
-        ? NatterJourneyTheme.spaceSm
-        : NatterJourneyTheme.spaceXl,
-  ),
-            child: Column(
-  mainAxisAlignment: keyboardVisible
-      ? MainAxisAlignment.start
-      : MainAxisAlignment.center,
-  children: [
-                if (eyebrow != null &&
-                    eyebrow!.trim().isNotEmpty) ...[
-                  Text(
-                    eyebrow!.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: NatterJourneyTheme.eyebrow,
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                            const SizedBox(
+                              height: NatterJourneyTheme.spaceSm,
+                            ),
 
-                Text(
-  title,
-  textAlign: TextAlign.center,
-  style: keyboardVisible
-    ? NatterJourneyTheme.title.copyWith(
-        fontSize: 28,
-      )
-    : isWide
-        ? NatterJourneyTheme.wideTitle
-        : NatterJourneyTheme.title,
-),
+                            Expanded(
+                              child: AnimatedPadding(
+                                duration:
+                                    const Duration(milliseconds: 220),
+                                curve: Curves.easeOutCubic,
+                                padding: EdgeInsets.only(
+                                  bottom: keyboardInset,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        physics:
+                                            const BouncingScrollPhysics(),
+                                        keyboardDismissBehavior:
+                                            ScrollViewKeyboardDismissBehavior
+                                                .onDrag,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: isWide ? 44 : 0,
+                                          vertical: keyboardVisible
+                                              ? NatterJourneyTheme.spaceXs
+                                              : NatterJourneyTheme.spaceLg,
+                                        ),
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minHeight: keyboardVisible
+                                                ? 0
+                                                : constraints.maxHeight - 330,
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                keyboardVisible
+                                                    ? MainAxisAlignment.start
+                                                    : MainAxisAlignment.center,
+                                            children: [
+                                              if (eyebrow != null &&
+                                                  eyebrow!
+                                                      .trim()
+                                                      .isNotEmpty) ...[
+                                                Text(
+                                                  eyebrow!.toUpperCase(),
+                                                  textAlign:
+                                                      TextAlign.center,
+                                                  style:
+                                                      NatterJourneyTheme
+                                                          .eyebrow,
+                                                ),
+                                                const SizedBox(
+                                                  height:
+                                                      NatterJourneyTheme
+                                                          .spaceMd,
+                                                ),
+                                              ],
 
-                if (subtitle != null &&
-                    subtitle!.trim().isNotEmpty) ...[
-                  const SizedBox(height: 20),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 480,
-                    ),
-                    child: Text(
-                      subtitle!,
-                      textAlign: TextAlign.center,
-                      style: NatterJourneyTheme.subtitle,
-                    ),
-                  ),
-                ],
+                                              Text(
+                                                title,
+                                                textAlign:
+                                                    TextAlign.center,
+                                                style: keyboardVisible
+                                                    ? NatterJourneyTheme
+                                                        .title
+                                                        .copyWith(
+                                                          fontSize: 28,
+                                                        )
+                                                    : isWide
+                                                        ? NatterJourneyTheme
+                                                            .wideTitle
+                                                        : NatterJourneyTheme
+                                                            .title,
+                                              ),
 
-                if (child != null) ...[
-                  SizedBox(
-  height: keyboardVisible
-      ? NatterJourneyTheme.spaceMd
-      : NatterJourneyTheme.spaceXxl,
-),
-                  child!,
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    ),
+                                              if (subtitle != null &&
+                                                  subtitle!
+                                                      .trim()
+                                                      .isNotEmpty) ...[
+                                                SizedBox(
+                                                  height: keyboardVisible
+                                                      ? NatterJourneyTheme
+                                                          .spaceSm
+                                                      : NatterJourneyTheme
+                                                          .spaceLg,
+                                                ),
+                                                ConstrainedBox(
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                    maxWidth: 480,
+                                                  ),
+                                                  child: Text(
+                                                    subtitle!,
+                                                    textAlign:
+                                                        TextAlign.center,
+                                                    style:
+                                                        NatterJourneyTheme
+                                                            .subtitle,
+                                                  ),
+                                                ),
+                                              ],
 
-    SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: FilledButton(
-        onPressed: buttonEnabled && !isLoading
-            ? onButtonPressed
-            : null,
-        style: FilledButton.styleFrom(
-          backgroundColor: NatterJourneyTheme.warmWhite,
-foregroundColor: NatterJourneyTheme.nightNavy,
-disabledBackgroundColor:
-    NatterJourneyTheme.warmWhite.withValues(alpha: 0.48),
-disabledForegroundColor:
-    NatterJourneyTheme.nightNavy.withValues(alpha: 0.55),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-  NatterJourneyTheme.buttonRadius,
-),
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  color: NatterJourneyTheme.nightNavy,
-                ),
-              )
-            : Text(
-                buttonText,
-                style: NatterJourneyTheme.buttonLabel,
-              ),
-      ),
-    ),
+                                              if (child != null) ...[
+                                                SizedBox(
+                                                  height: keyboardVisible
+                                                      ? NatterJourneyTheme
+                                                          .spaceMd
+                                                      : NatterJourneyTheme
+                                                          .spaceXxl,
+                                                ),
+                                                child!,
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
 
-    if (!keyboardVisible &&
-    secondaryButtonText != null &&
-    onSecondaryButtonPressed != null) ...[
-  const SizedBox(height: 18),
+                                    const SizedBox(
+                                      height: NatterJourneyTheme.spaceSm,
+                                    ),
 
-  TextButton(
-    onPressed: onSecondaryButtonPressed,
-    style: TextButton.styleFrom(
-      foregroundColor: Colors.white.withValues(alpha: 0.78),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 10,
-      ),
-    ),
-    child: Text(
-      secondaryButtonText!,
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-],
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 54,
+                                      child: FilledButton(
+                                        onPressed:
+                                            buttonEnabled && !isLoading
+                                                ? onButtonPressed
+                                                : null,
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor:
+                                              NatterJourneyTheme
+                                                  .warmWhite,
+                                          foregroundColor:
+                                              NatterJourneyTheme
+                                                  .nightNavy,
+                                          disabledBackgroundColor:
+                                              NatterJourneyTheme
+                                                  .warmWhite
+                                                  .withValues(
+                                                    alpha: 0.48,
+                                                  ),
+                                          disabledForegroundColor:
+                                              NatterJourneyTheme
+                                                  .nightNavy
+                                                  .withValues(
+                                                    alpha: 0.55,
+                                                  ),
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                              NatterJourneyTheme
+                                                  .buttonRadius,
+                                            ),
+                                          ),
+                                        ),
+                                        child: isLoading
+                                            ? const SizedBox(
+                                                width: 22,
+                                                height: 22,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2.2,
+                                                  color:
+                                                      NatterJourneyTheme
+                                                          .nightNavy,
+                                                ),
+                                              )
+                                            : Text(
+                                                buttonText,
+                                                style:
+                                                    NatterJourneyTheme
+                                                        .buttonLabel,
+                                              ),
+                                      ),
+                                    ),
 
-    if (showProgress && !keyboardVisible) ...[
-      const SizedBox(height: 20),
-      _JourneyProgressIndicator(
-        currentIndex: stage.index,
-        totalSteps: JourneyStage.values.length,
-      ),
-    ],
-  ],
-),
+                                    if (!keyboardVisible &&
+                                        secondaryButtonText != null &&
+                                        onSecondaryButtonPressed !=
+                                            null) ...[
+                                      const SizedBox(
+                                        height:
+                                            NatterJourneyTheme.spaceSm,
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            onSecondaryButtonPressed,
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: Colors.white
+                                              .withValues(alpha: 0.78),
+                                          padding:
+                                              const EdgeInsets.symmetric(
+                                            horizontal: 18,
+                                            vertical: 10,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          secondaryButtonText!,
+                                          style:
+                                              NatterJourneyTheme
+                                                  .secondaryButtonLabel,
+                                        ),
+                                      ),
+                                    ],
+
+                                    if (showProgress &&
+                                        !keyboardVisible) ...[
+                                      const SizedBox(
+                                        height:
+                                            NatterJourneyTheme.spaceMd,
+                                      ),
+                                      _JourneyProgressIndicator(
+                                        currentIndex: stage.index,
+                                        totalSteps:
+                                            JourneyStage.values.length,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
               ),
-            ),
             ),
           ],
         ),
@@ -403,26 +479,19 @@ disabledForegroundColor:
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return SizedBox(
-      height: 72,
+  Widget _buildJourneyHeader(
+    BuildContext context, {
+    required bool keyboardVisible,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      height: keyboardVisible ? 90 : 122,
       child: Stack(
-        alignment: Alignment.center,
         children: [
-          Center(
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: Image.asset(
-  'assets/natter-logo.png',
-  fit: BoxFit.contain,
-),
-            ),
-          ),
-
           if (onBack != null)
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.topLeft,
               child: IconButton(
                 onPressed: onBack,
                 tooltip: 'Back',
@@ -432,6 +501,56 @@ disabledForegroundColor:
                 ),
               ),
             ),
+
+          Align(
+            alignment: Alignment.topCenter,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              width: keyboardVisible ? 48 : 62,
+              height: keyboardVisible ? 48 : 62,
+              child: Image.asset(
+                'assets/natter-logo.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              width: 116,
+              height: keyboardVisible ? 28 : 40,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: 18,
+                    bottom: 4,
+                    child: _JourneyLight(
+                      size: keyboardVisible ? 6 : 7,
+                      colour: NatterJourneyTheme.sparkGold,
+                    ),
+                  ),
+                  Positioned(
+                    left: 53,
+                    top: 0,
+                    child: _JourneyLight(
+                      size: keyboardVisible ? 7 : 9,
+                      colour: NatterJourneyTheme.sparkGold,
+                    ),
+                  ),
+                  Positioned(
+                    right: 18,
+                    bottom: 4,
+                    child: _JourneyLight(
+                      size: keyboardVisible ? 6 : 7,
+                      colour: NatterJourneyTheme.sparkGold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -486,30 +605,6 @@ class _JourneyAtmosphere extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Positioned(
-          top: 112,
-          left: MediaQuery.sizeOf(context).width * 0.34,
-          child: const _JourneyLight(
-            size: 7,
-            colour: Color(0xFFE2BE68),
-          ),
-        ),
-        Positioned(
-          top: 84,
-          left: MediaQuery.sizeOf(context).width * 0.49,
-          child: const _JourneyLight(
-            size: 9,
-            colour: Color(0xFFE2BE68),
-          ),
-        ),
-        Positioned(
-          top: 126,
-          left: MediaQuery.sizeOf(context).width * 0.61,
-          child: const _JourneyLight(
-            size: 7,
-            colour: Color(0xFFE2BE68),
-          ),
-        ),
         Positioned(
           left: -80,
           right: -80,
