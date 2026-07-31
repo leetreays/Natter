@@ -195,6 +195,10 @@ class NatterJourneyScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final colours = stage.backgroundColours;
 
+    final keyboardVisible =
+    
+    MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: colours.first,
       body: AnimatedContainer(
@@ -265,9 +269,13 @@ curve: NatterJourneyTheme.backgroundCurve,
                 Text(
   title,
   textAlign: TextAlign.center,
-  style: isWide
-      ? NatterJourneyTheme.wideTitle
-      : NatterJourneyTheme.title,
+  style: keyboardVisible
+    ? NatterJourneyTheme.title.copyWith(
+        fontSize: 28,
+      )
+    : isWide
+        ? NatterJourneyTheme.wideTitle
+        : NatterJourneyTheme.title,
 ),
 
                 if (subtitle != null &&
@@ -286,7 +294,11 @@ curve: NatterJourneyTheme.backgroundCurve,
                 ],
 
                 if (child != null) ...[
-                  const SizedBox(height: 32),
+                  SizedBox(
+  height: keyboardVisible
+      ? NatterJourneyTheme.spaceMd
+      : NatterJourneyTheme.spaceXxl,
+),
                   child!,
                 ],
               ],
