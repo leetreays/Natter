@@ -195,12 +195,14 @@ class NatterJourneyScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final colours = stage.backgroundColours;
 
-    final keyboardVisible =
-    
-    MediaQuery.of(context).viewInsets.bottom > 0;
+    final keyboardInset =
+    MediaQuery.of(context).viewInsets.bottom;
+
+    final keyboardVisible = keyboardInset > 0;
 
     return Scaffold(
-      backgroundColor: colours.first,
+  resizeToAvoidBottomInset: false,
+  backgroundColor: colours.first,
       body: AnimatedContainer(
         duration: NatterJourneyTheme.backgroundDuration,
 curve: NatterJourneyTheme.backgroundCurve,
@@ -220,8 +222,14 @@ curve: NatterJourneyTheme.backgroundCurve,
               ),
             ),
 
-            SafeArea(
-              child: LayoutBuilder(
+            AnimatedPadding(
+  duration: const Duration(milliseconds: 220),
+  curve: Curves.easeOutCubic,
+  padding: EdgeInsets.only(
+    bottom: keyboardInset,
+  ),
+  child: SafeArea(
+    child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isWide = constraints.maxWidth >= 700;
 
@@ -249,13 +257,17 @@ curve: NatterJourneyTheme.backgroundCurve,
             minHeight: constraints.maxHeight - 210,
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWide ? 44 : 0,
-              vertical: 28,
-            ),
+  padding: EdgeInsets.symmetric(
+    horizontal: isWide ? 44 : 0,
+    vertical: keyboardVisible
+        ? NatterJourneyTheme.spaceSm
+        : NatterJourneyTheme.spaceXl,
+  ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+  mainAxisAlignment: keyboardVisible
+      ? MainAxisAlignment.start
+      : MainAxisAlignment.center,
+  children: [
                 if (eyebrow != null &&
                     eyebrow!.trim().isNotEmpty) ...[
                   Text(
@@ -345,7 +357,8 @@ disabledForegroundColor:
       ),
     ),
 
-    if (secondaryButtonText != null &&
+    if (!keyboardVisible &&
+    secondaryButtonText != null &&
     onSecondaryButtonPressed != null) ...[
   const SizedBox(height: 18),
 
@@ -368,7 +381,7 @@ disabledForegroundColor:
   ),
 ],
 
-    if (showProgress) ...[
+    if (showProgress && !keyboardVisible) ...[
       const SizedBox(height: 20),
       _JourneyProgressIndicator(
         currentIndex: stage.index,
@@ -382,6 +395,7 @@ disabledForegroundColor:
                   );
                 },
               ),
+            ),
             ),
           ],
         ),
