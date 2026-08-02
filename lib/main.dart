@@ -695,54 +695,70 @@ class _JourneyLandscapePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final farPaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.19,
+        alpha: 0.16,
       );
 
     final middlePaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.43,
+        alpha: 0.38,
       );
 
     final foregroundPaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.88,
+        alpha: 0.86,
       );
 
-    // Soft distant ridge. Higher at both edges,
-    // leaving a gentle opening through the centre.
+    // Distant ridge:
+    // broad, soft and deliberately uneven.
     final farRidge = Path()
-      ..moveTo(0, size.height * 0.28)
+      ..moveTo(0, size.height * 0.24)
       ..cubicTo(
-        size.width * 0.09,
-        size.height * 0.38,
-        size.width * 0.16,
-        size.height * 0.48,
+        size.width * 0.05,
+        size.height * 0.30,
+        size.width * 0.11,
+        size.height * 0.42,
+        size.width * 0.18,
+        size.height * 0.39,
+      )
+      ..cubicTo(
         size.width * 0.25,
-        size.height * 0.46,
-      )
-      ..cubicTo(
-        size.width * 0.34,
-        size.height * 0.43,
-        size.width * 0.40,
-        size.height * 0.56,
-        size.width * 0.50,
-        size.height * 0.55,
-      )
-      ..cubicTo(
-        size.width * 0.60,
-        size.height * 0.54,
-        size.width * 0.67,
-        size.height * 0.43,
-        size.width * 0.75,
+        size.height * 0.35,
+        size.width * 0.30,
+        size.height * 0.48,
+        size.width * 0.38,
         size.height * 0.47,
       )
       ..cubicTo(
-        size.width * 0.85,
+        size.width * 0.45,
+        size.height * 0.46,
+        size.width * 0.50,
+        size.height * 0.55,
+        size.width * 0.58,
         size.height * 0.52,
-        size.width * 0.91,
-        size.height * 0.36,
+      )
+      ..cubicTo(
+        size.width * 0.66,
+        size.height * 0.49,
+        size.width * 0.69,
+        size.height * 0.39,
+        size.width * 0.76,
+        size.height * 0.42,
+      )
+      ..cubicTo(
+        size.width * 0.83,
+        size.height * 0.46,
+        size.width * 0.88,
+        size.height * 0.31,
+        size.width * 0.94,
+        size.height * 0.28,
+      )
+      ..cubicTo(
+        size.width * 0.97,
+        size.height * 0.26,
+        size.width * 0.99,
+        size.height * 0.23,
         size.width,
-        size.height * 0.30,
+        size.height * 0.20,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -753,49 +769,57 @@ class _JourneyLandscapePainter extends CustomPainter {
       farPaint,
     );
 
-    // Mid-ground valley walls, with uneven peaks
-    // and a wider low point around the centre.
+    // Middle ridge:
+    // uneven valley walls with an off-centre low point.
     final middleRidge = Path()
-      ..moveTo(0, size.height * 0.46)
+      ..moveTo(0, size.height * 0.42)
       ..cubicTo(
-        size.width * 0.07,
-        size.height * 0.48,
-        size.width * 0.12,
-        size.height * 0.60,
-        size.width * 0.20,
+        size.width * 0.06,
+        size.height * 0.45,
+        size.width * 0.10,
         size.height * 0.57,
+        size.width * 0.17,
+        size.height * 0.55,
       )
       ..cubicTo(
-        size.width * 0.28,
-        size.height * 0.54,
-        size.width * 0.34,
-        size.height * 0.67,
-        size.width * 0.43,
-        size.height * 0.64,
+        size.width * 0.25,
+        size.height * 0.52,
+        size.width * 0.29,
+        size.height * 0.65,
+        size.width * 0.37,
+        size.height * 0.63,
       )
       ..cubicTo(
-        size.width * 0.48,
+        size.width * 0.44,
+        size.height * 0.61,
+        size.width * 0.49,
+        size.height * 0.69,
+        size.width * 0.56,
+        size.height * 0.66,
+      )
+      ..cubicTo(
+        size.width * 0.64,
         size.height * 0.62,
-        size.width * 0.53,
-        size.height * 0.62,
-        size.width * 0.58,
-        size.height * 0.64,
-      )
-      ..cubicTo(
-        size.width * 0.67,
-        size.height * 0.68,
-        size.width * 0.72,
+        size.width * 0.68,
+        size.height * 0.50,
+        size.width * 0.75,
         size.height * 0.53,
-        size.width * 0.80,
-        size.height * 0.56,
       )
       ..cubicTo(
-        size.width * 0.89,
-        size.height * 0.60,
-        size.width * 0.93,
-        size.height * 0.47,
+        size.width * 0.82,
+        size.height * 0.56,
+        size.width * 0.86,
+        size.height * 0.45,
+        size.width * 0.91,
+        size.height * 0.42,
+      )
+      ..cubicTo(
+        size.width * 0.95,
+        size.height * 0.39,
+        size.width * 0.98,
+        size.height * 0.35,
         size.width,
-        size.height * 0.41,
+        size.height * 0.32,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -806,49 +830,57 @@ class _JourneyLandscapePainter extends CustomPainter {
       middlePaint,
     );
 
-    // Dark foreground. The side slopes climb
-    // into the frame while the central area stays lower.
+    // Foreground:
+    // stronger side slopes with a broad, lower valley floor.
     final foreground = Path()
-      ..moveTo(0, size.height * 0.62)
+      ..moveTo(0, size.height * 0.60)
       ..cubicTo(
-        size.width * 0.06,
-        size.height * 0.65,
-        size.width * 0.11,
-        size.height * 0.76,
-        size.width * 0.18,
+        size.width * 0.05,
+        size.height * 0.62,
+        size.width * 0.09,
+        size.height * 0.73,
+        size.width * 0.15,
+        size.height * 0.72,
+      )
+      ..cubicTo(
+        size.width * 0.22,
+        size.height * 0.70,
+        size.width * 0.27,
+        size.height * 0.82,
+        size.width * 0.35,
+        size.height * 0.81,
+      )
+      ..cubicTo(
+        size.width * 0.42,
+        size.height * 0.80,
+        size.width * 0.47,
+        size.height * 0.87,
+        size.width * 0.54,
+        size.height * 0.84,
+      )
+      ..cubicTo(
+        size.width * 0.61,
+        size.height * 0.81,
+        size.width * 0.66,
+        size.height * 0.72,
+        size.width * 0.73,
         size.height * 0.74,
       )
       ..cubicTo(
-        size.width * 0.27,
-        size.height * 0.71,
-        size.width * 0.32,
-        size.height * 0.83,
-        size.width * 0.41,
-        size.height * 0.80,
-      )
-      ..cubicTo(
-        size.width * 0.47,
-        size.height * 0.78,
-        size.width * 0.53,
-        size.height * 0.78,
-        size.width * 0.59,
-        size.height * 0.80,
-      )
-      ..cubicTo(
-        size.width * 0.68,
-        size.height * 0.83,
-        size.width * 0.73,
-        size.height * 0.70,
-        size.width * 0.82,
-        size.height * 0.73,
-      )
-      ..cubicTo(
-        size.width * 0.90,
-        size.height * 0.76,
-        size.width * 0.94,
+        size.width * 0.80,
+        size.height * 0.77,
+        size.width * 0.84,
+        size.height * 0.67,
+        size.width * 0.89,
         size.height * 0.64,
+      )
+      ..cubicTo(
+        size.width * 0.94,
+        size.height * 0.61,
+        size.width * 0.97,
+        size.height * 0.56,
         size.width,
-        size.height * 0.58,
+        size.height * 0.52,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
