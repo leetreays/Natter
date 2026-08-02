@@ -512,29 +512,32 @@ class NatterJourneyScaffold extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned(
-                  left: 18,
-                  bottom: 3,
-                  child: _JourneyLight(
-                    size: keyboardVisible ? 6 : 7,
-                    colour: sparkColours[1],
-                  ),
-                ),
+  left: 18,
+  bottom: 3,
+  child: _JourneyStageLight(
+    size: keyboardVisible ? 6 : 7,
+    targetColour: sparkColours[1],
+    delay: const Duration(milliseconds: 340),
+  ),
+),
                 Positioned(
-                  left: 53,
-                  top: 0,
-                  child: _JourneyLight(
-                    size: keyboardVisible ? 7 : 9,
-                    colour: sparkColours[0],
-                  ),
-                ),
+  left: 53,
+  top: 0,
+  child: _JourneyStageLight(
+    size: keyboardVisible ? 7 : 9,
+    targetColour: sparkColours[0],
+    delay: const Duration(milliseconds: 260),
+  ),
+),
                 Positioned(
-                  right: 18,
-                  bottom: 3,
-                  child: _JourneyLight(
-                    size: keyboardVisible ? 6 : 7,
-                    colour: sparkColours[2],
-                  ),
-                ),
+  right: 18,
+  bottom: 3,
+  child: _JourneyStageLight(
+    size: keyboardVisible ? 6 : 7,
+    targetColour: sparkColours[2],
+    delay: const Duration(milliseconds: 420),
+  ),
+),
               ],
             ),
           ),
@@ -688,7 +691,7 @@ class _JourneyLandscapePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final farPaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.20,
+        alpha: 0.19,
       );
 
     final middlePaint = Paint()
@@ -701,39 +704,41 @@ class _JourneyLandscapePainter extends CustomPainter {
         alpha: 0.88,
       );
 
+    // Soft distant ridge. Higher at both edges,
+    // leaving a gentle opening through the centre.
     final farRidge = Path()
-      ..moveTo(0, size.height * 0.62)
+      ..moveTo(0, size.height * 0.28)
       ..cubicTo(
-        size.width * 0.08,
-        size.height * 0.54,
-        size.width * 0.18,
-        size.height * 0.59,
-        size.width * 0.27,
-        size.height * 0.51,
+        size.width * 0.09,
+        size.height * 0.38,
+        size.width * 0.16,
+        size.height * 0.48,
+        size.width * 0.25,
+        size.height * 0.46,
       )
       ..cubicTo(
-        size.width * 0.36,
+        size.width * 0.34,
         size.height * 0.43,
-        size.width * 0.44,
-        size.height * 0.49,
-        size.width * 0.52,
+        size.width * 0.40,
+        size.height * 0.56,
+        size.width * 0.50,
+        size.height * 0.55,
+      )
+      ..cubicTo(
+        size.width * 0.60,
+        size.height * 0.54,
+        size.width * 0.67,
+        size.height * 0.43,
+        size.width * 0.75,
         size.height * 0.47,
       )
       ..cubicTo(
-        size.width * 0.64,
-        size.height * 0.44,
-        size.width * 0.71,
-        size.height * 0.54,
-        size.width * 0.79,
-        size.height * 0.48,
-      )
-      ..cubicTo(
-        size.width * 0.87,
-        size.height * 0.42,
-        size.width * 0.94,
-        size.height * 0.50,
+        size.width * 0.85,
+        size.height * 0.52,
+        size.width * 0.91,
+        size.height * 0.36,
         size.width,
-        size.height * 0.46,
+        size.height * 0.30,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -744,47 +749,49 @@ class _JourneyLandscapePainter extends CustomPainter {
       farPaint,
     );
 
+    // Mid-ground valley walls, with uneven peaks
+    // and a wider low point around the centre.
     final middleRidge = Path()
-      ..moveTo(0, size.height * 0.74)
+      ..moveTo(0, size.height * 0.46)
       ..cubicTo(
-        size.width * 0.09,
-        size.height * 0.66,
-        size.width * 0.16,
-        size.height * 0.69,
-        size.width * 0.24,
-        size.height * 0.61,
+        size.width * 0.07,
+        size.height * 0.48,
+        size.width * 0.12,
+        size.height * 0.60,
+        size.width * 0.20,
+        size.height * 0.57,
       )
       ..cubicTo(
-        size.width * 0.31,
+        size.width * 0.28,
         size.height * 0.54,
-        size.width * 0.39,
-        size.height * 0.60,
-        size.width * 0.46,
+        size.width * 0.34,
+        size.height * 0.67,
+        size.width * 0.43,
+        size.height * 0.64,
+      )
+      ..cubicTo(
+        size.width * 0.48,
+        size.height * 0.62,
+        size.width * 0.53,
+        size.height * 0.62,
+        size.width * 0.58,
+        size.height * 0.64,
+      )
+      ..cubicTo(
+        size.width * 0.67,
+        size.height * 0.68,
+        size.width * 0.72,
+        size.height * 0.53,
+        size.width * 0.80,
         size.height * 0.56,
       )
       ..cubicTo(
-        size.width * 0.55,
-        size.height * 0.51,
-        size.width * 0.63,
-        size.height * 0.63,
-        size.width * 0.71,
-        size.height * 0.58,
-      )
-      ..cubicTo(
-        size.width * 0.80,
-        size.height * 0.52,
-        size.width * 0.87,
-        size.height * 0.66,
-        size.width * 0.94,
+        size.width * 0.89,
         size.height * 0.60,
-      )
-      ..cubicTo(
-        size.width * 0.97,
-        size.height * 0.58,
-        size.width * 0.99,
-        size.height * 0.59,
+        size.width * 0.93,
+        size.height * 0.47,
         size.width,
-        size.height * 0.57,
+        size.height * 0.41,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -795,39 +802,49 @@ class _JourneyLandscapePainter extends CustomPainter {
       middlePaint,
     );
 
+    // Dark foreground. The side slopes climb
+    // into the frame while the central area stays lower.
     final foreground = Path()
-      ..moveTo(0, size.height * 0.88)
+      ..moveTo(0, size.height * 0.62)
       ..cubicTo(
-        size.width * 0.10,
+        size.width * 0.06,
+        size.height * 0.65,
+        size.width * 0.11,
         size.height * 0.76,
-        size.width * 0.21,
-        size.height * 0.85,
-        size.width * 0.30,
-        size.height * 0.72,
+        size.width * 0.18,
+        size.height * 0.74,
       )
       ..cubicTo(
-        size.width * 0.38,
-        size.height * 0.61,
-        size.width * 0.49,
-        size.height * 0.79,
-        size.width * 0.58,
-        size.height * 0.69,
+        size.width * 0.27,
+        size.height * 0.71,
+        size.width * 0.32,
+        size.height * 0.83,
+        size.width * 0.41,
+        size.height * 0.80,
+      )
+      ..cubicTo(
+        size.width * 0.47,
+        size.height * 0.78,
+        size.width * 0.53,
+        size.height * 0.78,
+        size.width * 0.59,
+        size.height * 0.80,
       )
       ..cubicTo(
         size.width * 0.68,
-        size.height * 0.58,
-        size.width * 0.77,
-        size.height * 0.80,
-        size.width * 0.86,
+        size.height * 0.83,
+        size.width * 0.73,
         size.height * 0.70,
+        size.width * 0.82,
+        size.height * 0.73,
       )
       ..cubicTo(
-        size.width * 0.92,
+        size.width * 0.90,
+        size.height * 0.76,
+        size.width * 0.94,
         size.height * 0.64,
-        size.width * 0.97,
-        size.height * 0.75,
         size.width,
-        size.height * 0.70,
+        size.height * 0.58,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
@@ -845,7 +862,7 @@ class _JourneyLandscapePainter extends CustomPainter {
   ) {
     return false;
   }
-}   
+}
 
 class _JourneyLight extends StatelessWidget {
   const _JourneyLight({
@@ -875,6 +892,94 @@ class _JourneyLight extends StatelessWidget {
     ],
   ),
 );
+  }
+}
+
+class _JourneyStageLight extends StatefulWidget {
+  const _JourneyStageLight({
+    required this.size,
+    required this.targetColour,
+    this.delay = Duration.zero,
+  });
+
+  final double size;
+  final Color targetColour;
+  final Duration delay;
+
+  @override
+  State<_JourneyStageLight> createState() =>
+      _JourneyStageLightState();
+}
+
+class _JourneyStageLightState
+    extends State<_JourneyStageLight> {
+  Color _displayColour =
+      NatterJourneyTheme.sparkGold;
+
+  @override
+  void initState() {
+    super.initState();
+    _animateToTarget();
+  }
+
+  @override
+  void didUpdateWidget(
+    covariant _JourneyStageLight oldWidget,
+  ) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.targetColour != widget.targetColour) {
+      _animateToTarget();
+    }
+  }
+
+  Future<void> _animateToTarget() async {
+    if (widget.targetColour ==
+        NatterJourneyTheme.sparkGold) {
+      if (!mounted) return;
+
+      setState(() {
+        _displayColour =
+            NatterJourneyTheme.sparkGold;
+      });
+
+      return;
+    }
+
+    if (widget.delay > Duration.zero) {
+      await Future<void>.delayed(widget.delay);
+    } else {
+      await Future<void>.delayed(
+        const Duration(milliseconds: 220),
+      );
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      _displayColour = widget.targetColour;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 1100),
+      curve: Curves.easeInOutCubic,
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        color: _displayColour,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: _displayColour.withValues(alpha: 0.42),
+            blurRadius: 14,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+    );
   }
 }
 
