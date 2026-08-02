@@ -66,7 +66,7 @@ class NatterBrand {
 
   static const navy = Color(0xFF06112E);
   static const radius = 24.0;
-  static const logoPath = 'assets/natter-logo-v2.png';
+  static const logoPath = 'assets/natter-logo-transBG.png';
 }
 
 enum AlertType { blockedWord, quietHours, contactRequest, safetyCoach }
