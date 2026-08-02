@@ -484,6 +484,7 @@ class NatterJourneyScaffold extends StatelessWidget {
   required bool keyboardVisible,
 }) {
   final sparkColours = stage.sparkColours;
+  final previousSparkColours = stage.previousSparkColours;
     
   return AnimatedContainer(
     duration: const Duration(milliseconds: 220),
@@ -516,6 +517,7 @@ class NatterJourneyScaffold extends StatelessWidget {
   bottom: 3,
   child: _JourneyStageLight(
     size: keyboardVisible ? 6 : 7,
+    initialColour: previousSparkColours[1],
     targetColour: sparkColours[1],
     delay: const Duration(milliseconds: 340),
   ),
@@ -525,6 +527,7 @@ class NatterJourneyScaffold extends StatelessWidget {
   top: 0,
   child: _JourneyStageLight(
     size: keyboardVisible ? 7 : 9,
+    initialColour: previousSparkColours[0],
     targetColour: sparkColours[0],
     delay: const Duration(milliseconds: 260),
   ),
@@ -534,6 +537,7 @@ class NatterJourneyScaffold extends StatelessWidget {
   bottom: 3,
   child: _JourneyStageLight(
     size: keyboardVisible ? 6 : 7,
+    initialColour: previousSparkColours[2],
     targetColour: sparkColours[2],
     delay: const Duration(milliseconds: 420),
   ),
@@ -898,11 +902,13 @@ class _JourneyLight extends StatelessWidget {
 class _JourneyStageLight extends StatefulWidget {
   const _JourneyStageLight({
     required this.size,
+    required this.initialColour,
     required this.targetColour,
     this.delay = Duration.zero,
   });
 
   final double size;
+  final Color initialColour;
   final Color targetColour;
   final Duration delay;
 
@@ -913,13 +919,17 @@ class _JourneyStageLight extends StatefulWidget {
 
 class _JourneyStageLightState
     extends State<_JourneyStageLight> {
-  Color _displayColour =
-      NatterJourneyTheme.sparkGold;
+  late Color _displayColour;
 
   @override
   void initState() {
     super.initState();
-    _animateToTarget();
+
+    _displayColour = widget.initialColour;
+
+    if (widget.initialColour != widget.targetColour) {
+      _animateToTarget();
+    }
   }
 
   @override
@@ -929,30 +939,20 @@ class _JourneyStageLightState
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.targetColour != widget.targetColour) {
-      _animateToTarget();
+      _displayColour = widget.initialColour;
+
+      if (widget.initialColour != widget.targetColour) {
+        _animateToTarget();
+      }
     }
   }
 
   Future<void> _animateToTarget() async {
-    if (widget.targetColour ==
-        NatterJourneyTheme.sparkGold) {
-      if (!mounted) return;
-
-      setState(() {
-        _displayColour =
-            NatterJourneyTheme.sparkGold;
-      });
-
-      return;
-    }
-
-    if (widget.delay > Duration.zero) {
-      await Future<void>.delayed(widget.delay);
-    } else {
-      await Future<void>.delayed(
-        const Duration(milliseconds: 220),
-      );
-    }
+    await Future<void>.delayed(
+      widget.delay == Duration.zero
+          ? const Duration(milliseconds: 260)
+          : widget.delay,
+    );
 
     if (!mounted) return;
 
@@ -5745,6 +5745,31 @@ extension JourneyStageDetails on JourneyStage {
         NatterJourneyTheme.protectPink,
         NatterJourneyTheme.growGreen,
       ];
+  }
+  }
+  List<Color> get previousSparkColours {
+  switch (this) {
+    case JourneyStage.welcome:
+      return const [
+        NatterJourneyTheme.sparkGold,
+        NatterJourneyTheme.sparkGold,
+        NatterJourneyTheme.sparkGold,
+      ];
+
+    case JourneyStage.createFamily:
+      return JourneyStage.welcome.sparkColours;
+
+    case JourneyStage.welcomeChild:
+      return JourneyStage.createFamily.sparkColours;
+
+    case JourneyStage.preparePath:
+      return JourneyStage.welcomeChild.sparkColours;
+
+    case JourneyStage.createAccount:
+      return JourneyStage.preparePath.sparkColours;
+
+    case JourneyStage.ready:
+      return JourneyStage.createAccount.sparkColours;
   }
   }
 }
