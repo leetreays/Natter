@@ -241,9 +241,11 @@ class NatterJourneyScaffold extends StatelessWidget {
                               keyboardVisible: keyboardVisible,
                             ),
 
-                            const SizedBox(
-                              height: NatterJourneyTheme.spaceSm,
-                            ),
+                            SizedBox(
+  height: keyboardVisible
+      ? NatterJourneyTheme.spaceXs
+      : 4,
+),
 
                             Expanded(
                               child: AnimatedPadding(
@@ -480,81 +482,81 @@ class NatterJourneyScaffold extends StatelessWidget {
   }
 
   Widget _buildJourneyHeader(
-    BuildContext context, {
-    required bool keyboardVisible,
-  }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      height: keyboardVisible ? 90 : 122,
-      child: Stack(
-        children: [
-          if (onBack != null)
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                onPressed: onBack,
-                tooltip: 'Back',
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: NatterJourneyTheme.softWhite,
+  BuildContext context, {
+  required bool keyboardVisible,
+}) {
+  return AnimatedContainer(
+    duration: const Duration(milliseconds: 220),
+    curve: Curves.easeOutCubic,
+    height: keyboardVisible ? 94 : 126,
+    child: Stack(
+      children: [
+        if (onBack != null)
+          Align(
+            alignment: Alignment.topLeft,
+            child: IconButton(
+              onPressed: onBack,
+              tooltip: 'Back',
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: NatterJourneyTheme.softWhite,
+              ),
+            ),
+          ),
+
+        Align(
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: 116,
+            height: keyboardVisible ? 28 : 38,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 18,
+                  bottom: 3,
+                  child: _JourneyLight(
+                    size: keyboardVisible ? 6 : 7,
+                    colour: NatterJourneyTheme.sparkGold,
+                  ),
                 ),
-              ),
-            ),
-
-          Align(
-            alignment: Alignment.topCenter,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              width: keyboardVisible ? 48 : 62,
-              height: keyboardVisible ? 48 : 62,
-              child: Image.asset(
-                'assets/natter-logo.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              width: 116,
-              height: keyboardVisible ? 28 : 40,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 18,
-                    bottom: 4,
-                    child: _JourneyLight(
-                      size: keyboardVisible ? 6 : 7,
-                      colour: NatterJourneyTheme.sparkGold,
-                    ),
+                Positioned(
+                  left: 53,
+                  top: 0,
+                  child: _JourneyLight(
+                    size: keyboardVisible ? 7 : 9,
+                    colour: NatterJourneyTheme.sparkGold,
                   ),
-                  Positioned(
-                    left: 53,
-                    top: 0,
-                    child: _JourneyLight(
-                      size: keyboardVisible ? 7 : 9,
-                      colour: NatterJourneyTheme.sparkGold,
-                    ),
+                ),
+                Positioned(
+                  right: 18,
+                  bottom: 3,
+                  child: _JourneyLight(
+                    size: keyboardVisible ? 6 : 7,
+                    colour: NatterJourneyTheme.sparkGold,
                   ),
-                  Positioned(
-                    right: 18,
-                    bottom: 4,
-                    child: _JourneyLight(
-                      size: keyboardVisible ? 6 : 7,
-                      colour: NatterJourneyTheme.sparkGold,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            width: keyboardVisible ? 46 : 62,
+            height: keyboardVisible ? 46 : 62,
+            child: Image.asset(
+              'assets/natter-logo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }
 
 class _JourneyProgressIndicator extends StatelessWidget {
