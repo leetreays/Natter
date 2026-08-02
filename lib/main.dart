@@ -604,29 +604,180 @@ class _JourneyAtmosphere extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: [
-        Positioned(
-          left: -80,
-          right: -80,
-          bottom: -150,
-          child: Container(
-            height: 310,
-            decoration: const BoxDecoration(
-              gradient: RadialGradient(
-                radius: 0.9,
-                colors: [
-                  Color(0x4D06112E),
-                  Color(0xCC06112E),
-                ],
-              ),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.elliptical(500, 180),
+      children: const [
+        Positioned.fill(
+          child: CustomPaint(
+            painter: _JourneyStarPainter(),
+          ),
+        ),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              width: double.infinity,
+              height: 250,
+              child: CustomPaint(
+                painter: _JourneyLandscapePainter(),
               ),
             ),
           ),
         ),
       ],
     );
+  }
+}
+
+class _JourneyStarPainter extends CustomPainter {
+  const _JourneyStarPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final random = Random(27);
+
+    final faintStarPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.16);
+
+    final softStarPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.25);
+
+    final warmStarPaint = Paint()
+      ..color = NatterJourneyTheme.sparkGold.withValues(
+        alpha: 0.18,
+      );
+
+    for (var index = 0; index < 68; index++) {
+      final x = random.nextDouble() * size.width;
+
+      // Keep the stars mainly in the upper part of the sky.
+      final y = random.nextDouble() * size.height * 0.58;
+
+      final radius = index % 11 == 0
+          ? 1.25
+          : index % 5 == 0
+              ? 0.95
+              : 0.65;
+
+      final paint = index % 13 == 0
+          ? warmStarPaint
+          : index % 5 == 0
+              ? softStarPaint
+              : faintStarPaint;
+
+      canvas.drawCircle(
+        Offset(x, y),
+        radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(
+    covariant _JourneyStarPainter oldDelegate,
+  ) {
+    return false;
+  }
+}
+
+class _JourneyLandscapePainter extends CustomPainter {
+  const _JourneyLandscapePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final distantPaint = Paint()
+      ..color = NatterJourneyTheme.nightNavy.withValues(
+        alpha: 0.34,
+      );
+
+    final foregroundPaint = Paint()
+      ..color = NatterJourneyTheme.nightNavy.withValues(
+        alpha: 0.82,
+      );
+
+    final distantPath = Path()
+      ..moveTo(0, size.height * 0.56)
+      ..cubicTo(
+        size.width * 0.14,
+        size.height * 0.45,
+        size.width * 0.25,
+        size.height * 0.50,
+        size.width * 0.36,
+        size.height * 0.42,
+      )
+      ..cubicTo(
+        size.width * 0.48,
+        size.height * 0.33,
+        size.width * 0.61,
+        size.height * 0.48,
+        size.width * 0.72,
+        size.height * 0.40,
+      )
+      ..cubicTo(
+        size.width * 0.84,
+        size.height * 0.32,
+        size.width * 0.93,
+        size.height * 0.45,
+        size.width,
+        size.height * 0.39,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(
+      distantPath,
+      distantPaint,
+    );
+
+    final foregroundPath = Path()
+      ..moveTo(0, size.height * 0.70)
+      ..cubicTo(
+        size.width * 0.10,
+        size.height * 0.59,
+        size.width * 0.22,
+        size.height * 0.67,
+        size.width * 0.31,
+        size.height * 0.57,
+      )
+      ..cubicTo(
+        size.width * 0.41,
+        size.height * 0.47,
+        size.width * 0.51,
+        size.height * 0.58,
+        size.width * 0.61,
+        size.height * 0.53,
+      )
+      ..cubicTo(
+        size.width * 0.72,
+        size.height * 0.47,
+        size.width * 0.82,
+        size.height * 0.62,
+        size.width * 0.91,
+        size.height * 0.55,
+      )
+      ..cubicTo(
+        size.width * 0.96,
+        size.height * 0.51,
+        size.width * 0.99,
+        size.height * 0.55,
+        size.width,
+        size.height * 0.54,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(
+      foregroundPath,
+      foregroundPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(
+    covariant _JourneyLandscapePainter oldDelegate,
+  ) {
+    return false;
   }
 }
 
