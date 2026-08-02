@@ -28,6 +28,7 @@ flutter:
   assets:
     - assets/natter-logo-v2.png
     - assets/natter-logo.png
+    - assets/natter-logo-transBG.png
     - assets/chirp_welcome.png
     - assets/chirp_prompt.png
     - assets/chirp_reply.png
