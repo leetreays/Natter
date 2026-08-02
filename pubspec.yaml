@@ -27,6 +27,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/natter-logo-v2.png
+    - assets/natter-logo.png
     - assets/chirp_welcome.png
     - assets/chirp_prompt.png
     - assets/chirp_reply.png
