@@ -242,9 +242,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                             ),
 
                             SizedBox(
-  height: keyboardVisible
-      ? NatterJourneyTheme.spaceXs
-      : 4,
+  height: keyboardVisible ? 0 : 2,
 ),
 
                             Expanded(
@@ -485,6 +483,8 @@ class NatterJourneyScaffold extends StatelessWidget {
   BuildContext context, {
   required bool keyboardVisible,
 }) {
+  final sparkColours = stage.sparkColours;
+    
   return AnimatedContainer(
     duration: const Duration(milliseconds: 220),
     curve: Curves.easeOutCubic,
@@ -516,7 +516,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                   bottom: 3,
                   child: _JourneyLight(
                     size: keyboardVisible ? 6 : 7,
-                    colour: NatterJourneyTheme.sparkGold,
+                    colour: sparkColours[1],
                   ),
                 ),
                 Positioned(
@@ -524,7 +524,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                   top: 0,
                   child: _JourneyLight(
                     size: keyboardVisible ? 7 : 9,
-                    colour: NatterJourneyTheme.sparkGold,
+                    colour: sparkColours[0],
                   ),
                 ),
                 Positioned(
@@ -532,7 +532,7 @@ class NatterJourneyScaffold extends StatelessWidget {
                   bottom: 3,
                   child: _JourneyLight(
                     size: keyboardVisible ? 6 : 7,
-                    colour: NatterJourneyTheme.sparkGold,
+                    colour: sparkColours[2],
                   ),
                 ),
               ],
@@ -686,91 +686,155 @@ class _JourneyLandscapePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final distantPaint = Paint()
+    final farPaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.34,
+        alpha: 0.20,
+      );
+
+    final middlePaint = Paint()
+      ..color = NatterJourneyTheme.nightNavy.withValues(
+        alpha: 0.43,
       );
 
     final foregroundPaint = Paint()
       ..color = NatterJourneyTheme.nightNavy.withValues(
-        alpha: 0.82,
+        alpha: 0.88,
       );
 
-    final distantPath = Path()
-      ..moveTo(0, size.height * 0.56)
+    final farRidge = Path()
+      ..moveTo(0, size.height * 0.62)
       ..cubicTo(
-        size.width * 0.14,
-        size.height * 0.45,
-        size.width * 0.25,
-        size.height * 0.50,
+        size.width * 0.08,
+        size.height * 0.54,
+        size.width * 0.18,
+        size.height * 0.59,
+        size.width * 0.27,
+        size.height * 0.51,
+      )
+      ..cubicTo(
         size.width * 0.36,
-        size.height * 0.42,
+        size.height * 0.43,
+        size.width * 0.44,
+        size.height * 0.49,
+        size.width * 0.52,
+        size.height * 0.47,
       )
       ..cubicTo(
-        size.width * 0.48,
-        size.height * 0.33,
-        size.width * 0.61,
+        size.width * 0.64,
+        size.height * 0.44,
+        size.width * 0.71,
+        size.height * 0.54,
+        size.width * 0.79,
         size.height * 0.48,
-        size.width * 0.72,
-        size.height * 0.40,
       )
       ..cubicTo(
-        size.width * 0.84,
-        size.height * 0.32,
-        size.width * 0.93,
-        size.height * 0.45,
+        size.width * 0.87,
+        size.height * 0.42,
+        size.width * 0.94,
+        size.height * 0.50,
         size.width,
-        size.height * 0.39,
+        size.height * 0.46,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
 
     canvas.drawPath(
-      distantPath,
-      distantPaint,
+      farRidge,
+      farPaint,
     );
 
-    final foregroundPath = Path()
-      ..moveTo(0, size.height * 0.70)
+    final middleRidge = Path()
+      ..moveTo(0, size.height * 0.74)
       ..cubicTo(
-        size.width * 0.10,
-        size.height * 0.59,
-        size.width * 0.22,
-        size.height * 0.67,
+        size.width * 0.09,
+        size.height * 0.66,
+        size.width * 0.16,
+        size.height * 0.69,
+        size.width * 0.24,
+        size.height * 0.61,
+      )
+      ..cubicTo(
         size.width * 0.31,
-        size.height * 0.57,
-      )
-      ..cubicTo(
-        size.width * 0.41,
-        size.height * 0.47,
-        size.width * 0.51,
-        size.height * 0.58,
-        size.width * 0.61,
-        size.height * 0.53,
-      )
-      ..cubicTo(
-        size.width * 0.72,
-        size.height * 0.47,
-        size.width * 0.82,
-        size.height * 0.62,
-        size.width * 0.91,
-        size.height * 0.55,
-      )
-      ..cubicTo(
-        size.width * 0.96,
-        size.height * 0.51,
-        size.width * 0.99,
-        size.height * 0.55,
-        size.width,
         size.height * 0.54,
+        size.width * 0.39,
+        size.height * 0.60,
+        size.width * 0.46,
+        size.height * 0.56,
+      )
+      ..cubicTo(
+        size.width * 0.55,
+        size.height * 0.51,
+        size.width * 0.63,
+        size.height * 0.63,
+        size.width * 0.71,
+        size.height * 0.58,
+      )
+      ..cubicTo(
+        size.width * 0.80,
+        size.height * 0.52,
+        size.width * 0.87,
+        size.height * 0.66,
+        size.width * 0.94,
+        size.height * 0.60,
+      )
+      ..cubicTo(
+        size.width * 0.97,
+        size.height * 0.58,
+        size.width * 0.99,
+        size.height * 0.59,
+        size.width,
+        size.height * 0.57,
       )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
 
     canvas.drawPath(
-      foregroundPath,
+      middleRidge,
+      middlePaint,
+    );
+
+    final foreground = Path()
+      ..moveTo(0, size.height * 0.88)
+      ..cubicTo(
+        size.width * 0.10,
+        size.height * 0.76,
+        size.width * 0.21,
+        size.height * 0.85,
+        size.width * 0.30,
+        size.height * 0.72,
+      )
+      ..cubicTo(
+        size.width * 0.38,
+        size.height * 0.61,
+        size.width * 0.49,
+        size.height * 0.79,
+        size.width * 0.58,
+        size.height * 0.69,
+      )
+      ..cubicTo(
+        size.width * 0.68,
+        size.height * 0.58,
+        size.width * 0.77,
+        size.height * 0.80,
+        size.width * 0.86,
+        size.height * 0.70,
+      )
+      ..cubicTo(
+        size.width * 0.92,
+        size.height * 0.64,
+        size.width * 0.97,
+        size.height * 0.75,
+        size.width,
+        size.height * 0.70,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+
+    canvas.drawPath(
+      foreground,
       foregroundPaint,
     );
   }
@@ -781,7 +845,7 @@ class _JourneyLandscapePainter extends CustomPainter {
   ) {
     return false;
   }
-}
+}   
 
 class _JourneyLight extends StatelessWidget {
   const _JourneyLight({
@@ -794,21 +858,23 @@ class _JourneyLight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: colour,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: colour.withValues(alpha: 0.42),
-            blurRadius: 14,
-            spreadRadius: 2,
-          ),
-        ],
+    return AnimatedContainer(
+  duration: const Duration(milliseconds: 650),
+  curve: Curves.easeInOutCubic,
+  width: size,
+  height: size,
+  decoration: BoxDecoration(
+    color: colour,
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: colour.withValues(alpha: 0.42),
+        blurRadius: 14,
+        spreadRadius: 2,
       ),
-    );
+    ],
+  ),
+);
   }
 }
 
@@ -5542,6 +5608,39 @@ extension JourneyStageDetails on JourneyStage {
           Color(0xFFDED2B5),
         ];
     }
+  }
+  List<Color> get sparkColours {
+  switch (this) {
+    case JourneyStage.welcome:
+      return const [
+        NatterJourneyTheme.sparkGold,
+        NatterJourneyTheme.sparkGold,
+        NatterJourneyTheme.sparkGold,
+      ];
+
+    case JourneyStage.createFamily:
+    case JourneyStage.welcomeChild:
+      return const [
+        NatterJourneyTheme.connectBlue,
+        NatterJourneyTheme.sparkGold,
+        NatterJourneyTheme.sparkGold,
+      ];
+
+    case JourneyStage.preparePath:
+    case JourneyStage.createAccount:
+      return const [
+        NatterJourneyTheme.connectBlue,
+        NatterJourneyTheme.protectPink,
+        NatterJourneyTheme.sparkGold,
+      ];
+
+    case JourneyStage.ready:
+      return const [
+        NatterJourneyTheme.connectBlue,
+        NatterJourneyTheme.protectPink,
+        NatterJourneyTheme.growGreen,
+      ];
+  }
   }
 }
 
