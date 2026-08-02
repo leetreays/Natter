@@ -548,7 +548,7 @@ class NatterJourneyScaffold extends StatelessWidget {
             width: keyboardVisible ? 46 : 62,
             height: keyboardVisible ? 46 : 62,
             child: Image.asset(
-              'assets/natter-logo.png',
+              'assets/natter-logo-transBG.png',
               fit: BoxFit.contain,
             ),
           ),
