@@ -15395,7 +15395,7 @@ final isNewChild = realApprovedContacts.isEmpty;
             Align(
               alignment: Alignment.centerLeft,
               child: Image.asset(
-                'assets/natter-logo-v2.png',
+                'assets/natter-logo-transBG.png',
                 height: 64,
               ),
             ),
