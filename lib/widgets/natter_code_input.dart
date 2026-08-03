@@ -331,6 +331,11 @@ class _NatterCodeInputState
           autofocus: index == 0,
           textAlign: TextAlign.center,
           textAlignVertical: TextAlignVertical.center,
+          strutStyle: const StrutStyle(
+            fontSize: 23,
+           height: 1,
+           forceStrutHeight: true,
+          ),
           textCapitalization:
               TextCapitalization.characters,
           keyboardType: TextInputType.text,
@@ -358,14 +363,16 @@ class _NatterCodeInputState
             UpperCaseTextFormatter(),
           ],
           decoration: const InputDecoration(
-            counterText: '',
-            isDense: true,
-            filled: false,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding: EdgeInsets.zero,
-          ),
+  counterText: '',
+  isDense: true,
+  filled: false,
+  border: InputBorder.none,
+  enabledBorder: InputBorder.none,
+  focusedBorder: InputBorder.none,
+  contentPadding: EdgeInsets.only(
+    top: 3,
+  ),
+),
           onTap: () {
             _placeCursorAtEnd(index);
           },
