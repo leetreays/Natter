@@ -5971,6 +5971,33 @@ Widget build(BuildContext context) {
         ),
       );
     },
+    const SizedBox(height: 28),
+
+Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Text(
+      'Already using Natter?',
+      style: NatterJourneyTheme.subtitle.copyWith(
+        fontSize: 14,
+        color: Colors.white.withValues(alpha: 0.72),
+      ),
+    ),
+    TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          calmRoute(
+            const ParentAuthScreen(),
+          ),
+        );
+      },
+      child: const Text(
+        'Sign in',
+      ),
+    ),
+  ],
+),
   );
 }
 }
