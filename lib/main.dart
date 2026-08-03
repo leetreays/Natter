@@ -169,6 +169,7 @@ class NatterJourneyScaffold extends StatelessWidget {
     this.tertiaryButtonText,
     this.onTertiaryButtonPressed,
     this.onBack,
+    this.preserveJourneyLayoutWithKeyboard = false,
   });
 
   final JourneyStage stage;
@@ -193,6 +194,8 @@ class NatterJourneyScaffold extends StatelessWidget {
   final VoidCallback? onTertiaryButtonPressed;
 
   final VoidCallback? onBack;
+
+  final bool preserveJourneyLayoutWithKeyboard;
 
   @override
   Widget build(BuildContext context) {
@@ -280,10 +283,10 @@ class NatterJourneyScaffold extends StatelessWidget {
                                                 : constraints.maxHeight - 330,
                                           ),
                                           child: Column(
-                                            mainAxisAlignment:
-                                                keyboardVisible
-                                                    ? MainAxisAlignment.start
-                                                    : MainAxisAlignment.center,
+                                            mainAxisAlignment: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? MainAxisAlignment.start
+    : MainAxisAlignment.center,
                                             children: [
                                               if (eyebrow != null &&
                                                   eyebrow!
@@ -308,29 +311,24 @@ class NatterJourneyScaffold extends StatelessWidget {
                                                 title,
                                                 textAlign:
                                                     TextAlign.center,
-                                                style: keyboardVisible
-                                                    ? NatterJourneyTheme
-                                                        .title
-                                                        .copyWith(
-                                                          fontSize: 28,
-                                                        )
-                                                    : isWide
-                                                        ? NatterJourneyTheme
-                                                            .wideTitle
-                                                        : NatterJourneyTheme
-                                                            .title,
-                                              ),
+                                                style: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? NatterJourneyTheme.title.copyWith(
+        fontSize: 28,
+      )
+    : isWide
+        ? NatterJourneyTheme.wideTitle
+        : NatterJourneyTheme.title,
 
                                               if (subtitle != null &&
                                                   subtitle!
                                                       .trim()
                                                       .isNotEmpty) ...[
                                                 SizedBox(
-                                                  height: keyboardVisible
-                                                      ? NatterJourneyTheme
-                                                          .spaceSm
-                                                      : NatterJourneyTheme
-                                                          .spaceLg,
+                                                  height: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? NatterJourneyTheme.spaceSm
+    : NatterJourneyTheme.spaceLg,
                                                 ),
                                                 ConstrainedBox(
                                                   constraints:
@@ -350,11 +348,10 @@ class NatterJourneyScaffold extends StatelessWidget {
 
                                               if (child != null) ...[
                                                 SizedBox(
-                                                  height: keyboardVisible
-                                                      ? NatterJourneyTheme
-                                                          .spaceMd
-                                                      : NatterJourneyTheme
-                                                          .spaceXxl,
+                                                  height: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? NatterJourneyTheme.spaceMd
+    : NatterJourneyTheme.spaceXxl,
                                                 ),
                                                 child!,
                                               ],
@@ -517,7 +514,10 @@ class NatterJourneyScaffold extends StatelessWidget {
   return AnimatedContainer(
     duration: const Duration(milliseconds: 220),
     curve: Curves.easeOutCubic,
-    height: keyboardVisible ? 94 : 126,
+    height: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 94
+    : 126, 
     child: Stack(
       children: [
         if (onBack != null)
@@ -537,14 +537,20 @@ class NatterJourneyScaffold extends StatelessWidget {
           alignment: Alignment.topCenter,
           child: SizedBox(
             width: 116,
-            height: keyboardVisible ? 28 : 38,
+            height: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 28
+    : 38,
             child: Stack(
               children: [
                 Positioned(
   left: 18,
   bottom: 3,
   child: _JourneyStageLight(
-    size: keyboardVisible ? 6 : 7,
+    size: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 6
+    : 7,
     initialColour: previousSparkColours[1],
     targetColour: sparkColours[1],
     delay: const Duration(milliseconds: 340),
@@ -554,7 +560,10 @@ class NatterJourneyScaffold extends StatelessWidget {
   left: 53,
   top: 0,
   child: _JourneyStageLight(
-    size: keyboardVisible ? 7 : 9,
+    size: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 7
+    : 9,
     initialColour: previousSparkColours[0],
     targetColour: sparkColours[0],
     delay: const Duration(milliseconds: 260),
@@ -564,7 +573,10 @@ class NatterJourneyScaffold extends StatelessWidget {
   right: 18,
   bottom: 3,
   child: _JourneyStageLight(
-    size: keyboardVisible ? 6 : 7,
+    size: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 6
+    : 7,
     initialColour: previousSparkColours[2],
     targetColour: sparkColours[2],
     delay: const Duration(milliseconds: 420),
@@ -580,8 +592,14 @@ class NatterJourneyScaffold extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            width: keyboardVisible ? 46 : 62,
-            height: keyboardVisible ? 46 : 62,
+            width: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 46
+    : 62,
+height: keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard
+    ? 46
+    : 62,
             child: Image.asset(
               'assets/natter-logo-transBG.png',
               fit: BoxFit.contain,
@@ -6157,6 +6175,7 @@ Future<void> _continue() async {
       buttonText: 'Continue',
       buttonEnabled: _isComplete && !_loading,
       showProgress: false,
+      preserveJourneyLayoutWithKeyboard: true,
       onButtonPressed: _continue,
       onBack: () {
         Navigator.pop(context);
