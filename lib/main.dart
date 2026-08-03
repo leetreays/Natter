@@ -7435,31 +7435,45 @@ class ParentAuthScreen extends StatefulWidget {
   const ParentAuthScreen({super.key});
 
   @override
-  State<ParentAuthScreen> createState() => _ParentAuthScreenState();
+  State<ParentAuthScreen> createState() =>
+      _ParentAuthScreenState();
 }
 
-class _ParentAuthScreenState extends State<ParentAuthScreen> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _ParentAuthScreenState
+    extends State<ParentAuthScreen> {
+  final TextEditingController _emailController =
+      TextEditingController();
 
-  bool _isSignUp = true;
+  final TextEditingController _passwordController =
+      TextEditingController();
+
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
   bool _loading = false;
+  bool _obscurePassword = true;
   String? _error;
+
+  bool get _canContinue {
+    return _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.isNotEmpty;
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _signIn() async {
+    if (!_canContinue || _loading) return;
+
     final state = AppStateScope.of(context);
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
 
     setState(() {
       _loading = true;
@@ -7467,36 +7481,54 @@ class _ParentAuthScreenState extends State<ParentAuthScreen> {
     });
 
     try {
-      if (_isSignUp) {
-        if (name.isEmpty) {
-          throw Exception('Please enter your name.');
-        }
-
-        await state.signUpParent(
-          email: email,
-          password: password,
-          displayName: name,
-        );
-      } else {
-        await state.signInParent(
-          email: email,
-          password: password,
-        );
-      }
+      await state.signInParent(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
 
       if (!mounted) return;
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        calmRoute(const ParentHomeScreen()),
+        calmRoute(
+          const ParentHomeScreen(),
+        ),
+        (_) => false,
       );
     } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
       setState(() {
-        _error = e.message ?? 'Authentication failed.';
+        switch (e.code) {
+          case 'invalid-email':
+            _error =
+                'That email address does not look quite right.';
+            break;
+
+          case 'user-not-found':
+          case 'wrong-password':
+          case 'invalid-credential':
+            _error =
+                'We could not match that email and password.';
+            break;
+
+          case 'too-many-requests':
+            _error =
+                'There have been too many attempts. Please wait a moment and try again.';
+            break;
+
+          default:
+            _error =
+                e.message ?? 'We could not sign you in.';
+        }
       });
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
+        _error = e
+            .toString()
+            .replaceFirst('Exception: ', '');
       });
     } finally {
       if (mounted) {
@@ -7507,173 +7539,170 @@ class _ParentAuthScreenState extends State<ParentAuthScreen> {
     }
   }
 
-  InputDecoration _fieldDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.08),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.white, width: 1.2),
-      ),
+  InputDecoration _fieldDecoration({
+    required String hintText,
+    Widget? suffixIcon,
+  }) {
+    return NatterJourneyTheme.textFieldDecoration(
+      hintText: hintText,
+    ).copyWith(
+      suffixIcon: suffixIcon,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return ParentBrandScaffold(
-      child: Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
-        child: Container(
-          width: 520,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.24),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: Colors.white.withOpacity(0.12)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-                        const Text(
-                      'Parent Account',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                      ),
+    return NatterJourneyScaffold(
+      stage: JourneyStage.welcome,
+      title: 'Welcome back.',
+      subtitle:
+          "Sign in to continue your family's journey.",
+      buttonText: 'Sign In',
+      buttonEnabled: _canContinue && !_loading,
+      isLoading: _loading,
+      showProgress: false,
+      onButtonPressed: _signIn,
+      onBack: _loading
+          ? null
+          : () {
+              Navigator.pop(context);
+            },
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: NatterJourneyTheme.formMaxWidth,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _emailController,
+              focusNode: _emailFocusNode,
+              autofocus: true,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autocorrect: false,
+              enableSuggestions: false,
+              scrollPadding: const EdgeInsets.only(
+                bottom: 180,
+              ),
+              onChanged: (_) {
+                setState(() {
+                  _error = null;
+                });
+              },
+              onSubmitted: (_) {
+                _passwordFocusNode.requestFocus();
+              },
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: _fieldDecoration(
+                hintText: 'Email address',
+              ),
+            ),
+
+            const SizedBox(
+              height: NatterJourneyTheme.spaceMd,
+            ),
+
+            TextField(
+              controller: _passwordController,
+              focusNode: _passwordFocusNode,
+              obscureText: _obscurePassword,
+              textInputAction: TextInputAction.done,
+              autocorrect: false,
+              enableSuggestions: false,
+              scrollPadding: const EdgeInsets.only(
+                bottom: 180,
+              ),
+              onChanged: (_) {
+                setState(() {
+                  _error = null;
+                });
+              },
+              onSubmitted: (_) {
+                if (_canContinue) {
+                  _signIn();
+                }
+              },
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: _fieldDecoration(
+                hintText: 'Password',
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword =
+                          !_obscurePassword;
+                    });
+                  },
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+
+            if (_error != null) ...[
+              const SizedBox(
+                height: NatterJourneyTheme.spaceLg,
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withValues(
+                    alpha: 0.12,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.redAccent.withValues(
+                      alpha: 0.35,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      _isSignUp
-                          ? 'Create your parent account to manage safety, setup and child progress.'
-                          : 'Sign in to your parent account.',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                        height: 1.45,
-                      ),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.white,
+                      size: 20,
                     ),
-                    const SizedBox(height: 24),
-                    if (_isSignUp) ...[
-                      TextField(
-                        controller: _nameController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: _fieldDecoration('Your name'),
-                      ),
-                      const SizedBox(height: 14),
-                    ],
-                    TextField(
-                      controller: _emailController,
-                      style: const TextStyle(color: Colors.white),
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: _fieldDecoration('Email address'),
+                    const SizedBox(
+                      width: NatterJourneyTheme.spaceSm,
                     ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: true,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: _fieldDecoration('Password'),
-                    ),
-                    const SizedBox(height: 18),
-                    if (_error != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.14),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: Colors.redAccent.withOpacity(0.35),
-                          ),
-                        ),
-                        child: Text(
-                          _error!,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF0B80BB),
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        child: Text(
-                          _loading
-                              ? 'Please wait...'
-                              : (_isSignUp
-                                  ? 'Create Parent Account'
-                                  : 'Sign In'),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () {
-                              setState(() {
-                                _isSignUp = !_isSignUp;
-                                _error = null;
-                              });
-                            },
+                    Expanded(
                       child: Text(
-                        _isSignUp
-                            ? 'Already have a parent account? Sign in'
-                            : 'Need a parent account? Create one',
+                        _error!,
                         style: const TextStyle(
                           color: Colors.white,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    TextButton(
-                      onPressed: _loading
-                          ? null
-                          : () {
-                              Navigator.pop(context);
-                            },
-                      child: const Text(
-                        'Back',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w700,
+                          height: 1.35,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-        );
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 
