@@ -22,8 +22,10 @@ class NatterCodeInput extends StatefulWidget {
 
 class _NatterCodeInputState
     extends State<NatterCodeInput> {
-  late final List<TextEditingController> _controllers;
-  late final List<FocusNode> _focusNodes;
+  final TextEditingController _controller =
+      TextEditingController();
+
+  final FocusNode _focusNode = FocusNode();
 
   String _lastCompletedCode = '';
 
@@ -31,32 +33,21 @@ class _NatterCodeInputState
   void initState() {
     super.initState();
 
-    _controllers = List.generate(
-      widget.length,
-      (_) => TextEditingController(),
-    );
+    _focusNode.addListener(_handleFocusChanged);
 
-    _focusNodes = List.generate(
-      widget.length,
-      (_) => FocusNode(),
-    );
-
-    for (final focusNode in _focusNodes) {
-      focusNode.addListener(_handleFocusChanged);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
-    for (final controller in _controllers) {
-      controller.dispose();
-    }
+    _focusNode
+      ..removeListener(_handleFocusChanged)
+      ..dispose();
 
-    for (final focusNode in _focusNodes) {
-      focusNode
-        ..removeListener(_handleFocusChanged)
-        ..dispose();
-    }
+    _controller.dispose();
 
     super.dispose();
   }
@@ -67,29 +58,35 @@ class _NatterCodeInputState
     }
   }
 
-  String _normalise(String value) {
+  String _normaliseCode(String value) {
     return value
         .toUpperCase()
         .replaceAll(
           RegExp(r'[^A-Z0-9]'),
           '',
-        );
+        )
+        .characters
+        .take(widget.length)
+        .toString();
   }
 
-  String get _currentCode {
-    return _controllers
-        .map((controller) => controller.text)
-        .join();
-  }
+  void _handleChanged(String rawValue) {
+    final normalised = _normaliseCode(rawValue);
 
-  void _notifyChanged() {
-    final code = _currentCode;
+    if (_controller.text != normalised) {
+      _controller.value = TextEditingValue(
+        text: normalised,
+        selection: TextSelection.collapsed(
+          offset: normalised.length,
+        ),
+      );
+    }
 
-    widget.onChanged(code);
+    widget.onChanged(normalised);
 
-    if (code.length == widget.length) {
-      if (_lastCompletedCode != code) {
-        _lastCompletedCode = code;
+    if (normalised.length == widget.length) {
+      if (_lastCompletedCode != normalised) {
+        _lastCompletedCode = normalised;
         widget.onCompleted?.call();
       }
     } else {
@@ -101,135 +98,12 @@ class _NatterCodeInputState
     }
   }
 
-  void _placeCursorAtEnd(int index) {
-    final controller = _controllers[index];
+  void _requestFocus() {
+    _focusNode.requestFocus();
 
-    controller.selection = TextSelection.collapsed(
-      offset: controller.text.length,
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
     );
-  }
-
-  void _moveToCell(int index) {
-    if (index < 0 || index >= widget.length) return;
-
-    _focusNodes[index].requestFocus();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _placeCursorAtEnd(index);
-    });
-  }
-
-  void _handleChanged(
-    int index,
-    String rawValue,
-  ) {
-    final value = _normalise(rawValue);
-
-    // The current character has been deleted.
-    // Move focus to the preceding box ready for another deletion.
-    if (value.isEmpty) {
-      _controllers[index].clear();
-
-      if (index > 0) {
-        _moveToCell(index - 1);
-      }
-
-      _notifyChanged();
-      return;
-    }
-
-    // Supports pasting a complete or partial code.
-    if (value.length > 1) {
-      _distributeCharacters(
-        startIndex: index,
-        value: value,
-      );
-      return;
-    }
-
-    if (_controllers[index].text != value) {
-      _controllers[index].value = TextEditingValue(
-        text: value,
-        selection: const TextSelection.collapsed(
-          offset: 1,
-        ),
-      );
-    }
-
-    if (index < widget.length - 1) {
-      _moveToCell(index + 1);
-    } else {
-      _focusNodes[index].unfocus();
-    }
-
-    _notifyChanged();
-  }
-
-  void _distributeCharacters({
-    required int startIndex,
-    required String value,
-  }) {
-    final characters = _normalise(value).split('');
-
-    var destinationIndex = startIndex;
-
-    for (final character in characters) {
-      if (destinationIndex >= widget.length) break;
-
-      _controllers[destinationIndex].value =
-          TextEditingValue(
-        text: character,
-        selection: const TextSelection.collapsed(
-          offset: 1,
-        ),
-      );
-
-      destinationIndex++;
-    }
-
-    if (destinationIndex < widget.length) {
-      _moveToCell(destinationIndex);
-    } else {
-      _focusNodes.last.unfocus();
-    }
-
-    _notifyChanged();
-  }
-
-  KeyEventResult _handleKeyEvent(
-    int index,
-    KeyEvent event,
-  ) {
-    if (event is! KeyDownEvent &&
-        event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-
-    if (event.logicalKey !=
-        LogicalKeyboardKey.backspace) {
-      return KeyEventResult.ignored;
-    }
-
-    // A populated field is handled normally by TextField.
-    // Its onChanged callback then moves focus backwards.
-    if (_controllers[index].text.isNotEmpty) {
-      return KeyEventResult.ignored;
-    }
-
-    // Backspace in an already empty field:
-    // move backwards and remove the previous character.
-    if (index > 0) {
-      final previousIndex = index - 1;
-
-      _controllers[previousIndex].clear();
-      _moveToCell(previousIndex);
-      _notifyChanged();
-
-      return KeyEventResult.handled;
-    }
-
-    return KeyEventResult.ignored;
   }
 
   @override
@@ -237,156 +111,262 @@ class _NatterCodeInputState
     return LayoutBuilder(
       builder: (context, constraints) {
         const preferredCellWidth = 50.0;
-        const preferredCellHeight = 56.0;
-        const gap = 7.0;
+        const cellHeight = 58.0;
+        const preferredGap = 8.0;
+
+        final maxAvailableWidth = constraints.maxWidth;
+
+        final preferredTotalWidth =
+            (preferredCellWidth * widget.length) +
+                (preferredGap * (widget.length - 1));
+
+        final availableWidth = math.min(
+          preferredTotalWidth,
+          maxAvailableWidth,
+        );
+
+        final responsiveGap = maxAvailableWidth < 350
+            ? 5.0
+            : preferredGap;
 
         final totalGap =
-            gap * (widget.length - 1);
-
-        final availableCellWidth =
-            (constraints.maxWidth - totalGap) /
-                widget.length;
+            responsiveGap * (widget.length - 1);
 
         final cellWidth = math.min(
           preferredCellWidth,
-          availableCellWidth,
+          (availableWidth - totalGap) / widget.length,
         );
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.length,
-            (index) {
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index == widget.length - 1
-                      ? 0
-                      : gap,
-                ),
-                child: _buildCell(
-                  index: index,
-                  width: cellWidth,
-                  height: preferredCellHeight,
-                ),
-              );
-            },
+        final totalWidth =
+            (cellWidth * widget.length) + totalGap;
+
+        return Semantics(
+          label: 'Natter access code',
+          textField: true,
+          value: _controller.text,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _requestFocus,
+            child: SizedBox(
+              width: totalWidth,
+              height: cellHeight,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned.fill(
+                    child: AnimatedBuilder(
+                      animation: Listenable.merge([
+                        _controller,
+                        _focusNode,
+                      ]),
+                      builder: (context, _) {
+                        return CustomPaint(
+                          painter: _NatterCodePainter(
+                            code: _controller.text,
+                            length: widget.length,
+                            cellWidth: cellWidth,
+                            cellHeight: cellHeight,
+                            gap: responsiveGap,
+                            focused: _focusNode.hasFocus,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // One real input field handles typing, paste,
+                  // selection and backspace. It remains visually
+                  // hidden while the painter displays the code.
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    width: 1,
+                    height: 1,
+                    child: Opacity(
+                      opacity: 0,
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        autofocus: true,
+                        keyboardType: TextInputType.text,
+                        textCapitalization:
+                            TextCapitalization.characters,
+                        textInputAction: TextInputAction.done,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        smartDashesType:
+                            SmartDashesType.disabled,
+                        smartQuotesType:
+                            SmartQuotesType.disabled,
+                        maxLength: widget.length,
+                        maxLengthEnforcement:
+                            MaxLengthEnforcement.enforced,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z0-9]'),
+                          ),
+                          UpperCaseTextFormatter(),
+                          LengthLimitingTextInputFormatter(
+                            widget.length,
+                          ),
+                        ],
+                        decoration:
+                            const InputDecoration.collapsed(
+                          hintText: '',
+                        ),
+                        onChanged: _handleChanged,
+                        onSubmitted: (_) {
+                          if (_controller.text.length ==
+                              widget.length) {
+                            _focusNode.unfocus();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildCell({
-    required int index,
-    required double width,
-    required double height,
-  }) {
-    final focused = _focusNodes[index].hasFocus;
-    final completed =
-        _controllers[index].text.isNotEmpty;
+class _NatterCodePainter extends CustomPainter {
+  const _NatterCodePainter({
+    required this.code,
+    required this.length,
+    required this.cellWidth,
+    required this.cellHeight,
+    required this.gap,
+    required this.focused,
+  });
 
-    final borderColour = focused
-        ? const Color(0xFF3DA6F3)
-        : completed
-            ? Colors.white.withValues(alpha: 0.42)
-            : Colors.white.withValues(alpha: 0.20);
+  final String code;
+  final int length;
+  final double cellWidth;
+  final double cellHeight;
+  final double gap;
+  final bool focused;
 
-    final fillColour = focused
-        ? Colors.white.withValues(alpha: 0.16)
-        : completed
-            ? Colors.white.withValues(alpha: 0.12)
-            : Colors.white.withValues(alpha: 0.07);
+  @override
+  void paint(Canvas canvas, Size size) {
+    const radius = 17.0;
 
-    return Focus(
-      canRequestFocus: false,
-      onKeyEvent: (_, event) {
-        return _handleKeyEvent(index, event);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: fillColour,
-          borderRadius: BorderRadius.circular(17),
-          border: Border.all(
-            color: borderColour,
-            width: focused ? 1.8 : 1.1,
-          ),
-          boxShadow: focused
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF3DA6F3)
-                        .withValues(alpha: 0.16),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : const [],
-        ),
-        child: TextField(
-          controller: _controllers[index],
-          focusNode: _focusNodes[index],
-          autofocus: index == 0,
-          textAlign: TextAlign.center,
-          textAlignVertical: TextAlignVertical.center,
-          strutStyle: const StrutStyle(
-            fontSize: 23,
-           height: 1,
-           forceStrutHeight: true,
-          ),
-          textCapitalization:
-              TextCapitalization.characters,
-          keyboardType: TextInputType.text,
-          textInputAction:
-              index == widget.length - 1
-                  ? TextInputAction.done
-                  : TextInputAction.next,
-          autocorrect: false,
-          enableSuggestions: false,
-          smartDashesType: SmartDashesType.disabled,
-          smartQuotesType: SmartQuotesType.disabled,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 23,
-            fontWeight: FontWeight.w800,
-            height: 1,
-            letterSpacing: 0,
-          ),
-          cursorColor: Colors.white,
-          cursorHeight: 24,
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(
-              RegExp(r'[a-zA-Z0-9]'),
+    final activeIndex = code.length < length
+        ? code.length
+        : length - 1;
+
+    for (var index = 0; index < length; index++) {
+      final left = index * (cellWidth + gap);
+
+      final rect = Rect.fromLTWH(
+        left,
+        0,
+        cellWidth,
+        cellHeight,
+      );
+
+      final roundedRect = RRect.fromRectAndRadius(
+        rect,
+        const Radius.circular(radius),
+      );
+
+      final completed = index < code.length;
+
+      final active =
+          focused && index == activeIndex;
+
+      final fillColour = active
+          ? Colors.white.withValues(alpha: 0.16)
+          : completed
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.07);
+
+      final borderColour = active
+          ? const Color(0xFF3DA6F3)
+          : completed
+              ? Colors.white.withValues(alpha: 0.46)
+              : Colors.white.withValues(alpha: 0.20);
+
+      if (active) {
+        final glowPaint = Paint()
+          ..color = const Color(0xFF3DA6F3)
+              .withValues(alpha: 0.14)
+          ..maskFilter = const MaskFilter.blur(
+            BlurStyle.normal,
+            10,
+          );
+
+        canvas.drawRRect(
+          roundedRect.inflate(2),
+          glowPaint,
+        );
+      }
+
+      final fillPaint = Paint()
+        ..color = fillColour;
+
+      canvas.drawRRect(
+        roundedRect,
+        fillPaint,
+      );
+
+      final borderPaint = Paint()
+        ..color = borderColour
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = active ? 1.8 : 1.1;
+
+      canvas.drawRRect(
+        roundedRect,
+        borderPaint,
+      );
+
+      if (completed) {
+        final character = code[index];
+
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: character,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 23,
+              fontWeight: FontWeight.w800,
+              height: 1,
             ),
-            UpperCaseTextFormatter(),
-          ],
-          decoration: const InputDecoration(
-  counterText: '',
-  isDense: true,
-  filled: false,
-  border: InputBorder.none,
-  enabledBorder: InputBorder.none,
-  focusedBorder: InputBorder.none,
-  contentPadding: EdgeInsets.only(
-    top: 3,
-  ),
-),
-          onTap: () {
-            _placeCursorAtEnd(index);
-          },
-          onChanged: (value) {
-            _handleChanged(index, value);
-          },
-          onSubmitted: (_) {
-            if (index < widget.length - 1) {
-              _moveToCell(index + 1);
-            }
-          },
-        ),
-      ),
-    );
+          ),
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.ltr,
+        )..layout(
+            minWidth: 0,
+            maxWidth: cellWidth,
+          );
+
+        final textOffset = Offset(
+          left + ((cellWidth - textPainter.width) / 2),
+          (cellHeight - textPainter.height) / 2,
+        );
+
+        textPainter.paint(
+          canvas,
+          textOffset,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(
+    covariant _NatterCodePainter oldDelegate,
+  ) {
+    return oldDelegate.code != code ||
+        oldDelegate.length != length ||
+        oldDelegate.cellWidth != cellWidth ||
+        oldDelegate.cellHeight != cellHeight ||
+        oldDelegate.gap != gap ||
+        oldDelegate.focused != focused;
   }
 }
 
