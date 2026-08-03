@@ -8634,7 +8634,8 @@ class ParentHomeScreen extends StatelessWidget {
     final email = user?.email ?? 'Parent account';
 
     return ParentBrandScaffold(
-      child: SafeArea(
+  worldStage: NatterWorldStage.parentMorning,
+  child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             24,
@@ -20558,24 +20559,40 @@ class _KindnessScoreCard extends StatelessWidget {
 }
 
 class ParentBrandScaffold extends StatelessWidget {
-  final PreferredSizeWidget? appBar;
-  final Widget child;
-
   const ParentBrandScaffold({
     super.key,
     this.appBar,
     required this.child,
+    this.worldStage,
   });
+
+  final PreferredSizeWidget? appBar;
+  final Widget child;
+
+  /// When supplied, this parent screen lives inside NatterWorld.
+  ///
+  /// When null, the existing ParentSpaceBackground remains in use,
+  /// so older parent screens are unaffected while we migrate them
+  /// gradually.
+  final NatterWorldStage? worldStage;
 
   @override
   Widget build(BuildContext context) {
+    final body = worldStage == null
+        ? ParentSpaceBackground(
+            child: child,
+          )
+        : NatterWorld(
+            stage: worldStage!,
+            child: child,
+          );
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A3554),
-      extendBodyBehindAppBar: false,
+      backgroundColor: worldStage?.skyColours.first ??
+          const Color(0xFF0A3554),
+      extendBodyBehindAppBar: worldStage != null,
       appBar: appBar,
-      body: ParentSpaceBackground(
-        child: child,
-      ),
+      body: body,
     );
   }
 }
