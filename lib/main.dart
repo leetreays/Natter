@@ -7774,501 +7774,677 @@ ChildJourneyStatus journeyStatusForChild({
 class ParentHomeScreen extends StatelessWidget {
   const ParentHomeScreen({super.key});
 
-IconData _avatarIcon(String avatar) {
-  switch (avatar) {
-    case 'rocket':
-      return Icons.rocket_launch_rounded;
+  IconData _avatarIcon(String avatar) {
+    switch (avatar) {
+      case 'rocket':
+        return Icons.rocket_launch_rounded;
 
-    case 'owl':
-      return Icons.auto_awesome_rounded;
+      case 'owl':
+        return Icons.auto_awesome_rounded;
 
-    case 'star':
-      return Icons.star_rounded;
+      case 'star':
+        return Icons.star_rounded;
 
-    case 'moon':
-      return Icons.dark_mode_rounded;
+      case 'moon':
+        return Icons.dark_mode_rounded;
 
-    case 'heart':
-      return Icons.favorite_rounded;
+      case 'heart':
+        return Icons.favorite_rounded;
 
-    default:
-      return Icons.child_care_rounded;
+      default:
+        return Icons.child_care_rounded;
+    }
   }
-}
 
-Future<void> _leaveNatter(BuildContext context) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    barrierDismissible: true,
-    builder: (dialogContext) {
-      return AlertDialog(
-        backgroundColor: const Color(0xFF172A4D),
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(
-            color: Colors.white.withOpacity(0.12),
-          ),
-        ),
-        title: const Text(
-          'Leave Natter?',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        content: const Text(
-          "You'll be signed out of your family's account.\n\n"
-          'You can sign back in at any time from the welcome screen.',
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 15,
-            height: 1.5,
-          ),
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(
-          20,
-          0,
-          20,
-          18,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext, false);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white70,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-            ),
-            child: const Text(
-              'Stay',
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(dialogContext, true);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: NatterBrand.pink,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: const Text(
-              'Leave Natter',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
+  String _firstName(String? displayName) {
+    final trimmed = displayName?.trim() ?? '';
 
-  if (confirmed != true || !context.mounted) return;
+    if (trimmed.isEmpty) {
+      return 'Parent';
+    }
 
-  try {
-    await AppStateScope.of(context).signOutCurrentUser();
-
-    if (!context.mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      calmRoute(
-        const FamilyJourneyWelcomeScreen(),
-      ),
-      (_) => false,
-    );
-  } catch (error) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Could not leave Natter: $error',
-        ),
-      ),
-    );
+    return trimmed.split(RegExp(r'\s+')).first;
   }
-} 
-  
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final displayName = user?.displayName?.trim();
-    final greetingName =
-        (displayName != null && displayName.isNotEmpty) ? displayName : 'Parent';
 
-    return ParentBrandScaffold(
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row (
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: const Icon(
-                      Icons.shield_outlined,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Parent Home',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Signed in as ${user?.email ?? 'unknown email'}',
-                          style: TextStyle(
-  color: Colors.white.withOpacity(0.45),
-  fontSize: 13,
-  fontWeight: FontWeight.w500,
-),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-  tooltip: 'Leave Natter',
-  onPressed: () {
-    _leaveNatter(context);
-  },
-  icon: const Icon(
-    Icons.logout_rounded,
-    color: Colors.white,
-  ),
-),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Container(
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.12),
-                  ),
+  Future<void> _leaveNatter(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF172A4D),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(
+              color: Colors.white.withOpacity(0.12),
+            ),
+          ),
+          title: const Text(
+            'Leave Natter?',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          content: const Text(
+            "You'll be signed out of your family's account.\n\n"
+            'You can sign back in at any time from the welcome screen.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(
+            20,
+            0,
+            20,
+            18,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white70,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
                 ),
+              ),
+              child: const Text(
+                'Stay',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: NatterBrand.pink,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: const Text(
+                'Leave Natter',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await AppStateScope.of(context).signOutCurrentUser();
+
+      if (!context.mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        calmRoute(
+          const FamilyJourneyWelcomeScreen(),
+        ),
+        (_) => false,
+      );
+    } catch (error) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not leave Natter: $error',
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildHeader(
+    BuildContext context, {
+    required String greetingName,
+    required String email,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 58,
+          height: 58,
+          padding: const EdgeInsets.all(9),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+          child: Image.asset(
+            'assets/natter-logo-transBG.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hello, $greetingName',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 27,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.50),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          tooltip: 'Leave Natter',
+          onPressed: () {
+            _leaveNatter(context);
+          },
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.white.withOpacity(0.07),
+            foregroundColor: Colors.white70,
+            padding: const EdgeInsets.all(13),
+          ),
+          icon: const Icon(
+            Icons.logout_rounded,
+            size: 21,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIntroductionCard() {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.09),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.11),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: NatterBrand.green.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.family_restroom_rounded,
+                  color: NatterBrand.green,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome, $greetingName',
-                      style: const TextStyle(
+                      'Your family space',
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Your parent account is now active. From here, you will be able to create child profiles, manage safety settings and oversee progress with confidence.',
+                    SizedBox(height: 6),
+                    Text(
+                      'A calm place to support each child, prepare their settings and follow how their friendships grow.',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontSize: 15,
+                        fontSize: 14,
                         height: 1.5,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
-              StreamBuilder<List<ParentChildProfile>>(
-                stream: AppStateScope.of(context).parentChildrenStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.10),
-                        ),
-                      ),
-                      child: Text(
-                        'Could not load children: ${snapshot.error}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.16),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.10),
-                        ),
-                      ),
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-
-                  final children = snapshot.data ?? [];
-
-                  return Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.16),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.10),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Your family',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        if (children.isEmpty)
-                          const Text(
-                            'No child profiles yet.',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 15,
-                            ),
-                          )
-                        else
-                        ...children.map((child) {
-  return MouseRegion(
-    cursor: SystemMouseCursors.click,
-    child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () {
-          Navigator.push(
-            context,
-            calmRoute(ParentChildDetailScreen(child: child)),
-          );
-        },
-        child: Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ],
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Icon(
-                  _avatarIcon(child.avatar),
-                  color: Colors.white,
-                  size: 24,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.09),
+        ),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(Object? error) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.redAccent.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Colors.redAccent.withOpacity(0.24),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            color: Colors.white,
+            size: 21,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Could not load your family: $error',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChildCard(
+    BuildContext context,
+    ParentChildProfile child,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: () {
+            Navigator.push(
+              context,
+              calmRoute(
+                ParentChildDetailScreen(
+                  child: child,
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            child.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 17,
+            );
+          },
+          child: Ink(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 15,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C2A48),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.08),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.09),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _avatarIcon(child.avatar),
+                    color: Colors.white,
+                    size: 25,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              child.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 17,
+                              ),
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: child.linkedDevice
-                                ? NatterBrand.green.withOpacity(0.16)
-                                : Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            child.linkedDevice
-                                ? 'Device linked'
-                                : 'Device not linked',
-                            style: TextStyle(
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
                               color: child.linkedDevice
-                                  ? NatterBrand.green.withOpacity(0.95)
-                                  : Colors.white.withOpacity(0.62),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11,
+                                  ? NatterBrand.green.withOpacity(0.15)
+                                  : Colors.white.withOpacity(0.07),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              child.linkedDevice
+                                  ? 'Connected'
+                                  : 'Not connected',
+                              style: TextStyle(
+                                color: child.linkedDevice
+                                    ? NatterBrand.green
+                                    : Colors.white.withOpacity(0.58),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.05),
-                        ),
-                      ),
-                      child: Text(
-                        'Access code · ${child.accessCode}',
+                      const SizedBox(height: 8),
+                      Text(
+                        'Natter code  ·  ${child.accessCode}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.58),
-                          fontSize: 11,
+                          color: Colors.white.withOpacity(0.52),
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.white70,
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}).toList(),
-            ],
-          ),
-        );
-      },
-    ),        
-const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      calmRoute(const CreateChildProfileScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: NatterBrand.green,
-                    foregroundColor: Colors.black,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create Child Profile',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-  width: double.infinity,
-  child: OutlinedButton.icon(
-    onPressed: () {
-      _leaveNatter(context);
-    },
-    icon: const Icon(
-      Icons.logout_rounded,
-      size: 19,
-    ),
-    label: const Text(
-      'Leave Natter',
-      style: TextStyle(
-        fontWeight: FontWeight.w800,
-        fontSize: 16,
-      ),
-    ),
-    style: OutlinedButton.styleFrom(
-      foregroundColor: Colors.white70,
-      side: BorderSide(
-        color: Colors.white.withOpacity(0.28),
-      ),
-      padding: const EdgeInsets.symmetric(
-        vertical: 18,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
-    ),
-  ),
-),
-            ],
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.white54,
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-}
+
+  Widget _buildFamilyCard(
+    BuildContext context,
+    List<ParentChildProfile> children,
+  ) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+        18,
+        20,
+        18,
+        8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.14),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: Colors.white.withOpacity(0.09),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Your children',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '${children.length}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          if (children.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(
+                bottom: 18,
+              ),
+              child: Text(
+                'No child profiles yet. Welcome your first child when you are ready.',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.66),
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+            )
+          else
+            ...children.map(
+              (child) => _buildChildCard(
+                context,
+                child,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    final greetingName = _firstName(
+      user?.displayName,
+    );
+
+    final email = user?.email ?? 'Parent account';
+
+    return ParentBrandScaffold(
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            30,
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 720,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildHeader(
+                    context,
+                    greetingName: greetingName,
+                    email: email,
+                  ),
+
+                  const SizedBox(height: 26),
+
+                  _buildIntroductionCard(),
+
+                  const SizedBox(height: 20),
+
+                  StreamBuilder<List<ParentChildProfile>>(
+                    stream: AppStateScope.of(context)
+                        .parentChildrenStream(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return _buildErrorCard(
+                          snapshot.error,
+                        );
+                      }
+
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return _buildLoadingCard();
+                      }
+
+                      final children =
+                          snapshot.data ?? [];
+
+                      return _buildFamilyCard(
+                        context,
+                        children,
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          calmRoute(
+                            const CreateChildProfileScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.add_rounded,
+                        size: 22,
+                      ),
+                      label: const Text(
+                        'Welcome Another Child',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: NatterBrand.green,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(19),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        _leaveNatter(context);
+                      },
+                      icon: const Icon(
+                        Icons.logout_rounded,
+                        size: 19,
+                      ),
+                      label: const Text(
+                        'Leave Natter',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white60,
+                        side: BorderSide(
+                          color: Colors.white.withOpacity(0.20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 17,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(19),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}                        
 
 class _InsightDonutPainter extends CustomPainter {
   final double positiveFraction;
