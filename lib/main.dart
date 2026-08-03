@@ -7795,6 +7795,117 @@ IconData _avatarIcon(String avatar) {
       return Icons.child_care_rounded;
   }
 }
+
+Future<void> _leaveNatter(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    builder: (dialogContext) {
+      return AlertDialog(
+        backgroundColor: const Color(0xFF172A4D),
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.12),
+          ),
+        ),
+        title: const Text(
+          'Leave Natter?',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        content: const Text(
+          "You'll be signed out of your family's account.\n\n"
+          'You can sign back in at any time from the welcome screen.',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 15,
+            height: 1.5,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          20,
+          0,
+          20,
+          18,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white70,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 12,
+              ),
+            ),
+            child: const Text(
+              'Stay',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: NatterBrand.pink,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            child: const Text(
+              'Leave Natter',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true || !context.mounted) return;
+
+  try {
+    await AppStateScope.of(context).signOutCurrentUser();
+
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      calmRoute(
+        const FamilyJourneyWelcomeScreen(),
+      ),
+      (_) => false,
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Could not leave Natter: $error',
+        ),
+      ),
+    );
+  }
+} 
   
   @override
   Widget build(BuildContext context) {
@@ -7851,17 +7962,15 @@ IconData _avatarIcon(String avatar) {
                     ),
                   ),
                   IconButton(
-                    onPressed: () async {
-                      await AppStateScope.of(context).signOutCurrentUser();
-                      if (!context.mounted) return;
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        calmRoute(const GatewayScreen()),
-                        (_) => false,
-                      );
-                    },
-                    icon: const Icon(Icons.logout, color: Colors.white),
-                  ),
+  tooltip: 'Leave Natter',
+  onPressed: () {
+    _leaveNatter(context);
+  },
+  icon: const Icon(
+    Icons.logout_rounded,
+    color: Colors.white,
+  ),
+),
                 ],
               ),
               const SizedBox(height: 28),
@@ -8123,32 +8232,36 @@ const SizedBox(height: 24),
               ),
               const SizedBox(height: 12),
               SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      calmRoute(const GatewayScreen()),
-                      (_) => false,
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withOpacity(0.7)),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                  ),
-                  child: const Text(
-                    'Back to Welcome Screen',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
+  width: double.infinity,
+  child: OutlinedButton.icon(
+    onPressed: () {
+      _leaveNatter(context);
+    },
+    icon: const Icon(
+      Icons.logout_rounded,
+      size: 19,
+    ),
+    label: const Text(
+      'Leave Natter',
+      style: TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 16,
+      ),
+    ),
+    style: OutlinedButton.styleFrom(
+      foregroundColor: Colors.white70,
+      side: BorderSide(
+        color: Colors.white.withOpacity(0.28),
+      ),
+      padding: const EdgeInsets.symmetric(
+        vertical: 18,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    ),
+  ),
+),
             ],
           ),
         ),
