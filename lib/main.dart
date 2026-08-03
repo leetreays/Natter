@@ -166,6 +166,8 @@ class NatterJourneyScaffold extends StatelessWidget {
     this.isLoading = false,
     this.secondaryButtonText,
     this.onSecondaryButtonPressed,
+    this.tertiaryButtonText,
+    this.onTertiaryButtonPressed,
     this.onBack,
   });
 
@@ -186,6 +188,9 @@ class NatterJourneyScaffold extends StatelessWidget {
 
   final String? secondaryButtonText;
   final VoidCallback? onSecondaryButtonPressed;
+
+  final String? tertiaryButtonText;
+  final VoidCallback? onTertiaryButtonPressed;
 
   final VoidCallback? onBack;
 
@@ -448,6 +453,29 @@ class NatterJourneyScaffold extends StatelessWidget {
                                         ),
                                       ),
                                     ],
+                                    if (!keyboardVisible &&
+    tertiaryButtonText != null &&
+    onTertiaryButtonPressed != null) ...[
+  const SizedBox(
+    height: NatterJourneyTheme.spaceXs,
+  ),
+  TextButton(
+    onPressed: onTertiaryButtonPressed,
+    style: TextButton.styleFrom(
+      foregroundColor: Colors.white.withValues(alpha: 0.68),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 8,
+      ),
+    ),
+    child: Text(
+      tertiaryButtonText!,
+      style: NatterJourneyTheme.secondaryButtonLabel.copyWith(
+        fontSize: 14,
+      ),
+    ),
+  ),
+],
 
                                     if (showProgress &&
                                         !keyboardVisible) ...[
@@ -5941,50 +5969,42 @@ class FamilyJourneyWelcomeScreen extends StatelessWidget {
   const FamilyJourneyWelcomeScreen({super.key});
 
   @override
-Widget build(BuildContext context) {
-  return NatterJourneyScaffold(
-    stage: JourneyStage.welcome,
-    title: 'Every friendship begins\nwith a conversation.',
-    subtitle: 'Welcome to Natter.',
-    buttonText: "Let's Begin",
-    showProgress: true,
-    secondaryButtonText: 'I have a Natter Code',
-    onButtonPressed: () async {
-      await Future.delayed(
-        const Duration(milliseconds: 300),
-      );
+  Widget build(BuildContext context) {
+    return NatterJourneyScaffold(
+      stage: JourneyStage.welcome,
+      title: 'Every friendship begins\nwith a conversation.',
+      subtitle: 'Welcome to Natter.',
+      buttonText: "Let's Begin",
+      showProgress: true,
 
-      if (!context.mounted) return;
+      secondaryButtonText: 'I have a Natter Code',
+      tertiaryButtonText: 'Already using Natter? Sign in',
 
-      Navigator.push(
-        context,
-        calmRoute(
-          const FamilyJourneyCreateFamilyScreen(),
-        ),
-      );
-    },
-    onSecondaryButtonPressed: () {
-      Navigator.push(
-        context,
-        calmRoute(
-          const ChildJourneyCodeScreen(),
-        ),
-      );
-    },
-    const SizedBox(height: 28),
+      onButtonPressed: () async {
+        await Future.delayed(
+          const Duration(milliseconds: 300),
+        );
 
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Text(
-      'Already using Natter?',
-      style: NatterJourneyTheme.subtitle.copyWith(
-        fontSize: 14,
-        color: Colors.white.withValues(alpha: 0.72),
-      ),
-    ),
-    TextButton(
-      onPressed: () {
+        if (!context.mounted) return;
+
+        Navigator.push(
+          context,
+          calmRoute(
+            const FamilyJourneyCreateFamilyScreen(),
+          ),
+        );
+      },
+
+      onSecondaryButtonPressed: () {
+        Navigator.push(
+          context,
+          calmRoute(
+            const ChildJourneyCodeScreen(),
+          ),
+        );
+      },
+
+      onTertiaryButtonPressed: () {
         Navigator.push(
           context,
           calmRoute(
@@ -5992,14 +6012,8 @@ Row(
           ),
         );
       },
-      child: const Text(
-        'Sign in',
-      ),
-    ),
-  ],
-),
-  );
-}
+    );
+  }
 }
 
 class ChildJourneyCodeScreen extends StatefulWidget {
