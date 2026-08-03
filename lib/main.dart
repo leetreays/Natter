@@ -308,22 +308,20 @@ class NatterJourneyScaffold extends StatelessWidget {
                                               ],
 
                                               Text(
-                                                title,
-                                                textAlign:
-                                                    TextAlign.center,
-                                                style: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? NatterJourneyTheme.title.copyWith(
-        fontSize: 28,
-      )
-    : isWide
-        ? NatterJourneyTheme.wideTitle
-        : NatterJourneyTheme.title,
+  title,
+  textAlign: TextAlign.center,
+  style: keyboardVisible &&
+          !preserveJourneyLayoutWithKeyboard
+      ? NatterJourneyTheme.title.copyWith(
+          fontSize: 28,
+        )
+      : isWide
+          ? NatterJourneyTheme.wideTitle
+          : NatterJourneyTheme.title,
+),
 
-                                              if (subtitle != null &&
-                                                  subtitle!
-                                                      .trim()
-                                                      .isNotEmpty) ...[
+if (subtitle != null &&
+    subtitle!.trim().isNotEmpty) ...[
                                                 SizedBox(
                                                   height: keyboardVisible &&
         !preserveJourneyLayoutWithKeyboard
