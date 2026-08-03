@@ -151,6 +151,245 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
+enum NatterWorldStage {
+  journeyWelcome,
+  journeyCreateFamily,
+  journeyWelcomeChild,
+  journeyPreparePath,
+  journeyCreateAccount,
+  journeyReady,
+  parentMorning,
+}
+
+extension NatterWorldStageDetails on NatterWorldStage {
+  List<Color> get skyColours {
+    switch (this) {
+      case NatterWorldStage.journeyWelcome:
+        return const [
+          Color(0xFF061121),
+          Color(0xFF142943),
+          Color(0xFF27465B),
+        ];
+
+      case NatterWorldStage.journeyCreateFamily:
+        return const [
+          Color(0xFF13233A),
+          Color(0xFF294158),
+          Color(0xFF4F6977),
+        ];
+
+      case NatterWorldStage.journeyWelcomeChild:
+        return const [
+          Color(0xFF2B4055),
+          Color(0xFF587080),
+          Color(0xFF89999C),
+        ];
+
+      case NatterWorldStage.journeyPreparePath:
+        return const [
+          Color(0xFF4E6573),
+          Color(0xFF849596),
+          Color(0xFFB7B4A5),
+        ];
+
+      case NatterWorldStage.journeyCreateAccount:
+        return const [
+          Color(0xFF667D88),
+          Color(0xFF9EA8A3),
+          Color(0xFFC8C1AC),
+        ];
+
+      case NatterWorldStage.journeyReady:
+        return const [
+          Color(0xFF7C9298),
+          Color(0xFFB8B9AA),
+          Color(0xFFDED2B5),
+        ];
+
+      case NatterWorldStage.parentMorning:
+        return const [
+          Color(0xFF59747F),
+          Color(0xFF8EA09D),
+          Color(0xFFC8BEA7),
+        ];
+    }
+  }
+
+  double get starOpacity {
+    switch (this) {
+      case NatterWorldStage.parentMorning:
+        return 0.48;
+
+      default:
+        return 1;
+    }
+  }
+
+  double get landscapeOpacity {
+    switch (this) {
+      case NatterWorldStage.parentMorning:
+        return 0.82;
+
+      default:
+        return 1;
+    }
+  }
+
+  double get landscapeHeight {
+    switch (this) {
+      case NatterWorldStage.parentMorning:
+        return 220;
+
+      default:
+        return 250;
+    }
+  }
+}
+
+extension JourneyStageWorldDetails on JourneyStage {
+  NatterWorldStage get worldStage {
+    switch (this) {
+      case JourneyStage.welcome:
+        return NatterWorldStage.journeyWelcome;
+
+      case JourneyStage.createFamily:
+        return NatterWorldStage.journeyCreateFamily;
+
+      case JourneyStage.welcomeChild:
+        return NatterWorldStage.journeyWelcomeChild;
+
+      case JourneyStage.preparePath:
+        return NatterWorldStage.journeyPreparePath;
+
+      case JourneyStage.createAccount:
+        return NatterWorldStage.journeyCreateAccount;
+
+      case JourneyStage.ready:
+        return NatterWorldStage.journeyReady;
+    }
+  }
+}
+
+class NatterWorld extends StatelessWidget {
+  const NatterWorld({
+    super.key,
+    required this.stage,
+    required this.child,
+  });
+
+  final NatterWorldStage stage;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final colours = stage.skyColours;
+
+    return AnimatedContainer(
+      duration: NatterJourneyTheme.backgroundDuration,
+      curve: NatterJourneyTheme.backgroundCurve,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: colours,
+          stops: const [
+            0,
+            0.58,
+            1,
+          ],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: _NatterWorldAtmosphere(
+                starOpacity: stage.starOpacity,
+                landscapeOpacity:
+                    stage.landscapeOpacity,
+                landscapeHeight:
+                    stage.landscapeHeight,
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NatterSparkCluster extends StatelessWidget {
+  const NatterSparkCluster({
+    super.key,
+    required this.initialColours,
+    required this.targetColours,
+    this.compact = false,
+  });
+
+  final List<Color> initialColours;
+  final List<Color> targetColours;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    assert(initialColours.length >= 3);
+    assert(targetColours.length >= 3);
+
+    return SizedBox(
+      width: 116,
+      height: compact ? 28 : 38,
+      child: Stack(
+        children: [
+          // Protect — lower-left.
+          Positioned(
+            left: 18,
+            bottom: 3,
+            child: _JourneyStageLight(
+              size: compact ? 6 : 7,
+              initialColour: initialColours[1],
+              targetColour: targetColours[1],
+              delay: const Duration(
+                milliseconds: 340,
+              ),
+            ),
+          ),
+
+          // Connect — top-centre.
+          Positioned(
+            left: 53,
+            top: 0,
+            child: _JourneyStageLight(
+              size: compact ? 7 : 9,
+              initialColour: initialColours[0],
+              targetColour: targetColours[0],
+              delay: const Duration(
+                milliseconds: 260,
+              ),
+            ),
+          ),
+
+          // Grow — lower-right.
+          Positioned(
+            right: 18,
+            bottom: 3,
+            child: _JourneyStageLight(
+              size: compact ? 6 : 7,
+              initialColour: initialColours[2],
+              targetColour: targetColours[2],
+              delay: const Duration(
+                milliseconds: 420,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class NatterJourneyScaffold extends StatelessWidget {
   const NatterJourneyScaffold({
     super.key,
@@ -199,418 +438,425 @@ class NatterJourneyScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colours = stage.backgroundColours;
-    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    final keyboardInset =
+        MediaQuery.of(context).viewInsets.bottom;
+
     final keyboardVisible = keyboardInset > 0;
+
+    final worldStage = stage.worldStage;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: colours.first,
-      body: AnimatedContainer(
-        duration: NatterJourneyTheme.backgroundDuration,
-        curve: NatterJourneyTheme.backgroundCurve,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: colours,
-            stops: const [0.0, 0.58, 1.0],
-          ),
-        ),
-        child: Stack(
-          children: [
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: _JourneyAtmosphere(),
-              ),
-            ),
+      backgroundColor: worldStage.skyColours.first,
+      body: NatterWorld(
+        stage: worldStage,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide =
+                  constraints.maxWidth >= 700;
 
-            SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWide = constraints.maxWidth >= 700;
-
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        maxWidth: NatterJourneyTheme.contentMaxWidth,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          isWide ? 48 : 24,
-                          12,
-                          isWide ? 48 : 24,
-                          20,
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth:
+                        NatterJourneyTheme.contentMaxWidth,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      isWide ? 48 : 24,
+                      12,
+                      isWide ? 48 : 24,
+                      20,
+                    ),
+                    child: Column(
+                      children: [
+                        _buildJourneyHeader(
+                          context,
+                          keyboardVisible:
+                              keyboardVisible,
                         ),
-                        child: Column(
-                          children: [
-                            _buildJourneyHeader(
-                              context,
-                              keyboardVisible: keyboardVisible,
+
+                        SizedBox(
+                          height:
+                              keyboardVisible ? 0 : 2,
+                        ),
+
+                        Expanded(
+                          child: AnimatedPadding(
+                            duration: const Duration(
+                              milliseconds: 220,
                             ),
-
-                            SizedBox(
-  height: keyboardVisible ? 0 : 2,
-),
-
-                            Expanded(
-                              child: AnimatedPadding(
-                                duration:
-                                    const Duration(milliseconds: 220),
-                                curve: Curves.easeOutCubic,
-                                padding: EdgeInsets.only(
-                                  bottom: keyboardInset,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Expanded(
-                                      child: SingleChildScrollView(
-                                        physics:
-                                            const BouncingScrollPhysics(),
-                                        keyboardDismissBehavior:
-                                            ScrollViewKeyboardDismissBehavior
-                                                .onDrag,
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: isWide ? 44 : 0,
-                                          vertical: keyboardVisible
-                                              ? NatterJourneyTheme.spaceXs
-                                              : NatterJourneyTheme.spaceLg,
-                                        ),
-                                        child: ConstrainedBox(
-                                          constraints: BoxConstraints(
-                                            minHeight: keyboardVisible
+                            curve: Curves.easeOutCubic,
+                            padding: EdgeInsets.only(
+                              bottom: keyboardInset,
+                            ),
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child:
+                                      SingleChildScrollView(
+                                    physics:
+                                        const BouncingScrollPhysics(),
+                                    keyboardDismissBehavior:
+                                        ScrollViewKeyboardDismissBehavior
+                                            .onDrag,
+                                    padding:
+                                        EdgeInsets.symmetric(
+                                      horizontal:
+                                          isWide ? 44 : 0,
+                                      vertical:
+                                          keyboardVisible
+                                                  ? NatterJourneyTheme
+                                                      .spaceXs
+                                                  : NatterJourneyTheme
+                                                      .spaceLg,
+                                    ),
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          BoxConstraints(
+                                        minHeight:
+                                            keyboardVisible
                                                 ? 0
-                                                : constraints.maxHeight - 330,
-                                          ),
-                                          child: Column(
-                                            mainAxisAlignment: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? MainAxisAlignment.start
-    : MainAxisAlignment.center,
-                                            children: [
-                                              if (eyebrow != null &&
-                                                  eyebrow!
-                                                      .trim()
-                                                      .isNotEmpty) ...[
-                                                Text(
-                                                  eyebrow!.toUpperCase(),
-                                                  textAlign:
-                                                      TextAlign.center,
-                                                  style:
-                                                      NatterJourneyTheme
-                                                          .eyebrow,
-                                                ),
-                                                const SizedBox(
-                                                  height:
-                                                      NatterJourneyTheme
-                                                          .spaceMd,
-                                                ),
-                                              ],
-
-                                              Text(
-  title,
-  textAlign: TextAlign.center,
-  style: keyboardVisible &&
-          !preserveJourneyLayoutWithKeyboard
-      ? NatterJourneyTheme.title.copyWith(
-          fontSize: 28,
-        )
-      : isWide
-          ? NatterJourneyTheme.wideTitle
-          : NatterJourneyTheme.title,
-),
-
-if (subtitle != null &&
-    subtitle!.trim().isNotEmpty) ...[
-                                                SizedBox(
-                                                  height: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? NatterJourneyTheme.spaceSm
-    : NatterJourneyTheme.spaceLg,
-                                                ),
-                                                ConstrainedBox(
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                    maxWidth: 480,
-                                                  ),
-                                                  child: Text(
-                                                    subtitle!,
-                                                    textAlign:
-                                                        TextAlign.center,
-                                                    style:
-                                                        NatterJourneyTheme
-                                                            .subtitle,
-                                                  ),
-                                                ),
-                                              ],
-
-                                              if (child != null) ...[
-                                                SizedBox(
-                                                  height: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? NatterJourneyTheme.spaceMd
-    : NatterJourneyTheme.spaceXxl,
-                                                ),
-                                                child!,
-                                              ],
-                                            ],
-                                          ),
-                                        ),
+                                                : constraints
+                                                        .maxHeight -
+                                                    330,
                                       ),
-                                    ),
-
-                                    const SizedBox(
-                                      height: NatterJourneyTheme.spaceSm,
-                                    ),
-
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 54,
-                                      child: FilledButton(
-                                        onPressed:
-                                            buttonEnabled && !isLoading
-                                                ? onButtonPressed
-                                                : null,
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor:
-                                              NatterJourneyTheme
-                                                  .warmWhite,
-                                          foregroundColor:
-                                              NatterJourneyTheme
-                                                  .nightNavy,
-                                          disabledBackgroundColor:
-                                              NatterJourneyTheme
-                                                  .warmWhite
-                                                  .withValues(
-                                                    alpha: 0.48,
-                                                  ),
-                                          disabledForegroundColor:
-                                              NatterJourneyTheme
-                                                  .nightNavy
-                                                  .withValues(
-                                                    alpha: 0.55,
-                                                  ),
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(
-                                              NatterJourneyTheme
-                                                  .buttonRadius,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            keyboardVisible &&
+                                                    !preserveJourneyLayoutWithKeyboard
+                                                ? MainAxisAlignment
+                                                    .start
+                                                : MainAxisAlignment
+                                                    .center,
+                                        children: [
+                                          if (eyebrow !=
+                                                  null &&
+                                              eyebrow!
+                                                  .trim()
+                                                  .isNotEmpty) ...[
+                                            Text(
+                                              eyebrow!
+                                                  .toUpperCase(),
+                                              textAlign:
+                                                  TextAlign
+                                                      .center,
+                                              style:
+                                                  NatterJourneyTheme
+                                                      .eyebrow,
                                             ),
+                                            const SizedBox(
+                                              height:
+                                                  NatterJourneyTheme
+                                                      .spaceMd,
+                                            ),
+                                          ],
+
+                                          Text(
+                                            title,
+                                            textAlign:
+                                                TextAlign.center,
+                                            style: keyboardVisible &&
+                                                    !preserveJourneyLayoutWithKeyboard
+                                                ? NatterJourneyTheme
+                                                    .title
+                                                    .copyWith(
+                                                    fontSize:
+                                                        28,
+                                                  )
+                                                : isWide
+                                                    ? NatterJourneyTheme
+                                                        .wideTitle
+                                                    : NatterJourneyTheme
+                                                        .title,
                                           ),
-                                        ),
-                                        child: isLoading
-                                            ? const SizedBox(
-                                                width: 22,
-                                                height: 22,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                  strokeWidth: 2.2,
-                                                  color:
-                                                      NatterJourneyTheme
-                                                          .nightNavy,
-                                                ),
-                                              )
-                                            : Text(
-                                                buttonText,
+
+                                          if (subtitle !=
+                                                  null &&
+                                              subtitle!
+                                                  .trim()
+                                                  .isNotEmpty) ...[
+                                            SizedBox(
+                                              height: keyboardVisible &&
+                                                      !preserveJourneyLayoutWithKeyboard
+                                                  ? NatterJourneyTheme
+                                                      .spaceSm
+                                                  : NatterJourneyTheme
+                                                      .spaceLg,
+                                            ),
+                                            ConstrainedBox(
+                                              constraints:
+                                                  const BoxConstraints(
+                                                maxWidth:
+                                                    480,
+                                              ),
+                                              child: Text(
+                                                subtitle!,
+                                                textAlign:
+                                                    TextAlign
+                                                        .center,
                                                 style:
                                                     NatterJourneyTheme
-                                                        .buttonLabel,
+                                                        .subtitle,
                                               ),
+                                            ),
+                                          ],
+
+                                          if (child !=
+                                              null) ...[
+                                            SizedBox(
+                                              height: keyboardVisible &&
+                                                      !preserveJourneyLayoutWithKeyboard
+                                                  ? NatterJourneyTheme
+                                                      .spaceMd
+                                                  : NatterJourneyTheme
+                                                      .spaceXxl,
+                                            ),
+                                            child!,
+                                          ],
+                                        ],
                                       ),
                                     ),
-
-                                    if (!keyboardVisible &&
-                                        secondaryButtonText != null &&
-                                        onSecondaryButtonPressed !=
-                                            null) ...[
-                                      const SizedBox(
-                                        height:
-                                            NatterJourneyTheme.spaceSm,
-                                      ),
-                                      TextButton(
-                                        onPressed:
-                                            onSecondaryButtonPressed,
-                                        style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white
-                                              .withValues(alpha: 0.78),
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                            horizontal: 18,
-                                            vertical: 10,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          secondaryButtonText!,
-                                          style:
-                                              NatterJourneyTheme
-                                                  .secondaryButtonLabel,
-                                        ),
-                                      ),
-                                    ],
-                                    if (!keyboardVisible &&
-    tertiaryButtonText != null &&
-    onTertiaryButtonPressed != null) ...[
-  const SizedBox(
-    height: NatterJourneyTheme.spaceXs,
-  ),
-  TextButton(
-    onPressed: onTertiaryButtonPressed,
-    style: TextButton.styleFrom(
-      foregroundColor: Colors.white.withValues(alpha: 0.68),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 8,
-      ),
-    ),
-    child: Text(
-      tertiaryButtonText!,
-      style: NatterJourneyTheme.secondaryButtonLabel.copyWith(
-        fontSize: 14,
-      ),
-    ),
-  ),
-],
-
-                                    if (showProgress &&
-                                        !keyboardVisible) ...[
-                                      const SizedBox(
-                                        height:
-                                            NatterJourneyTheme.spaceMd,
-                                      ),
-                                      _JourneyProgressIndicator(
-                                        currentIndex: stage.index,
-                                        totalSteps:
-                                            JourneyStage.values.length,
-                                      ),
-                                    ],
-                                  ],
+                                  ),
                                 ),
-                              ),
+
+                                const SizedBox(
+                                  height:
+                                      NatterJourneyTheme
+                                          .spaceSm,
+                                ),
+
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 54,
+                                  child: FilledButton(
+                                    onPressed: buttonEnabled &&
+                                            !isLoading
+                                        ? onButtonPressed
+                                        : null,
+                                    style:
+                                        FilledButton.styleFrom(
+                                      backgroundColor:
+                                          NatterJourneyTheme
+                                              .warmWhite,
+                                      foregroundColor:
+                                          NatterJourneyTheme
+                                              .nightNavy,
+                                      disabledBackgroundColor:
+                                          NatterJourneyTheme
+                                              .warmWhite
+                                              .withValues(
+                                            alpha: 0.48,
+                                          ),
+                                      disabledForegroundColor:
+                                          NatterJourneyTheme
+                                              .nightNavy
+                                              .withValues(
+                                            alpha: 0.55,
+                                          ),
+                                      elevation: 0,
+                                      shape:
+                                          RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(
+                                          NatterJourneyTheme
+                                              .buttonRadius,
+                                        ),
+                                      ),
+                                    ),
+                                    child: isLoading
+                                        ? const SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child:
+                                                CircularProgressIndicator(
+                                              strokeWidth:
+                                                  2.2,
+                                              color:
+                                                  NatterJourneyTheme
+                                                      .nightNavy,
+                                            ),
+                                          )
+                                        : Text(
+                                            buttonText,
+                                            style:
+                                                NatterJourneyTheme
+                                                    .buttonLabel,
+                                          ),
+                                  ),
+                                ),
+
+                                if (!keyboardVisible &&
+                                    secondaryButtonText !=
+                                        null &&
+                                    onSecondaryButtonPressed !=
+                                        null) ...[
+                                  const SizedBox(
+                                    height:
+                                        NatterJourneyTheme
+                                            .spaceSm,
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                    onSecondaryButtonPressed,
+                                    style:
+                                        TextButton.styleFrom(
+                                      foregroundColor:
+                                          Colors.white
+                                              .withValues(
+                                        alpha: 0.78,
+                                      ),
+                                      padding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                        horizontal: 18,
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      secondaryButtonText!,
+                                      style:
+                                          NatterJourneyTheme
+                                              .secondaryButtonLabel,
+                                    ),
+                                  ),
+                                ],
+
+                                if (!keyboardVisible &&
+                                    tertiaryButtonText !=
+                                        null &&
+                                    onTertiaryButtonPressed !=
+                                        null) ...[
+                                  const SizedBox(
+                                    height:
+                                        NatterJourneyTheme
+                                            .spaceXs,
+                                  ),
+                                  TextButton(
+                                    onPressed:
+                                        onTertiaryButtonPressed,
+                                    style:
+                                        TextButton.styleFrom(
+                                      foregroundColor:
+                                          Colors.white
+                                              .withValues(
+                                        alpha: 0.68,
+                                      ),
+                                      padding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                        horizontal: 18,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      tertiaryButtonText!,
+                                      style:
+                                          NatterJourneyTheme
+                                              .secondaryButtonLabel
+                                              .copyWith(
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+
+                                if (showProgress &&
+                                    !keyboardVisible) ...[
+                                  const SizedBox(
+                                    height:
+                                        NatterJourneyTheme
+                                            .spaceMd,
+                                  ),
+                                  _JourneyProgressIndicator(
+                                    currentIndex:
+                                        stage.index,
+                                    totalSteps:
+                                        JourneyStage
+                                            .values.length,
+                                  ),
+                                ],
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
+  
+Widget _buildJourneyHeader(
+    BuildContext context, {
+    required bool keyboardVisible,
+  }) {
+    final compact = keyboardVisible &&
+        !preserveJourneyLayoutWithKeyboard;
 
-  Widget _buildJourneyHeader(
-  BuildContext context, {
-  required bool keyboardVisible,
-}) {
-  final sparkColours = stage.sparkColours;
-  final previousSparkColours = stage.previousSparkColours;
-    
-  return AnimatedContainer(
-    duration: const Duration(milliseconds: 220),
-    curve: Curves.easeOutCubic,
-    height: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 94
-    : 126, 
-    child: Stack(
-      children: [
-        if (onBack != null)
+    return AnimatedContainer(
+      duration: const Duration(
+        milliseconds: 220,
+      ),
+      curve: Curves.easeOutCubic,
+      height: compact ? 94 : 126,
+      child: Stack(
+        children: [
+          if (onBack != null)
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                onPressed: onBack,
+                tooltip: 'Back',
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color:
+                      NatterJourneyTheme.softWhite,
+                ),
+              ),
+            ),
+
           Align(
-            alignment: Alignment.topLeft,
-            child: IconButton(
-              onPressed: onBack,
-              tooltip: 'Back',
-              icon: const Icon(
-                Icons.arrow_back_rounded,
-                color: NatterJourneyTheme.softWhite,
+            alignment: Alignment.topCenter,
+            child: NatterSparkCluster(
+              compact: compact,
+              initialColours:
+                  stage.previousSparkColours,
+              targetColours:
+                  stage.sparkColours,
+            ),
+          ),
+
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: AnimatedContainer(
+              duration: const Duration(
+                milliseconds: 220,
+              ),
+              curve: Curves.easeOutCubic,
+              width: compact ? 46 : 62,
+              height: compact ? 46 : 62,
+              child: Image.asset(
+                NatterBrand.logoPath,
+                fit: BoxFit.contain,
               ),
             ),
           ),
-
-        Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(
-            width: 116,
-            height: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 28
-    : 38,
-            child: Stack(
-              children: [
-                Positioned(
-  left: 18,
-  bottom: 3,
-  child: _JourneyStageLight(
-    size: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 6
-    : 7,
-    initialColour: previousSparkColours[1],
-    targetColour: sparkColours[1],
-    delay: const Duration(milliseconds: 340),
-  ),
-),
-                Positioned(
-  left: 53,
-  top: 0,
-  child: _JourneyStageLight(
-    size: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 7
-    : 9,
-    initialColour: previousSparkColours[0],
-    targetColour: sparkColours[0],
-    delay: const Duration(milliseconds: 260),
-  ),
-),
-                Positioned(
-  right: 18,
-  bottom: 3,
-  child: _JourneyStageLight(
-    size: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 6
-    : 7,
-    initialColour: previousSparkColours[2],
-    targetColour: sparkColours[2],
-    delay: const Duration(milliseconds: 420),
-  ),
-),
-              ],
-            ),
-          ),
-        ),
-
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            width: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 46
-    : 62,
-height: keyboardVisible &&
-        !preserveJourneyLayoutWithKeyboard
-    ? 46
-    : 62,
-            child: Image.asset(
-              'assets/natter-logo-transBG.png',
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
 
-class _JourneyProgressIndicator extends StatelessWidget {
+class _JourneyProgressIndicator
+    extends StatelessWidget {
   const _JourneyProgressIndicator({
     required this.currentIndex,
     required this.totalSteps,
@@ -622,26 +868,35 @@ class _JourneyProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Step ${currentIndex + 1} of $totalSteps',
+      label:
+          'Step ${currentIndex + 1} of $totalSteps',
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment:
+            MainAxisAlignment.center,
         children: List.generate(
           totalSteps,
           (index) {
-            final isCompleted = index <= currentIndex;
+            final isCompleted =
+                index <= currentIndex;
 
             return AnimatedContainer(
-              duration: NatterJourneyTheme.progressDuration,
-curve: NatterJourneyTheme.progressCurve,
+              duration:
+                  NatterJourneyTheme
+                      .progressDuration,
+              curve:
+                  NatterJourneyTheme.progressCurve,
               width: isCompleted ? 18 : 7,
               height: 7,
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              margin:
+                  const EdgeInsets.symmetric(
+                horizontal: 4,
+              ),
               decoration: BoxDecoration(
-                color:
-                    isCompleted
-                        ? const Color(0xFFF4F0E6)
-                        : const Color(0x59FFFFFF),
-                borderRadius: BorderRadius.circular(999),
+                color: isCompleted
+                    ? const Color(0xFFF4F0E6)
+                    : const Color(0x59FFFFFF),
+                borderRadius:
+                    BorderRadius.circular(999),
               ),
             );
           },
@@ -651,26 +906,42 @@ curve: NatterJourneyTheme.progressCurve,
   }
 }
 
-class _JourneyAtmosphere extends StatelessWidget {
-  const _JourneyAtmosphere();
+class _NatterWorldAtmosphere
+    extends StatelessWidget {
+  const _NatterWorldAtmosphere({
+    required this.starOpacity,
+    required this.landscapeOpacity,
+    required this.landscapeHeight,
+  });
+
+  final double starOpacity;
+  final double landscapeOpacity;
+  final double landscapeHeight;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
-      children: const [
+      children: [
         Positioned.fill(
-          child: CustomPaint(
-            painter: _JourneyStarPainter(),
+          child: Opacity(
+            opacity: starOpacity,
+            child: const CustomPaint(
+              painter: _JourneyStarPainter(),
+            ),
           ),
         ),
         Positioned.fill(
           child: Align(
             alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              width: double.infinity,
-              height: 250,
-              child: CustomPaint(
-                painter: _JourneyLandscapePainter(),
+            child: Opacity(
+              opacity: landscapeOpacity,
+              child: SizedBox(
+                width: double.infinity,
+                height: landscapeHeight,
+                child: const CustomPaint(
+                  painter:
+                      _JourneyLandscapePainter(),
+                ),
               ),
             ),
           ),
@@ -680,7 +951,8 @@ class _JourneyAtmosphere extends StatelessWidget {
   }
 }
 
-class _JourneyStarPainter extends CustomPainter {
+class _JourneyStarPainter
+    extends CustomPainter {
   const _JourneyStarPainter();
 
   @override
@@ -688,21 +960,28 @@ class _JourneyStarPainter extends CustomPainter {
     final random = Random(27);
 
     final faintStarPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.16);
+      ..color =
+          Colors.white.withValues(alpha: 0.16);
 
     final softStarPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25);
+      ..color =
+          Colors.white.withValues(alpha: 0.25);
 
     final warmStarPaint = Paint()
-      ..color = NatterJourneyTheme.sparkGold.withValues(
+      ..color = NatterJourneyTheme.sparkGold
+          .withValues(
         alpha: 0.18,
       );
 
-    for (var index = 0; index < 68; index++) {
-      final x = random.nextDouble() * size.width;
+    for (var index = 0;
+        index < 68;
+        index++) {
+      final x =
+          random.nextDouble() * size.width;
 
-      // Keep the stars mainly in the upper part of the sky.
-      final y = random.nextDouble() * size.height * 0.58;
+      final y = random.nextDouble() *
+          size.height *
+          0.58;
 
       final radius = index % 11 == 0
           ? 1.25
@@ -732,30 +1011,35 @@ class _JourneyStarPainter extends CustomPainter {
   }
 }
 
-class _JourneyLandscapePainter extends CustomPainter {
+class _JourneyLandscapePainter
+    extends CustomPainter {
   const _JourneyLandscapePainter();
 
   @override
   void paint(Canvas canvas, Size size) {
     final farPaint = Paint()
-      ..color = NatterJourneyTheme.nightNavy.withValues(
+      ..color = NatterJourneyTheme.nightNavy
+          .withValues(
         alpha: 0.16,
       );
 
     final middlePaint = Paint()
-      ..color = NatterJourneyTheme.nightNavy.withValues(
+      ..color = NatterJourneyTheme.nightNavy
+          .withValues(
         alpha: 0.38,
       );
 
     final foregroundPaint = Paint()
-      ..color = NatterJourneyTheme.nightNavy.withValues(
+      ..color = NatterJourneyTheme.nightNavy
+          .withValues(
         alpha: 0.86,
       );
 
-    // Distant ridge:
-    // broad, soft and deliberately uneven.
     final farRidge = Path()
-      ..moveTo(0, size.height * 0.24)
+      ..moveTo(
+        0,
+        size.height * 0.24,
+      )
       ..cubicTo(
         size.width * 0.05,
         size.height * 0.30,
@@ -804,8 +1088,14 @@ class _JourneyLandscapePainter extends CustomPainter {
         size.width,
         size.height * 0.20,
       )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
+      ..lineTo(
+        size.width,
+        size.height,
+      )
+      ..lineTo(
+        0,
+        size.height,
+      )
       ..close();
 
     canvas.drawPath(
@@ -813,10 +1103,11 @@ class _JourneyLandscapePainter extends CustomPainter {
       farPaint,
     );
 
-    // Middle ridge:
-    // uneven valley walls with an off-centre low point.
     final middleRidge = Path()
-      ..moveTo(0, size.height * 0.42)
+      ..moveTo(
+        0,
+        size.height * 0.42,
+      )
       ..cubicTo(
         size.width * 0.06,
         size.height * 0.45,
@@ -865,8 +1156,14 @@ class _JourneyLandscapePainter extends CustomPainter {
         size.width,
         size.height * 0.32,
       )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
+      ..lineTo(
+        size.width,
+        size.height,
+      )
+      ..lineTo(
+        0,
+        size.height,
+      )
       ..close();
 
     canvas.drawPath(
@@ -874,10 +1171,11 @@ class _JourneyLandscapePainter extends CustomPainter {
       middlePaint,
     );
 
-    // Foreground:
-    // stronger side slopes with a broad, lower valley floor.
     final foreground = Path()
-      ..moveTo(0, size.height * 0.60)
+      ..moveTo(
+        0,
+        size.height * 0.60,
+      )
       ..cubicTo(
         size.width * 0.05,
         size.height * 0.62,
@@ -926,8 +1224,14 @@ class _JourneyLandscapePainter extends CustomPainter {
         size.width,
         size.height * 0.52,
       )
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
+      ..lineTo(
+        size.width,
+        size.height,
+      )
+      ..lineTo(
+        0,
+        size.height,
+      )
       ..close();
 
     canvas.drawPath(
@@ -938,7 +1242,8 @@ class _JourneyLandscapePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(
-    covariant _JourneyLandscapePainter oldDelegate,
+    covariant _JourneyLandscapePainter
+        oldDelegate,
   ) {
     return false;
   }
@@ -956,26 +1261,31 @@ class _JourneyLight extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-  duration: const Duration(milliseconds: 650),
-  curve: Curves.easeInOutCubic,
-  width: size,
-  height: size,
-  decoration: BoxDecoration(
-    color: colour,
-    shape: BoxShape.circle,
-    boxShadow: [
-      BoxShadow(
-        color: colour.withValues(alpha: 0.42),
-        blurRadius: 14,
-        spreadRadius: 2,
+      duration: const Duration(
+        milliseconds: 650,
       ),
-    ],
-  ),
-);
+      curve: Curves.easeInOutCubic,
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: colour,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: colour.withValues(
+              alpha: 0.42,
+            ),
+            blurRadius: 14,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _JourneyStageLight extends StatefulWidget {
+class _JourneyStageLight
+    extends StatefulWidget {
   const _JourneyStageLight({
     required this.size,
     required this.initialColour,
@@ -1001,9 +1311,11 @@ class _JourneyStageLightState
   void initState() {
     super.initState();
 
-    _displayColour = widget.initialColour;
+    _displayColour =
+        widget.initialColour;
 
-    if (widget.initialColour != widget.targetColour) {
+    if (widget.initialColour !=
+        widget.targetColour) {
       _animateToTarget();
     }
   }
@@ -1014,10 +1326,13 @@ class _JourneyStageLightState
   ) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.targetColour != widget.targetColour) {
-      _displayColour = widget.initialColour;
+    if (oldWidget.targetColour !=
+        widget.targetColour) {
+      _displayColour =
+          widget.initialColour;
 
-      if (widget.initialColour != widget.targetColour) {
+      if (widget.initialColour !=
+          widget.targetColour) {
         _animateToTarget();
       }
     }
@@ -1026,21 +1341,26 @@ class _JourneyStageLightState
   Future<void> _animateToTarget() async {
     await Future<void>.delayed(
       widget.delay == Duration.zero
-          ? const Duration(milliseconds: 260)
+          ? const Duration(
+              milliseconds: 260,
+            )
           : widget.delay,
     );
 
     if (!mounted) return;
 
     setState(() {
-      _displayColour = widget.targetColour;
+      _displayColour =
+          widget.targetColour;
     });
   }
 
   @override
-  Widget build(BuildContext context) {
+    Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(
+        milliseconds: 1100,
+      ),
       curve: Curves.easeInOutCubic,
       width: widget.size,
       height: widget.size,
@@ -1049,7 +1369,9 @@ class _JourneyStageLightState
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: _displayColour.withValues(alpha: 0.42),
+            color: _displayColour.withValues(
+              alpha: 0.42,
+            ),
             blurRadius: 14,
             spreadRadius: 2,
           ),
@@ -1058,7 +1380,7 @@ class _JourneyStageLightState
     );
   }
 }
-
+    
 class ParentTypography {
   const ParentTypography._();
 
