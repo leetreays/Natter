@@ -8128,7 +8128,37 @@ class ParentHomeScreen extends StatelessWidget {
     return trimmed.split(RegExp(r'\s+')).first;
   }
 
-  Future<void> _leaveNatter(BuildContext context) async {
+  String _familyNameFromData(
+    Map<String, dynamic>? parentData,
+  ) {
+    final storedFamilyName =
+        (parentData?['familyName'] ?? '').toString().trim();
+
+    if (storedFamilyName.isNotEmpty) {
+      return storedFamilyName;
+    }
+
+    return 'Your family';
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>>
+      _parentDocumentStream() {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Stream<
+          DocumentSnapshot<Map<String, dynamic>>>.empty();
+    }
+
+    return FirebaseFirestore.instance
+        .collection('parents')
+        .doc(user.uid)
+        .snapshots();
+  }
+
+  Future<void> _leaveNatter(
+    BuildContext context,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
@@ -8168,7 +8198,10 @@ class ParentHomeScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(dialogContext, false);
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
               },
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white70,
@@ -8186,7 +8219,10 @@ class ParentHomeScreen extends StatelessWidget {
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(dialogContext, true);
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
               },
               style: FilledButton.styleFrom(
                 backgroundColor: NatterBrand.pink,
@@ -8212,10 +8248,14 @@ class ParentHomeScreen extends StatelessWidget {
       },
     );
 
-    if (confirmed != true || !context.mounted) return;
+    if (confirmed != true ||
+        !context.mounted) {
+      return;
+    }
 
     try {
-      await AppStateScope.of(context).signOutCurrentUser();
+      await AppStateScope.of(context)
+          .signOutCurrentUser();
 
       if (!context.mounted) return;
 
@@ -8239,6 +8279,62 @@ class ParentHomeScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildMiniSpark({
+    required Color colour,
+    required double size,
+  }) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: colour,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: colour.withOpacity(0.46),
+            blurRadius: 7,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniSparkCluster() {
+    return SizedBox(
+      width: 31,
+      height: 18,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 12,
+            top: 0,
+            child: _buildMiniSpark(
+              colour: NatterBrand.blue,
+              size: 6,
+            ),
+          ),
+          Positioned(
+            left: 2,
+            bottom: 1,
+            child: _buildMiniSpark(
+              colour: NatterBrand.pink,
+              size: 5,
+            ),
+          ),
+          Positioned(
+            right: 2,
+            bottom: 1,
+            child: _buildMiniSpark(
+              colour: NatterBrand.green,
+              size: 5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeader(
     BuildContext context, {
     required String greetingName,
@@ -8247,26 +8343,37 @@ class ParentHomeScreen extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          width: 58,
-          height: 58,
-          padding: const EdgeInsets.all(9),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.10),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.10),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.12),
+                ),
+              ),
+              child: Image.asset(
+                NatterBrand.logoPath,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-          child: Image.asset(
-            'assets/natter-logo-transBG.png',
-            fit: BoxFit.contain,
-          ),
+            Positioned(
+              right: -5,
+              top: -9,
+              child: _buildMiniSparkCluster(),
+            ),
+          ],
         ),
         const SizedBox(width: 15),
         Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
               Text(
                 'Hello, $greetingName',
@@ -8283,7 +8390,7 @@ class ParentHomeScreen extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.50),
+                  color: Colors.white.withOpacity(0.58),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -8292,19 +8399,35 @@ class ParentHomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        IconButton(
-          tooltip: 'Leave Natter',
-          onPressed: () {
-            _leaveNatter(context);
-          },
-          style: IconButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.07),
-            foregroundColor: Colors.white70,
-            padding: const EdgeInsets.all(13),
+        Container(
+          decoration: BoxDecoration(
+            color: NatterBrand.pink.withOpacity(0.06),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: NatterBrand.pink.withOpacity(0.30),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: NatterBrand.pink.withOpacity(0.10),
+                blurRadius: 13,
+                spreadRadius: 1,
+              ),
+            ],
           ),
-          icon: const Icon(
-            Icons.logout_rounded,
-            size: 21,
+          child: IconButton(
+            tooltip: 'Leave Natter',
+            onPressed: () {
+              _leaveNatter(context);
+            },
+            style: IconButton.styleFrom(
+              foregroundColor:
+                  NatterBrand.pink.withOpacity(0.88),
+              padding: const EdgeInsets.all(13),
+            ),
+            icon: const Icon(
+              Icons.logout_rounded,
+              size: 21,
+            ),
           ),
         ),
       ],
@@ -8315,59 +8438,59 @@ class ParentHomeScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.09),
+        color: Colors.white.withOpacity(0.075),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: Colors.white.withOpacity(0.11),
+          color: Colors.white.withOpacity(0.13),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: NatterBrand.green.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.family_restroom_rounded,
-                  color: NatterBrand.green,
-                  size: 22,
-                ),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: NatterBrand.green.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: NatterBrand.green.withOpacity(0.16),
               ),
-              const SizedBox(width: 14),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your family space',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'A calm place to support each child, prepare their settings and follow how their friendships grow.',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.family_restroom_rounded,
+              color: NatterBrand.green,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Your family space',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: 6),
+                Text(
+                  'A calm place to support each child, prepare their settings and follow how their friendships grow.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    height: 1.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -8378,10 +8501,10 @@ class ParentHomeScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.14),
+        color: Colors.black.withOpacity(0.10),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: Colors.white.withOpacity(0.09),
+          color: Colors.white.withOpacity(0.10),
         ),
       ),
       child: const Center(
@@ -8390,7 +8513,9 @@ class ParentHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorCard(Object? error) {
+  Widget _buildErrorCard(
+    Object? error,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -8401,7 +8526,8 @@ class ParentHomeScreen extends StatelessWidget {
         ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           const Icon(
             Icons.info_outline_rounded,
@@ -8429,7 +8555,9 @@ class ParentHomeScreen extends StatelessWidget {
     ParentChildProfile child,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(
+        bottom: 12,
+      ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -8451,10 +8579,11 @@ class ParentHomeScreen extends StatelessWidget {
               vertical: 15,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2A48),
+              color: const Color(0xFF1C2A48)
+                  .withOpacity(0.88),
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withOpacity(0.10),
               ),
             ),
             child: Row(
@@ -8463,8 +8592,14 @@ class ParentHomeScreen extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.09),
-                    borderRadius: BorderRadius.circular(18),
+                    color:
+                        Colors.white.withOpacity(0.09),
+                    borderRadius:
+                        BorderRadius.circular(18),
+                    border: Border.all(
+                      color:
+                          Colors.white.withOpacity(0.05),
+                    ),
                   ),
                   alignment: Alignment.center,
                   child: Icon(
@@ -8476,7 +8611,8 @@ class ParentHomeScreen extends StatelessWidget {
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
@@ -8485,22 +8621,29 @@ class ParentHomeScreen extends StatelessWidget {
                               child.name,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w900,
+                                fontWeight:
+                                    FontWeight.w900,
                                 fontSize: 17,
                               ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(
+                            padding:
+                                const EdgeInsets.symmetric(
                               horizontal: 9,
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               color: child.linkedDevice
-                                  ? NatterBrand.green.withOpacity(0.15)
-                                  : Colors.white.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(999),
+                                  ? NatterBrand.green
+                                      .withOpacity(0.15)
+                                  : Colors.white
+                                      .withOpacity(0.07),
+                              borderRadius:
+                                  BorderRadius.circular(
+                                999,
+                              ),
                             ),
                             child: Text(
                               child.linkedDevice
@@ -8509,8 +8652,10 @@ class ParentHomeScreen extends StatelessWidget {
                               style: TextStyle(
                                 color: child.linkedDevice
                                     ? NatterBrand.green
-                                    : Colors.white.withOpacity(0.58),
-                                fontWeight: FontWeight.w800,
+                                    : Colors.white
+                                        .withOpacity(0.58),
+                                fontWeight:
+                                    FontWeight.w800,
                                 fontSize: 11,
                               ),
                             ),
@@ -8521,7 +8666,8 @@ class ParentHomeScreen extends StatelessWidget {
                       Text(
                         'Natter code  ·  ${child.accessCode}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.52),
+                          color:
+                              Colors.white.withOpacity(0.56),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.2,
@@ -8544,9 +8690,14 @@ class ParentHomeScreen extends StatelessWidget {
   }
 
   Widget _buildFamilyCard(
-    BuildContext context,
-    List<ParentChildProfile> children,
-  ) {
+    BuildContext context, {
+    required String familyName,
+    required List<ParentChildProfile> children,
+  }) {
+    final childCountText = children.length == 1
+        ? '1 child'
+        : '${children.length} children';
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         18,
@@ -8555,25 +8706,44 @@ class ParentHomeScreen extends StatelessWidget {
         8,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.14),
+        color: Colors.black.withOpacity(0.10),
         borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: Colors.white.withOpacity(0.09),
+          color: Colors.white.withOpacity(0.11),
         ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
-              const Expanded(
-                child: Text(
-                  'Your children',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                  ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      familyName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Growing together',
+                      style: TextStyle(
+                        color:
+                            Colors.white.withOpacity(0.60),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Container(
@@ -8582,21 +8752,26 @@ class ParentHomeScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.07),
-                  borderRadius: BorderRadius.circular(999),
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius:
+                      BorderRadius.circular(999),
+                  border: Border.all(
+                    color:
+                        Colors.white.withOpacity(0.06),
+                  ),
                 ),
                 child: Text(
-                  '${children.length}',
+                  childCountText,
                   style: const TextStyle(
                     color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
           if (children.isEmpty)
             Padding(
               padding: const EdgeInsets.only(
@@ -8605,7 +8780,7 @@ class ParentHomeScreen extends StatelessWidget {
               child: Text(
                 'No child profiles yet. Welcome your first child when you are ready.',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.66),
+                  color: Colors.white.withOpacity(0.68),
                   fontSize: 14,
                   height: 1.45,
                 ),
@@ -8625,149 +8800,155 @@ class ParentHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
+    final user =
+        FirebaseAuth.instance.currentUser;
 
     final greetingName = _firstName(
       user?.displayName,
     );
 
-    final email = user?.email ?? 'Parent account';
+    final email =
+        user?.email ?? 'Parent account';
 
     return ParentBrandScaffold(
-  worldStage: NatterWorldStage.parentMorning,
-  child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            24,
-            24,
-            24,
-            30,
-          ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 720,
+      worldStage: NatterWorldStage.parentMorning,
+      child: SafeArea(
+        child: StreamBuilder<
+            DocumentSnapshot<Map<String, dynamic>>>(
+          stream: _parentDocumentStream(),
+          builder: (
+            context,
+            parentSnapshot,
+          ) {
+            final parentData =
+                parentSnapshot.data?.data();
+
+            final familyName =
+                _familyNameFromData(parentData);
+
+            return SingleChildScrollView(
+              physics:
+                  const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                24,
+                24,
+                24,
+                30,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHeader(
-                    context,
-                    greetingName: greetingName,
-                    email: email,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(
+                    maxWidth: 720,
                   ),
-
-                  const SizedBox(height: 26),
-
-                  _buildIntroductionCard(),
-
-                  const SizedBox(height: 20),
-
-                  StreamBuilder<List<ParentChildProfile>>(
-                    stream: AppStateScope.of(context)
-                        .parentChildrenStream(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return _buildErrorCard(
-                          snapshot.error,
-                        );
-                      }
-
-                      if (snapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return _buildLoadingCard();
-                      }
-
-                      final children =
-                          snapshot.data ?? [];
-
-                      return _buildFamilyCard(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeader(
                         context,
-                        children,
-                      );
-                    },
-                  ),
+                        greetingName:
+                            greetingName,
+                        email: email,
+                      ),
 
-                  const SizedBox(height: 22),
+                      const SizedBox(height: 26),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        Navigator.push(
+                      _buildIntroductionCard(),
+
+                      const SizedBox(height: 20),
+
+                      StreamBuilder<
+                          List<ParentChildProfile>>(
+                        stream:
+                            AppStateScope.of(context)
+                                .parentChildrenStream(),
+                        builder: (
                           context,
-                          calmRoute(
-                            const CreateChildProfileScreen(),
+                          childrenSnapshot,
+                        ) {
+                          if (childrenSnapshot
+                              .hasError) {
+                            return _buildErrorCard(
+                              childrenSnapshot.error,
+                            );
+                          }
+
+                          if (childrenSnapshot
+                                  .connectionState ==
+                              ConnectionState.waiting) {
+                            return _buildLoadingCard();
+                          }
+
+                          final children =
+                              childrenSnapshot.data ??
+                                  [];
+
+                          return _buildFamilyCard(
+                            context,
+                            familyName: familyName,
+                            children: children,
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              calmRoute(
+                                const CreateChildProfileScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.add_rounded,
+                            size: 22,
                           ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.add_rounded,
-                        size: 22,
-                      ),
-                      label: const Text(
-                        'Welcome Another Child',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
+                          label: const Text(
+                            'Welcome Another Child',
+                            style: TextStyle(
+                              fontWeight:
+                                  FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                          style:
+                              FilledButton.styleFrom(
+                            backgroundColor:
+                                NatterBrand.green,
+                            foregroundColor:
+                                Colors.black,
+                            elevation: 0,
+                            padding:
+                                const EdgeInsets.symmetric(
+                              vertical: 18,
+                            ),
+                            shape:
+                                RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(
+                                19,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: NatterBrand.green,
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(19),
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
-
-                  const SizedBox(height: 12),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        _leaveNatter(context);
-                      },
-                      icon: const Icon(
-                        Icons.logout_rounded,
-                        size: 19,
-                      ),
-                      label: const Text(
-                        'Leave Natter',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                        ),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white60,
-                        side: BorderSide(
-                          color: Colors.white.withOpacity(0.20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 17,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(19),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
-}                        
+}              
 
 class _InsightDonutPainter extends CustomPainter {
   final double positiveFraction;
