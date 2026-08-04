@@ -12236,7 +12236,6 @@ class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
 
   bool _loading = false;
   String? _error;
-  String _selectedAvatar = 'owl';
 
   @override
   void dispose() {
@@ -12253,9 +12252,9 @@ class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
     });
 
     try {
-      final createdChild = await state.createChildProfile(
+      final createdChild =
+    await state.createChildProfile(
   name: _nameController.text,
-  avatar: _selectedAvatar,
 );
 
 final accessCode = createdChild.accessCode;
@@ -12271,7 +12270,7 @@ await showDialog(
         borderRadius: BorderRadius.circular(22),
       ),
       title: const Text(
-        'Child profile created',
+        'Their Natter journey begins here.',
         style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w900,
@@ -12372,49 +12371,6 @@ Navigator.pop(context);
     );
   }
 
-  Widget _avatarChoice(String value, String label, IconData icon) {
-    final selected = _selectedAvatar == value;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedAvatar = value;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-          decoration: BoxDecoration(
-            color: selected
-                ? Colors.white.withOpacity(0.16)
-                : Colors.white.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: selected ? Colors.white : Colors.white.withOpacity(0.10),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: Colors.white,
-                size: 28,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return ParentBrandScaffold(
@@ -12424,7 +12380,7 @@ Navigator.pop(context);
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text(
-          'Create Child Profile',
+          'Welcome another child',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w900,
@@ -12450,7 +12406,7 @@ Navigator.pop(context);
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    'Add a child',
+                    "What's their first name?",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 28,
@@ -12459,7 +12415,7 @@ Navigator.pop(context);
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    'Create a child profile to begin setting up their Natter experience.',
+                    'Every child deserves a safe place to connect, protect and grow.',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 15,
@@ -12471,25 +12427,6 @@ Navigator.pop(context);
                     controller: _nameController,
                     style: const TextStyle(color: Colors.white),
                     decoration: _fieldDecoration('Child name'),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Choose an avatar style',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _avatarChoice('owl', 'Owl', Icons.flutter_dash),
-                      const SizedBox(width: 10),
-                      _avatarChoice('star', 'Star', Icons.star_rounded),
-                      const SizedBox(width: 10),
-                      _avatarChoice('rocket', 'Rocket', Icons.rocket_launch),
-                    ],
                   ),
                   const SizedBox(height: 20),
                   if (_error != null) ...[
@@ -12524,7 +12461,7 @@ Navigator.pop(context);
                       ),
                     ),
                     child: Text(
-                      _loading ? 'Saving...' : 'Create Child Profile',
+                      _loading ? 'Saving...' : 'Welcome to Natter',
                       style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
