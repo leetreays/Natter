@@ -8280,60 +8280,60 @@ class ParentHomeScreen extends StatelessWidget {
   }
 
   Widget _buildMiniSpark({
-    required Color colour,
-    required double size,
-  }) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: colour,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: colour.withOpacity(0.46),
-            blurRadius: 7,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-    );
-  }
+  required Color colour,
+  required double size,
+}) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: colour.withOpacity(0.16),
+      shape: BoxShape.circle,
+      boxShadow: [
+        BoxShadow(
+          color: colour.withOpacity(0.08),
+          blurRadius: 8,
+          spreadRadius: 0.5,
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildMiniSparkCluster() {
-    return SizedBox(
-      width: 31,
-      height: 18,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 12,
-            top: 0,
-            child: _buildMiniSpark(
-              colour: NatterBrand.blue,
-              size: 6,
-            ),
+  return SizedBox(
+    width: 24,
+    height: 15,
+    child: Stack(
+      children: [
+        Positioned(
+          left: 9,
+          top: 0,
+          child: _buildMiniSpark(
+            colour: NatterBrand.blue,
+            size: 4.5,
           ),
-          Positioned(
-            left: 2,
-            bottom: 1,
-            child: _buildMiniSpark(
-              colour: NatterBrand.pink,
-              size: 5,
-            ),
+        ),
+        Positioned(
+          left: 2,
+          bottom: 1,
+          child: _buildMiniSpark(
+            colour: NatterBrand.pink,
+            size: 4,
           ),
-          Positioned(
-            right: 2,
-            bottom: 1,
-            child: _buildMiniSpark(
-              colour: NatterBrand.green,
-              size: 5,
-            ),
+        ),
+        Positioned(
+          right: 2,
+          bottom: 1,
+          child: _buildMiniSpark(
+            colour: NatterBrand.green,
+            size: 4,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildHeader(
     BuildContext context, {
@@ -8363,10 +8363,10 @@ class ParentHomeScreen extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: -5,
-              top: -9,
-              child: _buildMiniSparkCluster(),
-            ),
+  left: 17,
+  top: -7,
+  child: _buildMiniSparkCluster(),
+),
           ],
         ),
         const SizedBox(width: 15),
@@ -8400,36 +8400,64 @@ class ParentHomeScreen extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Container(
-          decoration: BoxDecoration(
-            color: NatterBrand.pink.withOpacity(0.06),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: NatterBrand.pink.withOpacity(0.30),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: NatterBrand.pink.withOpacity(0.10),
-                blurRadius: 13,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-          child: IconButton(
-            tooltip: 'Leave Natter',
-            onPressed: () {
-              _leaveNatter(context);
-            },
-            style: IconButton.styleFrom(
-              foregroundColor:
-                  NatterBrand.pink.withOpacity(0.88),
-              padding: const EdgeInsets.all(13),
-            ),
-            icon: const Icon(
-              Icons.logout_rounded,
-              size: 21,
-            ),
-          ),
-        ),
+  width: 48,
+  height: 48,
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.07),
+    shape: BoxShape.circle,
+    border: Border.all(
+      color: NatterBrand.pink.withOpacity(0.22),
+    ),
+  ),
+  child: IconButton(
+    tooltip: 'Leave Natter',
+    onPressed: () {
+      _leaveNatter(context);
+    },
+    style: ButtonStyle(
+      foregroundColor:
+          WidgetStateProperty.resolveWith<Color?>(
+        (states) {
+          if (states.contains(WidgetState.pressed)) {
+            return NatterBrand.pink;
+          }
+
+          return Colors.white70;
+        },
+      ),
+      backgroundColor:
+          WidgetStateProperty.resolveWith<Color?>(
+        (states) {
+          if (states.contains(WidgetState.pressed)) {
+            return NatterBrand.pink.withOpacity(0.12);
+          }
+
+          return Colors.transparent;
+        },
+      ),
+      overlayColor:
+          WidgetStateProperty.resolveWith<Color?>(
+        (states) {
+          if (states.contains(WidgetState.pressed)) {
+            return NatterBrand.pink.withOpacity(0.10);
+          }
+
+          return null;
+        },
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.zero,
+      ),
+      shape: const WidgetStatePropertyAll(
+        CircleBorder(),
+      ),
+    ),
+    icon: const Icon(
+      Icons.logout_rounded,
+      size: 21,
+    ),
+  ),
+),
       ],
     );
   }
