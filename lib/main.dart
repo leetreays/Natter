@@ -8406,7 +8406,7 @@ class ParentHomeScreen extends StatelessWidget {
     color: Colors.white.withOpacity(0.07),
     shape: BoxShape.circle,
     border: Border.all(
-      color: NatterBrand.pink.withOpacity(0.22),
+      color: NatterBrand.pink.withOpacity(0.38),
     ),
   ),
   child: IconButton(
@@ -8429,7 +8429,7 @@ class ParentHomeScreen extends StatelessWidget {
           WidgetStateProperty.resolveWith<Color?>(
         (states) {
           if (states.contains(WidgetState.pressed)) {
-            return NatterBrand.pink.withOpacity(0.12);
+            return NatterBrand.pink.withOpacity(0.18);
           }
 
           return Colors.transparent;
@@ -8439,7 +8439,7 @@ class ParentHomeScreen extends StatelessWidget {
           WidgetStateProperty.resolveWith<Color?>(
         (states) {
           if (states.contains(WidgetState.pressed)) {
-            return NatterBrand.pink.withOpacity(0.10);
+            return NatterBrand.pink.withOpacity(0.14);
           }
 
           return null;
