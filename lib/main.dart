@@ -1641,7 +1641,7 @@ class NatterEmptyState extends StatelessWidget {
   this.glow,
   this.action,
   this.compact = false,
-});;
+});
 
   final String title;
   final String message;
