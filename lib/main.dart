@@ -1215,6 +1215,31 @@ class NatterCelebrationDialog extends StatelessWidget {
   }
 }
 
+enum NatterGlowTone {
+  connect,
+  protect,
+  grow,
+  hope,
+}
+
+extension NatterGlowToneDetails on NatterGlowTone {
+  Color get colour {
+    switch (this) {
+      case NatterGlowTone.connect:
+        return NatterBrand.blue;
+
+      case NatterGlowTone.protect:
+        return NatterBrand.pink;
+
+      case NatterGlowTone.grow:
+        return NatterBrand.green;
+
+      case NatterGlowTone.hope:
+        return NatterJourneyTheme.sparkGold;
+    }
+  }
+}
+
 enum NatterStatusTone {
   neutral,
   positive,
@@ -1309,17 +1334,23 @@ class NatterSectionHeader extends StatelessWidget {
 
 class NatterStatusPill extends StatelessWidget {
   const NatterStatusPill({
-    super.key,
-    required this.label,
-    this.tone = NatterStatusTone.neutral,
-    this.icon,
-    this.compact = false,
-  });
+  super.key,
+  required this.label,
+  this.tone = NatterStatusTone.neutral,
+  this.icon,
+  this.glow,
+  this.compact = false,
+});
 
   final String label;
-  final NatterStatusTone tone;
-  final IconData? icon;
-  final bool compact;
+final NatterStatusTone tone;
+final IconData? icon;
+
+/// Optional atmospheric glow. The pill's foreground
+/// treatment remains controlled by its semantic tone.
+final NatterGlowTone? glow;
+
+final bool compact;
 
   Color get _accent {
     switch (tone) {
@@ -1360,18 +1391,27 @@ class NatterStatusPill extends StatelessWidget {
         vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: accent.withOpacity(
-          _backgroundOpacity,
-        ),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: accent.withOpacity(
-            tone == NatterStatusTone.neutral
-                ? 0.08
-                : 0.16,
+  color: accent.withOpacity(
+    _backgroundOpacity,
+  ),
+  borderRadius: BorderRadius.circular(999),
+  border: Border.all(
+    color: accent.withOpacity(
+      tone == NatterStatusTone.neutral
+          ? 0.08
+          : 0.16,
+    ),
+  ),
+  boxShadow: glow == null
+      ? null
+      : [
+          BoxShadow(
+            color: glow!.colour.withOpacity(0.10),
+            blurRadius: 14,
+            spreadRadius: 0,
           ),
-        ),
-      ),
+        ],
+),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1410,17 +1450,23 @@ class NatterStatusPill extends StatelessWidget {
 
 class NatterIconBadge extends StatelessWidget {
   const NatterIconBadge({
-    super.key,
-    required this.icon,
-    this.accent = NatterBrand.green,
-    this.size = 48,
-    this.iconSize = 23,
-    this.shape = BoxShape.rectangle,
-  });
+  super.key,
+  required this.icon,
+  this.accent = NatterBrand.green,
+  this.glow,
+  this.size = 48,
+  this.iconSize = 23,
+  this.shape = BoxShape.rectangle,
+});
 
   final IconData icon;
-  final Color accent;
-  final double size;
+final Color accent;
+
+/// Optional atmospheric glow carrying one of Natter's
+/// core emotional meanings.
+final NatterGlowTone? glow;
+
+final double size;
   final double iconSize;
   final BoxShape shape;
 
@@ -1437,13 +1483,22 @@ class NatterIconBadge extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: accent.withOpacity(0.13),
-        shape: shape,
-        borderRadius: borderRadius,
-        border: Border.all(
-          color: accent.withOpacity(0.15),
-        ),
-      ),
+  color: accent.withOpacity(0.13),
+  shape: shape,
+  borderRadius: borderRadius,
+  border: Border.all(
+    color: accent.withOpacity(0.15),
+  ),
+  boxShadow: glow == null
+      ? null
+      : [
+          BoxShadow(
+            color: glow!.colour.withOpacity(0.14),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+        ],
+),
       child: Icon(
         icon,
         color: accent,
@@ -1578,22 +1633,24 @@ class NatterListTile extends StatelessWidget {
 
 class NatterEmptyState extends StatelessWidget {
   const NatterEmptyState({
-    super.key,
-    required this.title,
-    required this.message,
-    this.icon = Icons.auto_awesome_rounded,
-    this.accent = NatterBrand.green,
-    this.action,
-    this.compact = false,
-  });
+  super.key,
+  required this.title,
+  required this.message,
+  this.icon = Icons.auto_awesome_rounded,
+  this.accent = NatterBrand.green,
+  this.glow,
+  this.action,
+  this.compact = false,
+});;
 
   final String title;
   final String message;
 
   final IconData icon;
-  final Color accent;
+final Color accent;
+final NatterGlowTone? glow;
 
-  final Widget? action;
+final Widget? action;
   final bool compact;
 
   @override
@@ -1609,11 +1666,12 @@ class NatterEmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           NatterIconBadge(
-            icon: icon,
-            accent: accent,
-            size: compact ? 40 : 48,
-            iconSize: compact ? 20 : 23,
-          ),
+  icon: icon,
+  accent: accent,
+  glow: glow,
+  size: compact ? 40 : 48,
+  iconSize: compact ? 20 : 23,
+),
           SizedBox(
             height: compact ? 13 : 16,
           ),
@@ -11519,6 +11577,7 @@ if (!child.linkedDevice) {
         NatterEmptyState(
   icon: Icons.link_rounded,
   accent: Colors.white,
+  glow: NatterGlowTone.connect,
           title:
               '${child.name} hasn’t connected their device yet.',
           message:
@@ -11532,6 +11591,7 @@ if (!child.linkedDevice) {
   label: 'Waiting to connect',
   tone: NatterStatusTone.neutral,
   icon: Icons.schedule_rounded,
+  glow: NatterGlowTone.connect,
 ),
 
               const SizedBox(height: 18),
