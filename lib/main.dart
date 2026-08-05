@@ -11494,95 +11494,105 @@ final childDocStream = FirebaseFirestore.instance
     .doc(child.childId)
     .snapshots();
     
-    if (!child.linkedDevice) {
-  return ParentBrandScaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      title: Text(
-        child.name,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
+if (!child.linkedDevice) {
+  return NatterScreenScaffold(
+    worldStage: NatterWorldStage.parentMorning,
+    onBack: () {
+      Navigator.pop(context);
+    },
+    showLogo: true,
+    logoSize: 42,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+
+        NatterScreenHeader(
+          title: '${child.name}’s space',
+          subtitle:
+              'Their Natter journey is ready whenever they are.',
+          compact: true,
         ),
-      ),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.pop(context),
-      ),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-      child: Center(
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
-          ),
-          child: Column(
+
+        const SizedBox(height: 34),
+
+        NatterEmptyState(
+          icon: Icons.link_rounded,
+          accent: NatterBrand.blue,
+          title:
+              '${child.name} hasn’t connected their device yet.',
+          message:
+              'Once they enter their Natter Code and begin using '
+              'Natter, this space will gently reflect their '
+              'friendships, progress and support moments.',
+          action: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.link_rounded,
-                color: Colors.white.withOpacity(0.78),
-                size: 42,
+              NatterStatusPill(
+                label: 'Waiting to connect',
+                tone: NatterStatusTone.informational,
+                icon: Icons.schedule_rounded,
               ),
-              const SizedBox(height: 16),
-              Text(
-                '${child.name} hasn’t started their Natter journey yet.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Once their device is linked and they begin using Natter, you’ll see gentle insights, support signals and progress here.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontWeight: FontWeight.w600,
-                  height: 1.35,
-                ),
-              ),
+
               const SizedBox(height: 18),
-              Container(
+
+              NatterSurface(
+                style: NatterSurfaceStyle.primary,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
+                  horizontal: 18,
+                  vertical: 18,
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.07),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.06),
-                  ),
-                ),
-                child: Text(
-                  'Access code · ${child.accessCode}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.70),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.2,
-                  ),
+                borderRadius: 20,
+                child: Column(
+                  children: [
+                    Text(
+                      '${child.name}’s Natter Code',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.64),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    SelectableText(
+                      child.accessCode,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 27,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 4,
+                      ),
+                    ),
+
+                    const SizedBox(height: 9),
+
+                    Text(
+                      'Enter this code on the device '
+                      '${child.name} will use.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.58),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ),
+
+        const SizedBox(height: 80),
+      ],
     ),
   );
-    }
+}
     
     return ParentBrandScaffold(
       appBar: AppBar(
