@@ -331,12 +331,14 @@ enum NatterSurfaceStyle {
 
 class NatterScreenScaffold extends StatelessWidget {
   const NatterScreenScaffold({
-    super.key,
-    required this.worldStage,
-    required this.child,
-    this.onBack,
-    this.showLogo = false,
-    this.footer,
+  super.key,
+  required this.worldStage,
+  required this.child,
+  this.onBack,
+  this.showLogo = false,
+  this.keepLogoVisibleWithKeyboard = false,
+  this.logoSize = 48,
+  this.footer,
     this.maxWidth = 720,
     this.horizontalPadding = 24,
     this.topPadding = 18,
@@ -349,8 +351,18 @@ class NatterScreenScaffold extends StatelessWidget {
   final Widget child;
 
   final VoidCallback? onBack;
-  final bool showLogo;
+final bool showLogo;
 
+/// Keeps the logo visible while the keyboard is open.
+///
+/// This is useful for short, identity-led screens such as
+/// welcoming another child. It remains false by default so
+/// other future screens can reclaim the space when necessary.
+final bool keepLogoVisibleWithKeyboard;
+
+/// The standard screen logo is deliberately smaller than the
+/// onboarding hero logo.
+final double logoSize;
   /// A button or other action kept below the scrolling content.
   final Widget? footer;
 
@@ -396,17 +408,19 @@ class NatterScreenScaffold extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        if (onBack != null ||
-                            (showLogo && !keyboardVisible))
-                          _NatterScreenTopBar(
-                            onBack: onBack,
-                            showLogo:
-                                showLogo && !keyboardVisible,
-                          ),
+                        if (onBack != null || showLogo)
+  _NatterScreenTopBar(
+    onBack: onBack,
+    showLogo: showLogo &&
+        (!keyboardVisible ||
+            keepLogoVisibleWithKeyboard),
+    logoSize: logoSize,
+  ),
 
-                        if (onBack != null ||
-                            (showLogo && !keyboardVisible))
-                          const SizedBox(height: 18),
+if (onBack != null || showLogo)
+  SizedBox(
+    height: keyboardVisible ? 10 : 18,
+  ),
 
                         Expanded(
                           child: AnimatedPadding(
@@ -448,15 +462,17 @@ class _NatterScreenTopBar extends StatelessWidget {
   const _NatterScreenTopBar({
     required this.onBack,
     required this.showLogo,
+    required this.logoSize,
   });
 
   final VoidCallback? onBack;
   final bool showLogo;
+  final double logoSize;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 62,
+      height: 58,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -470,11 +486,11 @@ class _NatterScreenTopBar extends StatelessWidget {
                   foregroundColor: Colors.white,
                   backgroundColor:
                       Colors.white.withOpacity(0.06),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(11),
                 ),
                 icon: const Icon(
                   Icons.arrow_back_rounded,
-                  size: 24,
+                  size: 23,
                 ),
               ),
             ),
@@ -483,8 +499,8 @@ class _NatterScreenTopBar extends StatelessWidget {
             Center(
               child: Image.asset(
                 NatterBrand.logoPath,
-                width: 58,
-                height: 58,
+                width: logoSize,
+                height: logoSize,
                 fit: BoxFit.contain,
               ),
             ),
@@ -13240,12 +13256,14 @@ class _CreateChildProfileScreenState
   @override
   Widget build(BuildContext context) {
     return NatterScreenScaffold(
-      worldStage:
-          NatterWorldStage.parentMorning,
-      onBack: () {
-        Navigator.pop(context);
-      },
-      showLogo: true,
+  worldStage:
+      NatterWorldStage.parentMorning,
+  onBack: () {
+    Navigator.pop(context);
+  },
+  showLogo: true,
+  keepLogoVisibleWithKeyboard: true,
+  logoSize: 48,
       footer: NatterPrimaryButton(
         label: 'Welcome to Natter',
         icon: Icons.arrow_forward_rounded,
@@ -13259,15 +13277,16 @@ class _CreateChildProfileScreenState
         children: [
           const SizedBox(height: 18),
 
-          const NatterScreenHeader(
-            title: 'Welcome another child',
-            subtitle:
-                'Every child deserves a safe place '
-                'to connect, protect and grow.',
-          ),
+const NatterScreenHeader(
+  title: 'Welcome another child',
+  subtitle:
+      'Every child deserves a safe place '
+      'to connect, protect and grow.',
+  compact: true,
+),
 
-          const SizedBox(height: 46),
-
+          const SizedBox(height: 34),
+          
           NatterTextField(
             controller: _nameController,
             label: "What's their first name?",
