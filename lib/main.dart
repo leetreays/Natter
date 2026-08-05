@@ -13103,27 +13103,71 @@ class ParentSpaceBackground extends StatelessWidget {
 }
 
 class CreateChildProfileScreen extends StatefulWidget {
-  const CreateChildProfileScreen({super.key});
+  const CreateChildProfileScreen({
+    super.key,
+  });
 
   @override
   State<CreateChildProfileScreen> createState() =>
       _CreateChildProfileScreenState();
 }
 
-class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
-  final _nameController = TextEditingController();
+class _CreateChildProfileScreenState
+    extends State<CreateChildProfileScreen> {
+  final TextEditingController _nameController =
+      TextEditingController();
 
   bool _loading = false;
   String? _error;
 
+  bool get _canContinue {
+    return _nameController.text.trim().isNotEmpty &&
+        !_loading;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _nameController.addListener(
+      _handleNameChanged,
+    );
+  }
+
   @override
   void dispose() {
-    _nameController.dispose();
+    _nameController
+      ..removeListener(_handleNameChanged)
+      ..dispose();
+
     super.dispose();
   }
 
+  void _handleNameChanged() {
+    if (!mounted) return;
+
+    setState(() {
+      if (_error != null &&
+          _nameController.text.trim().isNotEmpty) {
+        _error = null;
+      }
+    });
+  }
+
   Future<void> _save() async {
-    final state = AppStateScope.of(context);
+    final childName =
+        _nameController.text.trim();
+
+    if (childName.isEmpty) {
+      setState(() {
+        _error =
+            "Enter your child's first name to continue.";
+      });
+
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
 
     setState(() {
       _loading = true;
@@ -13131,94 +13175,58 @@ class _CreateChildProfileScreenState extends State<CreateChildProfileScreen> {
     });
 
     try {
+      final state = AppStateScope.of(context);
+
+      // The avatar is intentionally omitted here.
+      // createChildProfile currently supplies its own
+      // temporary default until child-owned identity
+      // selection is introduced.
       final createdChild =
-    await state.createChildProfile(
-  name: _nameController.text,
-);
+          await state.createChildProfile(
+        name: childName,
+      );
 
-final accessCode = createdChild.accessCode;
+      final accessCode =
+          createdChild.accessCode;
 
-if (!mounted) return;
+      if (!mounted) return;
 
-await showDialog(
-  context: context,
-  builder: (context) {
-    return AlertDialog(
-      backgroundColor: const Color(0xFF10283A),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-      ),
-      title: const Text(
-        'Their Natter journey begins here.',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Give this access code to your child:',
-            style: TextStyle(
-              color: Colors.white70,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.12),
-              ),
-            ),
-            child: Text(
-              accessCode,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 3,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'Your child can enter this code on their device to open their Natter space.',
-            style: TextStyle(
-              color: Colors.white70,
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text(
-            'Done',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-      ],
-    );
-  },
-);
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return NatterCelebrationDialog(
+            title:
+                '$childName’s journey begins here.',
+            message:
+                'Share this code with $childName. '
+                'They’ll use it to join your family '
+                'and open their own Natter space.',
+            highlightLabel:
+                '$childName’s Natter Code',
+            highlightValue: accessCode,
+            supportingMessage:
+                'They’ll choose how they appear '
+                'when they begin their journey.',
+            buttonLabel: 'Continue',
+            icon: Icons.auto_awesome_rounded,
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+          );
+        },
+      );
 
-if (!mounted) return;
-Navigator.pop(context);
-    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(context);
+    } catch (error) {
+      if (!mounted) return;
+
       setState(() {
-        _error = e.toString().replaceFirst('Exception: ', '');
+        _error =
+            'We could not prepare this Natter space. '
+            'Please try again.';
       });
     } finally {
       if (mounted) {
@@ -13229,133 +13237,71 @@ Navigator.pop(context);
     }
   }
 
-  InputDecoration _fieldDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(color: Colors.white70),
-      filled: true,
-      fillColor: Colors.white.withOpacity(0.08),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.10)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.white, width: 1.2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ParentBrandScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          'Welcome another child',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    return NatterScreenScaffold(
+      worldStage:
+          NatterWorldStage.parentMorning,
+      onBack: () {
+        Navigator.pop(context);
+      },
+      showLogo: true,
+      footer: NatterPrimaryButton(
+        label: 'Welcome to Natter',
+        icon: Icons.arrow_forward_rounded,
+        isLoading: _loading,
+        enabled: _canContinue,
+        onPressed: _save,
       ),
-      child: SafeArea(
-        child: SizedBox.expand(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
-            child: Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.22),
-                borderRadius: BorderRadius.circular(26),
-                border: Border.all(color: Colors.white.withOpacity(0.12)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text(
-                    "What's their first name?",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Every child deserves a safe place to connect, protect and grow.',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
-                      height: 1.45,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  TextField(
-                    controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: _fieldDecoration('Child name'),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_error != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.14),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.redAccent.withOpacity(0.35),
-                        ),
-                      ),
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  ElevatedButton(
-                    onPressed: _loading ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: NatterBrand.green,
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-                    child: Text(
-                      _loading ? 'Saving...' : 'Welcome to Natter',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 18),
+
+          const NatterScreenHeader(
+            title: 'Welcome another child',
+            subtitle:
+                'Every child deserves a safe place '
+                'to connect, protect and grow.',
           ),
-        ),
+
+          const SizedBox(height: 46),
+
+          NatterTextField(
+            controller: _nameController,
+            label: "What's their first name?",
+            hintText: 'First name',
+            autofocus: true,
+            enabled: !_loading,
+            keyboardType: TextInputType.name,
+            textInputAction: TextInputAction.done,
+            textCapitalization:
+                TextCapitalization.words,
+            onSubmitted: (_) {
+              if (_canContinue) {
+                _save();
+              }
+            },
+          ),
+
+          if (_error != null) ...[
+            const SizedBox(height: 16),
+            NatterInlineError(
+              message: _error!,
+            ),
+          ],
+
+          // Space allows the content to breathe while
+          // keeping the landscape visible beneath it.
+          const SizedBox(height: 80),
+        ],
       ),
     );
   }
 }
+
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
