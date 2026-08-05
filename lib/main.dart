@@ -8,7 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'widgets/natter_code_input.dart';
 
 Future<User> ensureSignedIn() async {
@@ -1208,6 +1207,657 @@ class NatterCelebrationDialog extends StatelessWidget {
                   () {
                     Navigator.pop(context);
                   },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum NatterStatusTone {
+  neutral,
+  positive,
+  informational,
+  protective,
+  caution,
+}
+
+enum NatterDialogTone {
+  neutral,
+  protective,
+  destructive,
+}
+
+class NatterSectionHeader extends StatelessWidget {
+  const NatterSectionHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.textAlign = TextAlign.left,
+  });
+
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final TextAlign textAlign;
+
+  CrossAxisAlignment get _alignment {
+    switch (textAlign) {
+      case TextAlign.center:
+        return CrossAxisAlignment.center;
+
+      case TextAlign.right:
+      case TextAlign.end:
+        return CrossAxisAlignment.end;
+
+      default:
+        return CrossAxisAlignment.start;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textContent = Column(
+      crossAxisAlignment: _alignment,
+      children: [
+        Text(
+          title,
+          textAlign: textAlign,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            height: 1.2,
+            letterSpacing: -0.2,
+          ),
+        ),
+        if (subtitle != null &&
+            subtitle!.trim().isNotEmpty) ...[
+          const SizedBox(height: 5),
+          Text(
+            subtitle!,
+            textAlign: textAlign,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.62),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ],
+    );
+
+    if (trailing == null) {
+      return textContent;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: textContent,
+        ),
+        const SizedBox(width: 14),
+        trailing!,
+      ],
+    );
+  }
+}
+
+class NatterStatusPill extends StatelessWidget {
+  const NatterStatusPill({
+    super.key,
+    required this.label,
+    this.tone = NatterStatusTone.neutral,
+    this.icon,
+    this.compact = false,
+  });
+
+  final String label;
+  final NatterStatusTone tone;
+  final IconData? icon;
+  final bool compact;
+
+  Color get _accent {
+    switch (tone) {
+      case NatterStatusTone.positive:
+        return NatterBrand.green;
+
+      case NatterStatusTone.informational:
+        return NatterBrand.blue;
+
+      case NatterStatusTone.protective:
+        return NatterBrand.pink;
+
+      case NatterStatusTone.caution:
+        return NatterBrand.yellow;
+
+      case NatterStatusTone.neutral:
+        return Colors.white;
+    }
+  }
+
+  double get _backgroundOpacity {
+    switch (tone) {
+      case NatterStatusTone.neutral:
+        return 0.075;
+
+      default:
+        return 0.14;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _accent;
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 4 : 6,
+      ),
+      decoration: BoxDecoration(
+        color: accent.withOpacity(
+          _backgroundOpacity,
+        ),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: accent.withOpacity(
+            tone == NatterStatusTone.neutral
+                ? 0.08
+                : 0.16,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              color: accent.withOpacity(
+                tone == NatterStatusTone.neutral
+                    ? 0.66
+                    : 0.94,
+              ),
+              size: compact ? 12 : 14,
+            ),
+            SizedBox(
+              width: compact ? 4 : 5,
+            ),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: accent.withOpacity(
+                tone == NatterStatusTone.neutral
+                    ? 0.64
+                    : 0.94,
+              ),
+              fontSize: compact ? 10 : 11,
+              fontWeight: FontWeight.w800,
+              height: 1.15,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NatterIconBadge extends StatelessWidget {
+  const NatterIconBadge({
+    super.key,
+    required this.icon,
+    this.accent = NatterBrand.green,
+    this.size = 48,
+    this.iconSize = 23,
+    this.shape = BoxShape.rectangle,
+  });
+
+  final IconData icon;
+  final Color accent;
+  final double size;
+  final double iconSize;
+  final BoxShape shape;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = shape == BoxShape.circle
+        ? null
+        : BorderRadius.circular(
+            size * 0.32,
+          );
+
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.13),
+        shape: shape,
+        borderRadius: borderRadius,
+        border: Border.all(
+          color: accent.withOpacity(0.15),
+        ),
+      ),
+      child: Icon(
+        icon,
+        color: accent,
+        size: iconSize,
+      ),
+    );
+  }
+}
+
+class NatterListTile extends StatelessWidget {
+  const NatterListTile({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    this.trailing,
+    this.status,
+    this.onTap,
+    this.enabled = true,
+    this.showChevron = true,
+    this.padding = const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 15,
+    ),
+  });
+
+  final String title;
+  final String? subtitle;
+
+  final Widget? leading;
+  final Widget? trailing;
+  final Widget? status;
+
+  final VoidCallback? onTap;
+
+  final bool enabled;
+  final bool showChevron;
+
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveOnTap =
+        enabled ? onTap : null;
+
+    return NatterSurface(
+      style: NatterSurfaceStyle.interactive,
+      padding: EdgeInsets.zero,
+      borderRadius: 22,
+      onTap: effectiveOnTap,
+      child: Padding(
+        padding: padding,
+        child: Row(
+          children: [
+            if (leading != null) ...[
+              leading!,
+              const SizedBox(width: 14),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow:
+                              TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: enabled
+                                ? Colors.white
+                                : Colors.white
+                                    .withOpacity(0.44),
+                            fontSize: 17,
+                            fontWeight:
+                                FontWeight.w900,
+                            height: 1.25,
+                          ),
+                        ),
+                      ),
+                      if (status != null) ...[
+                        const SizedBox(width: 10),
+                        status!,
+                      ],
+                    ],
+                  ),
+                  if (subtitle != null &&
+                      subtitle!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Text(
+                      subtitle!,
+                      maxLines: 2,
+                      overflow:
+                          TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: enabled
+                            ? Colors.white
+                                .withOpacity(0.56)
+                            : Colors.white
+                                .withOpacity(0.34),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (trailing != null) ...[
+              const SizedBox(width: 12),
+              trailing!,
+            ] else if (showChevron &&
+                effectiveOnTap != null) ...[
+              const SizedBox(width: 10),
+              Icon(
+                Icons.chevron_right_rounded,
+                color:
+                    Colors.white.withOpacity(0.54),
+                size: 24,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NatterEmptyState extends StatelessWidget {
+  const NatterEmptyState({
+    super.key,
+    required this.title,
+    required this.message,
+    this.icon = Icons.auto_awesome_rounded,
+    this.accent = NatterBrand.green,
+    this.action,
+    this.compact = false,
+  });
+
+  final String title;
+  final String message;
+
+  final IconData icon;
+  final Color accent;
+
+  final Widget? action;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterSurface(
+      style: NatterSurfaceStyle.quiet,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 18 : 22,
+        vertical: compact ? 18 : 24,
+      ),
+      borderRadius: 24,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NatterIconBadge(
+            icon: icon,
+            accent: accent,
+            size: compact ? 40 : 48,
+            iconSize: compact ? 20 : 23,
+          ),
+          SizedBox(
+            height: compact ? 13 : 16,
+          ),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: compact ? 16 : 18,
+              fontWeight: FontWeight.w900,
+              height: 1.25,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.66),
+              fontSize: compact ? 13 : 14,
+              fontWeight: FontWeight.w500,
+              height: 1.45,
+            ),
+          ),
+          if (action != null) ...[
+            SizedBox(
+              height: compact ? 15 : 19,
+            ),
+            action!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class NatterActionDialog extends StatelessWidget {
+  const NatterActionDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.primaryLabel,
+    required this.onPrimaryPressed,
+    this.secondaryLabel = 'Cancel',
+    this.onSecondaryPressed,
+    this.icon = Icons.info_outline_rounded,
+    this.tone = NatterDialogTone.neutral,
+    this.barrierActionAllowed = true,
+  });
+
+  final String title;
+  final String message;
+
+  final String primaryLabel;
+  final VoidCallback onPrimaryPressed;
+
+  final String? secondaryLabel;
+  final VoidCallback? onSecondaryPressed;
+
+  final IconData icon;
+  final NatterDialogTone tone;
+
+  /// Retained for future dialog wrappers that may use this
+  /// component to decide whether outside dismissal is allowed.
+  final bool barrierActionAllowed;
+
+  Color get _accent {
+    switch (tone) {
+      case NatterDialogTone.protective:
+        return NatterBrand.pink;
+
+      case NatterDialogTone.destructive:
+        return NatterBrand.pink;
+
+      case NatterDialogTone.neutral:
+        return NatterBrand.blue;
+    }
+  }
+
+  Color get _primaryBackground {
+    switch (tone) {
+      case NatterDialogTone.destructive:
+        return NatterBrand.pink;
+
+      case NatterDialogTone.protective:
+        return NatterBrand.pink;
+
+      case NatterDialogTone.neutral:
+        return NatterBrand.green;
+    }
+  }
+
+  Color get _primaryForeground {
+    switch (tone) {
+      case NatterDialogTone.destructive:
+      case NatterDialogTone.protective:
+        return Colors.white;
+
+      case NatterDialogTone.neutral:
+        return Colors.black;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _accent;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 30,
+      ),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(
+          maxWidth: 450,
+        ),
+        padding: const EdgeInsets.fromLTRB(
+          22,
+          24,
+          22,
+          20,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF172A4D)
+              .withOpacity(0.98),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.14),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.22),
+              blurRadius: 28,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NatterIconBadge(
+              icon: icon,
+              accent: accent,
+              size: 48,
+              iconSize: 24,
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                height: 1.15,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                height: 1.48,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                if (secondaryLabel != null &&
+                    secondaryLabel!
+                        .trim()
+                        .isNotEmpty) ...[
+                  Expanded(
+                    child: SizedBox(
+                      height: 52,
+                      child: TextButton(
+                        onPressed:
+                            onSecondaryPressed ??
+                                () {
+                                  Navigator.pop(
+                                    context,
+                                  );
+                                },
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              Colors.white70,
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(
+                              17,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          secondaryLabel!,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight:
+                                FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: SizedBox(
+                    height: 52,
+                    child: FilledButton(
+                      onPressed: onPrimaryPressed,
+                      style: FilledButton.styleFrom(
+                        backgroundColor:
+                            _primaryBackground,
+                        foregroundColor:
+                            _primaryForeground,
+                        elevation: 0,
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            17,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        primaryLabel,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight:
+                              FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
