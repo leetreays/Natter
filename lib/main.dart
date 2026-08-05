@@ -321,6 +321,885 @@ class NatterWorld extends StatelessWidget {
   }
 }
 
+enum NatterSurfaceStyle {
+  primary,
+  secondary,
+  interactive,
+  quiet,
+  error,
+}
+
+class NatterScreenScaffold extends StatelessWidget {
+  const NatterScreenScaffold({
+    super.key,
+    required this.worldStage,
+    required this.child,
+    this.onBack,
+    this.showLogo = false,
+    this.footer,
+    this.maxWidth = 720,
+    this.horizontalPadding = 24,
+    this.topPadding = 18,
+    this.bottomPadding = 28,
+    this.keyboardDismissBehavior =
+        ScrollViewKeyboardDismissBehavior.onDrag,
+  });
+
+  final NatterWorldStage worldStage;
+  final Widget child;
+
+  final VoidCallback? onBack;
+  final bool showLogo;
+
+  /// A button or other action kept below the scrolling content.
+  final Widget? footer;
+
+  final double maxWidth;
+  final double horizontalPadding;
+  final double topPadding;
+  final double bottomPadding;
+
+  final ScrollViewKeyboardDismissBehavior
+      keyboardDismissBehavior;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final keyboardInset = mediaQuery.viewInsets.bottom;
+    final keyboardVisible = keyboardInset > 0;
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: worldStage.skyColours.first,
+      body: NatterWorld(
+        stage: worldStage,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: maxWidth,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      isWide
+                          ? horizontalPadding + 20
+                          : horizontalPadding,
+                      topPadding,
+                      isWide
+                          ? horizontalPadding + 20
+                          : horizontalPadding,
+                      bottomPadding,
+                    ),
+                    child: Column(
+                      children: [
+                        if (onBack != null ||
+                            (showLogo && !keyboardVisible))
+                          _NatterScreenTopBar(
+                            onBack: onBack,
+                            showLogo:
+                                showLogo && !keyboardVisible,
+                          ),
+
+                        if (onBack != null ||
+                            (showLogo && !keyboardVisible))
+                          const SizedBox(height: 18),
+
+                        Expanded(
+                          child: AnimatedPadding(
+                            duration: const Duration(
+                              milliseconds: 240,
+                            ),
+                            curve: Curves.easeOutCubic,
+                            padding: EdgeInsets.only(
+                              bottom: keyboardInset,
+                            ),
+                            child: SingleChildScrollView(
+                              physics:
+                                  const BouncingScrollPhysics(),
+                              keyboardDismissBehavior:
+                                  keyboardDismissBehavior,
+                              child: child,
+                            ),
+                          ),
+                        ),
+
+                        if (footer != null) ...[
+                          const SizedBox(height: 16),
+                          footer!,
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NatterScreenTopBar extends StatelessWidget {
+  const _NatterScreenTopBar({
+    required this.onBack,
+    required this.showLogo,
+  });
+
+  final VoidCallback? onBack;
+  final bool showLogo;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 62,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (onBack != null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                tooltip: 'Back',
+                onPressed: onBack,
+                style: IconButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor:
+                      Colors.white.withOpacity(0.06),
+                  padding: const EdgeInsets.all(12),
+                ),
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  size: 24,
+                ),
+              ),
+            ),
+
+          if (showLogo)
+            Center(
+              child: Image.asset(
+                NatterBrand.logoPath,
+                width: 58,
+                height: 58,
+                fit: BoxFit.contain,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class NatterScreenHeader extends StatelessWidget {
+  const NatterScreenHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.eyebrow,
+    this.textAlign = TextAlign.center,
+    this.compact = false,
+  });
+
+  final String title;
+  final String? subtitle;
+  final String? eyebrow;
+  final TextAlign textAlign;
+  final bool compact;
+
+  CrossAxisAlignment get _crossAxisAlignment {
+    switch (textAlign) {
+      case TextAlign.left:
+      case TextAlign.start:
+        return CrossAxisAlignment.start;
+
+      case TextAlign.right:
+      case TextAlign.end:
+        return CrossAxisAlignment.end;
+
+      default:
+        return CrossAxisAlignment.center;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: _crossAxisAlignment,
+      children: [
+        if (eyebrow != null &&
+            eyebrow!.trim().isNotEmpty) ...[
+          Text(
+            eyebrow!.toUpperCase(),
+            textAlign: textAlign,
+            style: NatterJourneyTheme.eyebrow,
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        Text(
+          title,
+          textAlign: textAlign,
+          style: NatterJourneyTheme.title.copyWith(
+            fontSize: compact ? 30 : 38,
+            height: compact ? 1.08 : 1.05,
+          ),
+        ),
+
+        if (subtitle != null &&
+            subtitle!.trim().isNotEmpty) ...[
+          SizedBox(
+            height: compact ? 12 : 18,
+          ),
+          Text(
+            subtitle!,
+            textAlign: textAlign,
+            style: NatterJourneyTheme.subtitle.copyWith(
+              fontSize: compact ? 15 : 17,
+              height: 1.48,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class NatterSurface extends StatelessWidget {
+  const NatterSurface({
+    super.key,
+    required this.child,
+    this.style = NatterSurfaceStyle.primary,
+    this.padding = const EdgeInsets.all(22),
+    this.margin,
+    this.borderRadius = 26,
+    this.onTap,
+  });
+
+  final Widget child;
+  final NatterSurfaceStyle style;
+
+  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? margin;
+  final double borderRadius;
+
+  final VoidCallback? onTap;
+
+  Color get _backgroundColour {
+    switch (style) {
+      case NatterSurfaceStyle.primary:
+        return Colors.white.withOpacity(0.085);
+
+      case NatterSurfaceStyle.secondary:
+        return Colors.black.withOpacity(0.10);
+
+      case NatterSurfaceStyle.interactive:
+        return const Color(0xFF1C2A48)
+            .withOpacity(0.86);
+
+      case NatterSurfaceStyle.quiet:
+        return Colors.white.withOpacity(0.055);
+
+      case NatterSurfaceStyle.error:
+        return Colors.redAccent.withOpacity(0.10);
+    }
+  }
+
+  Color get _borderColour {
+    switch (style) {
+      case NatterSurfaceStyle.primary:
+        return Colors.white.withOpacity(0.13);
+
+      case NatterSurfaceStyle.secondary:
+        return Colors.white.withOpacity(0.10);
+
+      case NatterSurfaceStyle.interactive:
+        return Colors.white.withOpacity(0.10);
+
+      case NatterSurfaceStyle.quiet:
+        return Colors.white.withOpacity(0.08);
+
+      case NatterSurfaceStyle.error:
+        return Colors.redAccent.withOpacity(0.28);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final decoration = BoxDecoration(
+      color: _backgroundColour,
+      borderRadius: BorderRadius.circular(
+        borderRadius,
+      ),
+      border: Border.all(
+        color: _borderColour,
+      ),
+    );
+
+    final content = Container(
+      width: double.infinity,
+      margin: margin,
+      padding: padding,
+      decoration: decoration,
+      child: child,
+    );
+
+    if (onTap == null) {
+      return content;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(
+          borderRadius,
+        ),
+        overlayColor:
+            WidgetStateProperty.resolveWith<Color?>(
+          (states) {
+            if (states.contains(
+              WidgetState.pressed,
+            )) {
+              return Colors.white.withOpacity(0.07);
+            }
+
+            return null;
+          },
+        ),
+        child: content,
+      ),
+    );
+  }
+}
+
+class NatterFieldLabel extends StatelessWidget {
+  const NatterFieldLabel(
+    this.text, {
+    super.key,
+  });
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+        height: 1.25,
+      ),
+    );
+  }
+}
+
+class NatterFieldDecoration {
+  const NatterFieldDecoration._();
+
+  static InputDecoration standard({
+    required String hintText,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+    String? errorText,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      errorText: errorText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      hintStyle: TextStyle(
+        color: Colors.white.withOpacity(0.48),
+        fontWeight: FontWeight.w600,
+      ),
+      errorStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+      ),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.10),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 19,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(
+          color: Colors.white.withOpacity(0.12),
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(
+          color: Colors.white.withOpacity(0.12),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(
+          color: NatterBrand.blue,
+          width: 1.8,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: BorderSide(
+          color: Colors.redAccent.withOpacity(0.72),
+          width: 1.4,
+        ),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(20),
+        borderSide: const BorderSide(
+          color: Colors.redAccent,
+          width: 1.8,
+        ),
+      ),
+    );
+  }
+}
+
+class NatterTextField extends StatelessWidget {
+  const NatterTextField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.label,
+    this.focusNode,
+    this.keyboardType,
+    this.textInputAction,
+    this.textCapitalization =
+        TextCapitalization.none,
+    this.obscureText = false,
+    this.enabled = true,
+    this.autofocus = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.errorText,
+    this.onChanged,
+    this.onSubmitted,
+  });
+
+  final TextEditingController controller;
+  final String hintText;
+
+  final String? label;
+  final FocusNode? focusNode;
+
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final TextCapitalization textCapitalization;
+
+  final bool obscureText;
+  final bool enabled;
+  final bool autofocus;
+
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+
+  final String? errorText;
+
+  final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final field = TextField(
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      textCapitalization: textCapitalization,
+      obscureText: obscureText,
+      enabled: enabled,
+      autofocus: autofocus,
+      autocorrect: false,
+      enableSuggestions: !obscureText,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: NatterFieldDecoration.standard(
+        hintText: hintText,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+        errorText: errorText,
+      ),
+      onChanged: onChanged,
+      onSubmitted: onSubmitted,
+    );
+
+    if (label == null ||
+        label!.trim().isEmpty) {
+      return field;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        NatterFieldLabel(label!),
+        const SizedBox(height: 12),
+        field,
+      ],
+    );
+  }
+}
+
+class NatterPrimaryButton extends StatelessWidget {
+  const NatterPrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.isLoading = false,
+    this.enabled = true,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+
+  final IconData? icon;
+
+  final bool isLoading;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: FilledButton(
+        onPressed:
+            enabled && !isLoading ? onPressed : null,
+        style: FilledButton.styleFrom(
+          backgroundColor: NatterBrand.green,
+          foregroundColor: Colors.black,
+          disabledBackgroundColor:
+              NatterBrand.green.withOpacity(0.42),
+          disabledForegroundColor:
+              Colors.black.withOpacity(0.48),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(19),
+          ),
+        ),
+        child: isLoading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.3,
+                  color: Colors.black,
+                ),
+              )
+            : Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    Icon(
+                      icon,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class NatterSecondaryButton extends StatelessWidget {
+  const NatterSecondaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.enabled = true,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+
+  final IconData? icon;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton(
+        onPressed: enabled ? onPressed : null,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white,
+          side: BorderSide(
+            color: Colors.white.withOpacity(0.24),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(19),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 20,
+              ),
+              const SizedBox(width: 9),
+            ],
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NatterInlineError extends StatelessWidget {
+  const NatterInlineError({
+    super.key,
+    required this.message,
+  });
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterSurface(
+      style: NatterSurfaceStyle.error,
+      padding: const EdgeInsets.all(15),
+      borderRadius: 18,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.info_outline_rounded,
+            color: Colors.white,
+            size: 21,
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NatterCelebrationDialog extends StatelessWidget {
+  const NatterCelebrationDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.buttonLabel,
+    this.highlightLabel,
+    this.highlightValue,
+    this.supportingMessage,
+    this.icon = Icons.auto_awesome_rounded,
+    this.onPressed,
+  });
+
+  final String title;
+  final String message;
+
+  final String? highlightLabel;
+  final String? highlightValue;
+  final String? supportingMessage;
+
+  final String buttonLabel;
+  final IconData icon;
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 30,
+      ),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(
+          maxWidth: 460,
+        ),
+        padding: const EdgeInsets.fromLTRB(
+          22,
+          24,
+          22,
+          20,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFF172A4D)
+              .withOpacity(0.98),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.14),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.22),
+              blurRadius: 28,
+              offset: const Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: NatterBrand.green.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(17),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                icon,
+                color: NatterBrand.green,
+                size: 25,
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+                height: 1.12,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 15,
+                height: 1.48,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            if (highlightValue != null &&
+                highlightValue!.trim().isNotEmpty) ...[
+              const SizedBox(height: 20),
+
+              NatterSurface(
+                style: NatterSurfaceStyle.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 20,
+                ),
+                borderRadius: 21,
+                child: Column(
+                  children: [
+                    if (highlightLabel != null &&
+                        highlightLabel!
+                            .trim()
+                            .isNotEmpty) ...[
+                      Text(
+                        highlightLabel!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.66),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+
+                    SelectableText(
+                      highlightValue!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            if (supportingMessage != null &&
+                supportingMessage!
+                    .trim()
+                    .isNotEmpty) ...[
+              const SizedBox(height: 15),
+              Text(
+                supportingMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.65),
+                  fontSize: 13,
+                  height: 1.4,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 22),
+
+            NatterPrimaryButton(
+              label: buttonLabel,
+              onPressed: onPressed ??
+                  () {
+                    Navigator.pop(context);
+                  },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+      
 class NatterSparkCluster extends StatelessWidget {
   const NatterSparkCluster({
     super.key,
