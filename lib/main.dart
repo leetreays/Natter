@@ -11508,17 +11508,17 @@ if (!child.linkedDevice) {
         const SizedBox(height: 8),
 
         NatterScreenHeader(
-          title: '${child.name}’s space',
-          subtitle:
-              'Their Natter journey is ready whenever they are.',
-          compact: true,
-        ),
+  title: '${child.name}’s space',
+  subtitle:
+      'Their Natter journey will begin whenever they’re ready.',
+  compact: true,
+),
 
         const SizedBox(height: 34),
 
         NatterEmptyState(
-          icon: Icons.link_rounded,
-          accent: NatterBrand.blue,
+  icon: Icons.link_rounded,
+  accent: Colors.white,
           title:
               '${child.name} hasn’t connected their device yet.',
           message:
@@ -11529,10 +11529,10 @@ if (!child.linkedDevice) {
             mainAxisSize: MainAxisSize.min,
             children: [
               NatterStatusPill(
-                label: 'Waiting to connect',
-                tone: NatterStatusTone.informational,
-                icon: Icons.schedule_rounded,
-              ),
+  label: 'Waiting to connect',
+  tone: NatterStatusTone.neutral,
+  icon: Icons.schedule_rounded,
+),
 
               const SizedBox(height: 18),
 
