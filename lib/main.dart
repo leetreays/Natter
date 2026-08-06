@@ -11654,152 +11654,121 @@ if (!child.linkedDevice) {
   );
 }
     
-    return ParentBrandScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(
-          child.name,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
+return NatterScreenScaffold(
+  worldStage: NatterWorldStage.parentMorning,
+  onBack: () {
+    Navigator.pop(context);
+  },
+  showLogo: true,
+  logoSize: 42,
+  child: SingleChildScrollView(
+    physics: const NeverScrollableScrollPhysics(),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+
+        NatterScreenHeader(
+          title: '${child.name}’s space',
+          subtitle:
+              'A calm place to understand how their digital journey is growing.',
+          compact: true,
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      child: SingleChildScrollView(
-  padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-              Container(
-  padding: const EdgeInsets.all(26),
- decoration: BoxDecoration(
-  gradient: const LinearGradient(
-    colors: [
-      Color(0xFF2D4678),
-      Color(0xFF1F3766),
-      Color(0xFF1B3159),
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  ),
-  borderRadius: BorderRadius.circular(28),
-  boxShadow: [
-    BoxShadow(
-      color: Colors.black.withOpacity(0.14),
-      blurRadius: 16,
-      offset: const Offset(0, 6),
-    ),
-  ],
-),  child: Stack(
-    children: [
-      Positioned(
-  top: -90,
-  right: -80,
-  child: Container(
-    width: 320,
-    height: 320,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: const Color(0xFF9BCB58).withOpacity(0.035),
-    ),
-  ),
-),
-Positioned(
-  bottom: -70,
-  left: -60,
-  child: Container(
-    width: 200,
-    height: 200,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: const Color(0xFF4599DD).withOpacity(0.04),
-    ),
-  ),
-),
-      Column(
-        children: [
-          Align(
-  alignment: Alignment.topCenter,
-  child: Wrap(
-    alignment: WrapAlignment.center,
-    spacing: 10,
-    runSpacing: 8,
-    children: [
-      _heroBadge(
-        text: 'Growing well',
-        color: const Color(0xFF3F5F3A),
-      ),
-      _heroBadge(
-        text: 'Promise Keeper',
-        color: const Color(0xFF6F9F44),
-      ),
-    ],
-  ),
-),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: NatterBrand.green.withOpacity(0.80),
-                width: 3,
+
+        const SizedBox(height: 30),
+
+        NatterSurface(
+          style: NatterSurfaceStyle.primary,
+          padding: const EdgeInsets.all(24),
+          borderRadius: 28,
+          child: Column(
+            children: [
+              NatterStatusPill(
+                label: 'Connected',
+                tone: NatterStatusTone.positive,
+                icon: Icons.link_rounded,
+                glow: NatterGlowTone.connect,
               ),
-            ),
-            child: CircleAvatar(
-              radius: 32,
-              backgroundColor: const Color(0xFF445A87),
-              child: Text(
-                child.name.isNotEmpty ? child.name[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 24,
+
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: NatterBrand.green.withOpacity(0.72),
+                    width: 2.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: NatterBrand.green.withOpacity(0.12),
+                      blurRadius: 18,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 34,
+                  backgroundColor:
+                      const Color(0xFF31486F).withOpacity(0.92),
+                  child: Text(
+                    child.name.isNotEmpty
+                        ? child.name[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
               ),
-            ),
+
+              const SizedBox(height: 16),
+
+              Text(
+                child.name,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  height: 1.15,
+                ),
+              ),
+
+              const SizedBox(height: 7),
+
+              Text(
+                'Growing confidence online',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: NatterBrand.green.withOpacity(0.94),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                'Natter reflects patterns, progress and support '
+                'moments without revealing private conversations.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.70),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'Digital journey',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Growing confidence online 🌱',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: NatterBrand.green,
-              fontWeight: FontWeight.w800,
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'A gentle view of how things are going.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.78),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
-),
-const SizedBox(height: 18),
+        ),
+
+        const SizedBox(height: 18),
+
 StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
   stream: signalsStream,
   builder: (context, signalSnapshot) {
