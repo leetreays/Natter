@@ -11498,6 +11498,294 @@ Map<String, int> _signalCountsFromDocs(
     'total': docs.length,
   };
 }
+
+Widget _recentGlanceSection({
+  required Stream<QuerySnapshot<Map<String, dynamic>>> signalsStream,
+  required Stream<DocumentSnapshot<Map<String, dynamic>>> childDocStream,
+}) {
+  return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+    stream: signalsStream,
+    builder: (context, signalSnapshot) {
+      if (signalSnapshot.connectionState == ConnectionState.waiting) {
+        return NatterSurface(
+          style: NatterSurfaceStyle.primary,
+          padding: const EdgeInsets.all(22),
+          borderRadius: 28,
+          child: const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 28),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      }
+
+      if (signalSnapshot.hasError) {
+        return NatterSurface(
+          style: NatterSurfaceStyle.primary,
+          padding: const EdgeInsets.all(22),
+          borderRadius: 28,
+          child: NatterEmptyState(
+            title: 'Couldn’t load the latest picture',
+            message:
+                '${child.name}’s recent journey will appear here when the connection is restored.',
+            icon: Icons.cloud_off_rounded,
+            accent: Colors.white,
+            compact: true,
+          ),
+        );
+      }
+
+      final allDocs = signalSnapshot.data?.docs ?? [];
+      final recentDocs = _recentSignalDocs(allDocs);
+
+      final signalCounts = _signalCountsFromDocs(recentDocs);
+
+      final quietCount = signalCounts['quiet'] ?? 0;
+      final guidanceCount = signalCounts['guidance'] ?? 0;
+
+      final positiveCount = recentDocs.where((doc) {
+        return (doc.data()['category'] ?? '').toString() == 'positive';
+      }).length;
+
+      final insight = _buildInsightFractions(
+        quiet: quietCount,
+        guidance: guidanceCount,
+        positive: positiveCount,
+      );
+
+      final summary = _weeklySummaryText(recentDocs);
+
+      final supportIdeas =
+          _supportIdeasForSignalDocs(recentDocs);
+
+      final nextStep = supportIdeas.isNotEmpty
+          ? supportIdeas.first
+          : 'A gentle check-in can help your child feel supported.';
+
+      return NatterSurface(
+        style: NatterSurfaceStyle.primary,
+        padding: const EdgeInsets.all(22),
+        borderRadius: 28,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recent at a glance',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+
+            const SizedBox(height: 7),
+
+            Text(
+              'A quick view of ${child.name}’s recent digital journey.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.68),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            Center(
+              child: SizedBox(
+                width: 142,
+                height: 142,
+                child: CustomPaint(
+                  painter: _InsightDonutPainter(
+                    positiveFraction: insight['positive']!,
+                    guidanceFraction: insight['guidance']!,
+                    quietFraction: insight['quiet']!,
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.06),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.white,
+                        size: 27,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            const Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  _InsightKeyDot(
+                    color: Color(0xFF7FB34D),
+                    label: 'Growth',
+                  ),
+                  _InsightKeyDot(
+                    color: Color(0xFFE7C15A),
+                    label: 'Guidance',
+                  ),
+                  _InsightKeyDot(
+                    color: Color(0xFF4599DD),
+                    label: 'Quiet Time',
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            NatterSurface(
+              style: NatterSurfaceStyle.quiet,
+              padding: const EdgeInsets.all(18),
+              borderRadius: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      NatterIconBadge(
+                        icon: Icons.eco_rounded,
+                        accent: NatterBrand.green,
+                        size: 36,
+                        iconSize: 18,
+                      ),
+
+                      const SizedBox(width: 11),
+
+                      const Expanded(
+                        child: Text(
+                          'The bigger picture',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
+                    summary,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.76),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      height: 1.48,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            NatterSurface(
+              style: NatterSurfaceStyle.quiet,
+              padding: const EdgeInsets.all(16),
+              borderRadius: 20,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  NatterIconBadge(
+                    icon: Icons.lightbulb_rounded,
+                    accent: NatterBrand.yellow,
+                    size: 36,
+                    iconSize: 18,
+                  ),
+
+                  const SizedBox(width: 11),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'A gentle next step',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+
+                        const SizedBox(height: 5),
+
+                        Text(
+                          nextStep,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.74),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: childDocStream,
+              builder: (context, childSnapshot) {
+                final data = childSnapshot.data?.data() ?? {};
+                final quietTimeOn =
+                    data['quietHoursEnabled'] == true;
+
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    NatterStatusPill(
+                      label: '$positiveCount growth',
+                      tone: NatterStatusTone.positive,
+                      icon: Icons.eco_rounded,
+                    ),
+
+                    NatterStatusPill(
+                      label: '$guidanceCount guidance',
+                      tone: NatterStatusTone.neutral,
+                      icon: Icons.lightbulb_rounded,
+                    ),
+
+                    NatterStatusPill(
+                      label: quietTimeOn
+                          ? 'Quiet Time on'
+                          : 'Quiet Time off',
+                      tone: NatterStatusTone.neutral,
+                      icon: Icons.nightlight_round,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
   
  @override
   Widget build(BuildContext context) {
