@@ -11112,6 +11112,80 @@ String _weeklySummaryText(
 
   return sentences.take(4).join(' ');
 }
+
+String _recentGlanceSummary(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+) {
+  final positiveCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'positive';
+  }).length;
+
+  final coachingCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'coaching';
+  }).length;
+
+  final guidanceCount = docs.where((d) {
+    return (d.data()['category'] ?? '').toString() == 'guidance';
+  }).length;
+
+  final rewriteCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() == 'rewrite_used';
+  }).length;
+
+  final recoveryCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() ==
+        'conversation_recovered';
+  }).length;
+
+  final calmChoiceCount = docs.where((d) {
+    return (d.data()['context'] ?? '').toString() ==
+        'pause_respected';
+  }).length;
+
+  final positiveDetails = <String>[];
+
+  if (rewriteCount > 0) {
+    positiveDetails.add('choosing a kinder rewrite');
+  }
+
+  if (recoveryCount > 0) {
+    positiveDetails.add('helping a difficult friendship moment become calmer');
+  }
+
+  if (calmChoiceCount > 0) {
+    positiveDetails.add('taking time before replying');
+  }
+
+  String firstSentence;
+
+  if (positiveDetails.isNotEmpty) {
+    firstSentence =
+        '${child.name} showed positive communication growth recently, including ${positiveDetails.first}.';
+  } else if (positiveCount > 0) {
+    firstSentence =
+        '${child.name} showed some positive digital communication choices recently.';
+  } else {
+    firstSentence =
+        'Things have been fairly settled recently, with no major growth moments recorded yet.';
+  }
+
+  final supportCount = coachingCount + guidanceCount;
+
+  String secondSentence;
+
+  if (supportCount >= 3) {
+    secondSentence =
+        'There were also a few moments where Natter offered extra guidance.';
+  } else if (supportCount > 0) {
+    secondSentence =
+        'Natter also offered a little guidance when it was helpful.';
+  } else {
+    secondSentence =
+        'There has been little need for extra guidance.';
+  }
+
+  return '$firstSentence $secondSentence';
+}
   
 List<String> _supportIdeasForSignalDocs(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
@@ -11554,7 +11628,7 @@ Widget _recentGlanceSection({
         positive: positiveCount,
       );
 
-      final summary = _weeklySummaryText(recentDocs);
+      final summary = _recentGlanceSummary(recentDocs);
 
       final supportIdeas =
           _supportIdeasForSignalDocs(recentDocs);
