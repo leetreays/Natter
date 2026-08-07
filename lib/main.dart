@@ -11777,262 +11777,220 @@ StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
 
     final firestoreQuietCount = signalCounts['quiet'] ?? 0;
     final firestoreGuidanceCount = signalCounts['guidance'] ?? 0;
-
+    final firestoreConnectionCount = signalCounts['connection'] ?? 0;
     final firestorePositiveCount = signalDocs.where((d) {
-      return (d.data()['category'] ?? '').toString() == 'positive';
-    }).length;
+  return (d.data()['category'] ?? '').toString() == 'positive';
+}).length;
+    final firestoreSignalCount = signalCounts['total'] ?? 0;
 
-    final firestoreInsight = _buildInsightFractions(
+    final firestoreInsightHeadline = _insightHeadline(
       quiet: firestoreQuietCount,
       guidance: firestoreGuidanceCount,
-      positive: firestorePositiveCount,
+      connection: firestoreConnectionCount,
     );
 
-    final recentDocs = _recentSignalDocs(signalDocs);
-    final summary = _weeklySummaryText(recentDocs);
-    final supportIdeas = _supportIdeasForSignalDocs(recentDocs);
-    final nextStep = supportIdeas.isNotEmpty
-        ? supportIdeas.first
-        : 'A gentle check-in can help your child feel supported.';
+    final firestoreInsight = _buildInsightFractions(
+  quiet: firestoreQuietCount,
+  guidance: firestoreGuidanceCount,
+  positive: firestorePositiveCount,
+);
 
-    return NatterSurface(
-      style: NatterSurfaceStyle.primary,
+    final firestoreShowWeeklyNote = _shouldShowWeeklyNote();
+
+    final firestoreWeeklyNoteText = _weeklyNoteText(
+      quiet: firestoreQuietCount,
+      guidance: firestoreGuidanceCount,
+      connection: firestoreConnectionCount,
+    );
+
+    return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(22),
-      borderRadius: 28,
+      decoration: _outerSectionDecoration(),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'This week at a glance',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-            ),
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'At a glance',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      const SizedBox(height: 8),
+Text(
+  firestoreInsightHeadline,
+  style: TextStyle(
+    color: Colors.white.withOpacity(0.78),
+    fontWeight: FontWeight.w700,
+    height: 1.4,
+  ),
+),
+if (firestoreShowWeeklyNote) ...[
+  const SizedBox(height: 12),
+  Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+  color: const Color(0xFF32486A),
+  borderRadius: BorderRadius.circular(16),
+  border: Border.all(
+    color: Colors.white.withOpacity(0.08),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.yellow.withOpacity(0.08),
+      blurRadius: 14,
+      offset: const Offset(0, 4),
+    ),
+  ],
+),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: const Color(0xFF5A5A2C),
+            borderRadius: BorderRadius.circular(999),
           ),
-
-          const SizedBox(height: 7),
-
-          Text(
-            'A quick view of ${child.name}’s recent digital journey.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.68),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-            ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.wb_twilight_rounded,
+            color: NatterBrand.yellow,
+            size: 14,
           ),
-
-          const SizedBox(height: 22),
-
-          Center(
-            child: SizedBox(
-              width: 142,
-              height: 142,
-              child: CustomPaint(
-                painter: _InsightDonutPainter(
-                  positiveFraction: firestoreInsight['positive']!,
-                  guidanceFraction: firestoreInsight['guidance']!,
-                  quietFraction: firestoreInsight['quiet']!,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This week',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
                 ),
-                child: Center(
-                  child: Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.06),
-                    ),
-                    child: const Icon(
-                      Icons.auto_awesome_rounded,
-                      color: Colors.white,
-                      size: 27,
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                firestoreWeeklyNoteText,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.78),
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+],
+const SizedBox(height: 16),
+      Center(
+        child: SizedBox(
+          width: 150,
+          height: 150,
+          child: CustomPaint(
+            painter: _InsightDonutPainter(
+              positiveFraction: firestoreInsight['positive']!,
+              guidanceFraction: firestoreInsight['guidance']!,
+              quietFraction: firestoreInsight['quiet']!,
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.insights_rounded,
+                color: Colors.white,
+                size: 34,
               ),
             ),
           ),
-
-          const SizedBox(height: 16),
-
-          Center(
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: const [
-                _InsightKeyDot(
-                  color: Color(0xFF7FB34D),
-                  label: 'Growth',
-                ),
-                _InsightKeyDot(
-                  color: Color(0xFFE7C15A),
-                  label: 'Guidance',
-                ),
-                _InsightKeyDot(
-                  color: Color(0xFF4599DD),
-                  label: 'Quiet Time',
-                ),
-              ],
+        ),
+      ),
+      const SizedBox(height: 14),
+      Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 8,
+          children: const [
+            _InsightKeyDot(
+              color: Color(0xFF7FB34D),
+              label: 'Positive moments',
             ),
-          ),
-
-          const SizedBox(height: 24),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: _innerCardDecoration(
-              color: const Color(0xFF2D466F),
+            _InsightKeyDot(
+              color: Color(0xFFE7C15A),
+              label: 'Guidance moments',
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: NatterBrand.green.withOpacity(0.12),
-                      ),
-                      child: const Icon(
-                        Icons.eco_rounded,
-                        color: NatterBrand.green,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 11),
-                    const Expanded(
-                      child: Text(
-                        'The bigger picture',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                Text(
-                  summary,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.78),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    height: 1.48,
-                  ),
-                ),
-              ],
+            _InsightKeyDot(
+              color: Color(0xFF4599DD),
+              label: 'Quiet-time moments',
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: _innerCardDecoration(
-              color: const Color(0xFF32486A),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
+      Center(
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            StreamBuilder<List<ConversationRecord>>(
+              stream: state.conversationsForChildStream(
+                childId: child.childId,
+              ),
+              builder: (context, snapshot) {
+                final conversations = snapshot.data ?? [];
+                return _glanceCard(
+                  label: 'Connections',
+                  value: '${conversations.length}',
+                  color: const Color(0xFF7FB34D),
+                  icon: Icons.people_alt_rounded,
+                );
+              },
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: NatterBrand.yellow.withOpacity(0.12),
-                  ),
-                  child: const Icon(
-                    Icons.lightbulb_rounded,
-                    color: NatterBrand.yellow,
-                    size: 18,
-                  ),
-                ),
-
-                const SizedBox(width: 11),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'A gentle next step',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        nextStep,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.76),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          height: 1.45,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            _glanceCard(
+              label: 'Pending',
+              value: '$pendingCount',
+              color: const Color(0xFF95C85A),
+              icon: Icons.hourglass_top_rounded,
             ),
-          ),
+            StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: childDocStream,
+  builder: (context, snapshot) {
+    final data = snapshot.data?.data() ?? {};
+    final quietTimeOn = data['quietHoursEnabled'] == true;
 
-          const SizedBox(height: 16),
-
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: childDocStream,
-            builder: (context, snapshot) {
-              final data = snapshot.data?.data() ?? {};
-              final quietTimeOn = data['quietHoursEnabled'] == true;
-
-              return Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  NatterStatusPill(
-                    label: '$firestorePositiveCount growth',
-                    tone: NatterStatusTone.positive,
-                    icon: Icons.eco_rounded,
-                    glow: NatterGlowTone.grow,
-                  ),
-                  NatterStatusPill(
-                    label: '$firestoreGuidanceCount guidance',
-                    tone: NatterStatusTone.neutral,
-                    icon: Icons.lightbulb_rounded,
-                  ),
-                  NatterStatusPill(
-                    label: quietTimeOn
-                        ? 'Quiet Time on'
-                        : 'Quiet Time off',
-                    tone: NatterStatusTone.neutral,
-                    icon: Icons.nightlight_round,
-                  ),
-                ],
-              );
-            },
-          ),
-        ],
+    return _glanceCard(
+      label: 'Quiet Time',
+      value: quietTimeOn ? 'ON' : 'OFF',
+      color: const Color(0xFF4599DD),
+      icon: Icons.nightlight_round,
+    );
+  },
+),
+            _glanceCard(
+              label: 'Signals',
+              value: '$firestoreSignalCount',
+              color: const Color(0xFFA4CF58),
+              icon: Icons.insights_rounded,
+            ),
+          ],
+        ),
+      ),
+    ],
       ),
     );
   },
 ),
-
 const SizedBox(height: 18),
-
       StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
   stream: signalsStream,
   builder: (context, snapshot) {
@@ -12266,7 +12224,7 @@ final uniqueGrowthDocs = growthDocs.where((doc) {
 
   if (seenGrowthContexts.contains(context)) {
     return false;
-  }}
+  }
 
   seenGrowthContexts.add(context);
   return true;
