@@ -11770,12 +11770,15 @@ Widget _recentGlanceSection({
                     ),
 
                     NatterStatusPill(
-                      label: quietTimeOn
-                          ? 'Quiet Time on'
-                          : 'Quiet Time off',
-                      tone: NatterStatusTone.neutral,
-                      icon: Icons.nightlight_round,
-                    ),
+  label: quietTimeOn
+      ? 'Quiet Time on'
+      : 'Quiet Time off',
+  tone: NatterStatusTone.neutral,
+  icon: Icons.nightlight_round,
+  glow: quietTimeOn
+      ? NatterGlowTone.protect
+      : null,
+),
                   ],
                 );
               },
