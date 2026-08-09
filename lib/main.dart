@@ -12253,6 +12253,13 @@ _recentGlanceSection(
 ),
 
 const SizedBox(height: 18),
+
+_exploreJourneySection(
+  context: context,
+  parentUid: parentUid,
+),
+
+const SizedBox(height: 18),
         
 Container(
   width: double.infinity,
