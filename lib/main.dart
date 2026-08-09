@@ -12093,17 +12093,13 @@ Widget _exploreJourneySection({
   required BuildContext context,
   required String parentUid,
 }) {
-  return NatterListTile(
+  return NatterJourneyLinkCard(
     title: 'Explore ${child.name}’s journey',
-    subtitle:
-        'Readiness, friendships, growth and family settings.',
-    leading: const NatterIconBadge(
-      icon: Icons.explore_rounded,
-      accent: Colors.white,
-      glow: NatterGlowTone.connect,
-      size: 42,
-      iconSize: 20,
-    ),
+    subtitle: 'Friendships, growth, readiness and settings.',
+    icon: Icons.explore_rounded,
+    accent: Colors.white,
+    glow: NatterGlowTone.connect,
+    compact: true,
     onTap: () {
       Navigator.push(
         context,
