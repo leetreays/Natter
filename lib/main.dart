@@ -12382,29 +12382,23 @@ _exploreJourneySection(
 
 const SizedBox(height: 18),
 
-        
-      
 StreamBuilder<List<ChildContactRequest>>(
-  stream: AppStateScope.of(context).incomingFriendRequestsForParentChildStream(
-  parentId: FirebaseAuth.instance.currentUser!.uid,
-  childId: child.childId,
-  status: 'pending',
-),
+  stream: AppStateScope.of(context)
+      .incomingFriendRequestsForParentChildStream(
+    parentId: FirebaseAuth.instance.currentUser!.uid,
+    childId: child.childId,
+    status: 'pending',
+  ),
   builder: (context, snapshot) {
     if (snapshot.hasError) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.16),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.10),
-          ),
-        ),
+      return NatterSurface(
+        style: NatterSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(18),
+        borderRadius: 24,
         child: Text(
           'Could not load requests: ${snapshot.error}',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.78),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -12412,15 +12406,10 @@ StreamBuilder<List<ChildContactRequest>>(
     }
 
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.16),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.10),
-          ),
-        ),
+      return NatterSurface(
+        style: NatterSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(18),
+        borderRadius: 24,
         child: const Center(
           child: CircularProgressIndicator(),
         ),
@@ -12429,111 +12418,139 @@ StreamBuilder<List<ChildContactRequest>>(
 
     final requests = snapshot.data ?? [];
 
+    if (requests.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.16),
+        color: Colors.white.withOpacity(0.07),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: Colors.white.withOpacity(0.10),
+          color: NatterBrand.blue.withOpacity(0.22),
+          width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.blue.withOpacity(0.10),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Pending requests',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (requests.isEmpty)
-            const Text(
-              'No pending requests.',
-              style: TextStyle(
-                color: Colors.white70,
-                fontWeight: FontWeight.w700,
+          Row(
+            children: [
+              const NatterIconBadge(
+                icon: Icons.people_alt_rounded,
+                accent: Colors.white,
+                glow: NatterGlowTone.connect,
+                size: 40,
+                iconSize: 19,
               ),
-            )
-          else
-            ...requests.map((request) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.10),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Pending requests',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            request.requesterChildName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                         Text(
-                            'Wants to add this child as a friend',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.78),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await AppStateScope.of(context)
-                            .approveFriendRequestViaFunction(
-                          requestId: request.id,
-                        );
-                      },
-                      child: const Text(
-                        'Approve',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await AppStateScope.of(context)
-                            .blockFriendRequestViaFunction(
-                          requestId: request.id,
-                        );
-                      },
-                      child: Text(
-                        'Block',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.78),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          ...requests.map((request) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.055),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: NatterBrand.blue.withOpacity(0.14),
                 ),
-              );
-            }),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          request.requesterChildName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Wants to add this child as a friend',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.68),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  TextButton(
+                    onPressed: () async {
+                      await AppStateScope.of(context)
+                          .approveFriendRequestViaFunction(
+                        requestId: request.id,
+                      );
+                    },
+                    child: const Text(
+                      'Approve',
+                      style: TextStyle(
+                        color: NatterBrand.blue,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+
+                  TextButton(
+                    onPressed: () async {
+                      await AppStateScope.of(context)
+                          .blockFriendRequestViaFunction(
+                        requestId: request.id,
+                      );
+                    },
+                    child: Text(
+                      'Block',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.62),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
   },
-),
+),       
+              ),
+            )
+          
         ],
     ),
   ),
