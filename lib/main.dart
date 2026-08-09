@@ -1631,6 +1631,101 @@ class NatterListTile extends StatelessWidget {
   }
 }
 
+class NatterJourneyLinkCard extends StatelessWidget {
+  const NatterJourneyLinkCard({
+    super.key,
+    required this.title,
+    required this.onTap,
+    required this.icon,
+    this.subtitle,
+    this.accent = Colors.white,
+    this.glow,
+    this.compact = false,
+  });
+
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  final IconData icon;
+  final Color accent;
+  final NatterGlowTone? glow;
+
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterSurface(
+      style: NatterSurfaceStyle.quiet,
+      padding: EdgeInsets.zero,
+      borderRadius: compact ? 20 : 22,
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 15 : 17,
+          vertical: compact ? 13 : 16,
+        ),
+        child: Row(
+          children: [
+            NatterIconBadge(
+              icon: icon,
+              accent: accent,
+              glow: glow,
+              size: compact ? 38 : 42,
+              iconSize: compact ? 18 : 20,
+            ),
+
+            SizedBox(width: compact ? 12 : 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: compact ? 15 : 16,
+                      fontWeight: FontWeight.w900,
+                      height: 1.2,
+                    ),
+                  ),
+
+                  if (subtitle != null &&
+                      subtitle!.trim().isNotEmpty) ...[
+                    SizedBox(height: compact ? 4 : 6),
+                    Text(
+                      subtitle!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.58),
+                        fontSize: compact ? 11 : 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.white.withOpacity(0.38),
+              size: compact ? 21 : 23,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class NatterEmptyState extends StatelessWidget {
   const NatterEmptyState({
   super.key,
