@@ -12141,53 +12141,7 @@ _recentGlanceSection(
 
 const SizedBox(height: 18),
         
-      StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-  stream: signalsStream,
-  builder: (context, snapshot) {
-    final allDocs = snapshot.data?.docs ?? [];
-    final docs = _recentSignalDocs(allDocs);
-    final summary = _weeklySummaryText(docs);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: _outerSectionDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: NatterBrand.green.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Weekly summary',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.2,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            summary,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.78),
-              fontWeight: FontWeight.w700,
-              height: 1.45,
-            ),
-          ),
-        ],
-      ),
-    );
-  },
-),
-const SizedBox(height: 18),
-      Container(
+Container(
   width: double.infinity,
   padding: const EdgeInsets.all(20),
   decoration: _outerSectionDecoration(),
