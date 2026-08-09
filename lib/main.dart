@@ -12565,7 +12565,7 @@ return NatterScreenScaffold(
         NatterScreenHeader(
           title: '${child.name}’s space',
           subtitle:
-              'A calm place to understand how their digital journey is growing.',
+              'A calm view of how ${child.name} is growing online.',
           compact: true,
         ),
 
