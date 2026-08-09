@@ -11998,112 +11998,28 @@ Widget _exploreJourneySection({
   required BuildContext context,
   required String parentUid,
 }) {
-  return NatterSurface(
-    style: NatterSurfaceStyle.primary,
-    padding: const EdgeInsets.all(22),
-    borderRadius: 28,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const NatterSectionHeader(
-          title: 'Explore their journey',
-          subtitle:
-              'Go deeper when you want to understand more.',
-        ),
-
-        const SizedBox(height: 18),
-
-        NatterListTile(
-          title: 'Digital Readiness',
-          subtitle:
-              'See how confidence and communication are developing over time.',
-          leading: const NatterIconBadge(
-            icon: Icons.description_rounded,
-            accent: NatterBrand.yellow,
-            glow: NatterGlowTone.hope,
-            size: 42,
-            iconSize: 20,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              calmRoute(
-                const DigitalReadinessReportScreen(),
-              ),
-            );
-          },
-        ),
-
-        const SizedBox(height: 10),
-
-        NatterListTile(
-          title: 'Friendships',
-          subtitle:
-              'Explore how each friendship is growing over time.',
-          leading: const NatterIconBadge(
-            icon: Icons.timeline_rounded,
-            accent: NatterBrand.green,
-            glow: NatterGlowTone.grow,
-            size: 42,
-            iconSize: 20,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              calmRoute(
-                ParentFriendshipsScreen(
-                  childId: child.childId,
-                ),
-              ),
-            );
-          },
-        ),
-
-        const SizedBox(height: 10),
-
-        NatterListTile(
-          title: 'Guidance & Growth',
-          subtitle:
-              'Look more closely at recent learning, support and positive progress.',
-          leading: const NatterIconBadge(
-            icon: Icons.auto_awesome_rounded,
-            accent: Colors.white,
-            glow: NatterGlowTone.connect,
-            size: 42,
-            iconSize: 20,
-          ),
-          onTap: () {
-            // We will connect this route in a later commit.
-          },
-        ),
-
-        const SizedBox(height: 10),
-
-        NatterListTile(
-          title: 'Rules & Quiet Time',
-          subtitle:
-              'Review family settings and gentle safeguards.',
-          leading: const NatterIconBadge(
-            icon: Icons.shield_rounded,
-            accent: Colors.white,
-            glow: NatterGlowTone.protect,
-            size: 42,
-            iconSize: 20,
-          ),
-          onTap: () {
-            Navigator.push(
-              context,
-              calmRoute(
-                ParentRulesScreen(
-                  parentId: parentUid,
-                  childId: child.childId,
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+  return NatterListTile(
+    title: 'Explore ${child.name}’s journey',
+    subtitle:
+        'Readiness, friendships, growth and family settings.',
+    leading: const NatterIconBadge(
+      icon: Icons.explore_rounded,
+      accent: Colors.white,
+      glow: NatterGlowTone.connect,
+      size: 42,
+      iconSize: 20,
     ),
+    onTap: () {
+      Navigator.push(
+        context,
+        calmRoute(
+          ParentExploreJourneyScreen(
+            child: child,
+            parentUid: parentUid,
+          ),
+        ),
+      );
+    },
   );
 }
   
