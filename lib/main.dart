@@ -10810,95 +10810,79 @@ class ParentExploreJourneyScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          NatterListTile(
-            title: 'Digital Readiness',
-            subtitle:
-                'See how confidence and communication are developing over time.',
-            leading: const NatterIconBadge(
-              icon: Icons.description_rounded,
-              accent: NatterBrand.yellow,
-              glow: NatterGlowTone.hope,
-              size: 42,
-              iconSize: 20,
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                calmRoute(
-                  const DigitalReadinessReportScreen(),
-                ),
-              );
-            },
-          ),
+NatterJourneyLinkCard(
+  title: 'Digital Readiness',
+  subtitle:
+      'See how confidence and communication are developing over time.',
+  icon: Icons.description_rounded,
+  accent: NatterBrand.yellow,
+  glow: NatterGlowTone.hope,
+  onTap: () {
+    Navigator.push(
+      context,
+      calmRoute(
+        const DigitalReadinessReportScreen(),
+      ),
+    );
+  },
+),
 
-          const SizedBox(height: 12),
+const SizedBox(height: 12),
 
-          NatterListTile(
-            title: 'Friendships',
-            subtitle:
-                'Explore how each friendship is growing over time.',
-            leading: const NatterIconBadge(
-              icon: Icons.timeline_rounded,
-              accent: NatterBrand.green,
-              glow: NatterGlowTone.grow,
-              size: 42,
-              iconSize: 20,
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                calmRoute(
-                  ParentFriendshipsScreen(
-                    childId: child.childId,
-                  ),
-                ),
-              );
-            },
-          ),
+NatterJourneyLinkCard(
+  title: 'Friendships',
+  subtitle:
+      'Explore how each friendship is growing over time.',
+  icon: Icons.timeline_rounded,
+  accent: NatterBrand.green,
+  glow: NatterGlowTone.grow,
+  onTap: () {
+    Navigator.push(
+      context,
+      calmRoute(
+        ParentFriendshipsScreen(
+          childId: child.childId,
+        ),
+      ),
+    );
+  },
+),
 
-          const SizedBox(height: 12),
+const SizedBox(height: 12),
 
-          NatterListTile(
-            title: 'Guidance & Growth',
-            subtitle:
-                'Look more closely at recent learning, support and positive progress.',
-            leading: const NatterIconBadge(
-              icon: Icons.auto_awesome_rounded,
-              accent: Colors.white,
-              glow: NatterGlowTone.connect,
-              size: 42,
-              iconSize: 20,
-            ),
-            onTap: () {
-              // Destination will be added in a later commit.
-            },
-          ),
+NatterJourneyLinkCard(
+  title: 'Guidance & Growth',
+  subtitle:
+      'Look more closely at recent learning, support and positive progress.',
+  icon: Icons.auto_awesome_rounded,
+  accent: Colors.white,
+  glow: NatterGlowTone.connect,
+  onTap: () {
+    // Destination will be added in a later commit.
+  },
+),
 
-          const SizedBox(height: 12),
+const SizedBox(height: 12),
 
-          NatterListTile(
-            title: 'Rules & Quiet Time',
-            subtitle:
-                'Review family settings and gentle safeguards.',
-            leading: const NatterIconBadge(
-              icon: Icons.shield_rounded,
-              accent: Colors.white,
-              glow: NatterGlowTone.protect,
-              size: 42,
-              iconSize: 20,
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                calmRoute(
-                  ParentRulesScreen(
-                    parentId: parentUid,
-                    childId: child.childId,
-                  ),
-                ),
-              );
-            },
-          ),
+NatterJourneyLinkCard(
+  title: 'Rules & Quiet Time',
+  subtitle:
+      'Review family settings and gentle safeguards.',
+  icon: Icons.shield_rounded,
+  accent: Colors.white,
+  glow: NatterGlowTone.protect,
+  onTap: () {
+    Navigator.push(
+      context,
+      calmRoute(
+        ParentRulesScreen(
+          parentId: parentUid,
+          childId: child.childId,
+        ),
+      ),
+    );
+  },
+),
 
           const SizedBox(height: 60),
         ],
