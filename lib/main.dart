@@ -12151,13 +12151,7 @@ final nextStep = isSettled
         ? supportIdeas.first
         : 'A gentle check-in can help your child feel supported.';
 
-      final supportIdeas =
-          _supportIdeasForSignalDocs(recentDocs);
-
-      final nextStep = supportIdeas.isNotEmpty
-          ? supportIdeas.first
-          : 'A gentle check-in can help your child feel supported.';
-
+      
       return NatterSurface(
         style: NatterSurfaceStyle.primary,
         padding: const EdgeInsets.all(22),
