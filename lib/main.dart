@@ -150,6 +150,80 @@ extension NatterLevelInfo on NatterLevel {
   }
 }
 
+enum ParentReadinessStage {
+  beginning,
+  building,
+  growing,
+  nearlyReady,
+  graduate,
+}
+
+extension ParentReadinessStageDetails on ParentReadinessStage {
+  String get label {
+    switch (this) {
+      case ParentReadinessStage.beginning:
+        return 'Beginning the journey';
+
+      case ParentReadinessStage.building:
+        return 'Building confidence';
+
+      case ParentReadinessStage.growing:
+        return 'Growing independence';
+
+      case ParentReadinessStage.nearlyReady:
+        return 'Nearly ready';
+
+      case ParentReadinessStage.graduate:
+        return 'Natter Graduate';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case ParentReadinessStage.beginning:
+        return 'The foundations of healthy digital communication are taking shape.';
+
+      case ParentReadinessStage.building:
+        return 'Confidence and thoughtful communication are beginning to grow.';
+
+      case ParentReadinessStage.growing:
+        return 'More independent digital habits are developing over time.';
+
+      case ParentReadinessStage.nearlyReady:
+        return 'The habits that support greater digital independence are becoming established.';
+
+      case ParentReadinessStage.graduate:
+        return 'The Natter journey has reached its graduation milestone.';
+    }
+  }
+}
+
+ParentReadinessStage parentReadinessStageForState(
+  AppState state,
+) {
+  if (state.isGraduated) {
+    return ParentReadinessStage.graduate;
+  }
+
+  if (state.readyForGraduation) {
+    return ParentReadinessStage.nearlyReady;
+  }
+
+  switch (state.level) {
+    case NatterLevel.digitalCitizen:
+      return ParentReadinessStage.nearlyReady;
+
+    case NatterLevel.kindCommunicator:
+      return ParentReadinessStage.growing;
+
+    case NatterLevel.trustedChatter:
+      return ParentReadinessStage.building;
+
+    case NatterLevel.promiseKeeper:
+      return ParentReadinessStage.beginning;
+  }
+}
+
 enum NatterWorldStage {
   journeyWelcome,
   journeyCreateFamily,
