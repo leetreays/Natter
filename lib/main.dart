@@ -11981,51 +11981,49 @@ Widget _recentGlanceSection({
             const SizedBox(height: 12),
 
             NatterSurface(
-              style: NatterSurfaceStyle.quiet,
-              padding: const EdgeInsets.all(16),
-              borderRadius: 20,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NatterIconBadge(
-                    icon: Icons.lightbulb_rounded,
-                    accent: NatterBrand.yellow,
-                    size: 36,
-                    iconSize: 18,
-                  ),
-
-                  const SizedBox(width: 11),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'A gentle next step',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Text(
-                          nextStep,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.74),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            height: 1.45,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+  style: NatterSurfaceStyle.secondary,
+  padding: const EdgeInsets.all(16),
+  borderRadius: 22,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          const NatterIconBadge(
+            icon: Icons.lightbulb_rounded,
+            accent: NatterBrand.yellow,
+            glow: NatterGlowTone.hope,
+            size: 42,
+            iconSize: 20,
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'A gentle next step',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w900,
               ),
             ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 14),
+
+      Text(
+        nextStep,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.78),
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          height: 1.45,
+        ),
+      ),
+    ],
+  ),
+),
 
             const SizedBox(height: 16),
 
