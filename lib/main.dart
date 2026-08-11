@@ -15690,27 +15690,26 @@ class DigitalReadinessReportScreen extends StatelessWidget {
     final readinessStage =
     parentReadinessStageForState(state);
     
-    return ParentBrandScaffold(
-      appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  surfaceTintColor: Colors.transparent,
-  elevation: 0,
-  scrolledUnderElevation: 0,
-  title: const Text(
-    'Digital Readiness',
-    style: TextStyle(
-      color: Colors.white,
-      fontWeight: FontWeight.w900,
-    ),
-  ),
-  leading: IconButton(
-    icon: const Icon(Icons.arrow_back, color: Colors.white),
-    onPressed: () => Navigator.pop(context),
-  ),
-),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
+    return NatterScreenScaffold(
+  worldStage: readinessStage.worldStage,
+  onBack: () {
+    Navigator.pop(context);
+  },
+  showLogo: true,
+  logoSize: 42,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      const SizedBox(height: 8),
+
+      const NatterScreenHeader(
+        title: 'Digital Readiness',
+        subtitle:
+            'A growing picture of confidence, communication and independence.',
+        compact: true,
+      ),
+
+      const SizedBox(height: 24),
           Container(
   padding: const EdgeInsets.all(22),
   decoration: BoxDecoration(
