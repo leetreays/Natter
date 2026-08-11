@@ -198,6 +198,27 @@ extension ParentReadinessStageDetails on ParentReadinessStage {
   }
 }
 
+extension ParentReadinessStageWorldDetails on ParentReadinessStage {
+  NatterWorldStage get worldStage {
+    switch (this) {
+      case ParentReadinessStage.beginning:
+        return NatterWorldStage.parentReadinessBeginning;
+
+      case ParentReadinessStage.building:
+        return NatterWorldStage.parentReadinessBuilding;
+
+      case ParentReadinessStage.growing:
+        return NatterWorldStage.parentReadinessGrowing;
+
+      case ParentReadinessStage.nearlyReady:
+        return NatterWorldStage.parentReadinessNearlyReady;
+
+      case ParentReadinessStage.graduate:
+        return NatterWorldStage.parentReadinessGraduate;
+    }
+  }
+}
+
 ParentReadinessStage parentReadinessStageForState(
   AppState state,
 ) {
