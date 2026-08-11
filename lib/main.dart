@@ -12119,13 +12119,37 @@ Widget _childSnapshotSection({
         return (doc.data()['category'] ?? '').toString() == 'positive';
       }).length;
 
-      final insight = _buildInsightFractions(
+      final isSettled =
+    positiveCount == 0 &&
+    guidanceCount == 0 &&
+    quietCount == 0;
+
+      final insight = isSettled
+    ? {
+        'positive': 0.0,
+        'guidance': 0.0,
+        'quiet': 0.0,
+      }
+    : _buildInsightFractions(
         quiet: quietCount,
         guidance: guidanceCount,
         positive: positiveCount,
       );
 
-      final summary = _recentGlanceSummary(recentDocs);
+      final summary = isSettled
+    ? 'Things have been fairly settled recently. '
+        'Natter hasn’t needed to offer much extra guidance.'
+    : _recentGlanceSummary(recentDocs);
+
+final supportIdeas =
+    _supportIdeasForSignalDocs(recentDocs);
+
+final nextStep = isSettled
+    ? 'Things have been fairly settled recently. '
+        'A simple check-in can help keep conversations open.'
+    : supportIdeas.isNotEmpty
+        ? supportIdeas.first
+        : 'A gentle check-in can help your child feel supported.';
 
       final supportIdeas =
           _supportIdeasForSignalDocs(recentDocs);
@@ -12273,51 +12297,48 @@ Widget _childSnapshotSection({
             const SizedBox(height: 12),
 
             NatterSurface(
-              style: NatterSurfaceStyle.quiet,
-              padding: const EdgeInsets.all(16),
-              borderRadius: 20,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  NatterIconBadge(
-                    icon: Icons.lightbulb_rounded,
-                    accent: NatterBrand.yellow,
-                    size: 36,
-                    iconSize: 18,
-                  ),
-
-                  const SizedBox(width: 11),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'A gentle next step',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Text(
-                          nextStep,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.74),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            height: 1.45,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+  style: NatterSurfaceStyle.quiet,
+  padding: const EdgeInsets.all(18),
+  borderRadius: 20,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          NatterIconBadge(
+            icon: Icons.lightbulb_rounded,
+            accent: NatterBrand.yellow,
+            size: 36,
+            iconSize: 18,
+          ),
+          const SizedBox(width: 11),
+          const Expanded(
+            child: Text(
+              'A gentle next step',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
               ),
             ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 12),
+
+      Text(
+        nextStep,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.76),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.48,
+        ),
+      ),
+    ],
+  ),
+),
 
             const SizedBox(height: 16),
 
