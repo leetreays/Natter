@@ -15687,6 +15687,9 @@ class DigitalReadinessReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
 
+    final readinessStage =
+    parentReadinessStageForState(state);
+    
     return ParentBrandScaffold(
       appBar: AppBar(
   backgroundColor: Colors.transparent,
