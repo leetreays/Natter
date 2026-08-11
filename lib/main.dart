@@ -231,7 +231,14 @@ enum NatterWorldStage {
   journeyPreparePath,
   journeyCreateAccount,
   journeyReady,
+
   parentMorning,
+
+  parentReadinessBeginning,
+  parentReadinessBuilding,
+  parentReadinessGrowing,
+  parentReadinessNearlyReady,
+  parentReadinessGraduate,
 }
 
 extension NatterWorldStageDetails on NatterWorldStage {
@@ -285,37 +292,97 @@ extension NatterWorldStageDetails on NatterWorldStage {
           Color(0xFF8EA09D),
           Color(0xFFC8BEA7),
         ];
+
+      case NatterWorldStage.parentReadinessBeginning:
+  return const [
+    Color(0xFF405C6B),
+    Color(0xFF72898D),
+    Color(0xFFAAA99C),
+  ];
+
+case NatterWorldStage.parentReadinessBuilding:
+  return const [
+    Color(0xFF4A6672),
+    Color(0xFF819393),
+    Color(0xFFB5AF9E),
+  ];
+
+case NatterWorldStage.parentReadinessGrowing:
+  return const [
+    Color(0xFF56717A),
+    Color(0xFF91A09B),
+    Color(0xFFC1B8A2),
+  ];
+
+case NatterWorldStage.parentReadinessNearlyReady:
+  return const [
+    Color(0xFF637D83),
+    Color(0xFFA0AAA1),
+    Color(0xFFCEC2A8),
+  ];
+
+case NatterWorldStage.parentReadinessGraduate:
+  return const [
+    Color(0xFF718A8C),
+    Color(0xFFAFB5A8),
+    Color(0xFFD9CBAF),
+  ];
     }
   }
 
   double get starOpacity {
-    switch (this) {
-      case NatterWorldStage.parentMorning:
-        return 0.48;
+  switch (this) {
+    case NatterWorldStage.parentMorning:
+      return 0.48;
 
-      default:
-        return 1;
-    }
+    case NatterWorldStage.parentReadinessBeginning:
+      return 0.62;
+
+    case NatterWorldStage.parentReadinessBuilding:
+      return 0.50;
+
+    case NatterWorldStage.parentReadinessGrowing:
+      return 0.38;
+
+    case NatterWorldStage.parentReadinessNearlyReady:
+      return 0.26;
+
+    case NatterWorldStage.parentReadinessGraduate:
+      return 0.14;
+
+    default:
+      return 1;
   }
+}
 
   double get landscapeOpacity {
-    switch (this) {
-      case NatterWorldStage.parentMorning:
-        return 0.82;
+  switch (this) {
+    case NatterWorldStage.parentMorning:
+    case NatterWorldStage.parentReadinessBeginning:
+    case NatterWorldStage.parentReadinessBuilding:
+    case NatterWorldStage.parentReadinessGrowing:
+    case NatterWorldStage.parentReadinessNearlyReady:
+    case NatterWorldStage.parentReadinessGraduate:
+      return 0.82;
 
-      default:
-        return 1;
-    }
+    default:
+      return 1;
   }
+}
 
   double get landscapeHeight {
-    switch (this) {
-      case NatterWorldStage.parentMorning:
-        return 220;
+  switch (this) {
+    case NatterWorldStage.parentMorning:
+    case NatterWorldStage.parentReadinessBeginning:
+    case NatterWorldStage.parentReadinessBuilding:
+    case NatterWorldStage.parentReadinessGrowing:
+    case NatterWorldStage.parentReadinessNearlyReady:
+    case NatterWorldStage.parentReadinessGraduate:
+      return 220;
 
-      default:
-        return 250;
-    }
+    default:
+      return 250;
+  }
   }
 }
 
