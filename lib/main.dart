@@ -12149,12 +12149,12 @@ Widget _childSnapshotSection({
               glow: NatterGlowTone.connect,
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
 
             Center(
               child: SizedBox(
-                width: 150,
-                height: 150,
+                width: 136,
+                height: 136,
                 child: CustomPaint(
                   painter: _InsightDonutPainter(
                     positiveFraction: insight['positive']!,
@@ -12190,19 +12190,19 @@ Widget _childSnapshotSection({
               ),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
             Text(
               'Growing confidence online',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: NatterBrand.green.withOpacity(0.94),
-                fontSize: 16,
-                fontWeight: FontWeight.w900,
-              ),
+  color: Colors.white.withOpacity(0.90),
+  fontSize: 15,
+  fontWeight: FontWeight.w800,
+),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 10),
 
             const Center(
               child: Wrap(
@@ -12226,7 +12226,7 @@ Widget _childSnapshotSection({
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 16),
 
             NatterSurface(
               style: NatterSurfaceStyle.quiet,
