@@ -209,7 +209,7 @@ ParentReadinessStage parentReadinessStageForState(
     return ParentReadinessStage.nearlyReady;
   }
 
-  switch (state.level) {
+  switch (state.currentLevel) {
     case NatterLevel.digitalCitizen:
       return ParentReadinessStage.nearlyReady;
 
