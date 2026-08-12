@@ -15969,7 +15969,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
           const SizedBox(width: 14),
           const Expanded(
             child: Text(
-              "$childName’s readiness journey",
+              '$childName’s readiness journey',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 20,
