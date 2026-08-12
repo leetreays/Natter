@@ -391,6 +391,33 @@ Widget _readinessHighlightRow({
   );
 }
 
+String _readinessNextStepText(
+  ParentReadinessStage stage,
+) {
+  switch (stage) {
+    case ParentReadinessStage.beginning:
+      return 'For now, the focus is simply on building confidence with '
+          'kind, safe communication. As more experiences are recorded, '
+          'this picture will become clearer.';
+
+    case ParentReadinessStage.building:
+      return 'The next step is to keep practising thoughtful choices and '
+          'positive communication with gentle support when needed.';
+
+    case ParentReadinessStage.growing:
+      return 'More independent habits are beginning to take shape. '
+          'The focus now is on making those positive choices more consistent over time.';
+
+    case ParentReadinessStage.nearlyReady:
+      return 'The foundations for greater digital independence are becoming established. '
+          'Natter will continue looking for sustained confidence, judgement and healthy friendship habits.';
+
+    case ParentReadinessStage.graduate:
+      return 'Your child has completed this stage of their Natter journey '
+          'and reached the Digital Rite of Passage.';
+  }
+}
+
 class _ReadinessJourneyPath extends StatelessWidget {
   final ParentReadinessStage stage;
 
@@ -16156,35 +16183,50 @@ class DigitalReadinessReportScreen extends StatelessWidget {
   ),
 ),
           const SizedBox(height: 14),
-          Container(
-  padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-  ),
+          NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'What This Means',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
+      const NatterSectionHeader(
+        title: 'What comes next',
+        subtitle:
+            'A gentle interpretation of where this journey is heading.',
       ),
-      const SizedBox(height: 12),
-      Text(
-        state.isGraduated
-            ? 'Your child has demonstrated kind communication, safe message choices, and the ability to build positive digital friendships.'
-            : 'Your child is building the skills needed to communicate kindly, handle messages safely, and grow positive online friendships.',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.9),
-          fontWeight: FontWeight.w700,
-          height: 1.35,
+
+      const SizedBox(height: 18),
+
+      NatterSurface(
+        style: NatterSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(16),
+        borderRadius: 20,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const NatterIconBadge(
+              icon: Icons.explore_rounded,
+              accent: Colors.white,
+              glow: NatterGlowTone.connect,
+              size: 40,
+              iconSize: 19,
+            ),
+
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Text(
+                _readinessNextStepText(readinessStage),
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.76),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     ],
