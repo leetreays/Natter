@@ -245,6 +245,125 @@ ParentReadinessStage parentReadinessStageForState(
   }
 }
 
+String _readinessStageTitle(ParentReadinessStage stage) {
+  switch (stage) {
+    case ParentReadinessStage.beginning:
+      return 'The journey is beginning';
+
+    case ParentReadinessStage.building:
+      return 'Confidence is taking shape';
+
+    case ParentReadinessStage.growing:
+      return 'Growing with experience';
+
+    case ParentReadinessStage.nearlyReady:
+      return 'Nearly ready for greater independence';
+
+    case ParentReadinessStage.graduate:
+      return 'The journey has reached graduation';
+  }
+}
+
+String _readinessStageDescription(ParentReadinessStage stage) {
+  switch (stage) {
+    case ParentReadinessStage.beginning:
+      return 'As your child uses Natter, their communication habits, '
+          'positive choices and growing confidence will begin to appear here.';
+
+    case ParentReadinessStage.building:
+      return 'Your child is beginning to practise the habits that support '
+          'kind, safe and confident digital friendships.';
+
+    case ParentReadinessStage.growing:
+      return 'Positive choices are becoming more established as your child '
+          'builds confidence and handles friendships with greater independence.';
+
+    case ParentReadinessStage.nearlyReady:
+      return 'The habits that support thoughtful, independent digital '
+          'communication are becoming more established.';
+
+    case ParentReadinessStage.graduate:
+      return 'Your child has reached the Digital Rite of Passage and '
+          'completed this stage of their Natter journey.';
+  }
+}
+
+class _ReadinessJourneyPath extends StatelessWidget {
+  final ParentReadinessStage stage;
+
+  const _ReadinessJourneyPath({
+    required this.stage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final stages = ParentReadinessStage.values;
+    final currentIndex = stages.indexOf(stage);
+
+    return Row(
+      children: List.generate(stages.length, (index) {
+        final reached = index <= currentIndex;
+        final current = index == currentIndex;
+
+        return Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: reached
+                        ? NatterBrand.yellow.withOpacity(0.82)
+                        : Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ),
+
+              Container(
+                width: current ? 18 : 12,
+                height: current ? 18 : 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: reached
+                      ? NatterBrand.yellow
+                      : Colors.white.withOpacity(0.16),
+                  border: current
+                      ? Border.all(
+                          color: Colors.white.withOpacity(0.82),
+                          width: 2,
+                        )
+                      : null,
+                  boxShadow: current
+                      ? [
+                          BoxShadow(
+                            color: NatterBrand.yellow.withOpacity(0.22),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                      : null,
+                ),
+              ),
+
+              if (index == stages.length - 1)
+                Expanded(
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+}
+
 enum NatterWorldStage {
   journeyWelcome,
   journeyCreateFamily,
@@ -15710,64 +15829,64 @@ class DigitalReadinessReportScreen extends StatelessWidget {
       ),
 
       const SizedBox(height: 24),
-          Container(
-  padding: const EdgeInsets.all(22),
-  decoration: BoxDecoration(
-    gradient: LinearGradient(
-      colors: [
-        const Color(0xFF243761),
-        const Color(0xFF1B2D52),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: NatterBrand.green.withOpacity(0.10),
-        blurRadius: 16,
-        offset: const Offset(0, 6),
-      ),
-    ],
-  ),
+          NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(24),
+  borderRadius: 28,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         children: [
-          const Icon(
-            Icons.school_rounded,
-            color: NatterBrand.yellow,
-            size: 28,
+          NatterIconBadge(
+            icon: Icons.auto_awesome_rounded,
+            accent: NatterBrand.yellow,
+            glow: NatterGlowTone.hope,
+            size: 44,
+            iconSize: 21,
           ),
-          const SizedBox(width: 10),
-          Expanded(
+          const SizedBox(width: 14),
+          const Expanded(
             child: Text(
-              state.isGraduated
-                  ? 'Natter Graduate'
-                  : 'Digital Readiness Journey',
-              style: const TextStyle(
+              'Your readiness journey',
+              style: TextStyle(
                 color: Colors.white,
+                fontSize: 20,
                 fontWeight: FontWeight.w900,
-                fontSize: 22,
               ),
             ),
           ),
         ],
       ),
-      const SizedBox(height: 12),
+
+      const SizedBox(height: 22),
+
       Text(
-        state.isGraduated
-            ? '${state.lastName ?? 'Your child'} has successfully completed the Natter journey.'
-            : '${state.lastName ?? 'Your child'} is developing strong digital communication habits.',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.9),
-          fontWeight: FontWeight.w700,
-          height: 1.35,
+        _readinessStageTitle(readinessStage),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 26,
+          fontWeight: FontWeight.w900,
+          height: 1.1,
         ),
+      ),
+
+      const SizedBox(height: 9),
+
+      Text(
+        _readinessStageDescription(readinessStage),
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.74),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          height: 1.45,
+        ),
+      ),
+
+      const SizedBox(height: 24),
+
+      _ReadinessJourneyPath(
+        stage: readinessStage,
       ),
     ],
   ),
