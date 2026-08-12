@@ -300,70 +300,88 @@ class _ReadinessJourneyPath extends StatelessWidget {
     final stages = ParentReadinessStage.values;
     final currentIndex = stages.indexOf(stage);
 
-    return Row(
-      children: List.generate(stages.length, (index) {
-        final reached = index <= currentIndex;
-        final current = index == currentIndex;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dotSize = 12.0;
+        const currentDotSize = 18.0;
 
-        return Expanded(
-          child: Row(
+        return SizedBox(
+          height: 24,
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Expanded(
+              // Neutral journey track.
+              Positioned(
+                left: dotSize / 2,
+                right: dotSize / 2,
                 child: Container(
                   height: 3,
                   decoration: BoxDecoration(
-                    color: reached
-                        ? NatterBrand.yellow.withOpacity(0.82)
-                        : Colors.white.withOpacity(0.12),
+                    color: Colors.white.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(99),
                   ),
                 ),
               ),
 
-              Container(
-                width: current ? 18 : 12,
-                height: current ? 18 : 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: reached
-                      ? NatterBrand.yellow
-                      : Colors.white.withOpacity(0.16),
-                  border: current
-                      ? Border.all(
-                          color: Colors.white.withOpacity(0.82),
-                          width: 2,
-                        )
-                      : null,
-                  boxShadow: current
-                      ? [
-                          BoxShadow(
-                            color: NatterBrand.yellow.withOpacity(0.22),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          ),
-                        ]
-                      : null,
+              // Completed portion of the journey.
+              Positioned(
+                left: dotSize / 2,
+                width: currentIndex == 0
+                    ? 0
+                    : (constraints.maxWidth - dotSize) *
+                        (currentIndex / (stages.length - 1)),
+                child: Container(
+                  height: 3,
+                  decoration: BoxDecoration(
+                    color: NatterBrand.yellow.withOpacity(0.82),
+                    borderRadius: BorderRadius.circular(99),
+                  ),
                 ),
               ),
 
-              if (index == stages.length - 1)
-                Expanded(
-                  child: Container(
-                    height: 3,
+              // Five equally spaced milestones.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(stages.length, (index) {
+                  final reached = index <= currentIndex;
+                  final current = index == currentIndex;
+
+                  return Container(
+                    width: current ? currentDotSize : dotSize,
+                    height: current ? currentDotSize : dotSize,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(99),
+                      shape: BoxShape.circle,
+                      color: reached
+                          ? NatterBrand.yellow
+                          : Colors.white.withOpacity(0.16),
+                      border: current
+                          ? Border.all(
+                              color: Colors.white.withOpacity(0.82),
+                              width: 2,
+                            )
+                          : null,
+                      boxShadow: current
+                          ? [
+                              BoxShadow(
+                                color:
+                                    NatterBrand.yellow.withOpacity(0.22),
+                                blurRadius: 12,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
                     ),
-                  ),
-                ),
+                  );
+                }),
+              ),
             ],
           ),
         );
-      }),
+      },
     );
   }
 }
-
+                            
 enum NatterWorldStage {
   journeyWelcome,
   journeyCreateFamily,
