@@ -288,6 +288,59 @@ String _readinessStageDescription(ParentReadinessStage stage) {
   }
 }
 
+Widget _readinessStrengthRow({
+  required IconData icon,
+  required String title,
+  required String description,
+  required Color accent,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: NatterSurface(
+      style: NatterSurfaceStyle.quiet,
+      padding: const EdgeInsets.all(15),
+      borderRadius: 20,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NatterIconBadge(
+            icon: icon,
+            accent: accent,
+            size: 40,
+            iconSize: 19,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _ReadinessJourneyPath extends StatelessWidget {
   final ParentReadinessStage stage;
 
@@ -15910,39 +15963,93 @@ class DigitalReadinessReportScreen extends StatelessWidget {
   ),
 ),
           const SizedBox(height: 14),
-          Container(
-  padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-  ),
+          NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Strengths Shown',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
+      const NatterSectionHeader(
+        title: 'Strengths taking shape',
+        subtitle:
+            'Positive habits Natter has seen developing over time.',
       ),
-      const SizedBox(height: 12),
-      ...state.digitalReadinessStrengths.map(
-        (strength) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            strength,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
+
+      const SizedBox(height: 18),
+
+      if (state.positiveMessages == 0 &&
+          state.kindnessRewrites == 0 &&
+          state.completedSharedQuests == 0 &&
+          state.conversationStartersUsed == 0)
+        NatterSurface(
+          style: NatterSurfaceStyle.quiet,
+          padding: const EdgeInsets.all(16),
+          borderRadius: 20,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const NatterIconBadge(
+                icon: Icons.eco_rounded,
+                accent: NatterBrand.green,
+                glow: NatterGlowTone.grow,
+                size: 40,
+                iconSize: 19,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'It’s still early in the journey. '
+                  'Strengths will begin to appear here as Natter '
+                  'sees positive communication habits taking shape.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.74),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 1.45,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
+        )
+      else ...[
+        if (state.positiveMessages >= 10)
+          _readinessStrengthRow(
+            icon: Icons.favorite_rounded,
+            title: 'Kind communication',
+            description:
+                'Positive messages are becoming a regular part of their communication.',
+            accent: NatterBrand.green,
+          ),
+
+        if (state.kindnessRewrites >= 3)
+          _readinessStrengthRow(
+            icon: Icons.edit_rounded,
+            title: 'Thoughtful message choices',
+            description:
+                'They have shown willingness to pause, reflect and choose kinder wording.',
+            accent: NatterBrand.green,
+          ),
+
+        if (state.completedSharedQuests >= 3)
+          _readinessStrengthRow(
+            icon: Icons.people_alt_rounded,
+            title: 'Friendship building',
+            description:
+                'They are taking part in activities that strengthen positive friendship habits.',
+            accent: NatterBrand.blue,
+          ),
+
+        if (state.conversationStartersUsed >= 3)
+          _readinessStrengthRow(
+            icon: Icons.chat_bubble_rounded,
+            title: 'Confident conversation',
+            description:
+                'They are becoming more confident beginning positive conversations.',
+            accent: NatterBrand.yellow,
+          ),
+      ],
     ],
   ),
 ),
