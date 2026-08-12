@@ -264,26 +264,29 @@ String _readinessStageTitle(ParentReadinessStage stage) {
   }
 }
 
-String _readinessStageDescription(ParentReadinessStage stage) {
+String _readinessStageDescription(
+  ParentReadinessStage stage,
+  String childName,
+) {
   switch (stage) {
     case ParentReadinessStage.beginning:
-      return 'As your child uses Natter, their communication habits, '
+      return 'As $childName uses Natter, their communication habits, '
           'positive choices and growing confidence will begin to appear here.';
 
     case ParentReadinessStage.building:
-      return 'Your child is beginning to practise the habits that support '
+      return '$childName is beginning to practise the habits that support '
           'kind, safe and confident digital friendships.';
 
     case ParentReadinessStage.growing:
-      return 'Positive choices are becoming more established as your child '
+      return 'Positive choices are becoming more established as $childName '
           'builds confidence and handles friendships with greater independence.';
 
     case ParentReadinessStage.nearlyReady:
-      return 'The habits that support thoughtful, independent digital '
-          'communication are becoming more established.';
+      return '$childName is showing increasingly established habits that '
+          'support thoughtful, independent digital communication.';
 
     case ParentReadinessStage.graduate:
-      return 'Your child has reached the Digital Rite of Passage and '
+      return '$childName has reached the Digital Rite of Passage and '
           'completed this stage of their Natter journey.';
   }
 }
@@ -393,29 +396,32 @@ Widget _readinessHighlightRow({
 
 String _readinessNextStepText(
   ParentReadinessStage stage,
+  String childName,
 ) {
   switch (stage) {
-    case ParentReadinessStage.beginning:
-      return 'For now, the focus is simply on building confidence with '
-          'kind, safe communication. As more experiences are recorded, '
-          'this picture will become clearer.';
+  case ParentReadinessStage.beginning:
+    return 'For now, the focus is simply on helping $childName build '
+        'confidence with kind, safe communication. As more experiences '
+        'are recorded, this picture will become clearer.';
 
-    case ParentReadinessStage.building:
-      return 'The next step is to keep practising thoughtful choices and '
-          'positive communication with gentle support when needed.';
+  case ParentReadinessStage.building:
+    return 'The next step is for $childName to keep practising thoughtful '
+        'choices and positive communication, with gentle support when needed.';
 
-    case ParentReadinessStage.growing:
-      return 'More independent habits are beginning to take shape. '
-          'The focus now is on making those positive choices more consistent over time.';
+  case ParentReadinessStage.growing:
+    return 'More independent habits are beginning to take shape. '
+        'The focus now is on helping $childName make those positive '
+        'choices more consistently over time.';
 
-    case ParentReadinessStage.nearlyReady:
-      return 'The foundations for greater digital independence are becoming established. '
-          'Natter will continue looking for sustained confidence, judgement and healthy friendship habits.';
+  case ParentReadinessStage.nearlyReady:
+    return 'The foundations for greater digital independence are becoming '
+        'established. Natter will continue looking for sustained confidence, '
+        'judgement and healthy friendship habits as $childName approaches graduation.';
 
-    case ParentReadinessStage.graduate:
-      return 'Your child has completed this stage of their Natter journey '
-          'and reached the Digital Rite of Passage.';
-  }
+  case ParentReadinessStage.graduate:
+    return '$childName has completed this stage of their Natter journey '
+        'and reached the Digital Rite of Passage.';
+}
 }
 
 class _ReadinessJourneyPath extends StatelessWidget {
@@ -11250,7 +11256,9 @@ NatterJourneyLinkCard(
     Navigator.push(
       context,
       calmRoute(
-        const DigitalReadinessReportScreen(),
+        DigitalReadinessReportScreen(
+  child: child,
+),
       ),
     );
   },
@@ -15948,8 +15956,13 @@ class _GraduationCeremonyScreenState
 }
 
 class DigitalReadinessReportScreen extends StatelessWidget {
-  const DigitalReadinessReportScreen({super.key});
+  final ParentChildProfile child;
 
+  const DigitalReadinessReportScreen({
+    super.key,
+    required this.child,
+  });
+  
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -16022,7 +16035,10 @@ class DigitalReadinessReportScreen extends StatelessWidget {
       const SizedBox(height: 9),
 
       Text(
-        _readinessStageDescription(readinessStage),
+        _readinessStageDescription(
+  readinessStage,
+  child.name,
+),
         style: TextStyle(
           color: Colors.white.withOpacity(0.74),
           fontSize: 14,
@@ -16076,9 +16092,9 @@ class DigitalReadinessReportScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'It’s still early in the journey. '
-                  'Strengths will begin to appear here as Natter '
-                  'sees positive communication habits taking shape.',
+                  'It’s still early in ${child.name}’s journey. '
+'Strengths will begin to appear here as Natter '
+'sees positive communication habits taking shape.',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.74),
                     fontSize: 14,
@@ -16096,7 +16112,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
             icon: Icons.favorite_rounded,
             title: 'Kind communication',
             description:
-                'Positive messages are becoming a regular part of their communication.',
+                'Positive messages are becoming a regular part of ${child.name}’s communication.',
             accent: NatterBrand.green,
           ),
 
@@ -16105,7 +16121,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
             icon: Icons.edit_rounded,
             title: 'Thoughtful message choices',
             description:
-                'They have shown willingness to pause, reflect and choose kinder wording.',
+                '${child.name} has shown willingness to pause, reflect and choose kinder wording.',
             accent: NatterBrand.green,
           ),
 
@@ -16114,7 +16130,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
             icon: Icons.people_alt_rounded,
             title: 'Friendship building',
             description:
-                'They are taking part in activities that strengthen positive friendship habits.',
+                '${child.name} is taking part in activities that strengthen positive friendship habits.',
             accent: NatterBrand.blue,
           ),
 
@@ -16123,7 +16139,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
             icon: Icons.chat_bubble_rounded,
             title: 'Confident conversation',
             description:
-                'They are becoming more confident beginning positive conversations.',
+                '${child.name} is becoming more confident beginning positive conversations.',
             accent: NatterBrand.yellow,
           ),
       ],
@@ -16141,7 +16157,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
       const NatterSectionHeader(
         title: 'Journey highlights',
         subtitle:
-            'A simple record of the experiences helping this journey grow.',
+            'A simple record of the experiences helping their journey grow.',
       ),
 
       const SizedBox(height: 18),
@@ -16193,7 +16209,7 @@ class DigitalReadinessReportScreen extends StatelessWidget {
       const NatterSectionHeader(
         title: 'What comes next',
         subtitle:
-            'A gentle interpretation of where this journey is heading.',
+            'A gentle interpretation of where their journey is heading.',
       ),
 
       const SizedBox(height: 18),
@@ -16217,7 +16233,10 @@ class DigitalReadinessReportScreen extends StatelessWidget {
 
             Expanded(
               child: Text(
-                _readinessNextStepText(readinessStage),
+                _readinessNextStepText(
+  readinessStage,
+  child.name,
+),
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.76),
                   fontSize: 14,
