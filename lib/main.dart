@@ -11278,8 +11278,8 @@ NatterJourneyLinkCard(
       context,
       calmRoute(
         ParentFriendshipsScreen(
-          childId: child.childId,
-        ),
+  child: child,
+),
       ),
     );
   },
@@ -13210,12 +13210,14 @@ StreamBuilder<List<ChildContactRequest>>(
 }
 
 class ParentFriendshipsScreen extends StatefulWidget {
-  final String childId;
+  final ParentChildProfile child;
 
   const ParentFriendshipsScreen({
     super.key,
-    required this.childId,
+    required this.child,
   });
+
+  String get childId => child.childId;
 
   @override
   State<ParentFriendshipsScreen> createState() =>
