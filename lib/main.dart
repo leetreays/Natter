@@ -341,6 +341,56 @@ Widget _readinessStrengthRow({
   );
 }
 
+Widget _readinessHighlightRow({
+  required IconData icon,
+  required String title,
+  required int value,
+  required Color accent,
+}) {
+  return NatterSurface(
+    style: NatterSurfaceStyle.quiet,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 15,
+      vertical: 14,
+    ),
+    borderRadius: 18,
+    child: Row(
+      children: [
+        NatterIconBadge(
+          icon: icon,
+          accent: accent,
+          size: 38,
+          iconSize: 18,
+        ),
+
+        const SizedBox(width: 12),
+
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        Text(
+          '$value',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _ReadinessJourneyPath extends StatelessWidget {
   final ParentReadinessStage stage;
 
@@ -16054,57 +16104,53 @@ class DigitalReadinessReportScreen extends StatelessWidget {
   ),
 ),
           const SizedBox(height: 14),
-          Container(
-  padding: const EdgeInsets.all(20),
-  decoration: BoxDecoration(
-    color: const Color(0xFF21345C),
-    borderRadius: BorderRadius.circular(24),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.10),
-    ),
-  ),
+          NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Progress Highlights',
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: 18,
-        ),
+      const NatterSectionHeader(
+        title: 'Journey highlights',
+        subtitle:
+            'A simple record of the experiences helping this journey grow.',
       ),
-      const SizedBox(height: 12),
-      Text(
-        '💛 Positive messages: ${state.positiveMessages}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+
+      const SizedBox(height: 18),
+
+      _readinessHighlightRow(
+        icon: Icons.favorite_rounded,
+        title: 'Positive messages',
+        value: state.positiveMessages,
+        accent: NatterBrand.green,
       ),
-      const SizedBox(height: 8),
-      Text(
-        '🌱 Kindness rewrites: ${state.kindnessRewrites}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+
+      const SizedBox(height: 10),
+
+      _readinessHighlightRow(
+        icon: Icons.edit_rounded,
+        title: 'Kindness rewrites',
+        value: state.kindnessRewrites,
+        accent: NatterBrand.green,
       ),
-      const SizedBox(height: 8),
-      Text(
-        '🤝 Shared quests completed: ${state.completedSharedQuests}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+
+      const SizedBox(height: 10),
+
+      _readinessHighlightRow(
+        icon: Icons.people_alt_rounded,
+        title: 'Shared quests completed',
+        value: state.completedSharedQuests,
+        accent: NatterBrand.blue,
       ),
-      const SizedBox(height: 8),
-      Text(
-        '💬 Conversation starters used: ${state.conversationStartersUsed}',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w700,
-        ),
+
+      const SizedBox(height: 10),
+
+      _readinessHighlightRow(
+        icon: Icons.chat_bubble_rounded,
+        title: 'Conversation starters used',
+        value: state.conversationStartersUsed,
+        accent: NatterBrand.yellow,
       ),
     ],
   ),
