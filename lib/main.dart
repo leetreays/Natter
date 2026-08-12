@@ -23029,44 +23029,7 @@ if (state.isGraduated)
             ),
           ),
           const SizedBox(height: 14),
-BrandCard(
-  child: Row(
-    children: [
-      const Icon(
-        Icons.description_rounded,
-        color: NatterBrand.yellow,
-        size: 26,
-      ),
-      const SizedBox(width: 12),
-      const Expanded(
-        child: Text(
-          'View Digital Readiness Report',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 18,
-          ),
-        ),
-      ),
-      TextButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            calmRoute(const DigitalReadinessReportScreen()),
-          );
-        },
-        child: const Text(
-          'Open',
-          style: TextStyle(
-            color: NatterBrand.yellow,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
-          const SizedBox(height: 14),
+
           if (hasRite) ...[
             BrandCard(
               child: Column(
