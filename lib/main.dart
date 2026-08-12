@@ -13277,26 +13277,29 @@ class _ParentFriendshipsScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ParentBrandScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          'Friendships',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
+Widget build(BuildContext context) {
+  return NatterScreenScaffold(
+    worldStage: NatterWorldStage.parentMorning,
+    onBack: () {
+      Navigator.pop(context);
+    },
+    showLogo: true,
+    logoSize: 42,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 8),
+
+        NatterScreenHeader(
+          title: 'Friendships',
+          subtitle:
+              'A calm view of ${widget.child.name}’s friendships and how each relationship is growing.',
+          compact: true,
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+
+        const SizedBox(height: 24),
+
+        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _friendshipsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -13307,9 +13310,9 @@ class _ParentFriendshipsScreenState
 
           final docs = snapshot.data?.docs ?? [];
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
+          return Column(
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
               Container(
                 padding: const EdgeInsets.all(ParentSpacing.lg),
                 decoration: _parentCardDecoration(),
@@ -13424,8 +13427,9 @@ class _ParentFriendshipsScreenState
           );
         },
       ),
-    );
-  }
+      ],
+    ),
+  );
 }
 
 class ParentFriendshipJourneyScreen extends StatefulWidget {
