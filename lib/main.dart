@@ -13411,7 +13411,7 @@ Widget build(BuildContext context) {
                               ],
                             ),
                           ),
-                          Icon(
+                                                                              Icon(
                             Icons.chevron_right_rounded,
                             color: Colors.white.withOpacity(0.72),
                           ),
@@ -13420,16 +13420,18 @@ Widget build(BuildContext context) {
                     ),
                   );
                 }),
-               ],
-              ),
-             ),
-            ],
-          );
-        },
-      ),
+              ],
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+
       ],
     ),
   );
+}
 }
 
 class ParentFriendshipJourneyScreen extends StatefulWidget {
