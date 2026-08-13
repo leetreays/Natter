@@ -13775,36 +13775,31 @@ NatterSurface(
 
 const SizedBox(height: ParentSpacing.lg),
 
-Container(
-  padding: const EdgeInsets.all(18),
-  decoration: ParentCardStyle.subtle(),
+NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Journey So Far',
-        style: ParentTypography.sectionTitle,
+      const NatterSectionHeader(
+        title: 'Journey so far',
+        subtitle:
+            'Meaningful moments that have shaped this friendship over time.',
       ),
-      const SizedBox(height: ParentSpacing.md),
 
-      if (docs.isEmpty)
-        const ParentCard(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '🌱 The story begins.',
-                style: ParentTypography.cardTitle,
-              ),
-              SizedBox(height: ParentSpacing.sm),
-              Text(
-                'Every friendship begins with small moments of kindness, trust and encouragement.\n\nAs those moments grow, this page becomes the story of how the friendship develops over time.',
-                style: ParentTypography.body,
-              ),
-            ],
-          ),
-        )
+      const SizedBox(height: 18),
+if (docs.isEmpty)
+  const NatterEmptyState(
+    title: 'The story begins here',
+    message:
+        'As kindness, trust and meaningful moments grow, '
+        'the story of this friendship will begin to appear here.',
+    icon: Icons.eco_rounded,
+    accent: NatterBrand.green,
+    glow: NatterGlowTone.grow,
+    compact: true,
+  )
       else
         ...docs.map((doc) {
           final data = doc.data();
