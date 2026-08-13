@@ -13711,34 +13711,63 @@ if (children.length >= 2) {
   ],
 ),
 
-Container(
-  padding: const EdgeInsets.all(18),
-  decoration: ParentCardStyle.subtle(),
+NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Current Relationship',
-        style: ParentTypography.sectionTitle,
+      const NatterSectionHeader(
+        title: 'Current relationship',
+        subtitle:
+            'A simple picture of where this friendship is now.',
       ),
-      const SizedBox(height: ParentSpacing.md),
 
-      ParentCard(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              headerTitle,
-              style: ParentTypography.cardTitle,
+      const SizedBox(height: 18),
+
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const NatterIconBadge(
+            icon: Icons.eco_rounded,
+            accent: NatterBrand.green,
+            glow: NatterGlowTone.grow,
+            size: 42,
+            iconSize: 20,
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  headerTitle,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    height: 1.3,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  headerSubtitle,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: ParentSpacing.sm),
-            Text(
-              headerSubtitle,
-              style: ParentTypography.body,
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     ],
   ),
