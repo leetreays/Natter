@@ -1027,6 +1027,7 @@ class NatterSurface extends StatelessWidget {
     this.margin,
     this.borderRadius = 26,
     this.onTap,
+    this.glow,
   });
 
   final Widget child;
@@ -1037,6 +1038,8 @@ class NatterSurface extends StatelessWidget {
   final double borderRadius;
 
   final VoidCallback? onTap;
+
+  final NatterGlowTone? glow;
 
   Color get _backgroundColour {
     switch (style) {
@@ -1080,14 +1083,23 @@ class NatterSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decoration = BoxDecoration(
-      color: _backgroundColour,
-      borderRadius: BorderRadius.circular(
-        borderRadius,
-      ),
-      border: Border.all(
-        color: _borderColour,
-      ),
-    );
+  color: _backgroundColour,
+  borderRadius: BorderRadius.circular(
+    borderRadius,
+  ),
+  border: Border.all(
+    color: _borderColour,
+  ),
+  boxShadow: glow == null
+      ? null
+      : [
+          BoxShadow(
+            color: glow!.colour.withOpacity(0.10),
+            blurRadius: 20,
+            spreadRadius: 1,
+          ),
+        ],
+);
 
     final content = Container(
       width: double.infinity,
@@ -2075,6 +2087,7 @@ class NatterJourneyLinkCard extends StatelessWidget {
     this.subtitle,
     this.accent = Colors.white,
     this.glow,
+    this.surfaceGlow,
     this.compact = false,
   });
 
@@ -2085,6 +2098,7 @@ class NatterJourneyLinkCard extends StatelessWidget {
   final IconData icon;
   final Color accent;
   final NatterGlowTone? glow;
+  final NatterGlowTone? surfaceGlow;
 
   final bool compact;
 
@@ -2094,6 +2108,7 @@ class NatterJourneyLinkCard extends StatelessWidget {
       style: NatterSurfaceStyle.quiet,
       padding: EdgeInsets.zero,
       borderRadius: compact ? 20 : 22,
+      glow: surfaceGlow,
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -13392,8 +13407,8 @@ Widget build(BuildContext context) {
     title: friendName,
     subtitle: _relationshipSubtitle(data),
     icon: Icons.people_alt_rounded,
-accent: NatterBrand.blue,
-glow: NatterGlowTone.connect,
+accent: Colors.white,
+surfaceGlow: NatterGlowTone.connect,
     onTap: () {
       Navigator.push(
         context,
