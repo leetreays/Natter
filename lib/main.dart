@@ -13627,19 +13627,16 @@ void initState() {
       .snapshots();
 }
 
-  @override
-  Widget build(BuildContext context) {
-return ParentBrandScaffold(
-  appBar: AppBar(
-    backgroundColor: Colors.transparent,
-    surfaceTintColor: Colors.transparent,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    title: const BrandedAppBarTitle(
-  title: 'Friendship Journey',
-),
-  ),
-  child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+@override
+Widget build(BuildContext context) {
+  return NatterScreenScaffold(
+    worldStage: NatterWorldStage.parentMorning,
+    onBack: () {
+      Navigator.pop(context);
+    },
+    showLogo: true,
+    logoSize: 42,
+    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
     stream: _friendshipStream,
     builder: (context, friendshipSnapshot) {
       final friendshipData = friendshipSnapshot.data?.data() ?? {};
@@ -13684,8 +13681,8 @@ if (children.length >= 2) {
     return 0;
   });
 
-  return ListView(
-  padding: const EdgeInsets.all(18),
+  return Column(
+  crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
     Padding(
   padding: const EdgeInsets.only(bottom: 32),
