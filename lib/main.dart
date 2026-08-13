@@ -13389,72 +13389,27 @@ Widget build(BuildContext context) {
                   final data = doc.data();
                   final friendName = _friendNameFromData(data);
 
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ParentFriendshipJourneyScreen(
-  childId: widget.childId,
-  friendshipId: doc.id,
-),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: _parentCardDecoration(radius: 22),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: NatterBrand.green.withOpacity(0.14),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: NatterBrand.green.withOpacity(0.32),
-                              ),
-                            ),
-                            child: const Text(
-                              '🌱',
-                              style: TextStyle(fontSize: 22),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  friendName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _relationshipSubtitle(data),
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.70),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                                                                              Icon(
-                            Icons.chevron_right_rounded,
-                            color: Colors.white.withOpacity(0.72),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+                  return Padding(
+  padding: const EdgeInsets.only(bottom: 12),
+  child: NatterJourneyLinkCard(
+    title: friendName,
+    subtitle: _relationshipSubtitle(data),
+    icon: Icons.people_alt_rounded,
+    accent: NatterBrand.green,
+    glow: NatterGlowTone.grow,
+    onTap: () {
+      Navigator.push(
+        context,
+        calmRoute(
+          ParentFriendshipJourneyScreen(
+            childId: widget.childId,
+            friendshipId: doc.id,
+          ),
+        ),
+      );
+    },
+  ),
+);
                 }),
               ],
             ),
