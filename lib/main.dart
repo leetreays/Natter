@@ -13852,7 +13852,7 @@ if (docs.isEmpty)
                         width: 1.5,
                         height: 76,
                         color: NatterBrand.green.withOpacity(0.16),
-                  ),
+                  ],
                 ),
               ),
               const SizedBox(width: ParentSpacing.sm),
