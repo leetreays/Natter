@@ -13829,12 +13829,19 @@ if (docs.isEmpty)
                       height: 32,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: NatterBrand.green.withOpacity(0.14),
-                        border: Border.all(
-                          color: NatterBrand.green.withOpacity(0.40),
-                        ),
-                      ),
+  shape: BoxShape.circle,
+  color: Colors.white.withOpacity(0.08),
+  border: Border.all(
+    color: NatterBrand.green.withOpacity(0.24),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.green.withOpacity(0.08),
+      blurRadius: 12,
+      spreadRadius: 1,
+    ),
+  ],
+),
                       child: Text(
                         icon,
                         style: const TextStyle(fontSize: 17),
@@ -13844,15 +13851,17 @@ if (docs.isEmpty)
                       Container(
                         width: 1.5,
                         height: 76,
-                        color: Colors.white.withOpacity(0.12),
+                        color: NatterBrand.green.withOpacity(0.16),
                       ),
                   ],
                 ),
               ),
               const SizedBox(width: ParentSpacing.sm),
               Expanded(
-                child: ParentCard(
-                  padding: const EdgeInsets.all(18),
+  child: NatterSurface(
+    style: NatterSurfaceStyle.quiet,
+    padding: const EdgeInsets.all(16),
+    borderRadius: 20,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
