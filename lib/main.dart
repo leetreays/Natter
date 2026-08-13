@@ -13384,18 +13384,15 @@ Widget build(BuildContext context) {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
               if (docs.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: _parentCardDecoration(radius: 22),
-                  child: Text(
-                    'Approved friendships will appear here.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.78),
-                      fontWeight: FontWeight.w700,
-                      height: 1.35,
-                    ),
-                  ),
-                )
+  const NatterEmptyState(
+    title: 'Friendships will appear here',
+    message:
+        'When a friendship is approved, you’ll be able to see how that relationship grows over time.',
+    icon: Icons.people_alt_rounded,
+    accent: NatterBrand.blue,
+    glow: NatterGlowTone.connect,
+    compact: true,
+  )
               else
                 ...docs.map((doc) {
                   final data = doc.data();
