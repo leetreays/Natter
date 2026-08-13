@@ -13684,35 +13684,31 @@ if (children.length >= 2) {
   return Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-    Padding(
-  padding: const EdgeInsets.only(bottom: 32),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Text(
-        relationshipTitle,
-        textAlign: TextAlign.center,
-        style: ParentTypography.pageTitle,
+    Column(
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+    const SizedBox(height: 8),
+
+    NatterScreenHeader(
+      title: relationshipTitle,
+      subtitle:
+          'Built through kindness, repair and trust.',
+      compact: true,
+    ),
+
+    const SizedBox(height: 16),
+
+    Center(
+      child: NatterStatusPill(
+        label:
+            '${stageDefinition.emoji} ${stageDefinition.shortLabel}',
+        tone: NatterStatusTone.positive,
+        glow: NatterGlowTone.grow,
       ),
-      const SizedBox(height: ParentSpacing.sm),
-      Text(
-        stageDefinition.shortLabel,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-  color: NatterBrand.green,
-  fontSize: 14,
-  fontWeight: FontWeight.w700,
-  height: 1.25,
-),
-      ),
-      const SizedBox(height: ParentSpacing.sm),
-      Text(
-  'Built through kindness, repair and trust.',
-  textAlign: TextAlign.center,
-  style: ParentTypography.caption,
-),
-    ],
-  ),
+    ),
+
+    const SizedBox(height: 28),
+  ],
 ),
 
 Container(
