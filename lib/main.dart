@@ -13825,33 +13825,36 @@ if (docs.isEmpty)
                 child: Column(
                   children: [
                     Container(
-                      width: 32,
-                      height: 32,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-  shape: BoxShape.circle,
-  color: Colors.white.withOpacity(0.08),
-  border: Border.all(
-    color: NatterBrand.green.withOpacity(0.24),
-  ),
-  boxShadow: [
-    BoxShadow(
-      color: NatterBrand.green.withOpacity(0.08),
-      blurRadius: 12,
-      spreadRadius: 1,
+  width: 32,
+  height: 32,
+  alignment: Alignment.center,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    color: Colors.white.withOpacity(0.08),
+    border: Border.all(
+      color: NatterBrand.green.withOpacity(0.24),
     ),
-  ],
+    boxShadow: [
+      BoxShadow(
+        color: NatterBrand.green.withOpacity(0.08),
+        blurRadius: 12,
+        spreadRadius: 1,
+      ),
+    ],
+  ),
+  child: Text(
+    icon,
+    style: const TextStyle(
+      fontSize: 17,
+    ),
+  ),
 ),
-                      child: Text(
-                        icon,
-                        style: const TextStyle(fontSize: 17),
-                      ),
-                    ),
                     if (!isLast)
-                      Container(
-                        width: 1.5,
-                        height: 76,
-                        color: NatterBrand.green.withOpacity(0.16),
+  Container(
+    width: 1.5,
+    height: 76,
+    color: NatterBrand.green.withOpacity(0.16),
+  ),
                   ],
                 ),
               ),
