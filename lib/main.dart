@@ -13368,9 +13368,6 @@ Widget build(BuildContext context) {
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-
-      const ParentSectionTitle('Friendships'),
-      const SizedBox(height: ParentSpacing.md),
               if (docs.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(18),
@@ -13395,8 +13392,8 @@ Widget build(BuildContext context) {
     title: friendName,
     subtitle: _relationshipSubtitle(data),
     icon: Icons.people_alt_rounded,
-    accent: NatterBrand.green,
-    glow: NatterGlowTone.grow,
+accent: NatterBrand.blue,
+glow: NatterGlowTone.connect,
     onTap: () {
       Navigator.push(
         context,
