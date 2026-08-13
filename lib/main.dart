@@ -13313,18 +13313,54 @@ Widget build(BuildContext context) {
           return Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-              Container(
-                padding: const EdgeInsets.all(ParentSpacing.lg),
-                decoration: _parentCardDecoration(),
-                child: Text(
-                  "A calm view of your child's approved friendships. These pages focus on growth, not private messages.",
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.86),
-                    fontWeight: FontWeight.w700,
-                    height: 1.35,
-                  ),
-                ),
+              NatterSurface(
+  style: NatterSurfaceStyle.quiet,
+  padding: const EdgeInsets.all(18),
+  borderRadius: 22,
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const NatterIconBadge(
+        icon: Icons.lock_rounded,
+        accent: Colors.white,
+        glow: NatterGlowTone.protect,
+        size: 40,
+        iconSize: 18,
+      ),
+
+      const SizedBox(width: 13),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Private by design',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
               ),
+            ),
+
+            const SizedBox(height: 5),
+
+            Text(
+              'Natter shows how ${widget.child.name}’s friendships grow '
+              'without revealing private conversations.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.72),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
               const SizedBox(height: ParentSpacing.lg),
               Container(
   padding: const EdgeInsets.all(18),
