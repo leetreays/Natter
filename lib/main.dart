@@ -23854,9 +23854,8 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
 
 @override
 Widget build(BuildContext context) {
-  final state = AppStateScope.of(context);
-
   return NatterScreenScaffold(
+    
     worldStage: NatterWorldStage.parentMorning,
     onBack: () {
       Navigator.pop(context);
@@ -24039,30 +24038,68 @@ Widget build(BuildContext context) {
                         subtitle: Text(
                           'Log friendship requests and decisions.',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                      SwitchListTile(
-                        value: state.alertsSafetyCoach,
-                        onChanged: (v) => state.setAlerts(safetyCoach: v),
-                        title: const Text(
-                          'Gentle guidance signals',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Log when Natter coaches a message, without showing the message itself.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+NatterSurface(
+  style: NatterSurfaceStyle.quiet,
+  padding: const EdgeInsets.all(20),
+  borderRadius: 24,
+  glow: NatterGlowTone.protect,
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const NatterIconBadge(
+        icon: Icons.shield_rounded,
+        accent: Colors.white,
+        glow: NatterGlowTone.protect,
+        size: 42,
+        iconSize: 19,
+      ),
+
+      const SizedBox(width: 14),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'What Natter notices',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'Natter can notice limited patterns — such as when '
+              'Quiet Time is tested or when extra guidance is offered.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.76),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.45,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              'These moments help build a calm picture of growth '
+              'without showing your child’s private conversations.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.66),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
               ],
             ),
     );
