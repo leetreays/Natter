@@ -10772,25 +10772,22 @@ class ParentHomeScreen extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color:
-                        Colors.white.withOpacity(0.09),
-                    borderRadius:
-                        BorderRadius.circular(18),
-                    border: Border.all(
-                      color:
-                          Colors.white.withOpacity(0.05),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    _avatarIcon(child.avatar),
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                ),
+  width: 52,
+  height: 52,
+  decoration: BoxDecoration(
+    color: NatterBrand.blue.withOpacity(0.09),
+    borderRadius: BorderRadius.circular(18),
+    border: Border.all(
+      color: NatterBrand.blue.withOpacity(0.16),
+    ),
+  ),
+  alignment: Alignment.center,
+  child: Icon(
+    _avatarIcon(child.avatar),
+    color: Colors.white,
+    size: 25,
+  ),
+),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
