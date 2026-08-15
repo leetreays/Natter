@@ -24005,7 +24005,7 @@ NatterSurface(
             const SizedBox(height: 8),
 
             Text(
-              'Natter can notice limited patterns — such as when '
+              'Natter can notice certain patterns — such as when '
               'Quiet Time is tested or when extra guidance is offered.',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.76),
