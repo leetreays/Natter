@@ -23852,6 +23852,119 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
     }, SetOptions(merge: true));
   }
 
+  Future<TimeOfDay?> _showNatterTimePicker({
+  required TimeOfDay initialTime,
+  required String helpText,
+}) {
+  return showTimePicker(
+    context: context,
+    initialTime: initialTime,
+    helpText: helpText,
+    cancelText: 'Cancel',
+    confirmText: 'Set',
+    builder: (context, child) {
+      final baseTheme = Theme.of(context);
+
+      return Theme(
+        data: baseTheme.copyWith(
+          colorScheme: baseTheme.colorScheme.copyWith(
+            primary: NatterBrand.pink,
+            onPrimary: Colors.white,
+            surface: const Color(0xFF172442),
+            onSurface: Colors.white,
+          ),
+
+          timePickerTheme: TimePickerThemeData(
+            backgroundColor: const Color(0xFF172442),
+
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+
+            helpTextStyle: TextStyle(
+              color: Colors.white.withOpacity(0.72),
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+
+            hourMinuteShape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+
+            hourMinuteColor: WidgetStateColor.resolveWith(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return NatterBrand.pink.withOpacity(0.18);
+                }
+
+                return Colors.white.withOpacity(0.07);
+              },
+            ),
+
+            hourMinuteTextColor: WidgetStateColor.resolveWith(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return NatterBrand.pink;
+                }
+
+                return Colors.white;
+              },
+            ),
+
+            dayPeriodColor: WidgetStateColor.resolveWith(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return NatterBrand.pink.withOpacity(0.20);
+                }
+
+                return Colors.white.withOpacity(0.06);
+              },
+            ),
+
+            dayPeriodTextColor: WidgetStateColor.resolveWith(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.white;
+                }
+
+                return Colors.white.withOpacity(0.70);
+              },
+            ),
+
+            dialBackgroundColor:
+                Colors.white.withOpacity(0.055),
+
+            dialHandColor: NatterBrand.pink,
+
+            dialTextColor: WidgetStateColor.resolveWith(
+              (states) {
+                if (states.contains(WidgetState.selected)) {
+                  return Colors.white;
+                }
+
+                return Colors.white.withOpacity(0.84);
+              },
+            ),
+
+            entryModeIconColor:
+                Colors.white.withOpacity(0.70),
+          ),
+
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: NatterBrand.pink,
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+  }
+
 @override
 Widget build(BuildContext context) {
   return NatterScreenScaffold(
@@ -23953,10 +24066,10 @@ NatterSurface(
               label: 'Start',
               time: _quietStart,
               onPick: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: _quietStart,
-                );
+                final picked = await _showNatterTimePicker(
+  initialTime: _quietStart,
+  helpText: 'Quiet Time starts',
+);
 
                 if (picked != null) {
                   setState(() {
@@ -23975,10 +24088,10 @@ NatterSurface(
               label: 'End',
               time: _quietEnd,
               onPick: () async {
-                final picked = await showTimePicker(
-                  context: context,
-                  initialTime: _quietEnd,
-                );
+                final picked = await _showNatterTimePicker(
+  initialTime: _quietEnd,
+  helpText: 'Quiet Time ends',
+);
 
                 if (picked != null) {
                   setState(() {
