@@ -23852,33 +23852,34 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
     }, SetOptions(merge: true));
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final state = AppStateScope.of(context);
+@override
+Widget build(BuildContext context) {
+  final state = AppStateScope.of(context);
 
-    return ParentBrandScaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: const Text(
-          'Rules and Quiet Time',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      child: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
+  return NatterScreenScaffold(
+    worldStage: NatterWorldStage.parentMorning,
+    onBack: () {
+      Navigator.pop(context);
+    },
+    showLogo: true,
+    logoSize: 42,
+    child: _loading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 8),
+
+              const NatterScreenHeader(
+                title: 'Rules & Quiet Time',
+                subtitle:
+                    'Set gentle boundaries and choose which moments Natter keeps track of.',
+                compact: true,
+              ),
+
+              const SizedBox(height: 28),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
