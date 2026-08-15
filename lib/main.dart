@@ -13817,48 +13817,49 @@ if (docs.isEmpty)
 
           final isLast = docs.indexOf(doc) == docs.length - 1;
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Padding(
+  padding: EdgeInsets.only(
+    bottom: isLast ? 0 : 16,
+  ),
+  child: IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: 40,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                width: 40,
-                child: Column(
-                  children: [
-                    Container(
-  width: 32,
-  height: 32,
-  alignment: Alignment.center,
-  decoration: BoxDecoration(
-    shape: BoxShape.circle,
-    color: Colors.white.withOpacity(0.08),
-    border: Border.all(
-      color: NatterBrand.green.withOpacity(0.24),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: NatterBrand.green.withOpacity(0.08),
-        blurRadius: 12,
-        spreadRadius: 1,
-      ),
-    ],
-  ),
-  child: Text(
-    icon,
-    style: const TextStyle(
-      fontSize: 17,
-    ),
-  ),
-),
-                    if (!isLast)
-  Container(
-    width: 1.5,
-    height: 76,
-    color: NatterBrand.green.withOpacity(0.16),
-  ),
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
+                  border: Border.all(
+                    color: NatterBrand.green.withOpacity(0.24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: NatterBrand.green.withOpacity(0.08),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
                   ],
                 ),
+                child: Text(
+                  icon,
+                  style: const TextStyle(
+                    fontSize: 17,
+                  ),
+                ),
               ),
-              const SizedBox(width: ParentSpacing.sm),
+            ],
+          ),
+        ),
+
+        const SizedBox(width: ParentSpacing.sm),
               Expanded(
   child: NatterSurface(
     style: NatterSurfaceStyle.quiet,
@@ -13887,8 +13888,10 @@ if (docs.isEmpty)
                   ),
                 ),
               ),
-            ],
-          );
+                  ],
+    ),
+  ),
+);
         }),
     ],
   ),
