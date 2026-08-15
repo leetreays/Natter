@@ -13837,26 +13837,26 @@ final isLast = momentIndex == docs.length - 1;
         clipBehavior: Clip.none,
         children: [
           if (!isFirst)
-            Positioned(
-              left: 19.25,
-              top: 0,
-              height: centreY,
-              child: Container(
-                width: 1.5,
-                color: Colors.white.withOpacity(0.12),
-              ),
-            ),
+  Positioned(
+    left: 19.25,
+    top: 0,
+    height: centreY - 16,
+    child: Container(
+      width: 1.5,
+      color: Colors.white.withOpacity(0.12),
+    ),
+  ),
 
-          if (!isLast)
-            Positioned(
-              left: 19.25,
-              top: centreY,
-              height: centreY + 16,
-              child: Container(
-                width: 1.5,
-                color: Colors.white.withOpacity(0.12),
-              ),
-            ),
+if (!isLast)
+  Positioned(
+    left: 19.25,
+    top: centreY + 16,
+    height: centreY,
+    child: Container(
+      width: 1.5,
+      color: Colors.white.withOpacity(0.12),
+    ),
+  ),
 
           Center(
             child: Container(
