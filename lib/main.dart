@@ -23970,74 +23970,7 @@ Widget build(BuildContext context) {
                   ),
                 ),
                 const SizedBox(height: 18),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF21345C),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.10),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Signals',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        value: state.alertsBlockedWord,
-                        onChanged: (v) => state.setAlerts(blockedWord: v),
-                        title: const Text(
-                          'Tricky message signals',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Log when a message needs extra care.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                      SwitchListTile(
-                        value: state.alertsQuietHours,
-                        onChanged: (v) => state.setAlerts(quietHours: v),
-                        title: const Text(
-                          'Quiet Time signals',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Log when Natter is used during Quiet Time.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                      SwitchListTile(
-                        value: state.alertsContactRequest,
-                        onChanged: (v) => state.setAlerts(contactRequest: v),
-                        title: const Text(
-                          'Connection signals',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Log friendship requests and decisions.',
-                          style: TextStyle(
+
 NatterSurface(
   style: NatterSurfaceStyle.quiet,
   padding: const EdgeInsets.all(20),
@@ -24102,9 +24035,16 @@ NatterSurface(
 ),
               ],
             ),
-    );
-  }
+  );
 }
+}
+                
+                      
+                      
+                      
+      
+
+            
 
 class ChirpDialogCard extends StatelessWidget {
   final String imagePath;
