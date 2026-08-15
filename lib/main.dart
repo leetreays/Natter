@@ -13604,35 +13604,53 @@ Widget _upcomingMilestoneCard({
   required String title,
   required String description,
 }) {
-  return ParentCard(
-  padding: const EdgeInsets.all(20),
-    child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+  return NatterSurface(
+    style: NatterSurfaceStyle.quiet,
+    padding: const EdgeInsets.all(18),
+    borderRadius: 22,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(
-          Icons.auto_awesome_rounded,
-          color: NatterBrand.yellow,
-          size: 18,
+        const NatterIconBadge(
+          icon: Icons.auto_awesome_rounded,
+          accent: NatterBrand.yellow,
+          glow: NatterGlowTone.hope,
+          size: 42,
+          iconSize: 19,
         ),
-        const SizedBox(width: ParentSpacing.sm),
+
+        const SizedBox(width: 14),
+
         Expanded(
-          child: Text(
-            title,
-            style: ParentTypography.cardTitle,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  height: 1.3,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.70),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                ),
+              ),
+            ],
           ),
         ),
       ],
     ),
-    const SizedBox(height: ParentSpacing.sm),
-    Text(
-      description,
-      style: ParentTypography.body,
-    ),
-  ],
-),
   );
 }
 
@@ -14045,23 +14063,26 @@ if (!isLast)
 
 const SizedBox(height: ParentSpacing.lg),
 
-Container(
-  padding: const EdgeInsets.all(18),
-  decoration: ParentCardStyle.subtle(),
+NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Looking Ahead',
-        style: ParentTypography.sectionTitle,
+      const NatterSectionHeader(
+        title: 'Looking ahead',
+        subtitle:
+            'Possibilities for where this friendship could grow next.',
       ),
-      const SizedBox(height: ParentSpacing.md),
+
+      const SizedBox(height: 18),
 
       ..._comingUpCards(stageDefinition.order),
     ],
   ),
 ),
-
+    
 const SizedBox(height: ParentSpacing.lg),
    
 ParentCard(
