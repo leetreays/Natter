@@ -14085,35 +14085,64 @@ NatterSurface(
     
 const SizedBox(height: ParentSpacing.lg),
    
-ParentCard(
+NatterSurface(
+  style: NatterSurfaceStyle.quiet,
   padding: const EdgeInsets.all(20),
-  decoration: ParentCardStyle.section(),
-  child: Column(
+  borderRadius: 24,
+  glow: NatterGlowTone.protect,
+  child: Row(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Row(
-        children: [
-          Icon(
-            Icons.lock_outline_rounded,
-            color: NatterBrand.green,
-            size: 22,
-          ),
-          SizedBox(width: 10),
-          Text(
-            'Privacy Promise',
-            style: ParentTypography.cardTitle,
-          ),
-        ],
+      const NatterIconBadge(
+        icon: Icons.lock_rounded,
+        accent: Colors.white,
+        glow: NatterGlowTone.protect,
+        size: 42,
+        iconSize: 19,
       ),
-      const SizedBox(height: ParentSpacing.md),
-      const Text(
-        "Your child's conversations remain private.",
-        style: ParentTypography.emphasis,
-      ),
-      const SizedBox(height: ParentSpacing.sm),
-      Text(
-        "Natter celebrates how friendships grow rather than showing individual messages.\n\nYou understand relationships — not conversations.",
-        style: ParentTypography.body,
+
+      const SizedBox(width: 14),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Privacy Promise',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              'Your child’s conversations remain private.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                height: 1.4,
+              ),
+            ),
+
+            const SizedBox(height: 7),
+
+            Text(
+              'Natter celebrates how this friendship grows without '
+              'showing individual messages.\n\n'
+              'You understand relationships — not conversations.',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.70),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.45,
+              ),
+            ),
+          ],
+        ),
       ),
     ],
   ),
