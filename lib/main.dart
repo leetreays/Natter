@@ -13815,7 +13815,9 @@ if (docs.isEmpty)
 
           final date = _formatMomentDate(data['createdAt']);
 
-          final isLast = docs.indexOf(doc) == docs.length - 1;
+          final momentIndex = docs.indexOf(doc);
+final isFirst = momentIndex == 0;
+final isLast = momentIndex == docs.length - 1;
 
           return Padding(
   padding: EdgeInsets.only(
@@ -13826,38 +13828,68 @@ if (docs.isEmpty)
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SizedBox(
-          width: 40,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.08),
-                  border: Border.all(
-                    color: NatterBrand.green.withOpacity(0.24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: NatterBrand.green.withOpacity(0.08),
-                      blurRadius: 12,
-                      spreadRadius: 1,
-                    ),
-                  ],
+  width: 40,
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      final centreY = constraints.maxHeight / 2;
+
+      return Stack(
+        clipBehavior: Clip.none,
+        children: [
+          if (!isFirst)
+            Positioned(
+              left: 19.25,
+              top: 0,
+              height: centreY,
+              child: Container(
+                width: 1.5,
+                color: Colors.white.withOpacity(0.12),
+              ),
+            ),
+
+          if (!isLast)
+            Positioned(
+              left: 19.25,
+              top: centreY,
+              height: centreY + 16,
+              child: Container(
+                width: 1.5,
+                color: Colors.white.withOpacity(0.12),
+              ),
+            ),
+
+          Center(
+            child: Container(
+              width: 32,
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.08),
+                border: Border.all(
+                  color: NatterBrand.green.withOpacity(0.24),
                 ),
-                child: Text(
-                  icon,
-                  style: const TextStyle(
-                    fontSize: 17,
+                boxShadow: [
+                  BoxShadow(
+                    color: NatterBrand.green.withOpacity(0.08),
+                    blurRadius: 12,
+                    spreadRadius: 1,
                   ),
+                ],
+              ),
+              child: Text(
+                icon,
+                style: const TextStyle(
+                  fontSize: 17,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
+      );
+    },
+  ),
+),
 
         const SizedBox(width: ParentSpacing.sm),
               Expanded(
