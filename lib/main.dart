@@ -13455,16 +13455,115 @@ class _ParentFriendshipJourneyScreenState
   late final Stream<DocumentSnapshot<Map<String, dynamic>>> _friendshipStream;
   
 
-  String _emojiForIcon(String icon) {
-    switch (icon) {
-      case 'sprout':
-        return '🌱';
-      case 'tree':
-        return '🌳';
-      default:
-        return '✨';
-    }
+  IconData _journeyMomentIcon({
+  required String type,
+  required String storedIcon,
+}) {
+  switch (type) {
+    case 'friendship_begun':
+      return Icons.group_add_rounded;
+
+    case 'reconnected_friendship':
+      return Icons.link_rounded;
+
+    case 'one_month_together':
+      return Icons.calendar_month_rounded;
+
+    case 'first_repair_moment':
+      return Icons.build_rounded;
+
+    case 'recovering_friendship':
+      return Icons.refresh_rounded;
+
+    case 'growing_trust':
+      return Icons.favorite_border_rounded;
+
+    case 'consistent_kindness':
+      return Icons.volunteer_activism_rounded;
+
+    case 'there_when_it_mattered':
+      return Icons.favorite_rounded;
+
+    case 'trusted_friendship':
+      return Icons.shield_rounded;
+
+    case 'friendship_flourishing':
+      return Icons.park_rounded;
   }
+
+  // Fallback for older or future moment data.
+  switch (storedIcon) {
+    case 'link':
+      return Icons.link_rounded;
+
+    case 'calendar':
+      return Icons.calendar_month_rounded;
+
+    case 'heart':
+      return Icons.favorite_rounded;
+
+    case 'shield':
+      return Icons.shield_rounded;
+
+    case 'tree':
+      return Icons.park_rounded;
+
+    case 'sprout':
+      return Icons.eco_rounded;
+
+    default:
+      return Icons.auto_awesome_rounded;
+  }
+}
+
+Color _journeyMomentAccent({
+  required String type,
+  required String storedColour,
+}) {
+  switch (type) {
+    // CONNECT
+    case 'friendship_begun':
+    case 'reconnected_friendship':
+      return NatterBrand.blue;
+
+    // HOPE / REPAIR
+    case 'one_month_together':
+    case 'first_repair_moment':
+    case 'recovering_friendship':
+      return NatterBrand.yellow;
+
+    // GROW
+    case 'growing_trust':
+    case 'consistent_kindness':
+    case 'friendship_flourishing':
+      return NatterBrand.green;
+
+    // PROTECT / CARE
+    case 'there_when_it_mattered':
+    case 'trusted_friendship':
+      return NatterBrand.pink;
+  }
+
+  // Fallback for older or future moment data.
+  switch (storedColour) {
+    case 'blue':
+      return NatterBrand.blue;
+
+    case 'gold':
+    case 'yellow':
+      return NatterBrand.yellow;
+
+    case 'pink':
+      return NatterBrand.pink;
+
+    case 'purple':
+      return NatterBrand.purple;
+
+    case 'green':
+    default:
+      return NatterBrand.green;
+  }
+}
 
   String _formatMomentDate(dynamic value) {
     if (value is! Timestamp) return '';
@@ -13802,13 +13901,29 @@ if (docs.isEmpty)
   )
       else
         ...docs.map((doc) {
-          final data = doc.data();
+  final data = doc.data();
 
-          final icon =
-              _emojiForIcon((data['icon'] ?? '').toString());
+  final type =
+      (data['type'] ?? '').toString();
 
-          final title =
-              (data['title'] ?? 'Friendship moment').toString();
+  final storedIcon =
+      (data['icon'] ?? '').toString();
+
+  final storedColour =
+      (data['colour'] ?? '').toString();
+
+  final icon = _journeyMomentIcon(
+    type: type,
+    storedIcon: storedIcon,
+  );
+
+  final accent = _journeyMomentAccent(
+    type: type,
+    storedColour: storedColour,
+  );
+
+  final title =
+      (data['title'] ?? 'Friendship moment').toString();
 
           final description =
               (data['description'] ?? '').toString();
@@ -13859,32 +13974,31 @@ if (!isLast)
   ),
 
           Center(
-            child: Container(
-              width: 32,
-              height: 32,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
-                border: Border.all(
-                  color: NatterBrand.green.withOpacity(0.24),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: NatterBrand.green.withOpacity(0.08),
-                    blurRadius: 12,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: Text(
-                icon,
-                style: const TextStyle(
-                  fontSize: 17,
-                ),
-              ),
-            ),
-          ),
+  child: Container(
+    width: 32,
+    height: 32,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: accent.withOpacity(0.10),
+      border: Border.all(
+        color: accent.withOpacity(0.30),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: accent.withOpacity(0.10),
+          blurRadius: 12,
+          spreadRadius: 1,
+        ),
+      ],
+    ),
+    child: Icon(
+      icon,
+      color: accent,
+      size: 18,
+    ),
+  ),
+),
         ],
       );
     },
