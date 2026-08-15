@@ -10755,13 +10755,20 @@ class ParentHomeScreen extends StatelessWidget {
               vertical: 15,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2A48)
-                  .withOpacity(0.88),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.10),
-              ),
-            ),
+  color: const Color(0xFF1C2A48)
+      .withOpacity(0.62),
+  borderRadius: BorderRadius.circular(22),
+  border: Border.all(
+    color: NatterBrand.blue.withOpacity(0.16),
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: NatterBrand.blue.withOpacity(0.055),
+      blurRadius: 18,
+      spreadRadius: 1,
+    ),
+  ],
+),
             child: Row(
               children: [
                 Container(
