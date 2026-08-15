@@ -23879,96 +23879,122 @@ Widget build(BuildContext context) {
               ),
 
               const SizedBox(height: 28),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF21345C),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.10),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Quiet Hours',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        value: _quietHoursEnabled,
-                        onChanged: (value) async {
-                          setState(() {
-                            _quietHoursEnabled = value;
-                          });
-                          await _saveQuietHours();
-                        },
-                        title: const Text(
-                          'Enable Quiet Hours',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Kids can’t send messages during this time.',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _TimeButton(
-                              label: 'Start',
-                              time: _quietStart,
-                              onPick: () async {
-                                final picked = await showTimePicker(
-                                  context: context,
-                                  initialTime: _quietStart,
-                                );
 
-                                if (picked != null) {
-                                  setState(() {
-                                    _quietStart = picked;
-                                  });
-                                  await _saveQuietHours();
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _TimeButton(
-                              label: 'End',
-                              time: _quietEnd,
-                              onPick: () async {
-                                final picked = await showTimePicker(
-                                  context: context,
-                                  initialTime: _quietEnd,
-                                );
+NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
+  glow: _quietHoursEnabled
+      ? NatterGlowTone.protect
+      : null,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const NatterSectionHeader(
+        title: 'Quiet Hours',
+        subtitle:
+            'Create a calm daily window for rest and family time.',
+      ),
 
-                                if (picked != null) {
-                                  setState(() {
-                                    _quietEnd = picked;
-                                  });
-                                  await _saveQuietHours();
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+      const SizedBox(height: 18),
+
+      NatterSurface(
+        style: NatterSurfaceStyle.quiet,
+        padding: EdgeInsets.zero,
+        borderRadius: 22,
+        child: SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 6,
+          ),
+          value: _quietHoursEnabled,
+          onChanged: (value) async {
+            setState(() {
+              _quietHoursEnabled = value;
+            });
+            await _saveQuietHours();
+          },
+          activeThumbColor: Colors.white,
+          activeTrackColor:
+              NatterBrand.pink.withOpacity(0.60),
+          secondary: const NatterIconBadge(
+            icon: Icons.nightlight_round,
+            accent: Colors.white,
+            glow: NatterGlowTone.protect,
+            size: 40,
+            iconSize: 18,
+          ),
+          title: const Text(
+            'Enable Quiet Hours',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          subtitle: Text(
+            'Messages can’t be sent during this time.',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.68),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              height: 1.4,
+            ),
+          ),
+        ),
+      ),
+
+      const SizedBox(height: 18),
+
+      Row(
+        children: [
+          Expanded(
+            child: _TimeButton(
+              label: 'Start',
+              time: _quietStart,
+              onPick: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: _quietStart,
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    _quietStart = picked;
+                  });
+                  await _saveQuietHours();
+                }
+              },
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: _TimeButton(
+              label: 'End',
+              time: _quietEnd,
+              onPick: () async {
+                final picked = await showTimePicker(
+                  context: context,
+                  initialTime: _quietEnd,
+                );
+
+                if (picked != null) {
+                  setState(() {
+                    _quietEnd = picked;
+                  });
+                  await _saveQuietHours();
+                }
+              },
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
+              
                 const SizedBox(height: 18),
 
 NatterSurface(
