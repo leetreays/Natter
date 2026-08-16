@@ -23979,6 +23979,9 @@ Future<TimeOfDay?> _showNatterTimeSheet({
   bool selectedIsPm =
       initialTime.period == DayPeriod.pm;
 
+  bool manualEntry = false;
+  String? manualError;
+
   final hourController =
       FixedExtentScrollController(
     initialItem: selectedHour - 1,
@@ -23989,10 +23992,18 @@ Future<TimeOfDay?> _showNatterTimeSheet({
     initialItem: selectedMinute,
   );
 
-  final periodController =
-      FixedExtentScrollController(
-    initialItem: selectedIsPm ? 1 : 0,
+  final hourTextController = TextEditingController(
+    text: selectedHour.toString(),
   );
+
+  final minuteTextController = TextEditingController(
+    text: selectedMinute
+        .toString()
+        .padLeft(2, '0'),
+  );
+
+  final hourFocus = FocusNode();
+  final minuteFocus = FocusNode();
 
   final accent = isStart
       ? NatterBrand.pink
@@ -24009,7 +24020,7 @@ Future<TimeOfDay?> _showNatterTimeSheet({
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor:
-          const Color(0xFF06112E).withOpacity(0.72),
+          const Color(0xFF06112E).withOpacity(0.58),
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -24034,6 +24045,52 @@ Future<TimeOfDay?> _showNatterTimeSheet({
               );
             }
 
+            bool applyManualEntry() {
+              final hour = int.tryParse(
+                hourTextController.text.trim(),
+              );
+
+              final minute = int.tryParse(
+                minuteTextController.text.trim(),
+              );
+
+              if (hour == null ||
+                  minute == null ||
+                  hour < 1 ||
+                  hour > 12 ||
+                  minute < 0 ||
+                  minute > 59) {
+                setSheetState(() {
+                  manualError =
+                      'Use 1–12 for the hour and 00–59 for the minutes.';
+                });
+                return false;
+              }
+
+              setSheetState(() {
+                selectedHour = hour;
+                selectedMinute = minute;
+                manualEntry = false;
+                manualError = null;
+              });
+
+              if (hourController.hasClients) {
+                hourController.jumpToItem(
+                  selectedHour - 1,
+                );
+              }
+
+              if (minuteController.hasClients) {
+                minuteController.jumpToItem(
+                  selectedMinute,
+                );
+              }
+
+              FocusScope.of(context).unfocus();
+
+              return true;
+            }
+
             Widget timeWheel({
               required FixedExtentScrollController
                   controller,
@@ -24044,376 +24101,704 @@ Future<TimeOfDay?> _showNatterTimeSheet({
               required ValueChanged<int> onChanged,
             }) {
               return SizedBox(
-                height: 154,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: accent.withOpacity(0.11),
-                        borderRadius:
-                            BorderRadius.circular(16),
-                        border: Border.all(
-                          color:
-                              accent.withOpacity(0.24),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                accent.withOpacity(0.07),
-                            blurRadius: 16,
-                            spreadRadius: 1,
+                height: 150,
+                child: ListWheelScrollView.useDelegate(
+                  controller: controller,
+                  itemExtent: 46,
+                  physics:
+                      const FixedExtentScrollPhysics(),
+                  diameterRatio: 1.75,
+                  perspective: 0.002,
+                  squeeze: 1.02,
+                  onSelectedItemChanged: onChanged,
+                  childDelegate:
+                      ListWheelChildBuilderDelegate(
+                    childCount: itemCount,
+                    builder: (context, index) {
+                      final selected =
+                          index == selectedIndex;
+
+                      return Center(
+                        child: Text(
+                          labelForIndex(index),
+                          style: TextStyle(
+                            color: selected
+                                ? Colors.white
+                                : Colors.white
+                                    .withOpacity(0.28),
+                            fontSize:
+                                selected ? 21 : 16,
+                            fontWeight: selected
+                                ? FontWeight.w900
+                                : FontWeight.w700,
                           ),
-                        ],
-                      ),
-                    ),
-
-                    ListWheelScrollView.useDelegate(
-                      controller: controller,
-                      itemExtent: 44,
-                      physics:
-                          const FixedExtentScrollPhysics(),
-                      diameterRatio: 1.6,
-                      perspective: 0.002,
-                      squeeze: 1.05,
-                      onSelectedItemChanged: onChanged,
-                      childDelegate:
-                          ListWheelChildBuilderDelegate(
-                        childCount: itemCount,
-                        builder: (context, index) {
-                          final selected =
-                              index == selectedIndex;
-
-                          return Center(
-                            child: Text(
-                              labelForIndex(index),
-                              style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : Colors.white
-                                        .withOpacity(0.34),
-                                fontSize:
-                                    selected ? 21 : 16,
-                                fontWeight: selected
-                                    ? FontWeight.w900
-                                    : FontWeight.w700,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               );
             }
 
-            return Container(
-              margin: const EdgeInsets.fromLTRB(
-                14,
-                0,
-                14,
-                14,
-              ),
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                12,
-                20,
-                20,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFF172A4D)
-                    .withOpacity(0.98),
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.14),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.28),
-                    blurRadius: 34,
-                    offset: const Offset(0, 16),
-                  ),
-                  BoxShadow(
-                    color: accent.withOpacity(0.08),
-                    blurRadius: 28,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 42,
-                    height: 4,
+            Widget periodButton({
+              required String label,
+              required bool isPm,
+            }) {
+              final selected =
+                  selectedIsPm == isPm;
+
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    setSheetState(() {
+                      selectedIsPm = isPm;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration:
+                        const Duration(milliseconds: 180),
+                    height: 46,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color:
-                          Colors.white.withOpacity(0.20),
+                      color: selected
+                          ? accent.withOpacity(0.12)
+                          : Colors.white
+                              .withOpacity(0.035),
                       borderRadius:
-                          BorderRadius.circular(999),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center,
-                    children: [
-                      NatterIconBadge(
-                        icon: isStart
-                            ? Icons.nightlight_round
-                            : Icons.wb_twilight_rounded,
-                        accent: Colors.white,
-                        glow: glow,
-                        size: 46,
-                        iconSize: 21,
-                      ),
-
-                      const SizedBox(width: 14),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isStart
-                                  ? 'Quiet Time starts'
-                                  : 'Quiet Time ends',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight:
-                                    FontWeight.w900,
-                              ),
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            Text(
-                              isStart
-                                  ? 'Choose when messages pause.'
-                                  : 'Choose when Natter becomes available again.',
-                              style: TextStyle(
-                                color: Colors.white
-                                    .withOpacity(0.62),
-                                fontSize: 13,
-                                fontWeight:
-                                    FontWeight.w600,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 22),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 16,
-                    ),
-                    decoration: BoxDecoration(
-                      color:
-                          Colors.white.withOpacity(0.055),
-                      borderRadius:
-                          BorderRadius.circular(22),
+                          BorderRadius.circular(16),
                       border: Border.all(
-                        color:
-                            Colors.white.withOpacity(0.09),
+                        color: selected
+                            ? accent.withOpacity(0.34)
+                            : Colors.white
+                                .withOpacity(0.08),
                       ),
+                      boxShadow: selected
+                          ? [
+                              BoxShadow(
+                                color:
+                                    accent.withOpacity(0.07),
+                                blurRadius: 14,
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : null,
                     ),
-                    child: Column(
-                      children: [
-                        Text(
-                          displayTime(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.8,
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          'Scroll to choose a time',
-                          style: TextStyle(
-                            color: Colors.white
-                                .withOpacity(0.46),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  Row(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 4,
-                        child: timeWheel(
-                          controller: hourController,
-                          itemCount: 12,
-                          selectedIndex:
-                              selectedHour - 1,
-                          labelForIndex: (index) =>
-                              '${index + 1}',
-                          onChanged: (index) {
-                            setSheetState(() {
-                              selectedHour = index + 1;
-                            });
-                          },
-                        ),
-                      ),
-
-                      Padding(
-                        padding:
-                            const EdgeInsets.symmetric(
-                          horizontal: 7,
-                        ),
-                        child: Text(
-                          ':',
-                          style: TextStyle(
-                            color: Colors.white
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: selected
+                            ? Colors.white
+                            : Colors.white
                                 .withOpacity(0.52),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
                       ),
-
-                      Expanded(
-                        flex: 4,
-                        child: timeWheel(
-                          controller: minuteController,
-                          itemCount: 60,
-                          selectedIndex:
-                              selectedMinute,
-                          labelForIndex: (index) =>
-                              index
-                                  .toString()
-                                  .padLeft(2, '0'),
-                          onChanged: (index) {
-                            setSheetState(() {
-                              selectedMinute = index;
-                            });
-                          },
-                        ),
-                      ),
-
-                      const SizedBox(width: 10),
-
-                      Expanded(
-                        flex: 3,
-                        child: timeWheel(
-                          controller: periodController,
-                          itemCount: 2,
-                          selectedIndex:
-                              selectedIsPm ? 1 : 0,
-                          labelForIndex: (index) =>
-                              index == 0
-                                  ? 'AM'
-                                  : 'PM',
-                          onChanged: (index) {
-                            setSheetState(() {
-                              selectedIsPm = index == 1;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
+                ),
+              );
+            }
 
-                  const SizedBox(height: 22),
-
-                  Row(
+            return AnimatedPadding(
+              duration:
+                  const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  14,
+                  0,
+                  14,
+                  14,
+                ),
+                child: NatterSurface(
+                  style: NatterSurfaceStyle.quiet,
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    12,
+                    20,
+                    20,
+                  ),
+                  borderRadius: 32,
+                  glow: glow,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 54,
-                          child: TextButton(
-                            onPressed: () {
-                              Navigator.of(sheetContext)
-                                  .pop();
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor:
-                                  Colors.white
-                                      .withOpacity(0.72),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(
-                                  18,
+                      Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white
+                              .withOpacity(0.20),
+                          borderRadius:
+                              BorderRadius.circular(999),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.center,
+                        children: [
+                          NatterIconBadge(
+                            icon: isStart
+                                ? Icons.nightlight_round
+                                : Icons.wb_twilight_rounded,
+                            accent: Colors.white,
+                            glow: glow,
+                            size: 46,
+                            iconSize: 21,
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isStart
+                                      ? 'Quiet Time starts'
+                                      : 'Quiet Time ends',
+                                  style:
+                                      const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight:
+                                        FontWeight.w900,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  isStart
+                                      ? 'Choose when messages pause.'
+                                      : 'Choose when Natter becomes available again.',
+                                  style: TextStyle(
+                                    color: Colors.white
+                                        .withOpacity(0.64),
+                                    fontSize: 13,
+                                    fontWeight:
+                                        FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 26),
+
+                      if (!manualEntry)
+                        GestureDetector(
+                          behavior:
+                              HitTestBehavior.opaque,
+                          onTap: () {
+                            hourTextController.text =
+                                selectedHour.toString();
+
+                            minuteTextController.text =
+                                selectedMinute
+                                    .toString()
+                                    .padLeft(2, '0');
+
+                            setSheetState(() {
+                              manualEntry = true;
+                              manualError = null;
+                            });
+
+                            WidgetsBinding.instance
+                                .addPostFrameCallback(
+                              (_) {
+                                hourFocus.requestFocus();
+                                hourTextController
+                                        .selection =
+                                    TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset:
+                                      hourTextController
+                                          .text.length,
+                                );
+                              },
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Text(
+                                displayTime(),
+                                style:
+                                    const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 38,
+                                  fontWeight:
+                                      FontWeight.w900,
+                                  letterSpacing: -0.8,
                                 ),
                               ),
-                            ),
-                            child: const Text(
-                              'Cancel',
+
+                              const SizedBox(height: 7),
+
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.edit_rounded,
+                                    color: Colors.white
+                                        .withOpacity(0.42),
+                                    size: 14,
+                                  ),
+
+                                  const SizedBox(width: 6),
+
+                                  Text(
+                                    'Tap to enter a time',
+                                    style: TextStyle(
+                                      color: Colors.white
+                                          .withOpacity(0.46),
+                                      fontSize: 12,
+                                      fontWeight:
+                                          FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Column(
+                          children: [
+                            Text(
+                              'Enter a time',
                               style: TextStyle(
-                                fontSize: 14,
+                                color: Colors.white
+                                    .withOpacity(0.58),
+                                fontSize: 12,
                                 fontWeight:
                                     FontWeight.w800,
                               ),
                             ),
-                          ),
-                        ),
-                      ),
 
-                      const SizedBox(width: 12),
+                            const SizedBox(height: 10),
 
-                      Expanded(
-                        flex: 2,
-                        child: SizedBox(
-                          height: 54,
-                          child: FilledButton(
-                            onPressed: () {
-                              Navigator.of(sheetContext)
-                                  .pop(
-                                currentTime(),
-                              );
-                            },
-                            style:
-                                FilledButton.styleFrom(
-                              backgroundColor: accent,
-                              foregroundColor: isStart
-                                  ? Colors.white
-                                  : Colors.black,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(
-                                  18,
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 86,
+                                  child: TextField(
+                                    controller:
+                                        hourTextController,
+                                    focusNode: hourFocus,
+                                    keyboardType:
+                                        TextInputType.number,
+                                    textInputAction:
+                                        TextInputAction.next,
+                                    maxLength: 2,
+                                    textAlign:
+                                        TextAlign.center,
+                                    style:
+                                        const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight:
+                                          FontWeight.w900,
+                                    ),
+                                    decoration:
+                                        InputDecoration(
+                                      counterText: '',
+                                      hintText: '10',
+                                      hintStyle: TextStyle(
+                                        color: Colors.white
+                                            .withOpacity(0.26),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white
+                                          .withOpacity(0.055),
+                                      contentPadding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                        vertical: 12,
+                                      ),
+                                      enabledBorder:
+                                          OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(16),
+                                        borderSide:
+                                            BorderSide(
+                                          color: accent
+                                              .withOpacity(
+                                                  0.20),
+                                        ),
+                                      ),
+                                      focusedBorder:
+                                          OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(16),
+                                        borderSide:
+                                            BorderSide(
+                                          color: accent
+                                              .withOpacity(
+                                                  0.52),
+                                        ),
+                                      ),
+                                    ),
+                                    onSubmitted: (_) {
+                                      minuteFocus
+                                          .requestFocus();
+                                    },
+                                  ),
+                                ),
+
+                                Padding(
+                                  padding:
+                                      const EdgeInsets
+                                          .symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Text(
+                                    ':',
+                                    style: TextStyle(
+                                      color: Colors.white
+                                          .withOpacity(0.70),
+                                      fontSize: 28,
+                                      fontWeight:
+                                          FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(
+                                  width: 86,
+                                  child: TextField(
+                                    controller:
+                                        minuteTextController,
+                                    focusNode: minuteFocus,
+                                    keyboardType:
+                                        TextInputType.number,
+                                    textInputAction:
+                                        TextInputAction.done,
+                                    maxLength: 2,
+                                    textAlign:
+                                        TextAlign.center,
+                                    style:
+                                        const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight:
+                                          FontWeight.w900,
+                                    ),
+                                    decoration:
+                                        InputDecoration(
+                                      counterText: '',
+                                      hintText: '00',
+                                      hintStyle: TextStyle(
+                                        color: Colors.white
+                                            .withOpacity(0.26),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white
+                                          .withOpacity(0.055),
+                                      contentPadding:
+                                          const EdgeInsets
+                                              .symmetric(
+                                        vertical: 12,
+                                      ),
+                                      enabledBorder:
+                                          OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(16),
+                                        borderSide:
+                                            BorderSide(
+                                          color: accent
+                                              .withOpacity(
+                                                  0.20),
+                                        ),
+                                      ),
+                                      focusedBorder:
+                                          OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius
+                                                .circular(16),
+                                        borderSide:
+                                            BorderSide(
+                                          color: accent
+                                              .withOpacity(
+                                                  0.52),
+                                        ),
+                                      ),
+                                    ),
+                                    onSubmitted: (_) {
+                                      applyManualEntry();
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            if (manualError != null) ...[
+                              const SizedBox(height: 8),
+
+                              Text(
+                                manualError!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color:
+                                      NatterBrand.yellow,
+                                  fontSize: 11,
+                                  fontWeight:
+                                      FontWeight.w700,
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 8),
+
+                            TextButton(
+                              onPressed: applyManualEntry,
+                              child: const Text(
+                                'Done',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight:
+                                      FontWeight.w800,
                                 ),
                               ),
                             ),
-                            child: const Text(
-                              'Set time',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight:
-                                    FontWeight.w900,
+                          ],
+                        ),
+
+                      const SizedBox(height: 22),
+
+                      SizedBox(
+                        height: 154,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Positioned(
+                              left: 6,
+                              right: 6,
+                              child: Container(
+                                height: 48,
+                                decoration:
+                                    BoxDecoration(
+                                  color: accent
+                                      .withOpacity(0.075),
+                                  borderRadius:
+                                      BorderRadius.circular(
+                                          18),
+                                  border: Border.all(
+                                    color: accent
+                                        .withOpacity(0.18),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: accent
+                                          .withOpacity(0.045),
+                                      blurRadius: 16,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: timeWheel(
+                                    controller:
+                                        hourController,
+                                    itemCount: 12,
+                                    selectedIndex:
+                                        selectedHour - 1,
+                                    labelForIndex:
+                                        (index) =>
+                                            '${index + 1}',
+                                    onChanged: (index) {
+                                      setSheetState(() {
+                                        selectedHour =
+                                            index + 1;
+
+                                        hourTextController
+                                                .text =
+                                            selectedHour
+                                                .toString();
+                                      });
+                                    },
+                                  ),
+                                ),
+
+                                Text(
+                                  ':',
+                                  style: TextStyle(
+                                    color: Colors.white
+                                        .withOpacity(0.52),
+                                    fontSize: 23,
+                                    fontWeight:
+                                        FontWeight.w900,
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: timeWheel(
+                                    controller:
+                                        minuteController,
+                                    itemCount: 60,
+                                    selectedIndex:
+                                        selectedMinute,
+                                    labelForIndex:
+                                        (index) => index
+                                            .toString()
+                                            .padLeft(
+                                              2,
+                                              '0',
+                                            ),
+                                    onChanged: (index) {
+                                      setSheetState(() {
+                                        selectedMinute =
+                                            index;
+
+                                        minuteTextController
+                                                .text =
+                                            selectedMinute
+                                                .toString()
+                                                .padLeft(
+                                                  2,
+                                                  '0',
+                                                );
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Row(
+                        children: [
+                          periodButton(
+                            label: 'AM',
+                            isPm: false,
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          periodButton(
+                            label: 'PM',
+                            isPm: true,
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 52,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.of(
+                                    sheetContext,
+                                  ).pop();
+                                },
+                                style:
+                                    TextButton.styleFrom(
+                                  foregroundColor:
+                                      Colors.white
+                                          .withOpacity(0.66),
+                                  shape:
+                                      RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                            17),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight:
+                                        FontWeight.w800,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            flex: 2,
+                            child: SizedBox(
+                              height: 52,
+                              child: FilledButton(
+                                onPressed: () {
+                                  if (manualEntry &&
+                                      !applyManualEntry()) {
+                                    return;
+                                  }
+
+                                  Navigator.of(
+                                    sheetContext,
+                                  ).pop(
+                                    currentTime(),
+                                  );
+                                },
+                                style:
+                                    FilledButton.styleFrom(
+                                  backgroundColor:
+                                      accent.withOpacity(
+                                          0.15),
+                                  foregroundColor:
+                                      Colors.white,
+                                  elevation: 0,
+                                  side: BorderSide(
+                                    color: accent
+                                        .withOpacity(0.38),
+                                  ),
+                                  shape:
+                                      RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(
+                                            17),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Set time',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight:
+                                        FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             );
           },
@@ -24423,9 +24808,15 @@ Future<TimeOfDay?> _showNatterTimeSheet({
   } finally {
     hourController.dispose();
     minuteController.dispose();
-    periodController.dispose();
+
+    hourTextController.dispose();
+    minuteTextController.dispose();
+
+    hourFocus.dispose();
+    minuteFocus.dispose();
   }
-}
+}                         
+
 
 @override
 Widget build(BuildContext context) {
