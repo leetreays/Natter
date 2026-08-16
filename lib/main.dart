@@ -24476,7 +24476,7 @@ class _NatterWorldTimeSheetState
         bottom: keyboardInset,
       ),
       child: Align(
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.center,
         child: Padding(
           padding:
               const EdgeInsets.fromLTRB(
