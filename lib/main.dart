@@ -23965,6 +23965,468 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
   );
   }
 
+Future<TimeOfDay?> _showNatterTimeSheet({
+  required TimeOfDay initialTime,
+  required bool isStart,
+}) async {
+  final initialHour =
+      initialTime.hourOfPeriod == 0
+          ? 12
+          : initialTime.hourOfPeriod;
+
+  int selectedHour = initialHour;
+  int selectedMinute = initialTime.minute;
+  bool selectedIsPm =
+      initialTime.period == DayPeriod.pm;
+
+  final hourController =
+      FixedExtentScrollController(
+    initialItem: selectedHour - 1,
+  );
+
+  final minuteController =
+      FixedExtentScrollController(
+    initialItem: selectedMinute,
+  );
+
+  final periodController =
+      FixedExtentScrollController(
+    initialItem: selectedIsPm ? 1 : 0,
+  );
+
+  final accent = isStart
+      ? NatterBrand.pink
+      : NatterBrand.yellow;
+
+  final glow = isStart
+      ? NatterGlowTone.protect
+      : NatterGlowTone.hope;
+
+  try {
+    return await showModalBottomSheet<TimeOfDay>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor:
+          const Color(0xFF06112E).withOpacity(0.72),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            TimeOfDay currentTime() {
+              var hour24 = selectedHour % 12;
+
+              if (selectedIsPm) {
+                hour24 += 12;
+              }
+
+              return TimeOfDay(
+                hour: hour24,
+                minute: selectedMinute,
+              );
+            }
+
+            String displayTime() {
+              return MaterialLocalizations.of(context)
+                  .formatTimeOfDay(
+                currentTime(),
+                alwaysUse24HourFormat: false,
+              );
+            }
+
+            Widget timeWheel({
+              required FixedExtentScrollController
+                  controller,
+              required int itemCount,
+              required int selectedIndex,
+              required String Function(int index)
+                  labelForIndex,
+              required ValueChanged<int> onChanged,
+            }) {
+              return SizedBox(
+                height: 154,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.11),
+                        borderRadius:
+                            BorderRadius.circular(16),
+                        border: Border.all(
+                          color:
+                              accent.withOpacity(0.24),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                accent.withOpacity(0.07),
+                            blurRadius: 16,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    ListWheelScrollView.useDelegate(
+                      controller: controller,
+                      itemExtent: 44,
+                      physics:
+                          const FixedExtentScrollPhysics(),
+                      diameterRatio: 1.6,
+                      perspective: 0.002,
+                      squeeze: 1.05,
+                      onSelectedItemChanged: onChanged,
+                      childDelegate:
+                          ListWheelChildBuilderDelegate(
+                        childCount: itemCount,
+                        builder: (context, index) {
+                          final selected =
+                              index == selectedIndex;
+
+                          return Center(
+                            child: Text(
+                              labelForIndex(index),
+                              style: TextStyle(
+                                color: selected
+                                    ? Colors.white
+                                    : Colors.white
+                                        .withOpacity(0.34),
+                                fontSize:
+                                    selected ? 21 : 16,
+                                fontWeight: selected
+                                    ? FontWeight.w900
+                                    : FontWeight.w700,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            return Container(
+              margin: const EdgeInsets.fromLTRB(
+                14,
+                0,
+                14,
+                14,
+              ),
+              padding: const EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                20,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF172A4D)
+                    .withOpacity(0.98),
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.14),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.28),
+                    blurRadius: 34,
+                    offset: const Offset(0, 16),
+                  ),
+                  BoxShadow(
+                    color: accent.withOpacity(0.08),
+                    blurRadius: 28,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color:
+                          Colors.white.withOpacity(0.20),
+                      borderRadius:
+                          BorderRadius.circular(999),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.center,
+                    children: [
+                      NatterIconBadge(
+                        icon: isStart
+                            ? Icons.nightlight_round
+                            : Icons.wb_twilight_rounded,
+                        accent: Colors.white,
+                        glow: glow,
+                        size: 46,
+                        iconSize: 21,
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isStart
+                                  ? 'Quiet Time starts'
+                                  : 'Quiet Time ends',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight:
+                                    FontWeight.w900,
+                              ),
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            Text(
+                              isStart
+                                  ? 'Choose when messages pause.'
+                                  : 'Choose when Natter becomes available again.',
+                              style: TextStyle(
+                                color: Colors.white
+                                    .withOpacity(0.62),
+                                fontSize: 13,
+                                fontWeight:
+                                    FontWeight.w600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 16,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          Colors.white.withOpacity(0.055),
+                      borderRadius:
+                          BorderRadius.circular(22),
+                      border: Border.all(
+                        color:
+                            Colors.white.withOpacity(0.09),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          displayTime(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          'Scroll to choose a time',
+                          style: TextStyle(
+                            color: Colors.white
+                                .withOpacity(0.46),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  Row(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: timeWheel(
+                          controller: hourController,
+                          itemCount: 12,
+                          selectedIndex:
+                              selectedHour - 1,
+                          labelForIndex: (index) =>
+                              '${index + 1}',
+                          onChanged: (index) {
+                            setSheetState(() {
+                              selectedHour = index + 1;
+                            });
+                          },
+                        ),
+                      ),
+
+                      Padding(
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 7,
+                        ),
+                        child: Text(
+                          ':',
+                          style: TextStyle(
+                            color: Colors.white
+                                .withOpacity(0.52),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+
+                      Expanded(
+                        flex: 4,
+                        child: timeWheel(
+                          controller: minuteController,
+                          itemCount: 60,
+                          selectedIndex:
+                              selectedMinute,
+                          labelForIndex: (index) =>
+                              index
+                                  .toString()
+                                  .padLeft(2, '0'),
+                          onChanged: (index) {
+                            setSheetState(() {
+                              selectedMinute = index;
+                            });
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        flex: 3,
+                        child: timeWheel(
+                          controller: periodController,
+                          itemCount: 2,
+                          selectedIndex:
+                              selectedIsPm ? 1 : 0,
+                          labelForIndex: (index) =>
+                              index == 0
+                                  ? 'AM'
+                                  : 'PM',
+                          onChanged: (index) {
+                            setSheetState(() {
+                              selectedIsPm = index == 1;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 54,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(sheetContext)
+                                  .pop();
+                            },
+                            style: TextButton.styleFrom(
+                              foregroundColor:
+                                  Colors.white
+                                      .withOpacity(0.72),
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  18,
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight:
+                                    FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        flex: 2,
+                        child: SizedBox(
+                          height: 54,
+                          child: FilledButton(
+                            onPressed: () {
+                              Navigator.of(sheetContext)
+                                  .pop(
+                                currentTime(),
+                              );
+                            },
+                            style:
+                                FilledButton.styleFrom(
+                              backgroundColor: accent,
+                              foregroundColor: isStart
+                                  ? Colors.white
+                                  : Colors.black,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  18,
+                                ),
+                              ),
+                            ),
+                            child: const Text(
+                              'Set time',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight:
+                                    FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  } finally {
+    hourController.dispose();
+    minuteController.dispose();
+    periodController.dispose();
+  }
+}
+
 @override
 Widget build(BuildContext context) {
   return NatterScreenScaffold(
@@ -24066,9 +24528,9 @@ NatterSurface(
               label: 'Start',
               time: _quietStart,
               onPick: () async {
-                final picked = await _showNatterTimePicker(
+                final picked = await _showNatterTimeSheet(
   initialTime: _quietStart,
-  helpText: 'Quiet Time starts',
+  isStart: true,
 );
 
                 if (picked != null) {
