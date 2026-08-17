@@ -528,6 +528,9 @@ enum NatterWorldStage {
 
   parentMorning,
 
+  quietEvening,
+  quietMorning,
+
   parentReadinessBeginning,
   parentReadinessBuilding,
   parentReadinessGrowing,
@@ -587,6 +590,20 @@ extension NatterWorldStageDetails on NatterWorldStage {
           Color(0xFFC8BEA7),
         ];
 
+      case NatterWorldStage.quietEvening:
+  return const [
+    Color(0xFF10172A),
+    Color(0xFF291C43),
+    Color(0xFF082440),
+  ];
+
+case NatterWorldStage.quietMorning:
+  return const [
+    Color(0xFF314D5D),
+    Color(0xFF71858A),
+    Color(0xFFB5AA96),
+  ];
+
       case NatterWorldStage.parentReadinessBeginning:
   return const [
     Color(0xFF405C6B),
@@ -629,6 +646,12 @@ case NatterWorldStage.parentReadinessGraduate:
     case NatterWorldStage.parentMorning:
       return 0.48;
 
+    case NatterWorldStage.quietEvening:
+  return 0.82;
+
+case NatterWorldStage.quietMorning:
+  return 0.42;
+
     case NatterWorldStage.parentReadinessBeginning:
       return 0.62;
 
@@ -651,6 +674,12 @@ case NatterWorldStage.parentReadinessGraduate:
 
   double get landscapeOpacity {
   switch (this) {
+    case NatterWorldStage.quietEvening:
+      return 0.76;
+
+    case NatterWorldStage.quietMorning:
+      return 0.76;
+
     case NatterWorldStage.parentMorning:
     case NatterWorldStage.parentReadinessBeginning:
     case NatterWorldStage.parentReadinessBuilding:
@@ -662,10 +691,16 @@ case NatterWorldStage.parentReadinessGraduate:
     default:
       return 1;
   }
-}
+  }
 
   double get landscapeHeight {
   switch (this) {
+    case NatterWorldStage.quietEvening:
+      return 250;
+
+    case NatterWorldStage.quietMorning:
+      return 235;
+
     case NatterWorldStage.parentMorning:
     case NatterWorldStage.parentReadinessBeginning:
     case NatterWorldStage.parentReadinessBuilding:
@@ -676,7 +711,6 @@ case NatterWorldStage.parentReadinessGraduate:
 
     default:
       return 250;
-  }
   }
 }
 
@@ -23846,8 +23880,8 @@ class _NatterWorldTimeSheetState
       : NatterGlowTone.hope;
 
   NatterWorldStage get _worldStage => widget.isStart
-      ? NatterWorldStage.journeyCreateFamily
-      : NatterWorldStage.parentMorning;
+    ? NatterWorldStage.quietEvening
+    : NatterWorldStage.quietMorning;
 
   @override
   void initState() {
