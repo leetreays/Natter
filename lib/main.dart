@@ -24552,28 +24552,25 @@ class _NatterWorldTimeSheetState
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient:
-                              LinearGradient(
-                            begin:
-                                Alignment.topCenter,
-                            end:
-                                Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              const Color(0x3306112E),
-                              const Color(0x7706112E),
-                            ],
-                            stops: const [
-                              0,
-                              0.56,
-                              1,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+  child: DecoratedBox(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.transparent,
+          const Color(0x14291C43),
+          const Color(0x2606112E),
+        ],
+        stops: const [
+          0,
+          0.60,
+          1,
+        ],
+      ),
+    ),
+  ),
+),
 
                     Column(
                       children: [
