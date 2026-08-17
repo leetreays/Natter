@@ -11349,8 +11349,16 @@ NatterJourneyLinkCard(
   accent: Colors.white,
   glow: NatterGlowTone.connect,
   onTap: () {
-    // Destination will be added in a later commit.
-  },
+  Navigator.push(
+    context,
+    calmRoute(
+      ParentGuidanceGrowthScreen(
+        child: child,
+        parentUid: parentUid,
+      ),
+    ),
+  );
+},
 ),
 
 const SizedBox(height: 12),
@@ -11374,6 +11382,78 @@ NatterJourneyLinkCard(
     );
   },
 ),
+
+          const SizedBox(height: 60),
+        ],
+      ),
+    );
+  }
+}
+
+class ParentGuidanceGrowthScreen extends StatelessWidget {
+  const ParentGuidanceGrowthScreen({
+    super.key,
+    required this.child,
+    required this.parentUid,
+  });
+
+  final ParentChildProfile child;
+  final String parentUid;
+
+  @override
+  Widget build(BuildContext context) {
+    return NatterScreenScaffold(
+      worldStage: NatterWorldStage.parentMorning,
+      onBack: () {
+        Navigator.pop(context);
+      },
+      showLogo: true,
+      logoSize: 42,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 8),
+
+          NatterScreenHeader(
+            title: 'Guidance & Growth',
+            subtitle:
+                'See how Natter’s support is helping ${child.name} '
+                'practise healthier choices.',
+            compact: true,
+          ),
+
+          const SizedBox(height: 28),
+
+          NatterSurface(
+            style: NatterSurfaceStyle.primary,
+            padding: const EdgeInsets.all(22),
+            borderRadius: 26,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const NatterSectionHeader(
+                  title: 'Learning in action',
+                  subtitle:
+                      'The moments that matter are the ones where support '
+                      'helps a healthier choice take shape.',
+                ),
+
+                const SizedBox(height: 18),
+
+                NatterEmptyState(
+                  title: 'Learning moments will appear here',
+                  message:
+                      'When guidance is followed by a calmer, kinder or '
+                      'more thoughtful choice, Natter will reflect that '
+                      'progress here.',
+                  icon: Icons.auto_awesome_rounded,
+                  accent: NatterBrand.green,
+                  glow: NatterGlowTone.grow,
+                  compact: true,
+                ),
+              ],
+            ),
+          ),
 
           const SizedBox(height: 60),
         ],
