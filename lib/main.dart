@@ -24819,7 +24819,103 @@ class _NatterWorldTimeSheetState
     );
   }
 }                       
-                      
+
+class _QuietTimeBoundaryButton extends StatelessWidget {
+  const _QuietTimeBoundaryButton({
+    required this.time,
+    required this.isStart,
+    required this.onTap,
+  });
+
+  final TimeOfDay time;
+  final bool isStart;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = isStart
+        ? NatterBrand.pink
+        : NatterBrand.yellow;
+
+    final glow = isStart
+        ? NatterGlowTone.protect
+        : NatterGlowTone.hope;
+
+    final formattedTime =
+        MaterialLocalizations.of(context).formatTimeOfDay(
+      time,
+      alwaysUse24HourFormat: false,
+    );
+
+    return NatterSurface(
+      style: NatterSurfaceStyle.quiet,
+      padding: const EdgeInsets.all(16),
+      borderRadius: 20,
+      glow: glow,
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              NatterIconBadge(
+                icon: isStart
+                    ? Icons.nightlight_round
+                    : Icons.wb_twilight_rounded,
+                accent: Colors.white,
+                glow: glow,
+                size: 36,
+                iconSize: 17,
+              ),
+
+              const Spacer(),
+
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withOpacity(0.46),
+                size: 20,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          Text(
+            isStart ? 'Starts' : 'Ends',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.62),
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            formattedTime,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Container(
+            width: 28,
+            height: 2,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.62),
+              borderRadius: BorderRadius.circular(99),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class ParentRulesScreen extends StatefulWidget {
   final String parentId;
@@ -25877,7 +25973,7 @@ Widget build(BuildContext context) {
               const NatterScreenHeader(
                 title: 'Rules & Quiet Time',
                 subtitle:
-                    'Set gentle boundaries and choose which moments Natter keeps track of.',
+    'Set gentle boundaries and understand how Natter supports them.',
                 compact: true,
               ),
 
@@ -25952,10 +26048,10 @@ NatterSurface(
       Row(
         children: [
           Expanded(
-            child: _TimeButton(
-              label: 'Start',
-              time: _quietStart,
-              onPick: () async {
+            _QuietTimeBoundaryButton(
+  time: _quietStart,
+  isStart: true,
+  onTap: () async {
                 final picked =
     await _showNatterWorldTimeSheet(
   context: context,
@@ -25976,10 +26072,10 @@ NatterSurface(
           const SizedBox(width: 10),
 
           Expanded(
-            child: _TimeButton(
-              label: 'End',
-              time: _quietEnd,
-              onPick: () async {
+            _QuietTimeBoundaryButton(
+  time: _quietEnd,
+  isStart: false,
+  onTap: () async {
                 final picked =
     await _showNatterWorldTimeSheet(
   context: context,
