@@ -26048,10 +26048,10 @@ NatterSurface(
       Row(
         children: [
           Expanded(
-            _QuietTimeBoundaryButton(
-  time: _quietStart,
-  isStart: true,
-  onTap: () async {
+  child: _QuietTimeBoundaryButton(
+    time: _quietStart,
+    isStart: true,
+    onTap: () async {
                 final picked =
     await _showNatterWorldTimeSheet(
   context: context,
@@ -26072,10 +26072,10 @@ NatterSurface(
           const SizedBox(width: 10),
 
           Expanded(
-            _QuietTimeBoundaryButton(
-  time: _quietEnd,
-  isStart: false,
-  onTap: () async {
+  child: _QuietTimeBoundaryButton(
+    time: _quietEnd,
+    isStart: false,
+    onTap: () async {
                 final picked =
     await _showNatterWorldTimeSheet(
   context: context,
