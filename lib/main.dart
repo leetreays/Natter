@@ -25983,9 +25983,6 @@ NatterSurface(
   style: NatterSurfaceStyle.primary,
   padding: const EdgeInsets.all(22),
   borderRadius: 26,
-  glow: _quietHoursEnabled
-      ? NatterGlowTone.protect
-      : null,
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -26017,12 +26014,11 @@ NatterSurface(
           activeTrackColor:
               NatterBrand.pink.withOpacity(0.60),
           secondary: const NatterIconBadge(
-            icon: Icons.nightlight_round,
-            accent: Colors.white,
-            glow: NatterGlowTone.protect,
-            size: 40,
-            iconSize: 18,
-          ),
+  icon: Icons.schedule_rounded,
+  accent: Colors.white,
+  size: 40,
+  iconSize: 18,
+),
           title: const Text(
             'Enable Quiet Hours',
             style: TextStyle(
@@ -26167,14 +26163,7 @@ NatterSurface(
   );
 }
 }
-                
-                      
-                      
-                      
-      
-
             
-
 class ChirpDialogCard extends StatelessWidget {
   final String imagePath;
   final String message;
