@@ -713,6 +713,7 @@ case NatterWorldStage.quietMorning:
       return 250;
   }
 }
+}
 
 extension JourneyStageWorldDetails on JourneyStage {
   NatterWorldStage get worldStage {
