@@ -25980,9 +25980,11 @@ NatterSurface(
               label: 'End',
               time: _quietEnd,
               onPick: () async {
-                final picked = await _showNatterTimePicker(
+                final picked =
+    await _showNatterWorldTimeSheet(
+  context: context,
   initialTime: _quietEnd,
-  helpText: 'Quiet Time ends',
+  isStart: false,
 );
 
                 if (picked != null) {
