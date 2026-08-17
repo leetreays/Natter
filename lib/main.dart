@@ -599,9 +599,9 @@ extension NatterWorldStageDetails on NatterWorldStage {
 
 case NatterWorldStage.quietMorning:
   return const [
-    Color(0xFF314D5D),
-    Color(0xFF71858A),
-    Color(0xFFB5AA96),
+    Color(0xFF294554),
+    Color(0xFF637C82),
+    Color(0xFFB7AA8F),
   ];
 
       case NatterWorldStage.parentReadinessBeginning:
