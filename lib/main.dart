@@ -11390,6 +11390,235 @@ NatterJourneyLinkCard(
   }
 }
 
+class _GuidanceLearningInAction extends StatelessWidget {
+  const _GuidanceLearningInAction({
+    required this.child,
+    required this.parentUid,
+  });
+
+  final ParentChildProfile child;
+  final String parentUid;
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> _signalsStream() {
+    return FirebaseFirestore.instance
+        .collection('parents')
+        .doc(parentUid)
+        .collection('children')
+        .doc(child.childId)
+        .collection('signals')
+        .orderBy('createdAt', descending: true)
+        .limit(40)
+        .snapshots();
+  }
+
+  String _titleFor(String context) {
+    switch (context) {
+      case 'rewrite_used':
+        return 'A kinder choice after guidance';
+
+      case 'pause_respected':
+        return 'Space before replying';
+
+      default:
+        return 'Learning in action';
+    }
+  }
+
+  String _messageFor(String context) {
+    switch (context) {
+      case 'rewrite_used':
+        return 'Natter offered a chance to rethink a message, and '
+            '${child.name} chose a kinder rewrite.';
+
+      case 'pause_respected':
+        return 'Natter created a short pause before another message '
+            'could be sent, giving ${child.name} time and space before '
+            'messaging could continue.';
+
+      default:
+        return '${child.name} responded positively to support from Natter.';
+    }
+  }
+
+  IconData _iconFor(String context) {
+    switch (context) {
+      case 'rewrite_used':
+        return Icons.edit_note_rounded;
+
+      case 'pause_respected':
+        return Icons.self_improvement_rounded;
+
+      default:
+        return Icons.auto_awesome_rounded;
+    }
+  }
+
+  Color _accentFor(String context) {
+    switch (context) {
+      case 'rewrite_used':
+        return NatterBrand.green;
+
+      case 'pause_respected':
+        return NatterBrand.yellow;
+
+      default:
+        return Colors.white;
+    }
+  }
+
+  NatterGlowTone _glowFor(String context) {
+    switch (context) {
+      case 'rewrite_used':
+        return NatterGlowTone.grow;
+
+      case 'pause_respected':
+        return NatterGlowTone.hope;
+
+      default:
+        return NatterGlowTone.grow;
+    }
+  }
+
+  Widget _momentCard(
+    String context,
+  ) {
+    final accent = _accentFor(context);
+    final glow = _glowFor(context);
+
+    return NatterSurface(
+      style: NatterSurfaceStyle.quiet,
+      padding: const EdgeInsets.all(18),
+      borderRadius: 22,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NatterIconBadge(
+            icon: _iconFor(context),
+            accent: accent,
+            glow: glow,
+            size: 42,
+            iconSize: 19,
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _titleFor(context),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    height: 1.3,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  _messageFor(context),
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _signalsStream(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: NatterBrand.green,
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return const NatterEmptyState(
+            title: 'Learning moments are unavailable right now',
+            message:
+                'Natter will try to show this picture again shortly.',
+            icon: Icons.sync_rounded,
+            accent: Colors.white,
+            glow: NatterGlowTone.grow,
+            compact: true,
+          );
+        }
+
+        final docs = snapshot.data?.docs ?? const [];
+
+        final latestByContext =
+            <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+
+        for (final doc in docs) {
+          final context =
+              (doc.data()['context'] ?? '').toString();
+
+          if (context != 'rewrite_used' &&
+              context != 'pause_respected') {
+            continue;
+          }
+
+          latestByContext.putIfAbsent(
+            context,
+            () => doc,
+          );
+        }
+
+        final moments =
+            latestByContext.keys.toList();
+
+        if (moments.isEmpty) {
+          return const NatterEmptyState(
+            title: 'Learning moments will appear here',
+            message:
+                'When guidance is followed by a calmer, kinder or '
+                'more thoughtful choice, Natter will reflect that '
+                'progress here.',
+            icon: Icons.auto_awesome_rounded,
+            accent: NatterBrand.green,
+            glow: NatterGlowTone.grow,
+            compact: true,
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < moments.length; i++) ...[
+              if (i > 0)
+                const SizedBox(height: 12),
+
+              _momentCard(
+                moments[i],
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
 class ParentGuidanceGrowthScreen extends StatelessWidget {
   const ParentGuidanceGrowthScreen({
     super.key,
@@ -11440,17 +11669,10 @@ class ParentGuidanceGrowthScreen extends StatelessWidget {
 
                 const SizedBox(height: 18),
 
-                NatterEmptyState(
-                  title: 'Learning moments will appear here',
-                  message:
-                      'When guidance is followed by a calmer, kinder or '
-                      'more thoughtful choice, Natter will reflect that '
-                      'progress here.',
-                  icon: Icons.auto_awesome_rounded,
-                  accent: NatterBrand.green,
-                  glow: NatterGlowTone.grow,
-                  compact: true,
-                ),
+                _GuidanceLearningInAction(
+  child: child,
+  parentUid: parentUid,
+),
               ],
             ),
           ),
