@@ -24487,7 +24487,7 @@ class _NatterWorldTimeSheetState
         media.padding.bottom;
 
     final targetHeight =
-        availableHeight * 0.74;
+        availableHeight * 0.76;
 
     final keyboardInset =
         media.viewInsets.bottom;
