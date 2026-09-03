@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 
 Future<User> ensureSignedIn() async {
@@ -5138,6 +5139,12 @@ Future<void> recordTargetingConcern({
   final snap = await ref.get();
   final data = snap.data() ?? {};
 
+  final senderParentId = participantParentIdForChild(
+    participantChildIds: data['participantChildIds'],
+    participantParentIds: data['participantParentIds'],
+    senderChildId: senderChildId,
+  );
+
   final previousSender = (data['targetingChildId'] ?? '').toString();
   final previousTarget = (data['targetedChildId'] ?? '').toString();
   final previousCount = (data['targetingCount'] ?? 0) as num;
@@ -5161,6 +5168,12 @@ Future<void> recordTargetingConcern({
   }
 
   final newCount = shouldResetWindow ? 1 : previousCount.toInt() + 1;
+
+  if ((newCount == 3 || newCount == 5) && senderParentId == null) {
+    debugPrint(
+      'Targeting signal skipped: participant parent mapping unavailable.',
+    );
+  }
 
   await ref.set({
     'targetingChildId': senderChildId,
@@ -5193,13 +5206,7 @@ Future<void> recordTargetingConcern({
     'repeatedTargetingTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
-  final senderParentId =
-    (data['participantParentIds'] is List &&
-            (data['participantParentIds'] as List).isNotEmpty)
-        ? (data['participantParentIds'] as List).first.toString()
-        : '';
-
-if (senderParentId.isNotEmpty) {
+if (senderParentId != null) {
   await recordChildSignal(
     parentId: senderParentId,
     childId: senderChildId,
@@ -5234,13 +5241,7 @@ if (senderParentId.isNotEmpty) {
     'continuedTargetingTriggeredAt': FieldValue.serverTimestamp(),
   }, SetOptions(merge: true));
 
-  final senderParentId =
-    (data['participantParentIds'] is List &&
-            (data['participantParentIds'] as List).isNotEmpty)
-        ? (data['participantParentIds'] as List).first.toString()
-        : '';
-
-if (senderParentId.isNotEmpty) {
+if (senderParentId != null) {
   await recordChildSignal(
     parentId: senderParentId,
     childId: senderChildId,
