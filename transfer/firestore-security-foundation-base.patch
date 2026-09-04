@@ -1,0 +1,703 @@
+diff --git a/firebase.json b/firebase.json
+index bee4299..17c5725 100644
+--- a/firebase.json
++++ b/firebase.json
+@@ -1,4 +1,7 @@
+ {
++  "firestore": {
++    "rules": "firestore.rules"
++  },
+   "functions": [
+     {
+       "source": "functions",
+diff --git a/functions/index.js b/functions/index.js
+index c12cb6b..4e7cf60 100644
+--- a/functions/index.js
++++ b/functions/index.js
+@@ -13,6 +13,91 @@ setGlobalOptions({
+ 
+ const db = admin.firestore();
+ 
++exports.claimChildAccessCode = onCall(async (request) => {
++  if (!request.auth) {
++    throw new HttpsError('unauthenticated', 'You must be signed in.');
++  }
++
++  const provider = request.auth.token.firebase &&
++    request.auth.token.firebase.sign_in_provider;
++  if (provider !== 'anonymous') {
++    throw new HttpsError(
++        'permission-denied',
++        'Child access codes may only be claimed by an anonymous child session.',
++    );
++  }
++
++  const accessCode = String(
++      (request.data && request.data.accessCode) || '',
++  ).trim().toUpperCase();
++
++  if (!accessCode) {
++    throw new HttpsError('invalid-argument', 'accessCode is required.');
++  }
++
++  return db.runTransaction(async (transaction) => {
++    const codeRef = db.collection('child_access_codes').doc(accessCode);
++    const codeSnap = await transaction.get(codeRef);
++
++    if (!codeSnap.exists) {
++      throw new HttpsError('not-found', 'Child access code not found.');
++    }
++
++    const codeData = codeSnap.data() || {};
++    const parentId = String(codeData.parentId || '').trim();
++    const childId = String(codeData.childId || '').trim();
++
++    if (!parentId || !childId) {
++      throw new HttpsError(
++          'failed-precondition',
++          'Child access code is not linked to a child profile.',
++      );
++    }
++
++    const childRef = db
++        .collection('parents')
++        .doc(parentId)
++        .collection('children')
++        .doc(childId);
++    const childSnap = await transaction.get(childRef);
++
++    if (!childSnap.exists) {
++      throw new HttpsError('not-found', 'Child profile not found.');
++    }
++
++    const childData = childSnap.data() || {};
++    if (childData.parentId !== parentId || childData.accessCode !== accessCode) {
++      throw new HttpsError(
++          'failed-precondition',
++          'Child access code does not match the child profile.',
++      );
++    }
++
++    const linkedAuthUid = childData.linkedAuthUid;
++    if (typeof linkedAuthUid === 'string' &&
++        linkedAuthUid.trim() &&
++        linkedAuthUid !== request.auth.uid) {
++      throw new HttpsError(
++          'failed-precondition',
++          'This child profile is already linked to another device.',
++      );
++    }
++
++    transaction.update(childRef, {
++      linkedDevice: true,
++      linkedAuthUid: request.auth.uid,
++    });
++
++    return {
++      parentId,
++      childId,
++      childName: String(childData.name || codeData.childName || ''),
++      avatar: String(childData.avatar || codeData.avatar || 'owl'),
++      friendCode: String(childData.friendCode || codeData.friendCode || ''),
++    };
++  });
++});
++
+ async function getVerifiedLinkedChild(parentId, childId, authUid) {
+   if (!parentId || !childId) {
+     throw new HttpsError(
+diff --git a/lib/main.dart b/lib/main.dart
+index 57254fd..edfef55 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -4733,6 +4733,30 @@ Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
+   };
+ }
+ 
++Future<Map<String, String>?> claimChildByAccessCode(String rawCode) async {
++  final code = rawCode.trim().toUpperCase();
++  if (code.isEmpty) return null;
++
++  try {
++    final callable = functions.httpsCallable('claimChildAccessCode');
++    final response = await callable.call<Map<String, dynamic>>({
++      'accessCode': code,
++    });
++    final data = response.data;
++
++    return {
++      'parentId': (data['parentId'] ?? '').toString(),
++      'childId': (data['childId'] ?? '').toString(),
++      'childName': (data['childName'] ?? '').toString(),
++      'avatar': (data['avatar'] ?? 'owl').toString(),
++      'friendCode': (data['friendCode'] ?? '').toString(),
++    };
++  } on FirebaseFunctionsException catch (error) {
++    if (error.code == 'not-found') return null;
++    rethrow;
++  }
++}
++
+ Future<Map<String, String>?> findChildByFriendCode(String rawCode) async {
+   final code = rawCode.trim().toUpperCase();
+   if (code.isEmpty) return null;
+@@ -8573,7 +8597,7 @@ Future<void> _continue() async {
+       await FirebaseAuth.instance.signOut();
+     }
+ 
+-    final childUser = await ensureSignedIn();
++    await ensureSignedIn();
+ 
+     if (mounted) {
+   setState(() {
+@@ -8581,7 +8605,7 @@ Future<void> _continue() async {
+   });
+     }
+ 
+-    final result = await state.findChildByAccessCode(_code);
++    final result = await state.claimChildByAccessCode(_code);
+ 
+     if (result == null) {
+       throw Exception('That code was not recognised.');
+@@ -8616,16 +8640,6 @@ Future<void> _continue() async {
+   });
+     }
+ 
+-    await FirebaseFirestore.instance
+-        .collection('parents')
+-        .doc(result['parentId']!)
+-        .collection('children')
+-        .doc(result['childId']!)
+-        .set({
+-      'linkedDevice': true,
+-      'linkedAuthUid': childUser.uid,
+-    }, SetOptions(merge: true));
+-
+     if (!mounted) return;
+ 
+     await state.hydrateChildOnboardingState();
+@@ -14539,7 +14553,7 @@ Future<void> _continue() async {
+       await FirebaseAuth.instance.signOut();
+     }
+ 
+-    final childUser = await ensureSignedIn();
++    await ensureSignedIn();
+ 
+     if (mounted) {
+   setState(() {
+@@ -14547,7 +14561,7 @@ Future<void> _continue() async {
+   });
+     }
+ 
+-    final result = await state.findChildByAccessCode(_codeController.text);
++    final result = await state.claimChildByAccessCode(_codeController.text);
+ 
+     if (result == null) {
+       throw Exception('That code was not recognised.');
+@@ -14582,16 +14596,6 @@ Future<void> _continue() async {
+   });
+     }
+ 
+-    await FirebaseFirestore.instance
+-        .collection('parents')
+-        .doc(result['parentId']!)
+-        .collection('children')
+-        .doc(result['childId']!)
+-        .set({
+-      'linkedDevice': true,
+-      'linkedAuthUid': childUser.uid,
+-    }, SetOptions(merge: true));
+-
+     if (!mounted) return;
+ 
+     await state.hydrateChildOnboardingState();
+diff --git a/firestore.rules b/firestore.rules
+new file mode 100644
+index 0000000..1e19132
+--- /dev/null
++++ b/firestore.rules
+@@ -0,0 +1,154 @@
++rules_version = '2';
++service cloud.firestore {
++  match /databases/{database}/documents {
++
++    function signedIn() {
++      return request.auth != null;
++    }
++
++    function isParent(parentId) {
++      return signedIn() && request.auth.uid == parentId;
++    }
++
++    function childDoc(parentId, childId) {
++      return /databases/$(database)/documents/parents/$(parentId)/children/$(childId);
++    }
++
++    function isLinkedChild(parentId, childId) {
++      return signedIn()
++        && exists(childDoc(parentId, childId))
++        && get(childDoc(parentId, childId)).data.linkedAuthUid == request.auth.uid;
++    }
++
++    function isLinkedParticipantAt(conversation, index) {
++      return signedIn()
++        && conversation.participantChildIds is list
++        && conversation.participantParentIds is list
++        && conversation.participantChildIds.size() > index
++        && conversation.participantParentIds.size() > index
++        && isLinkedChild(
++          conversation.participantParentIds[index],
++          conversation.participantChildIds[index]
++        );
++    }
++
++    function isLinkedConversationParticipant(conversation) {
++      return isLinkedParticipantAt(conversation, 0)
++        || isLinkedParticipantAt(conversation, 1);
++    }
++
++    function conversationParticipantsUnchanged() {
++      return request.resource.data.participantChildIds
++          == resource.data.participantChildIds
++        && request.resource.data.participantParentIds
++          == resource.data.participantParentIds;
++    }
++
++    function childLinkageUnchanged() {
++      return request.resource.data.linkedAuthUid
++          == resource.data.linkedAuthUid
++        && request.resource.data.linkedDevice == resource.data.linkedDevice;
++    }
++
++    function childLinkageResetOnly() {
++      return request.resource.data.diff(resource.data).affectedKeys()
++          .hasOnly(['linkedAuthUid', 'linkedDevice'])
++        && request.resource.data.linkedAuthUid == null
++        && request.resource.data.linkedDevice == false;
++    }
++
++    function conversationData(conversationId) {
++      return get(
++        /databases/$(database)/documents/conversations/$(conversationId)
++      ).data;
++    }
++
++    match /parents/{parentId} {
++      allow read, write: if isParent(parentId);
++
++      match /children/{childId} {
++        allow read: if isParent(parentId) || isLinkedChild(parentId, childId);
++        allow create: if isParent(parentId);
++
++        allow update: if (
++          isParent(parentId) || isLinkedChild(parentId, childId)
++        ) && (childLinkageUnchanged() || childLinkageResetOnly());
++
++        allow delete: if isParent(parentId);
++
++        match /chats/{chatId} {
++          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
++
++          match /messages/{messageId} {
++            allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
++          }
++        }
++
++        match /contact_requests/{requestId} {
++          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
++        }
++
++        match /approved_contacts/{contactId} {
++          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
++        }
++
++        match /signals/{signalId} {
++          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
++        }
++      }
++    }
++
++    match /child_access_codes/{code} {
++      allow get: if signedIn();
++      allow list: if false;
++      allow write: if signedIn();
++    }
++
++    match /child_friend_codes/{code} {
++      allow read, write: if signedIn();
++    }
++
++    match /friend_requests/{requestId} {
++      allow create: if false;
++      allow read: if signedIn();
++      allow update: if false;
++      allow delete: if false;
++    }
++
++    match /friendships/{friendshipId} {
++      allow read, write: if signedIn();
++
++      match /{document=**} {
++        allow read, write: if signedIn();
++      }
++    }
++
++    match /conversations/{conversationId} {
++      allow create: if false;
++      allow delete: if false;
++
++      allow read: if isLinkedConversationParticipant(resource.data);
++      allow update: if signedIn() && conversationParticipantsUnchanged();
++
++      match /messages/{messageId} {
++        allow create: if signedIn();
++        allow read: if isLinkedConversationParticipant(
++          conversationData(conversationId)
++        );
++        allow update: if signedIn();
++        allow delete: if false;
++      }
++
++      match /meaningful_moments/{momentId} {
++        allow create: if signedIn();
++        allow read: if signedIn();
++        allow update: if signedIn();
++        allow delete: if false;
++      }
++    }
++
++    match /users/{uid} {
++      allow read, write: if signedIn() && request.auth.uid == uid;
++    }
++  }
++}
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..f6cda21
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,13 @@
++{
++  "name": "natter-firestore-security-tests",
++  "private": true,
++  "type": "module",
++  "scripts": {
++    "test:firestore-rules": "firebase emulators:exec --only firestore \"node --test test/firestore.rules.test.js\""
++  },
++  "devDependencies": {
++    "@firebase/rules-unit-testing": "^4.0.1",
++    "firebase": "^11.0.0",
++    "firebase-tools": "^14.0.0"
++  }
++}
+diff --git a/test/firestore.rules.test.js b/test/firestore.rules.test.js
+new file mode 100644
+index 0000000..d9e2a3c
+--- /dev/null
++++ b/test/firestore.rules.test.js
+@@ -0,0 +1,305 @@
++import assert from 'node:assert/strict';
++import {readFileSync} from 'node:fs';
++import {after, before, beforeEach, describe, test} from 'node:test';
++
++import {
++  assertFails,
++  assertSucceeds,
++  initializeTestEnvironment,
++} from '@firebase/rules-unit-testing';
++import {
++  collection,
++  doc,
++  getDoc,
++  getDocs,
++  orderBy,
++  query,
++  setDoc,
++  updateDoc,
++  where,
++} from 'firebase/firestore';
++
++const projectId = 'natter-firestore-rules-test';
++const conversationId = 'child-a_child-b';
++const reversedConversationId = 'child-b_child-a';
++const newlyLinkedConversationId = 'child-b_child-d';
++
++let testEnvironment;
++
++function firestoreFor(uid) {
++  return testEnvironment.authenticatedContext(uid).firestore();
++}
++
++async function seedConversation() {
++  await testEnvironment.withSecurityRulesDisabled(async (context) => {
++    const db = context.firestore();
++
++    await setDoc(doc(db, 'parents/parent-a/children/child-a'), {
++      linkedAuthUid: 'child-a-auth',
++      linkedDevice: true,
++      parentId: 'parent-a',
++      accessCode: 'ACCESS-A',
++      quietHoursEnabled: true,
++    });
++    await setDoc(doc(db, 'parents/parent-b/children/child-b'), {
++      linkedAuthUid: 'child-b-auth',
++      linkedDevice: true,
++      parentId: 'parent-b',
++      accessCode: 'ACCESS-B',
++    });
++    await setDoc(doc(db, 'parents/parent-c/children/child-c'), {
++      linkedAuthUid: 'child-c-auth',
++      linkedDevice: true,
++      parentId: 'parent-c',
++      accessCode: 'ACCESS-C',
++    });
++    await setDoc(doc(db, 'parents/parent-d/children/child-d'), {
++      linkedAuthUid: null,
++      linkedDevice: false,
++      parentId: 'parent-d',
++      accessCode: 'ACCESS-D',
++      quietHoursEnabled: true,
++      name: 'Child D',
++    });
++
++    await setDoc(doc(db, 'child_access_codes/ACCESS-D'), {
++      parentId: 'parent-d',
++      childId: 'child-d',
++    });
++
++    await setDoc(doc(db, `conversations/${conversationId}`), {
++      participantChildIds: ['child-a', 'child-b'],
++      participantParentIds: ['parent-a', 'parent-b'],
++      status: 'active',
++    });
++    await setDoc(
++      doc(db, `conversations/${conversationId}/messages/message-1`),
++      {
++        text: 'Private child message',
++        senderUid: 'child-a',
++        createdAtMs: 1,
++      },
++    );
++
++    await setDoc(doc(db, `conversations/${reversedConversationId}`), {
++      participantChildIds: ['child-b', 'child-a'],
++      participantParentIds: ['parent-b', 'parent-a'],
++      status: 'active',
++    });
++    await setDoc(doc(db, `conversations/${newlyLinkedConversationId}`), {
++      participantChildIds: ['child-b', 'child-d'],
++      participantParentIds: ['parent-b', 'parent-d'],
++      status: 'active',
++    });
++  });
++}
++
++async function simulateCallableClaim(parentId, childId, authUid) {
++  await testEnvironment.withSecurityRulesDisabled(async (context) => {
++    const db = context.firestore();
++    await updateDoc(doc(db, `parents/${parentId}/children/${childId}`), {
++      linkedAuthUid: authUid,
++      linkedDevice: true,
++    });
++  });
++}
++
++before(async () => {
++  testEnvironment = await initializeTestEnvironment({
++    projectId,
++    firestore: {
++      rules: readFileSync('firestore.rules', 'utf8'),
++    },
++  });
++});
++
++beforeEach(async () => {
++  await testEnvironment.clearFirestore();
++  await seedConversation();
++});
++
++after(async () => {
++  await testEnvironment.cleanup();
++});
++
++describe('conversation privacy', () => {
++  test('linked Child A can read the conversation', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertSucceeds(getDoc(doc(db, `conversations/${conversationId}`)));
++  });
++
++  test('linked Child B can read the same conversation', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertSucceeds(getDoc(doc(db, `conversations/${conversationId}`)));
++  });
++
++  test('an unrelated anonymous user cannot read the conversation', async () => {
++    const db = firestoreFor('unrelated-anonymous-auth');
++    await assertFails(getDoc(doc(db, `conversations/${conversationId}`)));
++  });
++
++  test('Parent A cannot read the conversation', async () => {
++    const db = firestoreFor('parent-a');
++    await assertFails(getDoc(doc(db, `conversations/${conversationId}`)));
++  });
++
++  test('Parent B cannot read the conversation', async () => {
++    const db = firestoreFor('parent-b');
++    await assertFails(getDoc(doc(db, `conversations/${conversationId}`)));
++  });
++
++  test('participant-child conversation queries continue to work', async () => {
++    for (const [authUid, childId] of [
++      ['child-a-auth', 'child-a'],
++      ['child-b-auth', 'child-b'],
++    ]) {
++      const db = firestoreFor(authUid);
++      const snapshot = await assertSucceeds(
++        getDocs(
++          query(
++            collection(db, 'conversations'),
++            where('participantChildIds', 'array-contains', childId),
++          ),
++        ),
++      );
++      assert.equal(
++        snapshot.docs.some((item) => item.id === conversationId),
++        true,
++      );
++    }
++  });
++
++  test('reversed participant ordering authorises both children', async () => {
++    for (const authUid of ['child-a-auth', 'child-b-auth']) {
++      const db = firestoreFor(authUid);
++      await assertSucceeds(
++        getDoc(doc(db, `conversations/${reversedConversationId}`)),
++      );
++    }
++  });
++
++  for (const [label, authUid] of [
++    ['unrelated linked Child C', 'child-c-auth'],
++    ['Child A', 'child-a-auth'],
++    ['Child B', 'child-b-auth'],
++    ['Parent A', 'parent-a'],
++    ['Parent B', 'parent-b'],
++  ]) {
++    test(`${label} cannot rewrite participant identity`, async () => {
++      const db = firestoreFor(authUid);
++      await assertFails(
++        updateDoc(doc(db, `conversations/${conversationId}`), {
++          participantChildIds: ['child-c', 'child-b'],
++          participantParentIds: ['parent-c', 'parent-b'],
++        }),
++      );
++    });
++  }
++});
++
++describe('raw message privacy', () => {
++  test('a linked participant child can read messages', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertSucceeds(
++      getDocs(
++        query(
++          collection(db, `conversations/${conversationId}/messages`),
++          orderBy('createdAtMs', 'desc'),
++        ),
++      ),
++    );
++  });
++
++  test('the other linked participant child can read messages', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertSucceeds(
++      getDocs(
++        query(
++          collection(db, `conversations/${conversationId}/messages`),
++          orderBy('createdAtMs', 'desc'),
++        ),
++      ),
++    );
++  });
++
++  test('an unrelated linked child cannot read messages', async () => {
++    const db = firestoreFor('child-c-auth');
++    await assertFails(
++      getDocs(collection(db, `conversations/${conversationId}/messages`)),
++    );
++  });
++
++  test('an unrelated anonymous user cannot read messages', async () => {
++    const db = firestoreFor('unrelated-anonymous-auth');
++    await assertFails(
++      getDocs(collection(db, `conversations/${conversationId}/messages`)),
++    );
++  });
++
++  test('neither parent can read messages', async () => {
++    for (const parentUid of ['parent-a', 'parent-b']) {
++      const db = firestoreFor(parentUid);
++      await assertFails(
++        getDocs(collection(db, `conversations/${conversationId}/messages`)),
++      );
++    }
++  });
++});
++
++describe('child linking trust anchor', () => {
++  test('an attacker cannot replace an existing linkedAuthUid or read', async () => {
++    const db = firestoreFor('attacker-auth');
++    await assertFails(
++      updateDoc(doc(db, 'parents/parent-a/children/child-a'), {
++        linkedAuthUid: 'attacker-auth',
++        linkedDevice: true,
++      }),
++    );
++    await assertFails(getDoc(doc(db, `conversations/${conversationId}`)));
++    await assertFails(
++      getDocs(collection(db, `conversations/${conversationId}/messages`)),
++    );
++  });
++
++  test('direct client claim cannot modify unrelated child fields', async () => {
++    const db = firestoreFor('new-child-d-auth');
++    await assertFails(
++      updateDoc(doc(db, 'parents/parent-d/children/child-d'), {
++        linkedAuthUid: 'new-child-d-auth',
++        linkedDevice: true,
++        quietHoursEnabled: false,
++        arbitraryField: 'not allowed',
++      }),
++    );
++  });
++
++  test('the callable claim path enables legitimate initial linking', async () => {
++    await simulateCallableClaim('parent-d', 'child-d', 'new-child-d-auth');
++
++    const childDb = firestoreFor('new-child-d-auth');
++    const snapshot = await assertSucceeds(
++      getDoc(doc(childDb, 'parents/parent-d/children/child-d')),
++    );
++    assert.equal(snapshot.data().quietHoursEnabled, true);
++    assert.equal(snapshot.data().name, 'Child D');
++    await assertSucceeds(
++      getDoc(doc(childDb, `conversations/${newlyLinkedConversationId}`)),
++    );
++  });
++
++  test('a parent cannot link a child profile to the parent Auth UID', async () => {
++    const db = firestoreFor('parent-a');
++    await assertFails(
++      updateDoc(doc(db, 'parents/parent-a/children/child-a'), {
++        linkedAuthUid: 'parent-a',
++        linkedDevice: true,
++      }),
++    );
++  });
++
++  test('signed-in clients can get an exact code but cannot list codes', async () => {
++    const db = firestoreFor('signed-in-auth');
++    await assertSucceeds(getDoc(doc(db, 'child_access_codes/ACCESS-D')));
++    await assertFails(getDocs(collection(db, 'child_access_codes')));
++  });
++});
