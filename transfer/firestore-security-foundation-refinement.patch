@@ -1,0 +1,173 @@
+diff --git a/firestore.rules b/firestore.rules
+index 1e19132..1409f51 100644
+--- a/firestore.rules
++++ b/firestore.rules
+@@ -99,10 +99,45 @@ service cloud.firestore {
+     }
+ 
+     match /child_access_codes/{code} {
+-      allow get: if signedIn();
++      allow get: if false;
+       allow list: if false;
+-      allow write: if signedIn();
++      allow create: if signedIn()
++        && request.auth.uid == request.resource.data.parentId
++        && request.resource.data.keys().hasOnly([
++          'parentId',
++          'childId',
++          'childName',
++          'avatar',
++          'friendCode',
++          'createdAt'
++        ])
++        && request.resource.data.createdAt is timestamp
++        && exists(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        ))
++        && get(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        )).data.parentId == request.resource.data.parentId
++        && get(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        )).data.accessCode == code
++        && get(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        )).data.name == request.resource.data.childName
++        && get(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        )).data.avatar == request.resource.data.avatar
++        && get(childDoc(
++          request.resource.data.parentId,
++          request.resource.data.childId
++        )).data.friendCode == request.resource.data.friendCode;
++      allow update, delete: if false;
+     }
+ 
+     match /child_friend_codes/{code} {
+diff --git a/functions/index.js b/functions/index.js
+index 4e7cf60..341da9f 100644
+--- a/functions/index.js
++++ b/functions/index.js
+@@ -74,15 +74,22 @@ exports.claimChildAccessCode = onCall(async (request) => {
+     }
+ 
+     const linkedAuthUid = childData.linkedAuthUid;
+-    if (typeof linkedAuthUid === 'string' &&
+-        linkedAuthUid.trim() &&
+-        linkedAuthUid !== request.auth.uid) {
+-      throw new HttpsError(
+-          'failed-precondition',
+-          'This child profile is already linked to another device.',
+-      );
++    if (linkedAuthUid != null) {
++      if (typeof linkedAuthUid !== 'string' || !linkedAuthUid.trim()) {
++        throw new HttpsError(
++            'failed-precondition',
++            'Child profile has an invalid device-link state.',
++        );
++      }
++
++      if (linkedAuthUid !== request.auth.uid) {
++        throw new HttpsError(
++            'failed-precondition',
++            'This child profile is already linked to another device.',
++        );
++      }
+     }
+ 
+     transaction.update(childRef, {
+diff --git a/test/firestore.rules.test.js b/test/firestore.rules.test.js
+index d9e2a3c..6d561e6 100644
+--- a/test/firestore.rules.test.js
++++ b/test/firestore.rules.test.js
+@@ -9,6 +9,7 @@ import {
+ } from '@firebase/rules-unit-testing';
+ import {
+   collection,
++  deleteDoc,
+   doc,
+   getDoc,
+   getDocs,
+@@ -39,6 +40,9 @@ async function seedConversation() {
+       linkedDevice: true,
+       parentId: 'parent-a',
+       accessCode: 'ACCESS-A',
++      name: 'Child A',
++      avatar: 'owl',
++      friendCode: 'FRIEND-A',
+       quietHoursEnabled: true,
+     });
+     await setDoc(doc(db, 'parents/parent-b/children/child-b'), {
+@@ -296,10 +300,65 @@ describe('child linking trust anchor', () => {
+       }),
+     );
+   });
++});
+ 
+-  test('signed-in clients can get an exact code but cannot list codes', async () => {
+-    const db = firestoreFor('signed-in-auth');
+-    await assertSucceeds(getDoc(doc(db, 'child_access_codes/ACCESS-D')));
++describe('child access-code records', () => {
++  const validAccessCodeData = {
++    parentId: 'parent-a',
++    childId: 'child-a',
++    childName: 'Child A',
++    avatar: 'owl',
++    friendCode: 'FRIEND-A',
++    createdAt: new Date('2026-09-04T00:00:00Z'),
++  };
++
++  test('an arbitrary signed-in user cannot create a code record', async () => {
++    const db = firestoreFor('attacker-auth');
++    await assertFails(
++      setDoc(doc(db, 'child_access_codes/ATTACKER-CODE'), {
++        ...validAccessCodeData,
++        parentId: 'parent-d',
++        childId: 'child-d',
++      }),
++    );
++  });
++
++  test('an unrelated parent cannot create another child code', async () => {
++    const db = firestoreFor('parent-b');
++    await assertFails(
++      setDoc(doc(db, 'child_access_codes/ACCESS-A'), validAccessCodeData),
++    );
++  });
++
++  test('the owning parent can create its valid child code', async () => {
++    const db = firestoreFor('parent-a');
++    await assertSucceeds(
++      setDoc(doc(db, 'child_access_codes/ACCESS-A'), validAccessCodeData),
++    );
++  });
++
++  test('a client cannot update an existing code', async () => {
++    const db = firestoreFor('parent-d');
++    await assertFails(
++      updateDoc(doc(db, 'child_access_codes/ACCESS-D'), {
++        childName: 'Changed',
++      }),
++    );
++  });
++
++  test('a client cannot delete an existing code', async () => {
++    const db = firestoreFor('parent-d');
++    await assertFails(deleteDoc(doc(db, 'child_access_codes/ACCESS-D')));
++  });
++
++  test('a client cannot list access codes', async () => {
++    const db = firestoreFor('signed-in-auth');
+     await assertFails(getDocs(collection(db, 'child_access_codes')));
+   });
++
++  test('a client cannot get an exact access code', async () => {
++    const db = firestoreFor('signed-in-auth');
++    await assertFails(getDoc(doc(db, 'child_access_codes/ACCESS-D')));
++  });
+ });
