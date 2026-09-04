@@ -2,7 +2,7 @@ diff --git a/firestore.rules b/firestore.rules
 index 1e19132..1409f51 100644
 --- a/firestore.rules
 +++ b/firestore.rules
-@@ -99,10 +99,45 @@ service cloud.firestore {
+@@ -99,9 +99,44 @@ service cloud.firestore {
      }
  
      match /child_access_codes/{code} {
@@ -53,7 +53,7 @@ diff --git a/functions/index.js b/functions/index.js
 index 4e7cf60..341da9f 100644
 --- a/functions/index.js
 +++ b/functions/index.js
-@@ -74,15 +74,22 @@ exports.claimChildAccessCode = onCall(async (request) => {
+@@ -74,13 +74,20 @@ exports.claimChildAccessCode = onCall(async (request) => {
      }
  
      const linkedAuthUid = childData.linkedAuthUid;
@@ -103,7 +103,7 @@ index d9e2a3c..6d561e6 100644
        quietHoursEnabled: true,
      });
      await setDoc(doc(db, 'parents/parent-b/children/child-b'), {
-@@ -296,10 +300,65 @@ describe('child linking trust anchor', () => {
+@@ -296,10 +300,64 @@ describe('child linking trust anchor', () => {
        }),
      );
    });
