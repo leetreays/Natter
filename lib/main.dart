@@ -4734,6 +4734,30 @@ Future<Map<String, String>?> findChildByAccessCode(String rawCode) async {
   };
 }
 
+Future<Map<String, String>?> claimChildByAccessCode(String rawCode) async {
+  final code = rawCode.trim().toUpperCase();
+  if (code.isEmpty) return null;
+
+  try {
+    final callable = functions.httpsCallable('claimChildAccessCode');
+    final response = await callable.call<Map<String, dynamic>>({
+      'accessCode': code,
+    });
+    final data = response.data;
+
+    return {
+      'parentId': (data['parentId'] ?? '').toString(),
+      'childId': (data['childId'] ?? '').toString(),
+      'childName': (data['childName'] ?? '').toString(),
+      'avatar': (data['avatar'] ?? 'owl').toString(),
+      'friendCode': (data['friendCode'] ?? '').toString(),
+    };
+  } on FirebaseFunctionsException catch (error) {
+    if (error.code == 'not-found') return null;
+    rethrow;
+  }
+}
+
 Future<Map<String, String>?> findChildByFriendCode(String rawCode) async {
   final code = rawCode.trim().toUpperCase();
   if (code.isEmpty) return null;
@@ -8574,7 +8598,7 @@ Future<void> _continue() async {
       await FirebaseAuth.instance.signOut();
     }
 
-    final childUser = await ensureSignedIn();
+    await ensureSignedIn();
 
     if (mounted) {
   setState(() {
@@ -8582,7 +8606,7 @@ Future<void> _continue() async {
   });
     }
 
-    final result = await state.findChildByAccessCode(_code);
+    final result = await state.claimChildByAccessCode(_code);
 
     if (result == null) {
       throw Exception('That code was not recognised.');
@@ -8616,16 +8640,6 @@ Future<void> _continue() async {
     _status = 'Linking device...';
   });
     }
-
-    await FirebaseFirestore.instance
-        .collection('parents')
-        .doc(result['parentId']!)
-        .collection('children')
-        .doc(result['childId']!)
-        .set({
-      'linkedDevice': true,
-      'linkedAuthUid': childUser.uid,
-    }, SetOptions(merge: true));
 
     if (!mounted) return;
 
@@ -14540,7 +14554,7 @@ Future<void> _continue() async {
       await FirebaseAuth.instance.signOut();
     }
 
-    final childUser = await ensureSignedIn();
+    await ensureSignedIn();
 
     if (mounted) {
   setState(() {
@@ -14548,7 +14562,7 @@ Future<void> _continue() async {
   });
     }
 
-    final result = await state.findChildByAccessCode(_codeController.text);
+    final result = await state.claimChildByAccessCode(_codeController.text);
 
     if (result == null) {
       throw Exception('That code was not recognised.');
@@ -14582,16 +14596,6 @@ Future<void> _continue() async {
     _status = 'Linking device...';
   });
     }
-
-    await FirebaseFirestore.instance
-        .collection('parents')
-        .doc(result['parentId']!)
-        .collection('children')
-        .doc(result['childId']!)
-        .set({
-      'linkedDevice': true,
-      'linkedAuthUid': childUser.uid,
-    }, SetOptions(merge: true));
 
     if (!mounted) return;
 

@@ -1,0 +1,14 @@
+{
+  "name": "natter-firestore-security-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:firestore-rules": "firebase emulators:exec --only firestore \"node --test test/firestore.rules.test.js\"",
+    "test:approve-friend-request": "firebase emulators:exec --only auth,firestore,functions \"node --test test/approve-friend-request.callable.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "firebase-tools": "^14.0.0"
+  }
+}

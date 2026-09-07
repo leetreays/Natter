@@ -1,0 +1,194 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isParent(parentId) {
+      return signedIn() && request.auth.uid == parentId;
+    }
+
+    function childDoc(parentId, childId) {
+      return /databases/$(database)/documents/parents/$(parentId)/children/$(childId);
+    }
+
+    function isLinkedChild(parentId, childId) {
+      return signedIn()
+        && exists(childDoc(parentId, childId))
+        && get(childDoc(parentId, childId)).data.linkedAuthUid == request.auth.uid;
+    }
+
+    function isLinkedParticipantAt(conversation, index) {
+      return signedIn()
+        && conversation.participantChildIds is list
+        && conversation.participantParentIds is list
+        && conversation.participantChildIds.size() > index
+        && conversation.participantParentIds.size() > index
+        && isLinkedChild(
+          conversation.participantParentIds[index],
+          conversation.participantChildIds[index]
+        );
+    }
+
+    function isLinkedConversationParticipant(conversation) {
+      return isLinkedParticipantAt(conversation, 0)
+        || isLinkedParticipantAt(conversation, 1);
+    }
+
+    function conversationParticipantsUnchanged() {
+      return request.resource.data.participantChildIds
+          == resource.data.participantChildIds
+        && request.resource.data.participantParentIds
+          == resource.data.participantParentIds;
+    }
+
+    function childLinkageUnchanged() {
+      return request.resource.data.linkedAuthUid
+          == resource.data.linkedAuthUid
+        && request.resource.data.linkedDevice == resource.data.linkedDevice;
+    }
+
+    function childLinkageResetOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['linkedAuthUid', 'linkedDevice'])
+        && request.resource.data.linkedAuthUid == null
+        && request.resource.data.linkedDevice == false;
+    }
+
+    function conversationData(conversationId) {
+      return get(
+        /databases/$(database)/documents/conversations/$(conversationId)
+      ).data;
+    }
+
+    match /parents/{parentId} {
+      allow read, write: if isParent(parentId);
+
+      match /children/{childId} {
+        allow read: if isParent(parentId) || isLinkedChild(parentId, childId);
+        allow create: if isParent(parentId);
+
+        allow update: if (
+          isParent(parentId) || isLinkedChild(parentId, childId)
+        ) && (childLinkageUnchanged() || childLinkageResetOnly());
+
+        allow delete: if isParent(parentId);
+
+        match /conversation_refs/{conversationId} {
+          allow get, list: if isLinkedChild(parentId, childId);
+          allow create, update, delete: if false;
+        }
+
+        match /chats/{chatId} {
+          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+
+          match /messages/{messageId} {
+            allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+          }
+        }
+
+        match /contact_requests/{requestId} {
+          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+        }
+
+        match /approved_contacts/{contactId} {
+          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+        }
+
+        match /signals/{signalId} {
+          allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+        }
+      }
+    }
+
+    match /child_access_codes/{code} {
+      allow get: if false;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.auth.uid == request.resource.data.parentId
+        && request.resource.data.keys().hasOnly([
+          'parentId',
+          'childId',
+          'childName',
+          'avatar',
+          'friendCode',
+          'createdAt'
+        ])
+        && request.resource.data.createdAt is timestamp
+        && exists(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        ))
+        && get(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        )).data.parentId == request.resource.data.parentId
+        && get(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        )).data.accessCode == code
+        && get(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        )).data.name == request.resource.data.childName
+        && get(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        )).data.avatar == request.resource.data.avatar
+        && get(childDoc(
+          request.resource.data.parentId,
+          request.resource.data.childId
+        )).data.friendCode == request.resource.data.friendCode;
+      allow update, delete: if false;
+    }
+
+    match /child_friend_codes/{code} {
+      allow read, write: if signedIn();
+    }
+
+    match /friend_requests/{requestId} {
+      allow create: if false;
+      allow read: if signedIn();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    match /friendships/{friendshipId} {
+      allow read, write: if signedIn();
+
+      match /{document=**} {
+        allow read, write: if signedIn();
+      }
+    }
+
+    match /conversations/{conversationId} {
+      allow create: if false;
+      allow delete: if false;
+
+      allow read: if isLinkedConversationParticipant(resource.data);
+      allow update: if signedIn() && conversationParticipantsUnchanged();
+
+      match /messages/{messageId} {
+        allow create: if signedIn();
+        allow read: if isLinkedConversationParticipant(
+          conversationData(conversationId)
+        );
+        allow update: if signedIn();
+        allow delete: if false;
+      }
+
+      match /meaningful_moments/{momentId} {
+        allow create: if signedIn();
+        allow read: if signedIn();
+        allow update: if signedIn();
+        allow delete: if false;
+      }
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const {setGlobalOptions} = require('firebase-functions/v2');
 const admin = require('firebase-admin');
+const {FieldValue} = require('firebase-admin/firestore');
 
 admin.initializeApp();
 
@@ -12,6 +13,98 @@ setGlobalOptions({
 });
 
 const db = admin.firestore();
+
+exports.claimChildAccessCode = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be signed in.');
+  }
+
+  const provider = request.auth.token.firebase &&
+    request.auth.token.firebase.sign_in_provider;
+  if (provider !== 'anonymous') {
+    throw new HttpsError(
+        'permission-denied',
+        'Child access codes may only be claimed by an anonymous child session.',
+    );
+  }
+
+  const accessCode = String(
+      (request.data && request.data.accessCode) || '',
+  ).trim().toUpperCase();
+
+  if (!accessCode) {
+    throw new HttpsError('invalid-argument', 'accessCode is required.');
+  }
+
+  return db.runTransaction(async (transaction) => {
+    const codeRef = db.collection('child_access_codes').doc(accessCode);
+    const codeSnap = await transaction.get(codeRef);
+
+    if (!codeSnap.exists) {
+      throw new HttpsError('not-found', 'Child access code not found.');
+    }
+
+    const codeData = codeSnap.data() || {};
+    const parentId = String(codeData.parentId || '').trim();
+    const childId = String(codeData.childId || '').trim();
+
+    if (!parentId || !childId) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Child access code is not linked to a child profile.',
+      );
+    }
+
+    const childRef = db
+        .collection('parents')
+        .doc(parentId)
+        .collection('children')
+        .doc(childId);
+    const childSnap = await transaction.get(childRef);
+
+    if (!childSnap.exists) {
+      throw new HttpsError('not-found', 'Child profile not found.');
+    }
+
+    const childData = childSnap.data() || {};
+    if (childData.parentId !== parentId || childData.accessCode !== accessCode) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Child access code does not match the child profile.',
+      );
+    }
+
+    const linkedAuthUid = childData.linkedAuthUid;
+    if (linkedAuthUid != null) {
+      if (typeof linkedAuthUid !== 'string' || !linkedAuthUid.trim()) {
+        throw new HttpsError(
+            'failed-precondition',
+            'Child profile has an invalid device-link state.',
+        );
+      }
+
+      if (linkedAuthUid !== request.auth.uid) {
+        throw new HttpsError(
+            'failed-precondition',
+            'This child profile is already linked to another device.',
+        );
+      }
+    }
+
+    transaction.update(childRef, {
+      linkedDevice: true,
+      linkedAuthUid: request.auth.uid,
+    });
+
+    return {
+      parentId,
+      childId,
+      childName: String(childData.name || codeData.childName || ''),
+      avatar: String(childData.avatar || codeData.avatar || 'owl'),
+      friendCode: String(childData.friendCode || codeData.friendCode || ''),
+    };
+  });
+});
 
 async function getVerifiedLinkedChild(parentId, childId, authUid) {
   if (!parentId || !childId) {
@@ -168,7 +261,7 @@ exports.createFriendRequest = onCall(async (request) => {
       participantChildIds: [requester.childId, recipient.childId],
       participantParentIds: [requester.parentId, recipient.parentId],
 
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
       respondedAt: null,
       respondedByParentId: null,
     }, {merge: false});
@@ -203,113 +296,165 @@ exports.approveFriendRequest = onCall(async (request) => {
   }
 
   const requestRef = db.collection('friend_requests').doc(requestId);
-  const requestSnap = await requestRef.get();
 
-  if (!requestSnap.exists) {
-    throw new HttpsError(
-        'not-found',
-        'Friend request not found.',
+  return db.runTransaction(async (transaction) => {
+    const requestSnap = await transaction.get(requestRef);
+
+    if (!requestSnap.exists) {
+      throw new HttpsError(
+          'not-found',
+          'Friend request not found.',
+      );
+    }
+
+    const data = requestSnap.data() || {};
+
+    if (data.status !== 'pending') {
+      throw new HttpsError(
+          'failed-precondition',
+          'Request is not pending.',
+      );
+    }
+
+    const requiredIdentityFields = [
+      'requesterChildId',
+      'requesterParentId',
+      'recipientChildId',
+      'recipientParentId',
+    ];
+    const hasValidIdentity = requiredIdentityFields.every((field) =>
+      typeof data[field] === 'string' &&
+        data[field].trim().length > 0 &&
+        data[field] === data[field].trim(),
     );
-  }
 
-  const data = requestSnap.data() || {};
+    if (!hasValidIdentity) {
+      throw new HttpsError(
+          'failed-precondition',
+          'Friend request has invalid participant identity.',
+      );
+    }
 
-  if (data.status !== 'pending') {
-    throw new HttpsError(
-        'failed-precondition',
-        'Request is not pending.',
-    );
-  }
+    if (data.recipientParentId !== request.auth.uid) {
+      throw new HttpsError(
+          'permission-denied',
+          'Only the recipient parent can approve this request.',
+      );
+    }
 
-  const {
-    requesterChildId,
-    requesterParentId,
-    requesterChildName,
-    requesterFriendCode,
-    recipientChildId,
-    recipientParentId,
-    recipientChildName,
-    recipientFriendCode,
-  } = data;
+    const {
+      requesterChildId,
+      requesterParentId,
+      requesterChildName,
+      requesterFriendCode,
+      recipientChildId,
+      recipientParentId,
+      recipientChildName,
+      recipientFriendCode,
+    } = data;
 
-  const pair = [requesterChildId, recipientChildId].sort();
-  const friendshipId = `${pair[0]}_${pair[1]}`;
-  const conversationId = friendshipId;
+    const pair = [requesterChildId, recipientChildId].sort();
+    const friendshipId = `${pair[0]}_${pair[1]}`;
+    const conversationId = friendshipId;
 
-  const friendshipRef = db.collection('friendships').doc(friendshipId);
-  const conversationRef = db.collection('conversations').doc(conversationId);
+    const friendshipRef = db.collection('friendships').doc(friendshipId);
+    const conversationRef = db.collection('conversations').doc(conversationId);
+    const requesterConversationRef = db
+        .collection('parents')
+        .doc(requesterParentId)
+        .collection('children')
+        .doc(requesterChildId)
+        .collection('conversation_refs')
+        .doc(conversationId);
+    const recipientConversationRef = db
+        .collection('parents')
+        .doc(recipientParentId)
+        .collection('children')
+        .doc(recipientChildId)
+        .collection('conversation_refs')
+        .doc(conversationId);
 
-  const batch = db.batch();
+    transaction.set(friendshipRef, {
+      childIds: [requesterChildId, recipientChildId],
+      parentIds: [requesterParentId, recipientParentId],
 
-  batch.set(friendshipRef, {
-    childIds: [requesterChildId, recipientChildId],
-    parentIds: [requesterParentId, recipientParentId],
-
-    children: {
-      [requesterChildId]: {
-        parentId: requesterParentId,
-        name: requesterChildName,
-        friendCode: requesterFriendCode,
+      children: {
+        [requesterChildId]: {
+          parentId: requesterParentId,
+          name: requesterChildName,
+          friendCode: requesterFriendCode,
+        },
+        [recipientChildId]: {
+          parentId: recipientParentId,
+          name: recipientChildName,
+          friendCode: recipientFriendCode,
+        },
       },
-      [recipientChildId]: {
-        parentId: recipientParentId,
-        name: recipientChildName,
-        friendCode: recipientFriendCode,
-      },
-    },
 
-    status: 'active',
-    friendshipHealth: 0,
-    friendshipStage: 'seedling',
-    lastFriendshipStage: 'seedling',
+      status: 'active',
+      friendshipHealth: 0,
+      friendshipStage: 'seedling',
+      lastFriendshipStage: 'seedling',
 
-    blockedByChildIds: [],
-    blockedAtByChildId: {},
+      blockedByChildIds: [],
+      blockedAtByChildId: {},
 
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, {merge: false});
+      createdAt: FieldValue.serverTimestamp(),
+    }, {merge: false});
 
-  const seedlingMomentRef = friendshipRef
-      .collection('friendship_moments')
-      .doc();
+    const seedlingMomentRef = friendshipRef
+        .collection('friendship_moments')
+        .doc();
 
-  batch.set(seedlingMomentRef, {
-    type: 'friendship_started',
-    fromStage: '',
-    toStage: 'seedling',
-    title: 'Seedling Friendship',
-    description: 'This friendship has begun.',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    transaction.set(seedlingMomentRef, {
+      type: 'friendship_started',
+      fromStage: '',
+      toStage: 'seedling',
+      title: 'Seedling Friendship',
+      description: 'This friendship has begun.',
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    transaction.set(conversationRef, {
+      friendshipId: friendshipId,
+      participantChildIds: [requesterChildId, recipientChildId],
+      participantParentIds: [requesterParentId, recipientParentId],
+      participantNames: [requesterChildName, recipientChildName],
+
+      status: 'active',
+      blockedByChildIds: [],
+
+      createdAt: FieldValue.serverTimestamp(),
+      lastMessage: '',
+      lastMessageSenderChildId: null,
+      lastMessageAt: null,
+    }, {merge: false});
+
+    const conversationReferenceData = {
+      conversationId,
+      friendshipId,
+      createdAt: FieldValue.serverTimestamp(),
+    };
+
+    transaction.set(requesterConversationRef, conversationReferenceData, {
+      merge: false,
+    });
+    transaction.set(recipientConversationRef, conversationReferenceData, {
+      merge: false,
+    });
+
+    transaction.set(requestRef, {
+      status: 'approved',
+      respondedAt: FieldValue.serverTimestamp(),
+      respondedByParentId: request.auth.uid,
+    }, {merge: true});
+
+    return {
+      ok: true,
+      friendshipId,
+      conversationId,
+    };
   });
-
-  batch.set(conversationRef, {
-    friendshipId: friendshipId,
-    participantChildIds: [requesterChildId, recipientChildId],
-    participantParentIds: [requesterParentId, recipientParentId],
-    participantNames: [requesterChildName, recipientChildName],
-
-    status: 'active',
-    blockedByChildIds: [],
-
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    lastMessage: '',
-    lastMessageSenderChildId: null,
-    lastMessageAt: null,
-  }, {merge: false});
-
-  batch.set(requestRef, {
-    status: 'approved',
-    respondedAt: admin.firestore.FieldValue.serverTimestamp(),
-    respondedByParentId: request.auth.uid,
-  }, {merge: true});
-
-  await batch.commit();
-
-  return {
-    ok: true,
-    friendshipId,
-    conversationId,
-  };
 });
 
 exports.blockFriendRequest = onCall(async (request) => {
@@ -350,7 +495,7 @@ exports.blockFriendRequest = onCall(async (request) => {
   await friendRequestRef.set(
       {
         status: 'blocked',
-        respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+        respondedAt: FieldValue.serverTimestamp(),
         respondedByParentId: parentId,
       },
       {merge: true},
