@@ -1,0 +1,223 @@
+diff --git a/firestore.rules b/firestore.rules
+index 1409f51..19c652a 100644
+--- a/firestore.rules
++++ b/firestore.rules
+@@ -76,6 +76,11 @@ service cloud.firestore {
+ 
+         allow delete: if isParent(parentId);
+ 
++        match /conversation_refs/{conversationId} {
++          allow get, list: if isLinkedChild(parentId, childId);
++          allow create, update, delete: if false;
++        }
++
+         match /chats/{chatId} {
+           allow read, write: if isParent(parentId) || isLinkedChild(parentId, childId);
+ 
+diff --git a/functions/index.js b/functions/index.js
+index 341da9f..d81a506 100644
+--- a/functions/index.js
++++ b/functions/index.js
+@@ -330,6 +330,20 @@ exports.approveFriendRequest = onCall(async (request) => {
+ 
+   const friendshipRef = db.collection('friendships').doc(friendshipId);
+   const conversationRef = db.collection('conversations').doc(conversationId);
++  const requesterConversationRef = db
++      .collection('parents')
++      .doc(requesterParentId)
++      .collection('children')
++      .doc(requesterChildId)
++      .collection('conversation_refs')
++      .doc(conversationId);
++  const recipientConversationRef = db
++      .collection('parents')
++      .doc(recipientParentId)
++      .collection('children')
++      .doc(recipientChildId)
++      .collection('conversation_refs')
++      .doc(conversationId);
+ 
+   const batch = db.batch();
+ 
+@@ -389,6 +403,19 @@ exports.approveFriendRequest = onCall(async (request) => {
+     lastMessageAt: null,
+   }, {merge: false});
+ 
++  const conversationReferenceData = {
++    conversationId,
++    friendshipId,
++    createdAt: admin.firestore.FieldValue.serverTimestamp(),
++  };
++
++  batch.set(requesterConversationRef, conversationReferenceData, {
++    merge: false,
++  });
++  batch.set(recipientConversationRef, conversationReferenceData, {
++    merge: false,
++  });
++
+   batch.set(requestRef, {
+     status: 'approved',
+     respondedAt: admin.firestore.FieldValue.serverTimestamp(),
+diff --git a/test/firestore.rules.test.js b/test/firestore.rules.test.js
+index 6d561e6..19deda5 100644
+--- a/test/firestore.rules.test.js
++++ b/test/firestore.rules.test.js
+@@ -95,6 +95,26 @@ async function seedConversation() {
+       participantParentIds: ['parent-b', 'parent-d'],
+       status: 'active',
+     });
++
++    const conversationReferenceData = {
++      conversationId,
++      friendshipId: conversationId,
++      createdAt: new Date('2026-09-04T00:00:00Z'),
++    };
++    await setDoc(
++      doc(
++        db,
++        `parents/parent-a/children/child-a/conversation_refs/${conversationId}`,
++      ),
++      conversationReferenceData,
++    );
++    await setDoc(
++      doc(
++        db,
++        `parents/parent-b/children/child-b/conversation_refs/${conversationId}`,
++      ),
++      conversationReferenceData,
++    );
+   });
+ }
+ 
+@@ -152,13 +172,13 @@ describe('conversation privacy', () => {
+     await assertFails(getDoc(doc(db, `conversations/${conversationId}`)));
+   });
+ 
+-  test('participant-child conversation queries continue to work', async () => {
++  test('the legacy participant-child conversation query remains denied', async () => {
+     for (const [authUid, childId] of [
+       ['child-a-auth', 'child-a'],
+       ['child-b-auth', 'child-b'],
+     ]) {
+       const db = firestoreFor(authUid);
+-      const snapshot = await assertSucceeds(
++      await assertFails(
+         getDocs(
+           query(
+             collection(db, 'conversations'),
+@@ -166,10 +186,6 @@ describe('conversation privacy', () => {
+           ),
+         ),
+       );
+-      assert.equal(
+-        snapshot.docs.some((item) => item.id === conversationId),
+-        true,
+-      );
+     }
+   });
+ 
+@@ -201,6 +217,103 @@ describe('conversation privacy', () => {
+   }
+ });
+ 
++describe('child-scoped conversation references', () => {
++  const childARefs =
++    'parents/parent-a/children/child-a/conversation_refs';
++  const childBRefs =
++    'parents/parent-b/children/child-b/conversation_refs';
++
++  test('Child A can list its own conversation references', async () => {
++    const db = firestoreFor('child-a-auth');
++    const snapshot = await assertSucceeds(getDocs(collection(db, childARefs)));
++    assert.deepEqual(snapshot.docs.map((item) => item.id), [conversationId]);
++  });
++
++  test('Child B can list its own conversation references', async () => {
++    const db = firestoreFor('child-b-auth');
++    const snapshot = await assertSucceeds(getDocs(collection(db, childBRefs)));
++    assert.deepEqual(snapshot.docs.map((item) => item.id), [conversationId]);
++  });
++
++  test("Child C cannot list either participant's references", async () => {
++    const db = firestoreFor('child-c-auth');
++    await assertFails(getDocs(collection(db, childARefs)));
++    await assertFails(getDocs(collection(db, childBRefs)));
++  });
++
++  test('parents cannot list their child references', async () => {
++    await assertFails(
++      getDocs(collection(firestoreFor('parent-a'), childARefs)),
++    );
++    await assertFails(
++      getDocs(collection(firestoreFor('parent-b'), childBRefs)),
++    );
++  });
++
++  test('an unrelated authenticated user cannot list references', async () => {
++    const db = firestoreFor('unrelated-auth');
++    await assertFails(getDocs(collection(db, childARefs)));
++    await assertFails(getDocs(collection(db, childBRefs)));
++  });
++
++  test('clients cannot create a conversation reference', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(doc(db, `${childARefs}/another-conversation`), {
++        conversationId: 'another-conversation',
++        friendshipId: 'another-conversation',
++        createdAt: new Date('2026-09-04T00:00:00Z'),
++      }),
++    );
++  });
++
++  test('clients cannot update a conversation reference', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      updateDoc(doc(db, `${childARefs}/${conversationId}`), {
++        friendshipId: 'changed',
++      }),
++    );
++  });
++
++  test('clients cannot delete a conversation reference', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      deleteDoc(doc(db, `${childARefs}/${conversationId}`)),
++    );
++  });
++
++  test('unlinking immediately revokes the old UID reference list', async () => {
++    const oldChildDb = firestoreFor('child-a-auth');
++    await assertSucceeds(getDocs(collection(oldChildDb, childARefs)));
++    await assertSucceeds(
++      updateDoc(doc(oldChildDb, 'parents/parent-a/children/child-a'), {
++        linkedAuthUid: null,
++        linkedDevice: false,
++      }),
++    );
++    await assertFails(getDocs(collection(oldChildDb, childARefs)));
++  });
++
++  test('relinking grants the new UID access to unchanged references', async () => {
++    const oldChildDb = firestoreFor('child-a-auth');
++    await assertSucceeds(
++      updateDoc(doc(oldChildDb, 'parents/parent-a/children/child-a'), {
++        linkedAuthUid: null,
++        linkedDevice: false,
++      }),
++    );
++    await simulateCallableClaim('parent-a', 'child-a', 'child-a-new-auth');
++
++    const newChildDb = firestoreFor('child-a-new-auth');
++    const snapshot = await assertSucceeds(
++      getDocs(collection(newChildDb, childARefs)),
++    );
++    assert.deepEqual(snapshot.docs.map((item) => item.id), [conversationId]);
++    await assertFails(getDocs(collection(oldChildDb, childARefs)));
++  });
++});
++
+ describe('raw message privacy', () => {
+   test('a linked participant child can read messages', async () => {
+     const db = firestoreFor('child-a-auth');
