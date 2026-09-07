@@ -187,15 +187,6 @@ functions_path.write_text(text[:start] + replacement + text[end:])
 
 package = package_path.read_text()
 if 'test:approve-friend-request' not in package:
-    old = '    "test:firestore-rules": "firebase emulators:exec --only firestore \\"node --test test/firestore.rules.test.js\\""\n'
-    # The file contains literal JSON quotes rather than Python-escaped backslashes.
-    old = '    "test:firestore-rules": "firebase emulators:exec --only firestore \\\"node --test test/firestore.rules.test.js\\\""\n'
-    if old not in package:
-        old = '    "test:firestore-rules": "firebase emulators:exec --only firestore \\"node --test test/firestore.rules.test.js\\""\n'
-    if old not in package:
-        # Straight literal form as it appears in package.json.
-        old = '    "test:firestore-rules": "firebase emulators:exec --only firestore \\\"node --test test/firestore.rules.test.js\\\""\n'
-    # Simpler line-oriented insertion to avoid reformatting the JSON.
     lines = package.splitlines()
     idx = next((i for i, line in enumerate(lines) if '"test:firestore-rules"' in line), None)
     if idx is None:
@@ -203,7 +194,7 @@ if 'test:approve-friend-request' not in package:
     if lines[idx].rstrip().endswith(','):
         raise SystemExit('Unexpected package.json script shape; refusing to modify.')
     lines[idx] = lines[idx] + ','
-    lines.insert(idx + 1, '    "test:approve-friend-request": "firebase emulators:exec --only auth,firestore,functions \\\"node --test test/approve-friend-request.callable.test.js\\\""')
+    lines.insert(idx + 1, '    "test:approve-friend-request": "firebase emulators:exec --only auth,firestore,functions \\"node --test test/approve-friend-request.callable.test.js\\""')
     package_path.write_text('\n'.join(lines) + ('\n' if package.endswith('\n') else ''))
 
 print('Applied approveFriendRequest transaction hardening and package test script.')
