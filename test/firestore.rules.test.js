@@ -15,6 +15,7 @@ import {
   getDocs,
   orderBy,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -50,12 +51,14 @@ async function seedConversation() {
       linkedDevice: true,
       parentId: 'parent-b',
       accessCode: 'ACCESS-B',
+      name: 'Child B',
     });
     await setDoc(doc(db, 'parents/parent-c/children/child-c'), {
       linkedAuthUid: 'child-c-auth',
       linkedDevice: true,
       parentId: 'parent-c',
       accessCode: 'ACCESS-C',
+      name: 'Child C',
     });
     await setDoc(doc(db, 'parents/parent-d/children/child-d'), {
       linkedAuthUid: null,
@@ -81,7 +84,29 @@ async function seedConversation() {
       {
         text: 'Private child message',
         senderUid: 'child-a',
+        senderParentId: 'parent-a',
+        senderChildName: 'Child A',
+        createdAt: new Date('2026-09-04T00:00:00Z'),
         createdAtMs: 1,
+        isFlagged: false,
+        receiverAction: '',
+        receiverActionAt: null,
+        receiverActionByChildId: null,
+      },
+    );
+    await setDoc(
+      doc(db, `conversations/${conversationId}/messages/flagged-message`),
+      {
+        text: 'Flagged child message',
+        senderUid: 'child-a',
+        senderParentId: 'parent-a',
+        senderChildName: 'Child A',
+        createdAt: new Date('2026-09-04T00:00:00Z'),
+        createdAtMs: 2,
+        isFlagged: true,
+        receiverAction: '',
+        receiverActionAt: null,
+        receiverActionByChildId: null,
       },
     );
 
@@ -116,6 +141,31 @@ async function seedConversation() {
       conversationReferenceData,
     );
   });
+}
+
+function validMessageData({
+  childId = 'child-a',
+  parentId = 'parent-a',
+  childName = 'Child A',
+  text = 'Hello',
+  isFlagged = false,
+} = {}) {
+  return {
+    text,
+    senderUid: childId,
+    senderParentId: parentId,
+    senderChildName: childName,
+    createdAt: serverTimestamp(),
+    createdAtMs: Date.now(),
+    isFlagged,
+    receiverAction: '',
+    receiverActionAt: null,
+    receiverActionByChildId: null,
+  };
+}
+
+function messageDoc(db, messageId) {
+  return doc(db, `conversations/${conversationId}/messages/${messageId}`);
 }
 
 async function simulateCallableClaim(parentId, childId, authUid) {
@@ -360,6 +410,247 @@ describe('raw message privacy', () => {
         getDocs(collection(db, `conversations/${conversationId}/messages`)),
       );
     }
+  });
+});
+
+describe('message creation authorization', () => {
+  test('Child A can create a valid message as Child A', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      setDoc(messageDoc(db, 'child-a-message'), validMessageData()),
+    );
+  });
+
+  test('Child B can create a valid message as Child B', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertSucceeds(
+      setDoc(
+        messageDoc(db, 'child-b-message'),
+        validMessageData({
+          childId: 'child-b',
+          parentId: 'parent-b',
+          childName: 'Child B',
+        }),
+      ),
+    );
+  });
+
+  for (const [label, context] of [
+    ['Parent A', () => firestoreFor('parent-a')],
+    ['Parent B', () => firestoreFor('parent-b')],
+    ['Child C', () => firestoreFor('child-c-auth')],
+    ['an unrelated authenticated user', () => firestoreFor('unrelated-auth')],
+    [
+      'an unauthenticated user',
+      () => testEnvironment.unauthenticatedContext().firestore(),
+    ],
+  ]) {
+    test(`${label} cannot create a message`, async () => {
+      const db = context();
+      await assertFails(
+        setDoc(messageDoc(db, `denied-${label}`), validMessageData()),
+      );
+    });
+  }
+
+  test('Child A cannot claim Child B as senderUid', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(
+        messageDoc(db, 'forged-sender-child'),
+        validMessageData({childId: 'child-b'}),
+      ),
+    );
+  });
+
+  test('Child A cannot claim Parent B as senderParentId', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(
+        messageDoc(db, 'forged-sender-parent'),
+        validMessageData({parentId: 'parent-b'}),
+      ),
+    );
+  });
+
+  test('Child A cannot forge senderChildName', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(
+        messageDoc(db, 'forged-sender-name'),
+        validMessageData({childName: 'Not Child A'}),
+      ),
+    );
+  });
+
+  test('a message missing a required field is denied', async () => {
+    const db = firestoreFor('child-a-auth');
+    const data = validMessageData();
+    delete data.senderChildName;
+    await assertFails(setDoc(messageDoc(db, 'missing-field'), data));
+  });
+
+  test('a message with an arbitrary field is denied', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(messageDoc(db, 'extra-field'), {
+        ...validMessageData(),
+        arbitraryField: true,
+      }),
+    );
+  });
+
+  for (const [label, text] of [
+    ['empty', ''],
+    ['whitespace-only', '   \n'],
+    ['non-string', 42],
+    ['over-limit', 'a'.repeat(10001)],
+  ]) {
+    test(`${label} message text is denied`, async () => {
+      const db = firestoreFor('child-a-auth');
+      await assertFails(
+        setDoc(messageDoc(db, `${label}-text`), validMessageData({text})),
+      );
+    });
+  }
+
+  test('non-Boolean isFlagged is denied', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(messageDoc(db, 'invalid-flag'), {
+        ...validMessageData(),
+        isFlagged: 'true',
+      }),
+    );
+  });
+
+  for (const [label, fields] of [
+    ['receiverAction', {receiverAction: 'read'}],
+    ['receiverActionAt', {receiverActionAt: serverTimestamp()}],
+    ['receiverActionByChildId', {receiverActionByChildId: 'child-b'}],
+  ]) {
+    test(`non-empty initial ${label} is denied`, async () => {
+      const db = firestoreFor('child-a-auth');
+      await assertFails(
+        setDoc(messageDoc(db, `initial-${label}`), {
+          ...validMessageData({isFlagged: true}),
+          ...fields,
+        }),
+      );
+    });
+  }
+
+  test('createdAt not equal to request.time is denied', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(messageDoc(db, 'invalid-created-at'), {
+        ...validMessageData(),
+        createdAt: new Date('2026-09-04T00:00:00Z'),
+      }),
+    );
+  });
+
+  test('message deletion remains denied', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(deleteDoc(messageDoc(db, 'message-1')));
+  });
+});
+
+describe('Protected Delivery receiver actions', () => {
+  function receiverAction(action, overrides = {}) {
+    return {
+      receiverAction: action,
+      receiverActionAt: serverTimestamp(),
+      receiverActionByChildId: 'child-b',
+      ...overrides,
+    };
+  }
+
+  for (const action of ['read', 'not_now', 'blocked']) {
+    test(`Child B can mark a flagged message ${action}`, async () => {
+      const db = firestoreFor('child-b-auth');
+      await assertSucceeds(
+        updateDoc(messageDoc(db, 'flagged-message'), receiverAction(action)),
+      );
+    });
+  }
+
+  test('the sender cannot fabricate a receiver action', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      updateDoc(messageDoc(db, 'flagged-message'), receiverAction('read')),
+    );
+  });
+
+  for (const [label, uid] of [
+    ['Parent A', 'parent-a'],
+    ['Parent B', 'parent-b'],
+    ['Child C', 'child-c-auth'],
+    ['an unrelated authenticated user', 'unrelated-auth'],
+  ]) {
+    test(`${label} cannot set a receiver action`, async () => {
+      const db = firestoreFor(uid);
+      await assertFails(
+        updateDoc(messageDoc(db, 'flagged-message'), receiverAction('read')),
+      );
+    });
+  }
+
+  for (const [label, fields] of [
+    ['text', {text: 'Changed'}],
+    ['senderUid', {senderUid: 'child-b'}],
+    ['senderParentId', {senderParentId: 'parent-b'}],
+    ['senderChildName', {senderChildName: 'Child B'}],
+    ['createdAt', {createdAt: serverTimestamp()}],
+    ['createdAtMs', {createdAtMs: 999}],
+    ['isFlagged', {isFlagged: false}],
+    ['an arbitrary field', {arbitraryField: true}],
+  ]) {
+    test(`the receiver cannot change ${label}`, async () => {
+      const db = firestoreFor('child-b-auth');
+      await assertFails(
+        updateDoc(messageDoc(db, 'flagged-message'), {
+          ...receiverAction('read'),
+          ...fields,
+        }),
+      );
+    });
+  }
+
+  test('receiverActionByChildId must equal the caller child ID', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertFails(
+      updateDoc(
+        messageDoc(db, 'flagged-message'),
+        receiverAction('read', {receiverActionByChildId: 'child-a'}),
+      ),
+    );
+  });
+
+  test('receiver action on an unflagged message is denied', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertFails(
+      updateDoc(messageDoc(db, 'message-1'), receiverAction('read')),
+    );
+  });
+
+  test('an invalid receiver action is denied', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertFails(
+      updateDoc(messageDoc(db, 'flagged-message'), receiverAction('ignored')),
+    );
+  });
+
+  test('receiverActionAt must equal request.time', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertFails(
+      updateDoc(
+        messageDoc(db, 'flagged-message'),
+        receiverAction('read', {
+          receiverActionAt: new Date('2026-09-04T00:00:00Z'),
+        }),
+      ),
+    );
   });
 });
 

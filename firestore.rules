@@ -37,6 +37,86 @@ service cloud.firestore {
         || isLinkedParticipantAt(conversation, 1);
     }
 
+    function isMessageSenderAt(conversation, message, index) {
+      return isLinkedParticipantAt(conversation, index)
+        && message.senderUid == conversation.participantChildIds[index]
+        && message.senderParentId == conversation.participantParentIds[index]
+        && message.senderChildName == get(childDoc(
+          conversation.participantParentIds[index],
+          conversation.participantChildIds[index]
+        )).data.name;
+    }
+
+    function isLinkedMessageSender(conversation, message) {
+      return isMessageSenderAt(conversation, message, 0)
+        || isMessageSenderAt(conversation, message, 1);
+    }
+
+    function isMessageReceiverAt(conversation, message, index) {
+      return isLinkedParticipantAt(conversation, index)
+        && conversation.participantChildIds[index] != message.senderUid
+        && request.resource.data.receiverActionByChildId
+          == conversation.participantChildIds[index];
+    }
+
+    function isLinkedMessageReceiver(conversation, message) {
+      return isMessageReceiverAt(conversation, message, 0)
+        || isMessageReceiverAt(conversation, message, 1);
+    }
+
+    function validNewMessage(conversation) {
+      return request.resource.data.keys().hasOnly([
+          'text',
+          'senderUid',
+          'senderParentId',
+          'senderChildName',
+          'createdAt',
+          'createdAtMs',
+          'isFlagged',
+          'receiverAction',
+          'receiverActionAt',
+          'receiverActionByChildId'
+        ])
+        && request.resource.data.keys().hasAll([
+          'text',
+          'senderUid',
+          'senderParentId',
+          'senderChildName',
+          'createdAt',
+          'createdAtMs',
+          'isFlagged',
+          'receiverAction',
+          'receiverActionAt',
+          'receiverActionByChildId'
+        ])
+        && request.resource.data.text is string
+        && request.resource.data.text.matches('.*\\S.*')
+        && request.resource.data.text.size() <= 10000
+        && request.resource.data.isFlagged is bool
+        && request.resource.data.receiverAction == ''
+        && request.resource.data.receiverActionAt == null
+        && request.resource.data.receiverActionByChildId == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.createdAtMs is int
+        && isLinkedMessageSender(conversation, request.resource.data);
+    }
+
+    function validReceiverActionUpdate(conversation) {
+      return resource.data.isFlagged == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'receiverAction',
+          'receiverActionAt',
+          'receiverActionByChildId'
+        ])
+        && request.resource.data.receiverAction in [
+          'read',
+          'not_now',
+          'blocked'
+        ]
+        && request.resource.data.receiverActionAt == request.time
+        && isLinkedMessageReceiver(conversation, resource.data);
+    }
+
     function conversationParticipantsUnchanged() {
       return request.resource.data.participantChildIds
           == resource.data.participantChildIds
@@ -171,11 +251,13 @@ service cloud.firestore {
       allow update: if signedIn() && conversationParticipantsUnchanged();
 
       match /messages/{messageId} {
-        allow create: if signedIn();
+        allow create: if validNewMessage(conversationData(conversationId));
         allow read: if isLinkedConversationParticipant(
           conversationData(conversationId)
         );
-        allow update: if signedIn();
+        allow update: if validReceiverActionUpdate(
+          conversationData(conversationId)
+        );
         allow delete: if false;
       }
 
