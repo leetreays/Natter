@@ -1,0 +1,457 @@
+diff --git a/firestore.rules b/firestore.rules
+index 1409f51..f7ffb86 100644
+--- a/firestore.rules
++++ b/firestore.rules
+@@ -37,6 +37,86 @@ service cloud.firestore {
+         || isLinkedParticipantAt(conversation, 1);
+     }
+ 
++    function isMessageSenderAt(conversation, message, index) {
++      return isLinkedParticipantAt(conversation, index)
++        && message.senderUid == conversation.participantChildIds[index]
++        && message.senderParentId == conversation.participantParentIds[index]
++        && message.senderChildName == get(childDoc(
++          conversation.participantParentIds[index],
++          conversation.participantChildIds[index]
++        )).data.name;
++    }
++
++    function isLinkedMessageSender(conversation, message) {
++      return isMessageSenderAt(conversation, message, 0)
++        || isMessageSenderAt(conversation, message, 1);
++    }
++
++    function isMessageReceiverAt(conversation, message, index) {
++      return isLinkedParticipantAt(conversation, index)
++        && conversation.participantChildIds[index] != message.senderUid
++        && request.resource.data.receiverActionByChildId
++          == conversation.participantChildIds[index];
++    }
++
++    function isLinkedMessageReceiver(conversation, message) {
++      return isMessageReceiverAt(conversation, message, 0)
++        || isMessageReceiverAt(conversation, message, 1);
++    }
++
++    function validNewMessage(conversation) {
++      return request.resource.data.keys().hasOnly([
++          'text',
++          'senderUid',
++          'senderParentId',
++          'senderChildName',
++          'createdAt',
++          'createdAtMs',
++          'isFlagged',
++          'receiverAction',
++          'receiverActionAt',
++          'receiverActionByChildId'
++        ])
++        && request.resource.data.keys().hasAll([
++          'text',
++          'senderUid',
++          'senderParentId',
++          'senderChildName',
++          'createdAt',
++          'createdAtMs',
++          'isFlagged',
++          'receiverAction',
++          'receiverActionAt',
++          'receiverActionByChildId'
++        ])
++        && request.resource.data.text is string
++        && request.resource.data.text.matches('.*\\S.*')
++        && request.resource.data.text.size() <= 10000
++        && request.resource.data.isFlagged is bool
++        && request.resource.data.receiverAction == ''
++        && request.resource.data.receiverActionAt == null
++        && request.resource.data.receiverActionByChildId == null
++        && request.resource.data.createdAt == request.time
++        && request.resource.data.createdAtMs is int
++        && isLinkedMessageSender(conversation, request.resource.data);
++    }
++
++    function validReceiverActionUpdate(conversation) {
++      return resource.data.isFlagged == true
++        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
++          'receiverAction',
++          'receiverActionAt',
++          'receiverActionByChildId'
++        ])
++        && request.resource.data.receiverAction in [
++          'read',
++          'not_now',
++          'blocked'
++        ]
++        && request.resource.data.receiverActionAt == request.time
++        && isLinkedMessageReceiver(conversation, resource.data);
++    }
++
+     function conversationParticipantsUnchanged() {
+       return request.resource.data.participantChildIds
+           == resource.data.participantChildIds
+@@ -166,11 +246,13 @@ service cloud.firestore {
+       allow update: if signedIn() && conversationParticipantsUnchanged();
+ 
+       match /messages/{messageId} {
+-        allow create: if signedIn();
++        allow create: if validNewMessage(conversationData(conversationId));
+         allow read: if isLinkedConversationParticipant(
+           conversationData(conversationId)
+         );
+-        allow update: if signedIn();
++        allow update: if validReceiverActionUpdate(
++          conversationData(conversationId)
++        );
+         allow delete: if false;
+       }
+ 
+diff --git a/lib/main.dart b/lib/main.dart
+index edfef55..60ce9ac 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -6020,7 +6020,7 @@ Future<bool> sendMessageToConversation({
+     'senderUid': activeChildId,
+     'senderParentId': activeParentId,
+     'senderChildName': effectiveChildName,
+-    'createdAt': Timestamp.now(),
++    'createdAt': FieldValue.serverTimestamp(),
+     'createdAtMs': DateTime.now().millisecondsSinceEpoch,
+     'isFlagged': isFlagged,
+     'receiverAction': '',
+diff --git a/test/firestore.rules.test.js b/test/firestore.rules.test.js
+index 6d561e6..817999d 100644
+--- a/test/firestore.rules.test.js
++++ b/test/firestore.rules.test.js
+@@ -15,6 +15,7 @@ import {
+   getDocs,
+   orderBy,
+   query,
++  serverTimestamp,
+   setDoc,
+   updateDoc,
+   where,
+@@ -50,12 +51,14 @@ async function seedConversation() {
+       linkedDevice: true,
+       parentId: 'parent-b',
+       accessCode: 'ACCESS-B',
++      name: 'Child B',
+     });
+     await setDoc(doc(db, 'parents/parent-c/children/child-c'), {
+       linkedAuthUid: 'child-c-auth',
+       linkedDevice: true,
+       parentId: 'parent-c',
+       accessCode: 'ACCESS-C',
++      name: 'Child C',
+     });
+     await setDoc(doc(db, 'parents/parent-d/children/child-d'), {
+       linkedAuthUid: null,
+@@ -81,7 +84,29 @@ async function seedConversation() {
+       {
+         text: 'Private child message',
+         senderUid: 'child-a',
++        senderParentId: 'parent-a',
++        senderChildName: 'Child A',
++        createdAt: new Date('2026-09-04T00:00:00Z'),
+         createdAtMs: 1,
++        isFlagged: false,
++        receiverAction: '',
++        receiverActionAt: null,
++        receiverActionByChildId: null,
++      },
++    );
++    await setDoc(
++      doc(db, `conversations/${conversationId}/messages/flagged-message`),
++      {
++        text: 'Flagged child message',
++        senderUid: 'child-a',
++        senderParentId: 'parent-a',
++        senderChildName: 'Child A',
++        createdAt: new Date('2026-09-04T00:00:00Z'),
++        createdAtMs: 2,
++        isFlagged: true,
++        receiverAction: '',
++        receiverActionAt: null,
++        receiverActionByChildId: null,
+       },
+     );
+ 
+@@ -98,6 +123,31 @@ async function seedConversation() {
+   });
+ }
+ 
++function validMessageData({
++  childId = 'child-a',
++  parentId = 'parent-a',
++  childName = 'Child A',
++  text = 'Hello',
++  isFlagged = false,
++} = {}) {
++  return {
++    text,
++    senderUid: childId,
++    senderParentId: parentId,
++    senderChildName: childName,
++    createdAt: serverTimestamp(),
++    createdAtMs: Date.now(),
++    isFlagged,
++    receiverAction: '',
++    receiverActionAt: null,
++    receiverActionByChildId: null,
++  };
++}
++
++function messageDoc(db, messageId) {
++  return doc(db, `conversations/${conversationId}/messages/${messageId}`);
++}
++
+ async function simulateCallableClaim(parentId, childId, authUid) {
+   await testEnvironment.withSecurityRulesDisabled(async (context) => {
+     const db = context.firestore();
+@@ -250,6 +300,247 @@ describe('raw message privacy', () => {
+   });
+ });
+ 
++describe('message creation authorization', () => {
++  test('Child A can create a valid message as Child A', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertSucceeds(
++      setDoc(messageDoc(db, 'child-a-message'), validMessageData()),
++    );
++  });
++
++  test('Child B can create a valid message as Child B', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertSucceeds(
++      setDoc(
++        messageDoc(db, 'child-b-message'),
++        validMessageData({
++          childId: 'child-b',
++          parentId: 'parent-b',
++          childName: 'Child B',
++        }),
++      ),
++    );
++  });
++
++  for (const [label, context] of [
++    ['Parent A', () => firestoreFor('parent-a')],
++    ['Parent B', () => firestoreFor('parent-b')],
++    ['Child C', () => firestoreFor('child-c-auth')],
++    ['an unrelated authenticated user', () => firestoreFor('unrelated-auth')],
++    [
++      'an unauthenticated user',
++      () => testEnvironment.unauthenticatedContext().firestore(),
++    ],
++  ]) {
++    test(`${label} cannot create a message`, async () => {
++      const db = context();
++      await assertFails(
++        setDoc(messageDoc(db, `denied-${label}`), validMessageData()),
++      );
++    });
++  }
++
++  test('Child A cannot claim Child B as senderUid', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(
++        messageDoc(db, 'forged-sender-child'),
++        validMessageData({childId: 'child-b'}),
++      ),
++    );
++  });
++
++  test('Child A cannot claim Parent B as senderParentId', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(
++        messageDoc(db, 'forged-sender-parent'),
++        validMessageData({parentId: 'parent-b'}),
++      ),
++    );
++  });
++
++  test('Child A cannot forge senderChildName', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(
++        messageDoc(db, 'forged-sender-name'),
++        validMessageData({childName: 'Not Child A'}),
++      ),
++    );
++  });
++
++  test('a message missing a required field is denied', async () => {
++    const db = firestoreFor('child-a-auth');
++    const data = validMessageData();
++    delete data.senderChildName;
++    await assertFails(setDoc(messageDoc(db, 'missing-field'), data));
++  });
++
++  test('a message with an arbitrary field is denied', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(messageDoc(db, 'extra-field'), {
++        ...validMessageData(),
++        arbitraryField: true,
++      }),
++    );
++  });
++
++  for (const [label, text] of [
++    ['empty', ''],
++    ['whitespace-only', '   \n'],
++    ['non-string', 42],
++    ['over-limit', 'a'.repeat(10001)],
++  ]) {
++    test(`${label} message text is denied`, async () => {
++      const db = firestoreFor('child-a-auth');
++      await assertFails(
++        setDoc(messageDoc(db, `${label}-text`), validMessageData({text})),
++      );
++    });
++  }
++
++  test('non-Boolean isFlagged is denied', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(messageDoc(db, 'invalid-flag'), {
++        ...validMessageData(),
++        isFlagged: 'true',
++      }),
++    );
++  });
++
++  for (const [label, fields] of [
++    ['receiverAction', {receiverAction: 'read'}],
++    ['receiverActionAt', {receiverActionAt: serverTimestamp()}],
++    ['receiverActionByChildId', {receiverActionByChildId: 'child-b'}],
++  ]) {
++    test(`non-empty initial ${label} is denied`, async () => {
++      const db = firestoreFor('child-a-auth');
++      await assertFails(
++        setDoc(messageDoc(db, `initial-${label}`), {
++          ...validMessageData({isFlagged: true}),
++          ...fields,
++        }),
++      );
++    });
++  }
++
++  test('createdAt not equal to request.time is denied', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      setDoc(messageDoc(db, 'invalid-created-at'), {
++        ...validMessageData(),
++        createdAt: new Date('2026-09-04T00:00:00Z'),
++      }),
++    );
++  });
++
++  test('message deletion remains denied', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(deleteDoc(messageDoc(db, 'message-1')));
++  });
++});
++
++describe('Protected Delivery receiver actions', () => {
++  function receiverAction(action, overrides = {}) {
++    return {
++      receiverAction: action,
++      receiverActionAt: serverTimestamp(),
++      receiverActionByChildId: 'child-b',
++      ...overrides,
++    };
++  }
++
++  for (const action of ['read', 'not_now', 'blocked']) {
++    test(`Child B can mark a flagged message ${action}`, async () => {
++      const db = firestoreFor('child-b-auth');
++      await assertSucceeds(
++        updateDoc(messageDoc(db, 'flagged-message'), receiverAction(action)),
++      );
++    });
++  }
++
++  test('the sender cannot fabricate a receiver action', async () => {
++    const db = firestoreFor('child-a-auth');
++    await assertFails(
++      updateDoc(messageDoc(db, 'flagged-message'), receiverAction('read')),
++    );
++  });
++
++  for (const [label, uid] of [
++    ['Parent A', 'parent-a'],
++    ['Parent B', 'parent-b'],
++    ['Child C', 'child-c-auth'],
++    ['an unrelated authenticated user', 'unrelated-auth'],
++  ]) {
++    test(`${label} cannot set a receiver action`, async () => {
++      const db = firestoreFor(uid);
++      await assertFails(
++        updateDoc(messageDoc(db, 'flagged-message'), receiverAction('read')),
++      );
++    });
++  }
++
++  for (const [label, fields] of [
++    ['text', {text: 'Changed'}],
++    ['senderUid', {senderUid: 'child-b'}],
++    ['senderParentId', {senderParentId: 'parent-b'}],
++    ['senderChildName', {senderChildName: 'Child B'}],
++    ['createdAt', {createdAt: serverTimestamp()}],
++    ['createdAtMs', {createdAtMs: 999}],
++    ['isFlagged', {isFlagged: false}],
++    ['an arbitrary field', {arbitraryField: true}],
++  ]) {
++    test(`the receiver cannot change ${label}`, async () => {
++      const db = firestoreFor('child-b-auth');
++      await assertFails(
++        updateDoc(messageDoc(db, 'flagged-message'), {
++          ...receiverAction('read'),
++          ...fields,
++        }),
++      );
++    });
++  }
++
++  test('receiverActionByChildId must equal the caller child ID', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertFails(
++      updateDoc(
++        messageDoc(db, 'flagged-message'),
++        receiverAction('read', {receiverActionByChildId: 'child-a'}),
++      ),
++    );
++  });
++
++  test('receiver action on an unflagged message is denied', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertFails(
++      updateDoc(messageDoc(db, 'message-1'), receiverAction('read')),
++    );
++  });
++
++  test('an invalid receiver action is denied', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertFails(
++      updateDoc(messageDoc(db, 'flagged-message'), receiverAction('ignored')),
++    );
++  });
++
++  test('receiverActionAt must equal request.time', async () => {
++    const db = firestoreFor('child-b-auth');
++    await assertFails(
++      updateDoc(
++        messageDoc(db, 'flagged-message'),
++        receiverAction('read', {
++          receiverActionAt: new Date('2026-09-04T00:00:00Z'),
++        }),
++      ),
++    );
++  });
++});
++
+ describe('child linking trust anchor', () => {
+   test('an attacker cannot replace an existing linkedAuthUid or read', async () => {
+     const db = firestoreFor('attacker-auth');
