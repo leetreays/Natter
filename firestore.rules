@@ -248,7 +248,8 @@ service cloud.firestore {
       allow delete: if false;
 
       allow read: if isLinkedConversationParticipant(resource.data);
-      allow update: if signedIn() && conversationParticipantsUnchanged();
+      allow update: if isLinkedConversationParticipant(resource.data)
+        && conversationParticipantsUnchanged();
 
       match /messages/{messageId} {
         allow create: if validNewMessage(conversationData(conversationId));

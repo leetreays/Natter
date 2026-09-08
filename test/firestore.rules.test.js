@@ -267,6 +267,125 @@ describe('conversation privacy', () => {
   }
 });
 
+describe('conversation update actor authorization', () => {
+  const conversationPath = `conversations/${conversationId}`;
+
+  test('Child A can update typing state', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      updateDoc(doc(db, conversationPath), {
+        typingChildId: 'child-a',
+        typingAt: new Date('2026-09-08T10:00:00Z'),
+      }),
+    );
+  });
+
+  test('Child B can update behavioral state', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertSucceeds(
+      updateDoc(doc(db, conversationPath), {
+        spikeHeat: 2,
+        lastSpikeHeatReason: 'test-behavioral-update',
+      }),
+    );
+  });
+
+  test('a linked participant can update unread and read state', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      updateDoc(doc(db, conversationPath), {
+        unreadCounts: {'child-a': 0, 'child-b': 1},
+        lastReadAtByChildId: {
+          'child-a': new Date('2026-09-08T10:00:00Z'),
+        },
+      }),
+    );
+  });
+
+  test('a linked participant can update blocking state', async () => {
+    const db = firestoreFor('child-b-auth');
+    await assertSucceeds(
+      updateDoc(doc(db, conversationPath), {
+        blockedByChildIds: ['child-b'],
+      }),
+    );
+  });
+
+  test('a linked participant can update message summary state', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      updateDoc(doc(db, conversationPath), {
+        lastMessage: 'Hello',
+        lastMessageSenderChildId: 'child-a',
+        lastMessageAt: new Date('2026-09-08T10:00:00Z'),
+      }),
+    );
+  });
+
+  for (const [label, context] of [
+    ['Parent A', () => firestoreFor('parent-a')],
+    ['Parent B', () => firestoreFor('parent-b')],
+    ['linked Child C', () => firestoreFor('child-c-auth')],
+    ['an unrelated authenticated user', () => firestoreFor('unrelated-auth')],
+    [
+      'an unauthenticated user',
+      () => testEnvironment.unauthenticatedContext().firestore(),
+    ],
+  ]) {
+    test(`${label} cannot update conversation state`, async () => {
+      const db = context();
+      await assertFails(
+        updateDoc(doc(db, conversationPath), {
+          spikeHeat: 99,
+        }),
+      );
+    });
+  }
+
+  test('unlinking Child A immediately revokes conversation update access', async () => {
+    const oldChildDb = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      updateDoc(doc(oldChildDb, conversationPath), {
+        typingChildId: 'child-a',
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(oldChildDb, 'parents/parent-a/children/child-a'), {
+        linkedAuthUid: null,
+        linkedDevice: false,
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(oldChildDb, conversationPath), {
+        typingChildId: null,
+      }),
+    );
+  });
+
+  test('relinking grants the new UID access and keeps the old UID denied', async () => {
+    const oldChildDb = firestoreFor('child-a-auth');
+    await assertSucceeds(
+      updateDoc(doc(oldChildDb, 'parents/parent-a/children/child-a'), {
+        linkedAuthUid: null,
+        linkedDevice: false,
+      }),
+    );
+    await simulateCallableClaim('parent-a', 'child-a', 'child-a-new-auth');
+
+    const newChildDb = firestoreFor('child-a-new-auth');
+    await assertSucceeds(
+      updateDoc(doc(newChildDb, conversationPath), {
+        typingChildId: 'child-a',
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(oldChildDb, conversationPath), {
+        typingChildId: null,
+      }),
+    );
+  });
+});
+
 describe('child-scoped conversation references', () => {
   const childARefs =
     'parents/parent-a/children/child-a/conversation_refs';
