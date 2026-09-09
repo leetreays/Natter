@@ -37,6 +37,114 @@ service cloud.firestore {
         || isLinkedParticipantAt(conversation, 1);
     }
 
+
+    function conversationAllowsNewMessages(conversation) {
+      return !conversation.keys().hasAny(['blockedByChildIds'])
+        || (
+          conversation.blockedByChildIds is list
+          && conversation.blockedByChildIds.size() == 0
+        );
+    }
+
+    function validOneToOneParticipantMapping(conversation) {
+      return conversation.participantChildIds is list
+        && conversation.participantParentIds is list
+        && conversation.participantChildIds.size() == 2
+        && conversation.participantParentIds.size() == 2
+        && conversation.participantChildIds[0] is string
+        && conversation.participantChildIds[1] is string
+        && conversation.participantParentIds[0] is string
+        && conversation.participantParentIds[1] is string
+        && conversation.participantChildIds[0].size() > 0
+        && conversation.participantChildIds[1].size() > 0
+        && conversation.participantParentIds[0].size() > 0
+        && conversation.participantParentIds[1].size() > 0
+        && conversation.participantChildIds[0]
+          != conversation.participantChildIds[1];
+    }
+
+    function validBlockedByChildIdsList(conversation, blockedChildIds) {
+      return blockedChildIds is list
+        && blockedChildIds.size() == blockedChildIds.toSet().size()
+        && blockedChildIds.toSet().hasOnly(
+          conversation.participantChildIds
+        );
+    }
+
+    function validSelfBlockChangeFromMissingAt(
+      conversation,
+      newBlockedChildIds,
+      index
+    ) {
+      return isLinkedParticipantAt(conversation, index)
+        && newBlockedChildIds.toSet().hasOnly([
+          conversation.participantChildIds[index]
+        ]);
+    }
+
+    function validSelfBlockChangeFromListAt(
+      conversation,
+      oldBlockedChildIds,
+      newBlockedChildIds,
+      index,
+      otherIndex
+    ) {
+      return isLinkedParticipantAt(conversation, index)
+        && (
+          oldBlockedChildIds.toSet().hasAny([
+            conversation.participantChildIds[otherIndex]
+          ])
+          ==
+          newBlockedChildIds.toSet().hasAny([
+            conversation.participantChildIds[otherIndex]
+          ])
+        );
+    }
+
+    function validSelfBlockedByChildIdsChangeAt(
+      conversation,
+      index,
+      otherIndex
+    ) {
+      return validOneToOneParticipantMapping(conversation)
+        && request.resource.data.keys().hasAny(['blockedByChildIds'])
+        && validBlockedByChildIdsList(
+          conversation,
+          request.resource.data.blockedByChildIds
+        )
+        && (
+          (
+            !resource.data.keys().hasAny(['blockedByChildIds'])
+            && validSelfBlockChangeFromMissingAt(
+              conversation,
+              request.resource.data.blockedByChildIds,
+              index
+            )
+          )
+          || (
+            resource.data.keys().hasAny(['blockedByChildIds'])
+            && validBlockedByChildIdsList(
+              conversation,
+              resource.data.blockedByChildIds
+            )
+            && validSelfBlockChangeFromListAt(
+              conversation,
+              resource.data.blockedByChildIds,
+              request.resource.data.blockedByChildIds,
+              index,
+              otherIndex
+            )
+          )
+        );
+    }
+
+    function validBlockedByChildIdsUpdate(conversation) {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['blockedByChildIds'])
+        || validSelfBlockedByChildIdsChangeAt(conversation, 0, 1)
+        || validSelfBlockedByChildIdsChangeAt(conversation, 1, 0);
+    }
+
     function isMessageSenderAt(conversation, message, index) {
       return isLinkedParticipantAt(conversation, index)
         && message.senderUid == conversation.participantChildIds[index]
@@ -65,7 +173,8 @@ service cloud.firestore {
     }
 
     function validNewMessage(conversation) {
-      return request.resource.data.keys().hasOnly([
+      return conversationAllowsNewMessages(conversation)
+        && request.resource.data.keys().hasOnly([
           'text',
           'senderUid',
           'senderParentId',
@@ -249,7 +358,8 @@ service cloud.firestore {
 
       allow read: if isLinkedConversationParticipant(resource.data);
       allow update: if isLinkedConversationParticipant(resource.data)
-        && conversationParticipantsUnchanged();
+        && conversationParticipantsUnchanged()
+        && validBlockedByChildIdsUpdate(resource.data);
 
       match /messages/{messageId} {
         allow create: if validNewMessage(conversationData(conversationId));
