@@ -179,6 +179,19 @@ async function seedBlockedByChildIds(value) {
   });
 }
 
+async function seedCanonicalConversationIdentity() {
+  await testEnvironment.withSecurityRulesDisabled(async (context) => {
+    await updateDoc(
+      doc(context.firestore(), `conversations/${conversationId}`),
+      {
+        friendshipId: conversationId,
+        participantNames: ['Child A', 'Child B'],
+        createdAt: new Date('2026-09-01T00:00:00Z'),
+      },
+    );
+  });
+}
+
 async function createValidMessage({
   authUid,
   messageId,
@@ -671,6 +684,160 @@ describe('conversation block ownership', () => {
           }),
         );
       });
+});
+
+describe('canonical conversation identity immutability', () => {
+  const conversationRefFor = (db, id = conversationId) =>
+    doc(db, `conversations/${id}`);
+
+  test('linked children cannot replace canonical conversation fields',
+    async () => {
+      await seedCanonicalConversationIdentity();
+
+      const replacements = [
+        ['friendshipId', 'different-friendship'],
+        ['participantChildIds', ['child-a', 'child-c']],
+        ['participantParentIds', ['parent-a', 'parent-c']],
+        ['participantNames', ['Renamed Child A', 'Child B']],
+        ['status', 'closed'],
+        ['createdAt', new Date('2030-01-01T00:00:00Z')],
+      ];
+
+      for (const authUid of ['child-a-auth', 'child-b-auth']) {
+        const db = firestoreFor(authUid);
+
+        for (const [field, value] of replacements) {
+          await assertFails(
+            updateDoc(conversationRefFor(db), {
+              [field]: value,
+            }),
+          );
+        }
+      }
+    });
+
+  test('linked children cannot delete canonical conversation fields',
+    async () => {
+      await seedCanonicalConversationIdentity();
+
+      for (const authUid of ['child-a-auth', 'child-b-auth']) {
+        const db = firestoreFor(authUid);
+
+        for (const field of [
+          'friendshipId',
+          'participantNames',
+          'status',
+          'createdAt',
+        ]) {
+          await assertFails(
+            updateDoc(conversationRefFor(db), {
+              [field]: deleteField(),
+            }),
+          );
+        }
+      }
+    });
+
+  test('a missing legacy canonical field may remain missing but cannot be added',
+    async () => {
+      await testEnvironment.withSecurityRulesDisabled(async (context) => {
+        await updateDoc(
+          conversationRefFor(context.firestore()),
+          {
+            friendshipId: deleteField(),
+          },
+        );
+      });
+
+      const childADb = firestoreFor('child-a-auth');
+      await assertSucceeds(
+        updateDoc(conversationRefFor(childADb), {
+          spikeHeat: 2,
+        }),
+      );
+      await assertFails(
+        updateDoc(conversationRefFor(childADb), {
+          friendshipId: conversationId,
+        }),
+      );
+
+      const childBDb = firestoreFor('child-b-auth');
+      await assertSucceeds(
+        updateDoc(conversationRefFor(childBDb), {
+          typingChildId: 'child-b',
+        }),
+      );
+      await assertFails(
+        updateDoc(conversationRefFor(childBDb), {
+          friendshipId: conversationId,
+        }),
+      );
+    });
+
+  test('canonical mutation cannot be hidden inside an otherwise valid update',
+    async () => {
+      await seedCanonicalConversationIdentity();
+
+      const childADb = firestoreFor('child-a-auth');
+      await assertFails(
+        updateDoc(conversationRefFor(childADb), {
+          blockedByChildIds: ['child-a'],
+          friendshipId: 'different-friendship',
+        }),
+      );
+
+      const childBDb = firestoreFor('child-b-auth');
+      await assertFails(
+        updateDoc(conversationRefFor(childBDb), {
+          spikeHeat: 3,
+          status: 'closed',
+        }),
+      );
+    });
+
+  test('linked children cannot reorder canonical participant identity',
+    async () => {
+      await seedCanonicalConversationIdentity();
+
+      for (const authUid of ['child-a-auth', 'child-b-auth']) {
+        const db = firestoreFor(authUid);
+
+        await assertFails(
+          updateDoc(conversationRefFor(db), {
+            participantChildIds: ['child-b', 'child-a'],
+          }),
+        );
+
+        await assertFails(
+          updateDoc(conversationRefFor(db), {
+            participantParentIds: ['parent-b', 'parent-a'],
+          }),
+        );
+      }
+    });
+
+  test('canonical hardening preserves reversed-order participant updates',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+      await assertSucceeds(
+        updateDoc(
+          conversationRefFor(childADb, reversedConversationId),
+          {
+            spikeHeat: 1,
+          },
+        ),
+      );
+
+      const childBDb = firestoreFor('child-b-auth');
+      await assertSucceeds(
+        updateDoc(
+          conversationRefFor(childBDb, reversedConversationId),
+          {
+            typingChildId: 'child-b',
+          },
+        ),
+      );
+    });
 });
 
 describe('child-scoped conversation references', () => {

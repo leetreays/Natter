@@ -226,11 +226,15 @@ service cloud.firestore {
         && isLinkedMessageReceiver(conversation, resource.data);
     }
 
-    function conversationParticipantsUnchanged() {
-      return request.resource.data.participantChildIds
-          == resource.data.participantChildIds
-        && request.resource.data.participantParentIds
-          == resource.data.participantParentIds;
+    function conversationCanonicalIdentityUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'friendshipId',
+        'participantChildIds',
+        'participantParentIds',
+        'participantNames',
+        'status',
+        'createdAt'
+      ]);
     }
 
     function childLinkageUnchanged() {
@@ -358,7 +362,7 @@ service cloud.firestore {
 
       allow read: if isLinkedConversationParticipant(resource.data);
       allow update: if isLinkedConversationParticipant(resource.data)
-        && conversationParticipantsUnchanged()
+        && conversationCanonicalIdentityUnchanged()
         && validBlockedByChildIdsUpdate(resource.data);
 
       match /messages/{messageId} {
