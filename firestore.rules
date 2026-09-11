@@ -38,6 +38,33 @@ service cloud.firestore {
     }
 
 
+    function isConversationTypingChild(conversation, childId) {
+      return (
+          childId == conversation.participantChildIds[0]
+          && isLinkedParticipantAt(conversation, 0)
+        )
+        || (
+          childId == conversation.participantChildIds[1]
+          && isLinkedParticipantAt(conversation, 1)
+        );
+    }
+
+    function isReadableConversationTypingChild(conversation, childId) {
+      return (
+          childId == conversation.participantChildIds[0]
+          || childId == conversation.participantChildIds[1]
+        )
+        && isLinkedConversationParticipant(conversation);
+    }
+
+    function validTypingPresenceWrite(conversation, childId) {
+      return isConversationTypingChild(conversation, childId)
+        && request.resource.data.keys().hasOnly(['typingAt'])
+        && request.resource.data.keys().hasAll(['typingAt'])
+        && request.resource.data.typingAt == request.time;
+    }
+
+
     function conversationAllowsNewMessages(conversation) {
       return !conversation.keys().hasAny(['blockedByChildIds'])
         || (
@@ -374,6 +401,24 @@ service cloud.firestore {
           conversationData(conversationId)
         );
         allow delete: if false;
+      }
+
+
+      match /typing/{childId} {
+        allow get: if isReadableConversationTypingChild(
+          conversationData(conversationId),
+          childId
+        );
+        allow list: if false;
+
+        allow create, update: if validTypingPresenceWrite(
+          conversationData(conversationId),
+          childId
+        );
+        allow delete: if isConversationTypingChild(
+          conversationData(conversationId),
+          childId
+        );
       }
 
       match /meaningful_moments/{momentId} {

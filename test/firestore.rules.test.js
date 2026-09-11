@@ -170,6 +170,29 @@ function messageDoc(db, messageId) {
 }
 
 
+function typingDoc(db, childId, id = conversationId) {
+  return doc(db, `conversations/${id}/typing/${childId}`);
+}
+
+function validTypingPresenceData() {
+  return {
+    typingAt: serverTimestamp(),
+  };
+}
+
+async function seedTypingPresence(childIds, id = conversationId) {
+  await testEnvironment.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+
+    for (const childId of childIds) {
+      await setDoc(typingDoc(db, childId, id), {
+        typingAt: new Date('2026-09-01T00:00:00Z'),
+      });
+    }
+  });
+}
+
+
 async function seedBlockedByChildIds(value) {
   await testEnvironment.withSecurityRulesDisabled(async (context) => {
     await updateDoc(
@@ -836,6 +859,351 @@ describe('canonical conversation identity immutability', () => {
             typingChildId: 'child-b',
           },
         ),
+      );
+    });
+});
+
+describe('child-owned typing presence', () => {
+  test('both children can create their own typing documents', async () => {
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childADb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childBDb, 'child-b'),
+        validTypingPresenceData(),
+      ),
+    );
+
+    const childASnapshot = await assertSucceeds(
+      getDoc(typingDoc(childADb, 'child-a')),
+    );
+    const childBSnapshot = await assertSucceeds(
+      getDoc(typingDoc(childBDb, 'child-b')),
+    );
+
+    assert.equal(childASnapshot.exists(), true);
+    assert.equal(childBSnapshot.exists(), true);
+  });
+
+  test('both children can refresh their own typing documents', async () => {
+    await seedTypingPresence(['child-a', 'child-b']);
+
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childADb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childBDb, 'child-b'),
+        validTypingPresenceData(),
+      ),
+    );
+  });
+
+  test('both children can delete their own typing documents idempotently',
+    async () => {
+      await seedTypingPresence(['child-a', 'child-b']);
+
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertSucceeds(deleteDoc(typingDoc(childADb, 'child-a')));
+      await assertSucceeds(deleteDoc(typingDoc(childADb, 'child-a')));
+
+      await assertSucceeds(deleteDoc(typingDoc(childBDb, 'child-b')));
+      await assertSucceeds(deleteDoc(typingDoc(childBDb, 'child-b')));
+    });
+
+  test('both typing documents may exist simultaneously', async () => {
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childADb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childBDb, 'child-b'),
+        validTypingPresenceData(),
+      ),
+    );
+
+    const childAViewOfB = await assertSucceeds(
+      getDoc(typingDoc(childADb, 'child-b')),
+    );
+    const childBViewOfA = await assertSucceeds(
+      getDoc(typingDoc(childBDb, 'child-a')),
+    );
+
+    assert.equal(childAViewOfB.exists(), true);
+    assert.equal(childBViewOfA.exists(), true);
+  });
+
+  test('Child A stale clear cannot remove Child B presence', async () => {
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childADb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        typingDoc(childBDb, 'child-b'),
+        validTypingPresenceData(),
+      ),
+    );
+
+    await assertSucceeds(deleteDoc(typingDoc(childADb, 'child-a')));
+
+    const childAState = await assertSucceeds(
+      getDoc(typingDoc(childADb, 'child-a')),
+    );
+    const childBState = await assertSucceeds(
+      getDoc(typingDoc(childADb, 'child-b')),
+    );
+
+    assert.equal(childAState.exists(), false);
+    assert.equal(childBState.exists(), true);
+  });
+
+  test('typing ownership works with reversed participant ordering',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertSucceeds(
+        setDoc(
+          typingDoc(childADb, 'child-a', reversedConversationId),
+          validTypingPresenceData(),
+        ),
+      );
+      await assertSucceeds(
+        setDoc(
+          typingDoc(childBDb, 'child-b', reversedConversationId),
+          validTypingPresenceData(),
+        ),
+      );
+
+      await assertSucceeds(
+        deleteDoc(
+          typingDoc(childADb, 'child-a', reversedConversationId),
+        ),
+      );
+      await assertSucceeds(
+        deleteDoc(
+          typingDoc(childBDb, 'child-b', reversedConversationId),
+        ),
+      );
+    });
+
+  test('typing ownership follows current Child A linkage', async () => {
+    await testEnvironment.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(
+        doc(
+          context.firestore(),
+          'parents/parent-a/children/child-a',
+        ),
+        {
+          linkedAuthUid: null,
+          linkedDevice: false,
+        },
+      );
+    });
+
+    const oldChildDb = firestoreFor('child-a-auth');
+    await assertFails(
+      setDoc(
+        typingDoc(oldChildDb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertFails(
+      deleteDoc(typingDoc(oldChildDb, 'child-a')),
+    );
+
+    await simulateCallableClaim(
+      'parent-a',
+      'child-a',
+      'child-a-new-auth',
+    );
+
+    const newChildDb = firestoreFor('child-a-new-auth');
+    await assertSucceeds(
+      setDoc(
+        typingDoc(newChildDb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertSucceeds(
+      deleteDoc(typingDoc(newChildDb, 'child-a')),
+    );
+
+    await assertFails(
+      setDoc(
+        typingDoc(oldChildDb, 'child-a'),
+        validTypingPresenceData(),
+      ),
+    );
+    await assertFails(
+      deleteDoc(typingDoc(oldChildDb, 'child-a')),
+    );
+  });
+
+  test('participants can exact-get participant typing documents',
+    async () => {
+      await seedTypingPresence(['child-a', 'child-b']);
+
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertSucceeds(getDoc(typingDoc(childADb, 'child-a')));
+      await assertSucceeds(getDoc(typingDoc(childADb, 'child-b')));
+      await assertSucceeds(getDoc(typingDoc(childBDb, 'child-a')));
+      await assertSucceeds(getDoc(typingDoc(childBDb, 'child-b')));
+    });
+
+  test('parents and unrelated identities cannot read typing presence',
+    async () => {
+      await seedTypingPresence(['child-a', 'child-b']);
+
+      for (const authUid of [
+        'parent-a',
+        'parent-b',
+        'child-c-auth',
+        'unrelated-auth',
+      ]) {
+        const db = firestoreFor(authUid);
+        await assertFails(getDoc(typingDoc(db, 'child-a')));
+        await assertFails(getDoc(typingDoc(db, 'child-b')));
+      }
+
+      const unauthenticatedDb =
+        testEnvironment.unauthenticatedContext().firestore();
+      await assertFails(
+        getDoc(typingDoc(unauthenticatedDb, 'child-a')),
+      );
+    });
+
+  test('typing collection list and query access is denied', async () => {
+    await seedTypingPresence(['child-a', 'child-b']);
+
+    for (const authUid of ['child-a-auth', 'child-b-auth']) {
+      const db = firestoreFor(authUid);
+      await assertFails(
+        getDocs(
+          collection(
+            db,
+            `conversations/${conversationId}/typing`,
+          ),
+        ),
+      );
+    }
+  });
+
+  test('a child cannot write another or unrelated typing document',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      for (const childId of [
+        'child-b',
+        'child-c',
+        'not-a-participant',
+      ]) {
+        await assertFails(
+          setDoc(
+            typingDoc(childADb, childId),
+            validTypingPresenceData(),
+          ),
+        );
+        await assertFails(
+          deleteDoc(typingDoc(childADb, childId)),
+        );
+      }
+
+      await assertFails(
+        setDoc(
+          typingDoc(childBDb, 'child-a'),
+          validTypingPresenceData(),
+        ),
+      );
+      await assertFails(
+        deleteDoc(typingDoc(childBDb, 'child-a')),
+      );
+    });
+
+  test('typing presence requires exact schema and server timestamp',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+
+      for (const data of [
+        {},
+        {typingAt: null},
+        {typingAt: 'malformed'},
+        {typingAt: new Date('2030-01-01T00:00:00Z')},
+        {
+          typingAt: serverTimestamp(),
+          childId: 'child-a',
+        },
+        {
+          typingAt: serverTimestamp(),
+          extra: true,
+        },
+      ]) {
+        await assertFails(
+          setDoc(typingDoc(childADb, 'child-a'), data),
+        );
+      }
+    });
+
+  test('parents and unrelated identities cannot write typing presence',
+    async () => {
+      await seedTypingPresence(['child-a']);
+
+      for (const authUid of [
+        'parent-a',
+        'parent-b',
+        'child-c-auth',
+        'unrelated-auth',
+      ]) {
+        const db = firestoreFor(authUid);
+        await assertFails(
+          setDoc(
+            typingDoc(db, 'child-a'),
+            validTypingPresenceData(),
+          ),
+        );
+        await assertFails(deleteDoc(typingDoc(db, 'child-a')));
+      }
+
+      const unauthenticatedDb =
+        testEnvironment.unauthenticatedContext().firestore();
+      await assertFails(
+        setDoc(
+          typingDoc(unauthenticatedDb, 'child-a'),
+          validTypingPresenceData(),
+        ),
+      );
+      await assertFails(
+        deleteDoc(typingDoc(unauthenticatedDb, 'child-a')),
       );
     });
 });

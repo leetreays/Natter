@@ -4958,6 +4958,28 @@ Stream<DocumentSnapshot<Map<String, dynamic>>> conversationDocStream(
   return conversationsRef().doc(conversationId).snapshots();
 }
 
+
+DocumentReference<Map<String, dynamic>> conversationTypingPresenceRef({
+  required String conversationId,
+  required String childId,
+}) {
+  return conversationsRef()
+      .doc(conversationId)
+      .collection('typing')
+      .doc(childId);
+}
+
+Stream<DocumentSnapshot<Map<String, dynamic>>>
+    conversationTypingPresenceStream({
+  required String conversationId,
+  required String childId,
+}) {
+  return conversationTypingPresenceRef(
+    conversationId: conversationId,
+    childId: childId,
+  ).snapshots();
+}
+
 CollectionReference<Map<String, dynamic>> conversationMessagesRef(
   String conversationId,
 ) {
@@ -6338,10 +6360,15 @@ Future<void> setTyping({
 }) async {
   if (!hasActiveChildSession) return;
 
-  await conversationsRef().doc(conversationId).set({
-    'typingChildId': activeChildId,
+  final childId = activeChildId;
+  if (childId == null || childId.trim().isEmpty) return;
+
+  await conversationTypingPresenceRef(
+    conversationId: conversationId,
+    childId: childId,
+  ).set({
     'typingAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+  });
 }
 
 Future<void> clearTyping({
@@ -6349,9 +6376,13 @@ Future<void> clearTyping({
 }) async {
   if (!hasActiveChildSession) return;
 
-  await conversationsRef().doc(conversationId).set({
-    'typingChildId': null,
-  }, SetOptions(merge: true));
+  final childId = activeChildId;
+  if (childId == null || childId.trim().isEmpty) return;
+
+  await conversationTypingPresenceRef(
+    conversationId: conversationId,
+    childId: childId,
+  ).delete();
 }
   
 Future<void> markConversationRead(String conversationId) async {
@@ -22063,10 +22094,6 @@ if (friendshipStageChanged &&
               conversationData['blockedByChildIds'] ?? const [],
             );
 
-            final typingChildId = conversationData['typingChildId'];
-            final isOtherTyping =
-                typingChildId != null && typingChildId != state.activeChildId;
-
             final isBlockedByMe =
                 blockedByChildIds.contains(state.activeChildId);
 
@@ -22346,17 +22373,30 @@ return Padding(
   child: Column(
     mainAxisSize: MainAxisSize.min,
     children: [
-      if (isOtherTyping)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Text(
-            '${widget.contactName} is thinking of a reply…',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+      if (otherChildId.isNotEmpty)
+        StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: state.conversationTypingPresenceStream(
+            conversationId: widget.conversationId,
+            childId: otherChildId,
           ),
+          builder: (context, typingSnapshot) {
+            if (!typingSnapshot.hasData ||
+                typingSnapshot.data?.exists != true) {
+              return const SizedBox.shrink();
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                '${widget.contactName} is thinking of a reply…',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          },
         ),
       if (displayedBanner == 'worsening')
   Container(
