@@ -1,4 +1,6 @@
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const {onDocumentCreated, onDocumentWritten} =
+  require('firebase-functions/v2/firestore');
 const {setGlobalOptions} = require('firebase-functions/v2');
 const admin = require('firebase-admin');
 const {FieldValue} = require('firebase-admin/firestore');
@@ -13,6 +15,41 @@ setGlobalOptions({
 });
 
 const db = admin.firestore();
+const {ProjectionValidationError, processMessageProjection,
+  processReadStateProjection} = require('./projection');
+
+function handleProjectionError(error, metadata) {
+  if (!(error instanceof ProjectionValidationError)) throw error;
+  console.error('Projection event ignored', {...metadata, reason: error.message});
+}
+
+exports.projectConversationMessage = onDocumentCreated(
+    'conversations/{conversationId}/messages/{messageId}', async (event) => {
+      const {conversationId, messageId} = event.params;
+      try {
+        await processMessageProjection(db, conversationId, messageId,
+            event.data.data());
+      } catch (error) {
+        handleProjectionError(error, {eventType: 'message-created',
+          conversationId, messageId});
+      }
+    });
+
+exports.projectConversationReadState = onDocumentWritten(
+    'conversations/{conversationId}/read_state/{childId}', async (event) => {
+      const {conversationId, childId} = event.params;
+      if (!event.data.after.exists) {
+        console.info('Read-state deletion ignored', {conversationId, childId});
+        return;
+      }
+      try {
+        await processReadStateProjection(db, conversationId, childId,
+            event.data.after.data());
+      } catch (error) {
+        handleProjectionError(error, {eventType: 'read-state-written',
+          conversationId, childId});
+      }
+    });
 
 exports.claimChildAccessCode = onCall(async (request) => {
   if (!request.auth) {
