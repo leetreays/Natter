@@ -4980,6 +4980,16 @@ Stream<DocumentSnapshot<Map<String, dynamic>>>
   ).snapshots();
 }
 
+DocumentReference<Map<String, dynamic>> conversationReadStateRef({
+  required String conversationId,
+  required String childId,
+}) {
+  return conversationsRef()
+      .doc(conversationId)
+      .collection('read_state')
+      .doc(childId);
+}
+
 CollectionReference<Map<String, dynamic>> conversationMessagesRef(
   String conversationId,
 ) {
@@ -6388,10 +6398,19 @@ Future<void> clearTyping({
 Future<void> markConversationRead(String conversationId) async {
   if (!hasActiveChildSession) return;
 
-await conversationsRef().doc(conversationId).update({
-  FieldPath(['unreadCounts', activeChildId!]): 0,
-  FieldPath(['lastReadAtByChildId', activeChildId!]): Timestamp.now(),
-});
+  final childId = activeChildId;
+  if (childId == null || childId.trim().isEmpty) return;
+
+  await conversationReadStateRef(
+    conversationId: conversationId,
+    childId: childId,
+  ).set({
+    'lastReadAt': FieldValue.serverTimestamp(),
+  });
+
+  await conversationsRef().doc(conversationId).update({
+    FieldPath(['unreadCounts', childId]): 0,
+  });
 }
 
 Future<void> blockFriendship({

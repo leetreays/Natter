@@ -65,6 +65,14 @@ service cloud.firestore {
     }
 
 
+    function validReadStateWrite(conversation, childId) {
+      return isConversationTypingChild(conversation, childId)
+        && request.resource.data.keys().hasOnly(['lastReadAt'])
+        && request.resource.data.keys().hasAll(['lastReadAt'])
+        && request.resource.data.lastReadAt == request.time;
+    }
+
+
     function conversationAllowsNewMessages(conversation) {
       return !conversation.keys().hasAny(['blockedByChildIds'])
         || (
@@ -419,6 +427,20 @@ service cloud.firestore {
           conversationData(conversationId),
           childId
         );
+      }
+
+      match /read_state/{childId} {
+        allow get: if isConversationTypingChild(
+          conversationData(conversationId),
+          childId
+        );
+        allow list: if false;
+
+        allow create, update: if validReadStateWrite(
+          conversationData(conversationId),
+          childId
+        );
+        allow delete: if false;
       }
 
       match /meaningful_moments/{momentId} {

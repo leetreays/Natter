@@ -193,6 +193,31 @@ async function seedTypingPresence(childIds, id = conversationId) {
 }
 
 
+function readStateDoc(db, childId, id = conversationId) {
+  return doc(db, `conversations/${id}/read_state/${childId}`);
+}
+
+function validReadStateData() {
+  return {
+    lastReadAt: serverTimestamp(),
+  };
+}
+
+async function seedReadState(
+  childId,
+  data = {
+    lastReadAt: new Date('2026-09-01T00:00:00Z'),
+  },
+  id = conversationId,
+) {
+  await testEnvironment.withSecurityRulesDisabled(async (context) => {
+    await setDoc(
+      readStateDoc(context.firestore(), childId, id),
+      data,
+    );
+  });
+}
+
 async function seedBlockedByChildIds(value) {
   await testEnvironment.withSecurityRulesDisabled(async (context) => {
     await updateDoc(
@@ -1205,6 +1230,400 @@ describe('child-owned typing presence', () => {
       await assertFails(
         deleteDoc(typingDoc(unauthenticatedDb, 'child-a')),
       );
+    });
+});
+
+describe('child-owned read acknowledgement', () => {
+  test('both children can create and exact-get their own read state',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertSucceeds(
+        setDoc(
+          readStateDoc(childADb, 'child-a'),
+          validReadStateData(),
+        ),
+      );
+      await assertSucceeds(
+        setDoc(
+          readStateDoc(childBDb, 'child-b'),
+          validReadStateData(),
+        ),
+      );
+
+      const childAState = await assertSucceeds(
+        getDoc(readStateDoc(childADb, 'child-a')),
+      );
+      const childBState = await assertSucceeds(
+        getDoc(readStateDoc(childBDb, 'child-b')),
+      );
+
+      assert.equal(childAState.exists(), true);
+      assert.equal(childBState.exists(), true);
+    });
+
+  test('both children can refresh their own read state', async () => {
+    await seedReadState('child-a');
+    await seedReadState('child-b');
+
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertSucceeds(
+      setDoc(
+        readStateDoc(childADb, 'child-a'),
+        validReadStateData(),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        readStateDoc(childBDb, 'child-b'),
+        validReadStateData(),
+      ),
+    );
+  });
+
+  test('read-state ownership works with reversed participant ordering',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertSucceeds(
+        setDoc(
+          readStateDoc(
+            childADb,
+            'child-a',
+            reversedConversationId,
+          ),
+          validReadStateData(),
+        ),
+      );
+      await assertSucceeds(
+        setDoc(
+          readStateDoc(
+            childBDb,
+            'child-b',
+            reversedConversationId,
+          ),
+          validReadStateData(),
+        ),
+      );
+
+      await assertSucceeds(
+        getDoc(
+          readStateDoc(
+            childADb,
+            'child-a',
+            reversedConversationId,
+          ),
+        ),
+      );
+      await assertSucceeds(
+        getDoc(
+          readStateDoc(
+            childBDb,
+            'child-b',
+            reversedConversationId,
+          ),
+        ),
+      );
+    });
+
+  test('read-state ownership follows current Child A linkage', async () => {
+    await seedReadState('child-a');
+
+    await testEnvironment.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(
+        doc(
+          context.firestore(),
+          'parents/parent-a/children/child-a',
+        ),
+        {
+          linkedAuthUid: null,
+          linkedDevice: false,
+        },
+      );
+    });
+
+    const oldChildDb = firestoreFor('child-a-auth');
+    await assertFails(
+      getDoc(readStateDoc(oldChildDb, 'child-a')),
+    );
+    await assertFails(
+      setDoc(
+        readStateDoc(oldChildDb, 'child-a'),
+        validReadStateData(),
+      ),
+    );
+
+    await simulateCallableClaim(
+      'parent-a',
+      'child-a',
+      'child-a-new-auth',
+    );
+
+    const newChildDb = firestoreFor('child-a-new-auth');
+    await assertSucceeds(
+      getDoc(readStateDoc(newChildDb, 'child-a')),
+    );
+    await assertSucceeds(
+      setDoc(
+        readStateDoc(newChildDb, 'child-a'),
+        validReadStateData(),
+      ),
+    );
+
+    await assertFails(
+      getDoc(readStateDoc(oldChildDb, 'child-a')),
+    );
+    await assertFails(
+      setDoc(
+        readStateDoc(oldChildDb, 'child-a'),
+        validReadStateData(),
+      ),
+    );
+  });
+
+  test('participants cannot write or read another child read state',
+    async () => {
+      await seedReadState('child-a');
+      await seedReadState('child-b');
+
+      const childADb = firestoreFor('child-a-auth');
+      const childBDb = firestoreFor('child-b-auth');
+
+      await assertFails(
+        setDoc(
+          readStateDoc(childADb, 'child-b'),
+          validReadStateData(),
+        ),
+      );
+      await assertFails(
+        getDoc(readStateDoc(childADb, 'child-b')),
+      );
+
+      await assertFails(
+        setDoc(
+          readStateDoc(childBDb, 'child-a'),
+          validReadStateData(),
+        ),
+      );
+      await assertFails(
+        getDoc(readStateDoc(childBDb, 'child-a')),
+      );
+    });
+
+  test('participant cannot write unrelated or arbitrary read-state paths',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+
+      for (const childId of [
+        'child-c',
+        'not-a-participant',
+      ]) {
+        await assertFails(
+          setDoc(
+            readStateDoc(childADb, childId),
+            validReadStateData(),
+          ),
+        );
+        await assertFails(
+          getDoc(readStateDoc(childADb, childId)),
+        );
+      }
+    });
+
+  test('parents and unrelated identities cannot read or write read state',
+    async () => {
+      await seedReadState('child-a');
+
+      for (const authUid of [
+        'parent-a',
+        'parent-b',
+        'child-c-auth',
+        'unrelated-auth',
+      ]) {
+        const db = firestoreFor(authUid);
+
+        await assertFails(
+          getDoc(readStateDoc(db, 'child-a')),
+        );
+        await assertFails(
+          setDoc(
+            readStateDoc(db, 'child-a'),
+            validReadStateData(),
+          ),
+        );
+      }
+
+      const unauthenticatedDb =
+        testEnvironment.unauthenticatedContext().firestore();
+
+      await assertFails(
+        getDoc(readStateDoc(unauthenticatedDb, 'child-a')),
+      );
+      await assertFails(
+        setDoc(
+          readStateDoc(unauthenticatedDb, 'child-a'),
+          validReadStateData(),
+        ),
+      );
+    });
+
+  test('read state requires exact schema and server timestamp',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+
+      for (const data of [
+        {},
+        {lastReadAt: null},
+        {lastReadAt: 'malformed'},
+        {lastReadAt: 123},
+        {lastReadAt: {unexpected: true}},
+        {lastReadAt: new Date('2030-01-01T00:00:00Z')},
+        {
+          lastReadAt: serverTimestamp(),
+          childId: 'child-a',
+        },
+        {
+          lastReadAt: serverTimestamp(),
+          extra: true,
+        },
+      ]) {
+        await assertFails(
+          setDoc(readStateDoc(childADb, 'child-a'), data),
+        );
+      }
+    });
+
+  test('updates and merge writes cannot retain extra fields',
+    async () => {
+      const childADb = firestoreFor('child-a-auth');
+
+      await seedReadState('child-a');
+      await assertFails(
+        updateDoc(readStateDoc(childADb, 'child-a'), {
+          extra: true,
+        }),
+      );
+
+      await seedReadState(
+        'child-a',
+        {
+          lastReadAt: new Date('2026-09-01T00:00:00Z'),
+          extra: true,
+        },
+      );
+
+      await assertFails(
+        setDoc(
+          readStateDoc(childADb, 'child-a'),
+          validReadStateData(),
+          {merge: true},
+        ),
+      );
+
+      await assertSucceeds(
+        setDoc(
+          readStateDoc(childADb, 'child-a'),
+          validReadStateData(),
+        ),
+      );
+
+      const repaired = await assertSucceeds(
+        getDoc(readStateDoc(childADb, 'child-a')),
+      );
+      assert.deepEqual(
+        Object.keys(repaired.data()).sort(),
+        ['lastReadAt'],
+      );
+    });
+
+  test('client deletion is denied for every identity', async () => {
+    await seedReadState('child-a');
+
+    const childADb = firestoreFor('child-a-auth');
+    const childBDb = firestoreFor('child-b-auth');
+
+    await assertFails(
+      deleteDoc(readStateDoc(childADb, 'child-a')),
+    );
+    await assertFails(
+      deleteDoc(readStateDoc(childBDb, 'child-a')),
+    );
+
+    for (const authUid of [
+      'parent-a',
+      'child-c-auth',
+      'unrelated-auth',
+    ]) {
+      await assertFails(
+        deleteDoc(
+          readStateDoc(firestoreFor(authUid), 'child-a'),
+        ),
+      );
+    }
+  });
+
+  test('read-state collection list and query access is denied',
+    async () => {
+      await seedReadState('child-a');
+
+      for (const authUid of ['child-a-auth', 'child-b-auth']) {
+        const db = firestoreFor(authUid);
+        await assertFails(
+          getDocs(
+            collection(
+              db,
+              `conversations/${conversationId}/read_state`,
+            ),
+          ),
+        );
+      }
+    });
+
+  test('read state fails closed for missing or malformed trust anchors',
+    async () => {
+      await testEnvironment.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+
+        await setDoc(
+          doc(db, 'conversations/malformed-read-state-conversation'),
+          {
+            participantChildIds: ['child-a'],
+            participantParentIds: [],
+            status: 'active',
+          },
+        );
+
+        await setDoc(
+          doc(db, 'conversations/missing-child-profile-conversation'),
+          {
+            participantChildIds: ['child-a', 'child-b'],
+            participantParentIds: ['parent-missing', 'parent-b'],
+            status: 'active',
+          },
+        );
+      });
+
+      const childADb = firestoreFor('child-a-auth');
+
+      for (const id of [
+        'missing-conversation',
+        'malformed-read-state-conversation',
+        'missing-child-profile-conversation',
+      ]) {
+        await assertFails(
+          setDoc(
+            readStateDoc(childADb, 'child-a', id),
+            validReadStateData(),
+          ),
+        );
+        await assertFails(
+          getDoc(readStateDoc(childADb, 'child-a', id)),
+        );
+      }
     });
 });
 
