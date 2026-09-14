@@ -179,6 +179,7 @@ async function processReadStateProjection(db, conversationId, childId, readState
   });
 }
 module.exports = {PROTECTED_PREVIEW, ProjectionValidationError, compareTuple,
-  hasUnread, safePreview, resolveConversation, resolveMessage,
+  compareTimestamps, latestTimestamp, isTimestamp, hasUnread, safePreview,
+  resolveConversation, resolveMessage, baseProjection, unchanged,
   mergeMessageProjection, mergeAcknowledgementProjection,
   processMessageProjection, processReadStateProjection};

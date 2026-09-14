@@ -5,7 +5,8 @@
   "scripts": {
     "test:firestore-rules": "firebase emulators:exec --only firestore \"node --test test/firestore.rules.test.js\"",
     "test:approve-friend-request": "firebase emulators:exec --only auth,firestore,functions \"node --test test/approve-friend-request.callable.test.js\"",
-    "test:message-projection": "firebase emulators:exec --only firestore \"npm --prefix functions run test:projection\""
+    "test:message-projection": "firebase emulators:exec --only firestore \"npm --prefix functions run test:projection\"",
+    "test:projection-backfill": "firebase emulators:exec --only firestore \"npm --prefix functions run test:projection-backfill-unit && npm --prefix functions run test:projection-backfill-emulator\""
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^4.0.1",
