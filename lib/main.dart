@@ -4213,9 +4213,13 @@ class ConversationRecord {
   });
 
   factory ConversationRecord.fromDoc(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
+    DocumentSnapshot<Map<String, dynamic>> doc, {
+    Map<String, dynamic>? projection,
+  }) {
     final data = doc.data() ?? {};
+    final projectionData = projection ?? const <String, dynamic>{};
+    final hasProjectionV1 = projectionData['projectionVersion'] == 1;
+    final projectedLastMessageAt = projectionData['lastMessageAt'];
 
     return ConversationRecord(
       id: doc.id,
@@ -4229,21 +4233,32 @@ class ConversationRecord {
       blockedByChildIds:
           List<String>.from(data['blockedByChildIds'] ?? const []),
       status: (data['status'] ?? '').toString(),
-      lastMessage: (data['lastMessage'] ?? '').toString(),
-      lastMessageSenderChildId:
-          data['lastMessageSenderChildId']?.toString(),
+
+      // Chat-list summary fields are server-owned projection data.
+      // Deliberately do not fall back to client-writable conversation fields.
+      lastMessage: hasProjectionV1
+          ? (projectionData['lastMessagePreview'] ?? '').toString()
+          : '',
+      lastMessageSenderChildId: hasProjectionV1
+          ? projectionData['lastMessageSenderChildId']?.toString()
+          : null,
+
+      // Numeric unread badges remain on the legacy field temporarily.
       unreadCounts: Map<String, dynamic>.from(
-      data['unreadCounts'] ?? const {},
+        data['unreadCounts'] ?? const {},
       ),
-      lastMessageTime: (data['lastMessageAt'] as Timestamp?)?.toDate() 
-      ?? DateTime.fromMillisecondsSinceEpoch(0),
+
+      lastMessageTime: hasProjectionV1 &&
+              projectedLastMessageAt is Timestamp
+          ? projectedLastMessageAt.toDate()
+          : DateTime.fromMillisecondsSinceEpoch(0),
       friendshipHealth: (data['friendshipHealth'] ?? 0) as num,
       repairMomentum: (data['repairMomentum'] ?? 0) as num,
       friendshipStage:
-      (data['friendshipStage'] ?? 'seedling') as String,
+          (data['friendshipStage'] ?? 'seedling') as String,
     );
   }
-  
+
 int unreadCountFor(String childId) {
   final value = unreadCounts[childId];
 
@@ -4938,17 +4953,74 @@ CollectionReference<Map<String, dynamic>> conversationsRef() {
 
 Stream<List<ConversationRecord>> conversationsForChildStream({
   required String childId,
-}) async* {
-  yield* conversationsRef()
-      .where('participantChildIds', arrayContains: childId)
-      .snapshots()
-      .map((snapshot) {
-    final items = snapshot.docs
-        .map((doc) => ConversationRecord.fromDoc(doc))
-        .where((conversation) => conversation.status == 'active')
-        .toList();
+}) {
+  final parentId = activeParentId;
 
-    return items;
+  if (parentId == null || parentId.isEmpty) {
+    return Stream<List<ConversationRecord>>.value(
+      const <ConversationRecord>[],
+    );
+  }
+
+  final projectionRef = FirebaseFirestore.instance
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId)
+      .collection('conversation_refs');
+
+  return Stream<List<ConversationRecord>>.multi((controller) {
+    QuerySnapshot<Map<String, dynamic>>? latestConversations;
+    QuerySnapshot<Map<String, dynamic>>? latestProjections;
+
+    void emitCombinedState() {
+      final conversations = latestConversations;
+      final projections = latestProjections;
+
+      if (conversations == null || projections == null) {
+        return;
+      }
+
+      final projectionByConversationId = <String, Map<String, dynamic>>{
+        for (final doc in projections.docs) doc.id: doc.data(),
+      };
+
+      final items = conversations.docs
+          .map(
+            (doc) => ConversationRecord.fromDoc(
+              doc,
+              projection: projectionByConversationId[doc.id],
+            ),
+          )
+          .where((conversation) => conversation.status == 'active')
+          .toList();
+
+      controller.add(items);
+    }
+
+    final conversationsSubscription = conversationsRef()
+        .where('participantChildIds', arrayContains: childId)
+        .snapshots()
+        .listen(
+      (snapshot) {
+        latestConversations = snapshot;
+        emitCombinedState();
+      },
+      onError: controller.addError,
+    );
+
+    final projectionsSubscription = projectionRef.snapshots().listen(
+      (snapshot) {
+        latestProjections = snapshot;
+        emitCombinedState();
+      },
+      onError: controller.addError,
+    );
+
+    controller.onCancel = () async {
+      await conversationsSubscription.cancel();
+      await projectionsSubscription.cancel();
+    };
   });
 }
 
