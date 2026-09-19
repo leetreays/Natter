@@ -4220,7 +4220,9 @@ class ConversationRecord {
   }) {
     final data = doc.data() ?? {};
     final projectionData = projection ?? const <String, dynamic>{};
-    final hasProjectionV1 = projectionData['projectionVersion'] == 1;
+    final projectionVersion = projectionData['projectionVersion'];
+    final hasSupportedProjection =
+        projectionVersion == 1 || projectionVersion == 2;
     final projectedLastMessageAt = projectionData['lastMessageAt'];
 
     return ConversationRecord(
@@ -4238,10 +4240,10 @@ class ConversationRecord {
 
       // Chat-list summary fields are server-owned projection data.
       // Deliberately do not fall back to client-writable conversation fields.
-      lastMessage: hasProjectionV1
+      lastMessage: hasSupportedProjection
           ? (projectionData['lastMessagePreview'] ?? '').toString()
           : '',
-      lastMessageSenderChildId: hasProjectionV1
+      lastMessageSenderChildId: hasSupportedProjection
           ? projectionData['lastMessageSenderChildId']?.toString()
           : null,
 
@@ -4252,9 +4254,9 @@ class ConversationRecord {
 
       // Whether this child has anything unread is server-owned.
       hasUnread:
-          hasProjectionV1 && projectionData['hasUnread'] == true,
+          hasSupportedProjection && projectionData['hasUnread'] == true,
 
-      lastMessageTime: hasProjectionV1 &&
+      lastMessageTime: hasSupportedProjection &&
               projectedLastMessageAt is Timestamp
           ? projectedLastMessageAt.toDate()
           : DateTime.fromMillisecondsSinceEpoch(0),
