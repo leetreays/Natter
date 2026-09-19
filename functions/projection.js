@@ -1,7 +1,8 @@
 'use strict';
 
 const {FieldValue, Timestamp} = require('firebase-admin/firestore');
-const PROJECTION_VERSION = 1;
+const PROJECTION_VERSION = 2;
+const MAX_UNREAD_COUNT = 10;
 const PROTECTED_PREVIEW = 'Message needs review';
 class ProjectionValidationError extends Error {}
 const nonEmptyString = (value) => typeof value === 'string' && value.trim().length > 0;
@@ -22,6 +23,83 @@ function latestTimestamp(a, b) {
 function hasUnread(receivedAt, acknowledgedAt) {
   return isTimestamp(receivedAt) && (!isTimestamp(acknowledgedAt) ||
     compareTimestamps(receivedAt, acknowledgedAt) > 0);
+}
+function validUnreadMarker(marker) {
+  return marker &&
+    typeof marker === 'object' &&
+    nonEmptyString(marker.messageId) &&
+    isTimestamp(marker.createdAt);
+}
+function normalizeUnreadMarkers(markers, acknowledgedAt = null) {
+  const byMessageId = new Map();
+
+  for (const marker of Array.isArray(markers) ? markers : []) {
+    if (!validUnreadMarker(marker)) continue;
+    if (isTimestamp(acknowledgedAt) &&
+        compareTimestamps(marker.createdAt, acknowledgedAt) <= 0) {
+      continue;
+    }
+
+    const previous = byMessageId.get(marker.messageId);
+    if (!previous ||
+        compareTuple(
+            marker.createdAt,
+            marker.messageId,
+            previous.createdAt,
+            previous.messageId,
+        ) > 0) {
+      byMessageId.set(marker.messageId, {
+        messageId: marker.messageId,
+        createdAt: marker.createdAt,
+      });
+    }
+  }
+
+  const normalized = [...byMessageId.values()]
+      .sort((a, b) => compareTuple(
+          a.createdAt,
+          a.messageId,
+          b.createdAt,
+          b.messageId,
+      ));
+
+  return normalized.length > MAX_UNREAD_COUNT ?
+    normalized.slice(-MAX_UNREAD_COUNT) :
+    normalized;
+}
+function unreadMarkersFromExisting(existing) {
+  if (!existing) return [];
+
+  if (existing.projectionVersion === PROJECTION_VERSION) {
+    if (!Array.isArray(existing.unreadMessageMarkers) ||
+        !existing.unreadMessageMarkers.every(validUnreadMarker)) {
+      throw new ProjectionValidationError('invalid unread marker state');
+    }
+
+    return normalizeUnreadMarkers(
+        existing.unreadMessageMarkers,
+        isTimestamp(existing.acknowledgedAt) ?
+          existing.acknowledgedAt : null,
+    );
+  }
+
+  if (existing.projectionVersion === 1 &&
+      existing.hasUnread === true &&
+      nonEmptyString(existing.latestReceivedMessageId) &&
+      isTimestamp(existing.latestReceivedAt)) {
+    return [{
+      messageId: existing.latestReceivedMessageId,
+      createdAt: existing.latestReceivedAt,
+    }];
+  }
+
+  return [];
+}
+function mergeUnreadMarkers(existing, added, acknowledgedAt = null) {
+  return normalizeUnreadMarkers(
+      [...existing, ...added],
+      acknowledgedAt,
+  );
 }
 function safePreview(message) {
   if (message.isFlagged === true) return PROTECTED_PREVIEW;
@@ -69,6 +147,7 @@ function baseProjection(conversationId, conversation, existing) {
       compareTimestamps(existing.createdAt, conversation.createdAt) !== 0)) {
     throw new ProjectionValidationError('invalid existing projection identity');
   }
+  const unreadMessageMarkers = unreadMarkersFromExisting(existing);
   return {
     conversationId,
     friendshipId: conversation.friendshipId,
@@ -82,11 +161,30 @@ function baseProjection(conversationId, conversation, existing) {
     latestReceivedMessageId: stringOrNull(existing && existing.latestReceivedMessageId),
     latestReceivedAt: timestampOrNull(existing && existing.latestReceivedAt),
     acknowledgedAt: timestampOrNull(existing && existing.acknowledgedAt),
-    hasUnread: false,
+    unreadMessageMarkers,
+    unreadCount: unreadMessageMarkers.length,
+    hasUnread: unreadMessageMarkers.length > 0,
   };
 }
 function equalValue(a, b) {
-  return a === b || (isTimestamp(a) && isTimestamp(b) && compareTimestamps(a, b) === 0);
+  if (a === b) return true;
+  if (isTimestamp(a) && isTimestamp(b)) {
+    return compareTimestamps(a, b) === 0;
+  }
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length &&
+      a.every((value, index) => equalValue(value, b[index]));
+  }
+  if (a && b &&
+      typeof a === 'object' &&
+      typeof b === 'object') {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    return aKeys.length === bKeys.length &&
+      aKeys.every((key) =>
+        Object.hasOwn(b, key) && equalValue(a[key], b[key]));
+  }
+  return false;
 }
 function unchanged(existing, next) {
   return Boolean(existing) && Object.entries(next).every(([key, value]) =>
@@ -97,6 +195,7 @@ function mergeMessageProjection(options) {
     isReceiver, acknowledgedAt} = options;
   const next = baseProjection(conversationId, conversation, existing);
   next.acknowledgedAt = latestTimestamp(next.acknowledgedAt, acknowledgedAt);
+
   if (compareTuple(message.createdAt, messageId,
       next.lastMessageAt, next.summaryMessageId) > 0) {
     next.summaryMessageId = messageId;
@@ -104,21 +203,41 @@ function mergeMessageProjection(options) {
     next.lastMessageSenderChildId = message.senderUid;
     next.lastMessageAt = message.createdAt;
   }
+
   if (isReceiver && compareTuple(message.createdAt, messageId,
       next.latestReceivedAt, next.latestReceivedMessageId) > 0) {
     next.latestReceivedMessageId = messageId;
     next.latestReceivedAt = message.createdAt;
   }
-  next.hasUnread = hasUnread(next.latestReceivedAt, next.acknowledgedAt);
+
+  const addedUnread = isReceiver ? [{
+    messageId,
+    createdAt: message.createdAt,
+  }] : [];
+
+  next.unreadMessageMarkers = mergeUnreadMarkers(
+      next.unreadMessageMarkers,
+      addedUnread,
+      next.acknowledgedAt,
+  );
+  next.unreadCount = next.unreadMessageMarkers.length;
+  next.hasUnread = next.unreadCount > 0;
+
   return unchanged(existing, next) ? null : next;
 }
 function mergeAcknowledgementProjection(options) {
   const {conversationId, conversation, existing, acknowledgedAt} = options;
   const next = baseProjection(conversationId, conversation, existing);
   next.acknowledgedAt = latestTimestamp(next.acknowledgedAt, acknowledgedAt);
-  next.hasUnread = hasUnread(next.latestReceivedAt, next.acknowledgedAt);
+  next.unreadMessageMarkers = normalizeUnreadMarkers(
+      next.unreadMessageMarkers,
+      next.acknowledgedAt,
+  );
+  next.unreadCount = next.unreadMessageMarkers.length;
+  next.hasUnread = next.unreadCount > 0;
   return unchanged(existing, next) ? null : next;
 }
+
 function projectionRef(db, participant, conversationId) {
   return db.doc(`parents/${participant.parentId}/children/${participant.childId}` +
     `/conversation_refs/${conversationId}`);
@@ -178,8 +297,10 @@ async function processReadStateProjection(db, conversationId, childId, readState
     }
   });
 }
-module.exports = {PROTECTED_PREVIEW, ProjectionValidationError, compareTuple,
-  compareTimestamps, latestTimestamp, isTimestamp, hasUnread, safePreview,
+module.exports = {PROTECTED_PREVIEW, ProjectionValidationError,
+  PROJECTION_VERSION, MAX_UNREAD_COUNT, compareTuple, compareTimestamps,
+  latestTimestamp, isTimestamp, hasUnread, safePreview,
+  normalizeUnreadMarkers, unreadMarkersFromExisting, mergeUnreadMarkers,
   resolveConversation, resolveMessage, baseProjection, unchanged,
   mergeMessageProjection, mergeAcknowledgementProjection,
   processMessageProjection, processReadStateProjection};

@@ -60,7 +60,7 @@ emulator('empty apply completes both legacy refs and second run is no-op', async
   const item = await seed();
   assert.equal((await reconcileConversation(db, item.snapshot, options())).writes, 2);
   const [a, b] = await values(item.id);
-  assert.equal(a.projectionVersion, 1); assert.equal(b.summaryMessageId, null);
+  assert.equal(a.projectionVersion, 2); assert.equal(b.summaryMessageId, null);
   const updatedAt = a.projectionUpdatedAt;
   assert.equal((await reconcileConversation(db, item.snapshot, options())).writes, 0);
   assert.deepEqual((await ref(item.id, 'child-a').get()).data().projectionUpdatedAt,
@@ -75,9 +75,40 @@ emulator('messages paginate and derive both directions and read timing', async (
   await reconcileConversation(db, item.snapshot, options(true, 1));
   const [a, b] = await values(item.id);
   assert.equal(a.latestReceivedMessageId, 'm2');
+  assert.equal(a.unreadCount, 1);
   assert.equal(b.latestReceivedMessageId, 'm3');
+  assert.equal(b.unreadCount, 0);
   assert.equal(b.hasUnread, false);
 });
+emulator('backfill reconstructs capped unread count and read filtering', async () => {
+  const item = await seed();
+
+  for (let index = 1; index <= 12; index += 1) {
+    await addMessage(
+        item.id,
+        `m${index}`,
+        'child-a',
+        9 + index,
+    );
+  }
+
+  await reconcileConversation(db, item.snapshot, options());
+  let value = (await ref(item.id, 'child-b').get()).data();
+
+  assert.equal(value.projectionVersion, 2);
+  assert.equal(value.unreadCount, 10);
+  assert.equal(value.unreadMessageMarkers.length, 10);
+
+  await db.doc(`conversations/${item.id}/read_state/child-b`)
+      .set({lastReadAt: at(14)});
+
+  await reconcileConversation(db, item.snapshot, options());
+  value = (await ref(item.id, 'child-b').get()).data();
+
+  assert.equal(value.unreadCount, 7);
+  assert.equal(value.hasUnread, true);
+});
+
 emulator('equal time uses message ID and protected content never persists', async () => {
   const item = await seed(); const raw = 'protected-child-content';
   await addMessage(item.id, 'a', 'child-a', 10);
@@ -94,8 +125,10 @@ emulator('malformed message or read state blocks both refs', async () => {
   await addMessage(badMessage.id, 'm1', 'child-a', 10, {createdAt: 'bad'});
   const result = await reconcileConversation(db, badMessage.snapshot, options());
   assert.equal(result.reason, 'MALFORMED_MESSAGE');
-  assert.equal((await ref(badMessage.id, 'child-a').get()).data().projectionVersion,
-      undefined);
+  assert.equal(
+      (await ref(badMessage.id, 'child-a').get()).data().projectionVersion,
+      undefined,
+  );
   const badRead = await seed();
   await db.doc(`conversations/${badRead.id}/read_state/child-a`).set({lastReadAt: 'bad'});
   assert.equal((await reconcileConversation(db, badRead.snapshot, options())).reason,
@@ -139,8 +172,11 @@ emulator('newer live tuples and acknowledgement survive stale reconstruction', a
   const value = (await ref(item.id, 'child-a').get()).data();
   assert.deepEqual([value.summaryMessageId, value.lastMessagePreview,
     value.lastMessageSenderChildId], ['m9', 'live', 'child-b']);
+  assert.equal(value.projectionVersion, 2);
   assert.equal(value.latestReceivedMessageId, 'm8');
   assert.deepEqual(value.acknowledgedAt, at(70));
+  assert.equal(value.unreadCount, 1);
+  assert.equal(value.unreadMessageMarkers[0].messageId, 'm8');
 });
 emulator('run paginates conversations and writes privacy-safe report', async () => {
   await seed(); await seed(); await seed();
@@ -180,5 +216,5 @@ emulator('resume from raw checkpoint converges without rewriting completed refs'
       assert.deepEqual((await ref(first.id, 'child-a').get())
           .data().projectionUpdatedAt, firstUpdatedAt);
       assert.equal((await ref(second.id, 'child-a').get())
-          .data().projectionVersion, 1);
+          .data().projectionVersion, 2);
     });

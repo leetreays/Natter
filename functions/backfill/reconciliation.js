@@ -4,10 +4,11 @@ const {
   ProjectionValidationError,
   baseProjection,
   compareTuple,
-  hasUnread,
   isTimestamp,
   latestTimestamp,
   mergeMessageProjection,
+  mergeUnreadMarkers,
+  unreadMarkersFromExisting,
   resolveConversation,
   resolveMessage,
   safePreview,
@@ -24,7 +25,7 @@ const SEMANTIC_FIELDS = Object.freeze([
   'conversationId', 'friendshipId', 'createdAt', 'projectionVersion',
   'summaryMessageId', 'lastMessagePreview', 'lastMessageSenderChildId',
   'lastMessageAt', 'latestReceivedMessageId', 'latestReceivedAt',
-  'acknowledgedAt', 'hasUnread',
+  'acknowledgedAt', 'unreadMessageMarkers', 'unreadCount', 'hasUnread',
 ]);
 function emptyProjection(conversationId, conversation, acknowledgedAt) {
   return {
@@ -81,7 +82,9 @@ isTimestamp(value.latestReceivedAt));
 }
 function mergeWithCurrent(current, reconstructed) {
   const result = {...reconstructed};
-  if (current && current.projectionVersion === 1) {
+  if (current &&
+      (current.projectionVersion === 1 ||
+       current.projectionVersion === 2)) {
     if (completeSummary(current) && compareTuple(current.lastMessageAt,
         current.summaryMessageId, result.lastMessageAt,
         result.summaryMessageId) > 0) {
@@ -100,8 +103,14 @@ function mergeWithCurrent(current, reconstructed) {
         result.acknowledgedAt,
 isTimestamp(current.acknowledgedAt) ? current.acknowledgedAt : null,
     );
+    result.unreadMessageMarkers = mergeUnreadMarkers(
+        result.unreadMessageMarkers,
+        unreadMarkersFromExisting(current),
+        result.acknowledgedAt,
+    );
   }
-  result.hasUnread = hasUnread(result.latestReceivedAt, result.acknowledgedAt);
+  result.unreadCount = result.unreadMessageMarkers.length;
+  result.hasUnread = result.unreadCount > 0;
   return result;
 }
 function semanticProjection(data) {

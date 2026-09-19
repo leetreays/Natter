@@ -25,10 +25,14 @@ test('empty conversation produces complete projections', () => {
       lastMessageSenderChildId: value.lastMessageSenderChildId,
       lastMessageAt: value.lastMessageAt,
       latestReceivedMessageId: value.latestReceivedMessageId,
-      latestReceivedAt: value.latestReceivedAt, hasUnread: value.hasUnread},
+      latestReceivedAt: value.latestReceivedAt,
+      unreadMessageMarkers: value.unreadMessageMarkers,
+      unreadCount: value.unreadCount,
+      hasUnread: value.hasUnread},
     {summaryMessageId: null, lastMessagePreview: '',
       lastMessageSenderChildId: null, lastMessageAt: null,
-      latestReceivedMessageId: null, latestReceivedAt: null, hasUnread: false});
+      latestReceivedMessageId: null, latestReceivedAt: null,
+      unreadMessageMarkers: [], unreadCount: 0, hasUnread: false});
   }
 });
 test('alternating messages derive shared and per-child state', () => {
@@ -38,6 +42,8 @@ test('alternating messages derive shared and per-child state', () => {
   assert.equal(b.summaryMessageId, 'm3');
   assert.equal(a.latestReceivedMessageId, 'm2');
   assert.equal(b.latestReceivedMessageId, 'm3');
+  assert.equal(a.unreadCount, 1);
+  assert.equal(b.unreadCount, 2);
 });
 test('timestamp and exact lexical ID order determine summary', () => {
   assert.equal(build([message('z', 'child-a', 10),
@@ -57,6 +63,17 @@ test('read before/equal/after derives unread', () => {
   assert.equal(build([message('m1', 'child-a', 10)], [null, at(10)])[1].hasUnread, false);
   assert.equal(build([message('m1', 'child-a', 10)], [null, at(11)])[1].hasUnread, false);
 });
+test('reconstruction counts only messages after acknowledgement', () => {
+  const [a, b] = build([
+    message('m1', 'child-a', 10),
+    message('m2', 'child-b', 20),
+    message('m3', 'child-a', 30),
+  ], [null, at(20)]);
+
+  assert.equal(a.unreadCount, 1);
+  assert.equal(b.unreadCount, 1);
+  assert.equal(b.unreadMessageMarkers[0].messageId, 'm3');
+});
 test('malformed messages and sender-parent mismatch fail closed', () => {
   assert.throws(() => build([message('m1', 'child-a', 10, {createdAt: 'bad'})]));
   assert.throws(() => build([message('m1', 'child-a', 10,
@@ -72,13 +89,31 @@ test('newer live complete summary remains coupled', () => {
     merged.lastMessageSenderChildId, merged.lastMessageAt],
   ['m9', 'new preview', 'child-b', at(90)]);
 });
-test('newer received and acknowledgement never regress', () => {
-  const historical = build([message('m1', 'child-a', 10)], [null, at(8)])[1];
-  const current = {...historical, latestReceivedMessageId: 'm9',
-    latestReceivedAt: at(90), acknowledgedAt: at(80)};
+test('newer v1 received state upgrades without regression', () => {
+  const historical = build(
+      [message('m1', 'child-a', 10)],
+      [null, at(8)],
+  )[1];
+
+  const current = {
+    ...historical,
+    projectionVersion: 1,
+    latestReceivedMessageId: 'm9',
+    latestReceivedAt: at(90),
+    acknowledgedAt: at(80),
+    hasUnread: true,
+  };
+
+  delete current.unreadMessageMarkers;
+  delete current.unreadCount;
+
   const merged = r.mergeWithCurrent(current, historical);
+
+  assert.equal(merged.projectionVersion, 2);
   assert.equal(merged.latestReceivedMessageId, 'm9');
   assert.deepEqual(merged.acknowledgedAt, at(80));
+  assert.equal(merged.unreadCount, 1);
+  assert.equal(merged.unreadMessageMarkers[0].messageId, 'm9');
   assert.equal(merged.hasUnread, true);
 });
 test('semantic equality ignores update timestamp but requires all fields', () => {

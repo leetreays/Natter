@@ -32,19 +32,66 @@ test('ordinary message projects summary and receiver state', () => {
   const sender = project({isReceiver: false});
   assert.equal(receiver.summaryMessageId, 'm1');
   assert.equal(receiver.latestReceivedMessageId, 'm1');
+  assert.equal(receiver.unreadCount, 1);
   assert.equal(receiver.hasUnread, true);
   assert.equal(sender.latestReceivedMessageId, null);
+  assert.equal(sender.unreadCount, 0);
+  assert.equal(sender.hasUnread, false);
 });
-test('read timing derives Boolean unread state', () => {
-  assert.equal(project({acknowledgedAt: at(9)}).hasUnread, true);
-  assert.equal(project({acknowledgedAt: at(10)}).hasUnread, false);
-  assert.equal(project({acknowledgedAt: at(11)}).hasUnread, false);
+test('read timing derives unread count and Boolean state', () => {
+  const before = project({acknowledgedAt: at(9)});
+  const equal = project({acknowledgedAt: at(10)});
+  const after = project({acknowledgedAt: at(11)});
+
+  assert.equal(before.unreadCount, 1);
+  assert.equal(before.hasUnread, true);
+  assert.equal(equal.unreadCount, 0);
+  assert.equal(equal.hasUnread, false);
+  assert.equal(after.unreadCount, 0);
+  assert.equal(after.hasUnread, false);
 });
-test('older message and retry are semantic no-ops', () => {
-  const newer = project({messageId: 'm2', message: message({createdAt: at(20)})});
-  assert.equal(project({existing: newer, messageId: 'm1'}), null);
-  assert.equal(project({existing: newer, messageId: 'm2',
-    message: message({createdAt: at(20)})}), null);
+
+test('unread count is exact through nine and caps at ten', () => {
+  let state = null;
+
+  for (let index = 1; index <= 12; index += 1) {
+    state = project({
+      existing: state,
+      messageId: `m${index}`,
+      message: message({createdAt: at(10 + index)}),
+    }) || state;
+
+    assert.equal(state.unreadCount, Math.min(index, 10));
+  }
+
+  assert.equal(state.unreadMessageMarkers.length, 10);
+  assert.equal(state.hasUnread, true);
+});
+test('delayed older message counts once without regressing tuples', () => {
+  const newer = project({
+    messageId: 'm2',
+    message: message({createdAt: at(20)}),
+  });
+
+  const delayed = project({
+    existing: newer,
+    messageId: 'm1',
+  });
+
+  assert.equal(delayed.summaryMessageId, 'm2');
+  assert.equal(delayed.latestReceivedMessageId, 'm2');
+  assert.equal(delayed.unreadCount, 2);
+
+  assert.equal(project({
+    existing: delayed,
+    messageId: 'm1',
+  }), null);
+
+  assert.equal(project({
+    existing: delayed,
+    messageId: 'm2',
+    message: message({createdAt: at(20)}),
+  }), null);
 });
 test('equal timestamps converge using lexical message ID', () => {
   const first = project();
@@ -56,6 +103,7 @@ test('acknowledgement is monotonic and idempotent', () => {
   const existing = project();
   const read = p.mergeAcknowledgementProjection({conversationId: id,
     conversation, existing, acknowledgedAt: at(11)});
+  assert.equal(read.unreadCount, 0);
   assert.equal(read.hasUnread, false);
   assert.equal(p.mergeAcknowledgementProjection({conversationId: id,
     conversation, existing: read, acknowledgedAt: at(9)}), null);
@@ -86,5 +134,5 @@ test('missing projection reconstructs canonical base fields', () => {
   const result = project();
   assert.equal(result.conversationId, id);
   assert.equal(result.friendshipId, id);
-  assert.equal(result.projectionVersion, 1);
+  assert.equal(result.projectionVersion, 2);
 });

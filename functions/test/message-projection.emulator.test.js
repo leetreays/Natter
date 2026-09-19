@@ -61,22 +61,26 @@ emulator('message processor persists shared summary and receiver-only state', as
   await processMessageProjection(db, conversationId, 'm1', message());
   const [a, b] = await states(conversationId);
   for (const state of [a, b]) {
-    assert.equal(state.projectionVersion, 1);
+    assert.equal(state.projectionVersion, 2);
     assert.equal(state.summaryMessageId, 'm1');
     assert.equal(state.lastMessagePreview, 'child-a message');
     assert.equal(state.lastMessageSenderChildId, 'child-a');
     assert.deepEqual(state.lastMessageAt, at(10));
   }
   assert.equal(a.latestReceivedMessageId, null);
+  assert.equal(a.unreadCount, 0);
   assert.equal(a.hasUnread, false);
   assert.equal(b.latestReceivedMessageId, 'm1');
   assert.deepEqual(b.latestReceivedAt, at(10));
+  assert.equal(b.unreadCount, 1);
   assert.equal(b.hasUnread, true);
   await processMessageProjection(db, conversationId, 'm2', message('child-b', 20));
   const [a2, b2] = await states(conversationId);
   assert.equal(a2.latestReceivedMessageId, 'm2');
+  assert.equal(a2.unreadCount, 1);
   assert.equal(a2.hasUnread, true);
   assert.equal(b2.latestReceivedMessageId, 'm1');
+  assert.equal(b2.unreadCount, 1);
 });
 
 emulator('reversed participants retain positional sender and receiver mapping', async () => {
@@ -99,27 +103,121 @@ emulator('Protected Delivery persisted projections contain no raw text', async (
   }
 });
 
-emulator('read before/after message converges without counters', async () => {
+emulator('read before/after message converges count and Boolean state', async () => {
   const {conversationId} = await seed();
   await readRef(conversationId, 'child-b').set({lastReadAt: at(9)});
   await processMessageProjection(db, conversationId, 'm1', message());
-  assert.equal((await ref(conversationId, 'child-b').get()).data().hasUnread, true);
-  await processReadStateProjection(db, conversationId, 'child-b', {lastReadAt: at(11)});
-  const state = (await ref(conversationId, 'child-b').get()).data();
+  let state = (await ref(conversationId, 'child-b').get()).data();
+  assert.equal(state.unreadCount, 1);
+  assert.equal(state.hasUnread, true);
+
+  await processReadStateProjection(
+      db, conversationId, 'child-b', {lastReadAt: at(11)});
+  state = (await ref(conversationId, 'child-b').get()).data();
   assert.deepEqual(state.acknowledgedAt, at(11));
+  assert.equal(state.unreadCount, 0);
   assert.equal(state.hasUnread, false);
 });
 
-emulator('message retries and delayed older delivery cannot regress state', async () => {
+emulator('retries no-op and delayed older delivery counts once', async () => {
   const {conversationId} = await seed();
-  await processMessageProjection(db, conversationId, 'm2', message('child-a', 20));
-  const before = (await ref(conversationId, 'child-b').get()).data();
-  await processMessageProjection(db, conversationId, 'm2', message('child-a', 20));
-  await processMessageProjection(db, conversationId, 'm1', message('child-a', 10));
-  const afterValue = (await ref(conversationId, 'child-b').get()).data();
-  assert.equal(afterValue.summaryMessageId, 'm2');
-  assert.equal(afterValue.latestReceivedMessageId, 'm2');
-  assert.deepEqual(afterValue.projectionUpdatedAt, before.projectionUpdatedAt);
+
+  await processMessageProjection(
+      db, conversationId, 'm2', message('child-a', 20));
+  const beforeRetry = (await ref(conversationId, 'child-b').get()).data();
+  assert.equal(beforeRetry.unreadCount, 1);
+
+  await processMessageProjection(
+      db, conversationId, 'm2', message('child-a', 20));
+  const afterRetry = (await ref(conversationId, 'child-b').get()).data();
+  assert.deepEqual(
+      afterRetry.projectionUpdatedAt,
+      beforeRetry.projectionUpdatedAt,
+  );
+
+  await processMessageProjection(
+      db, conversationId, 'm1', message('child-a', 10));
+  const afterDelayed = (await ref(conversationId, 'child-b').get()).data();
+
+  assert.equal(afterDelayed.summaryMessageId, 'm2');
+  assert.equal(afterDelayed.latestReceivedMessageId, 'm2');
+  assert.equal(afterDelayed.unreadCount, 2);
+
+  const delayedUpdatedAt = afterDelayed.projectionUpdatedAt;
+
+  await processMessageProjection(
+      db, conversationId, 'm1', message('child-a', 10));
+  const afterDelayedRetry =
+      (await ref(conversationId, 'child-b').get()).data();
+
+  assert.equal(afterDelayedRetry.unreadCount, 2);
+  assert.deepEqual(
+      afterDelayedRetry.projectionUpdatedAt,
+      delayedUpdatedAt,
+  );
+});
+
+emulator('unread count caps at ten and acknowledgement filters it', async () => {
+  const {conversationId} = await seed();
+
+  for (let index = 1; index <= 12; index += 1) {
+    await processMessageProjection(
+        db,
+        conversationId,
+        `m${index}`,
+        message('child-a', 10 + index),
+    );
+  }
+
+  let state = (await ref(conversationId, 'child-b').get()).data();
+  assert.equal(state.unreadCount, 10);
+  assert.equal(state.unreadMessageMarkers.length, 10);
+  assert.equal(state.hasUnread, true);
+
+  await processReadStateProjection(
+      db, conversationId, 'child-b', {lastReadAt: at(15)});
+  state = (await ref(conversationId, 'child-b').get()).data();
+
+  assert.equal(state.unreadCount, 7);
+  assert.equal(state.hasUnread, true);
+
+  await processReadStateProjection(
+      db, conversationId, 'child-b', {lastReadAt: at(22)});
+  state = (await ref(conversationId, 'child-b').get()).data();
+
+  assert.equal(state.unreadCount, 0);
+  assert.equal(state.hasUnread, false);
+});
+
+emulator('live v1 projection upgrades safely to v2', async () => {
+  const {conversationId, conversation} = await seed();
+
+  await ref(conversationId, 'child-b').set({
+    conversationId,
+    friendshipId: conversation.friendshipId,
+    createdAt: conversation.createdAt,
+    projectionVersion: 1,
+    summaryMessageId: 'm1',
+    lastMessagePreview: 'child-a message',
+    lastMessageSenderChildId: 'child-a',
+    lastMessageAt: at(10),
+    latestReceivedMessageId: 'm1',
+    latestReceivedAt: at(10),
+    acknowledgedAt: at(5),
+    hasUnread: true,
+  });
+
+  await processMessageProjection(
+      db, conversationId, 'm2', message('child-a', 20));
+
+  const state = (await ref(conversationId, 'child-b').get()).data();
+
+  assert.equal(state.projectionVersion, 2);
+  assert.equal(state.unreadCount, 2);
+  assert.deepEqual(
+      state.unreadMessageMarkers.map((item) => item.messageId),
+      ['m1', 'm2'],
+  );
 });
 
 emulator('equal-time opposite-direction events converge by lexical ID', async () => {
@@ -143,7 +241,7 @@ emulator('missing deterministic ref is reconstructed from canonical identity', a
   const rebuilt = (await ref(conversationId, 'child-b').get()).data();
   assert.equal(rebuilt.conversationId, conversationId);
   assert.equal(rebuilt.friendshipId, conversationId);
-  assert.equal(rebuilt.projectionVersion, 1);
+  assert.equal(rebuilt.projectionVersion, 2);
 });
 
 emulator('message processor fails closed for invalid canonical or sender data', async () => {
@@ -168,10 +266,12 @@ emulator('read processor is monotonic, idempotent, and derives unread', async ()
   await processMessageProjection(db, conversationId, 'm1', message());
   await processReadStateProjection(db, conversationId, 'child-b', {lastReadAt: at(9)});
   let value = (await ref(conversationId, 'child-b').get()).data();
+  assert.equal(value.unreadCount, 1);
   assert.equal(value.hasUnread, true);
   await processReadStateProjection(db, conversationId, 'child-b', {lastReadAt: at(11)});
   value = (await ref(conversationId, 'child-b').get()).data();
   const updatedAt = value.projectionUpdatedAt;
+  assert.equal(value.unreadCount, 0);
   assert.equal(value.hasUnread, false);
   await processReadStateProjection(db, conversationId, 'child-b', {lastReadAt: at(8)});
   await processReadStateProjection(db, conversationId, 'child-b', {lastReadAt: at(11)});
