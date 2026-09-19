@@ -4189,7 +4189,7 @@ class ConversationRecord {
   final String status;
   final String lastMessage;
   final String? lastMessageSenderChildId;
-  final Map<String, dynamic> unreadCounts;
+  final int unreadCount;
   final bool hasUnread;
   final DateTime lastMessageTime;
   final num friendshipHealth;
@@ -4206,7 +4206,7 @@ class ConversationRecord {
     required this.status,
     required this.lastMessage,
     required this.lastMessageSenderChildId,
-    required this.unreadCounts,
+    required this.unreadCount,
     required this.hasUnread,
     required this.lastMessageTime,
     required this.friendshipHealth,
@@ -4224,6 +4224,14 @@ class ConversationRecord {
     final hasSupportedProjection =
         projectionVersion == 1 || projectionVersion == 2;
     final projectedLastMessageAt = projectionData['lastMessageAt'];
+    final rawUnreadCount = projectionData['unreadCount'];
+    final projectedUnreadCount =
+        projectionVersion == 2 &&
+                rawUnreadCount is int &&
+                rawUnreadCount >= 0 &&
+                rawUnreadCount <= 10
+            ? rawUnreadCount
+            : 0;
 
     return ConversationRecord(
       id: doc.id,
@@ -4247,14 +4255,13 @@ class ConversationRecord {
           ? projectionData['lastMessageSenderChildId']?.toString()
           : null,
 
-      // Numeric unread badges remain on the legacy field temporarily.
-      unreadCounts: Map<String, dynamic>.from(
-        data['unreadCounts'] ?? const {},
-      ),
+      // Numeric unread state is server-owned in projection v2.
+      unreadCount: projectedUnreadCount,
 
-      // Whether this child has anything unread is server-owned.
-      hasUnread:
-          hasSupportedProjection && projectionData['hasUnread'] == true,
+      // Keep the visual unread state consistent with the trusted count.
+      hasUnread: projectionVersion == 2 &&
+          projectionData['hasUnread'] == true &&
+          projectedUnreadCount > 0,
 
       lastMessageTime: hasSupportedProjection &&
               projectedLastMessageAt is Timestamp
@@ -4267,15 +4274,6 @@ class ConversationRecord {
     );
   }
 
-int unreadCountFor(String childId) {
-  final value = unreadCounts[childId];
-
-  if (value is int) return value;
-  if (value is num) return value.toInt();
-
-  return 0;
-}
-  
   bool isBlockedFor(String childId) {
     return blockedByChildIds.contains(childId);
   }
@@ -19235,7 +19233,7 @@ StreamBuilder<List<ChildContactRequest>>(
 
           final isBlocked = conversation.isBlockedFor(state.activeChildId!);
 
-          final unreadCount = conversation.unreadCountFor(state.activeChildId!);
+          final unreadCount = conversation.unreadCount;
 final hasUnread = conversation.hasUnread;
 
           final suggestedFriend = state.friendNeedingNudge(
