@@ -4190,6 +4190,7 @@ class ConversationRecord {
   final String lastMessage;
   final String? lastMessageSenderChildId;
   final Map<String, dynamic> unreadCounts;
+  final bool hasUnread;
   final DateTime lastMessageTime;
   final num friendshipHealth;
   final num repairMomentum;
@@ -4206,6 +4207,7 @@ class ConversationRecord {
     required this.lastMessage,
     required this.lastMessageSenderChildId,
     required this.unreadCounts,
+    required this.hasUnread,
     required this.lastMessageTime,
     required this.friendshipHealth,
     required this.repairMomentum,
@@ -4247,6 +4249,10 @@ class ConversationRecord {
       unreadCounts: Map<String, dynamic>.from(
         data['unreadCounts'] ?? const {},
       ),
+
+      // Whether this child has anything unread is server-owned.
+      hasUnread:
+          hasProjectionV1 && projectionData['hasUnread'] == true,
 
       lastMessageTime: hasProjectionV1 &&
               projectedLastMessageAt is Timestamp
@@ -19228,7 +19234,7 @@ StreamBuilder<List<ChildContactRequest>>(
           final isBlocked = conversation.isBlockedFor(state.activeChildId!);
 
           final unreadCount = conversation.unreadCountFor(state.activeChildId!);
-final hasUnread = unreadCount > 0;
+final hasUnread = conversation.hasUnread;
 
           final suggestedFriend = state.friendNeedingNudge(
   conversations,
