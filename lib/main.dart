@@ -6139,26 +6139,11 @@ Future<bool> sendMessageToConversation({
     'receiverActionByChildId': null,
   });
 
-  final previewText = isFlagged ? 'Message needs review' : trimmed;
-
-final conversationUpdate = <Object, Object?>{
-  'lastMessage': previewText,
-  'lastMessageSenderChildId': activeChildId,
-  'lastMessageAt': FieldValue.serverTimestamp(),
-  FieldPath(['unreadCounts', activeChildId!]): 0,
-};
-
-if (!isFlagged) {
-  conversationUpdate['lastHealthyConversationAt'] =
-      FieldValue.serverTimestamp();
-}
-
-if (otherChildId.isNotEmpty) {
-  conversationUpdate[FieldPath(['unreadCounts', otherChildId])] =
-      FieldValue.increment(1);
-}
-
-await conversationsRef().doc(conversationId).update(conversationUpdate);
+  if (!isFlagged) {
+    await conversationsRef().doc(conversationId).update({
+      'lastHealthyConversationAt': FieldValue.serverTimestamp(),
+    });
+  }
 
   if (!isFlagged) {
   final burstCount =
@@ -6486,9 +6471,6 @@ Future<void> markConversationRead(String conversationId) async {
     'lastReadAt': FieldValue.serverTimestamp(),
   });
 
-  await conversationsRef().doc(conversationId).update({
-    FieldPath(['unreadCounts', childId]): 0,
-  });
 }
 
 Future<void> blockFriendship({
