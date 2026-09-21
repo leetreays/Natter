@@ -25363,6 +25363,8 @@ class ParentRulesScreen extends StatefulWidget {
 class _ParentRulesScreenState extends State<ParentRulesScreen> {
   bool _loading = true;
   bool _quietHoursEnabled = false;
+  bool _linkedDevice = false;
+  String _childName = 'Your child';
   TimeOfDay _quietStart = const TimeOfDay(hour: 20, minute: 0);
   TimeOfDay _quietEnd = const TimeOfDay(hour: 7, minute: 0);
 
@@ -25386,6 +25388,8 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
 
     setState(() {
       _quietHoursEnabled = data['quietHoursEnabled'] == true;
+      _linkedDevice = data['linkedDevice'] == true;
+      _childName = (data['name'] ?? 'Your child').toString();
       _quietStart = TimeOfDay(
         hour: (data['quietStartHour'] ?? 20) as int,
         minute: (data['quietStartMinute'] ?? 0) as int,
@@ -25396,6 +25400,96 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
       );
       _loading = false;
     });
+  }
+
+  Future<void> _releaseChildDeviceLink() async {
+    await FirebaseFirestore.instance
+        .collection('parents')
+        .doc(widget.parentId)
+        .collection('children')
+        .doc(widget.childId)
+        .update({
+      'linkedDevice': false,
+      'linkedAuthUid': null,
+    });
+
+    if (!mounted) return;
+
+    setState(() {
+      _linkedDevice = false;
+    });
+  }
+
+  Future<void> _confirmReleaseChildDeviceLink() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF172442),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: const Text(
+            'Move to a new device?',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          content: Text(
+            'This will disconnect $_childName from the current device. '
+            'Their Natter profile, friendships and journey will stay safe. '
+            'They can then use the same child code on another device.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.76),
+              height: 1.45,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: const Text('Disconnect device'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    try {
+      await _releaseChildDeviceLink();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$_childName is ready to connect to a new device.',
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Natter couldn’t disconnect this device right now. '
+            'Please try again.',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _saveQuietHours() async {
@@ -26523,6 +26617,120 @@ NatterSurface(
   ),
 ),
               
+                const SizedBox(height: 18),
+
+NatterSurface(
+  style: NatterSurfaceStyle.primary,
+  padding: const EdgeInsets.all(22),
+  borderRadius: 26,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const NatterSectionHeader(
+        title: 'Device access',
+        subtitle:
+            'Manage how your child connects to Natter.',
+      ),
+
+      const SizedBox(height: 18),
+
+      NatterSurface(
+        style: NatterSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(18),
+        borderRadius: 22,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            NatterIconBadge(
+              icon: _linkedDevice
+                  ? Icons.phone_android_rounded
+                  : Icons.phonelink_off_rounded,
+              accent: _linkedDevice
+                  ? NatterBrand.green
+                  : Colors.white,
+              glow: _linkedDevice
+                  ? NatterGlowTone.grow
+                  : NatterGlowTone.protect,
+              size: 42,
+              iconSize: 19,
+            ),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _linkedDevice
+                        ? 'Connected to a device'
+                        : 'Ready for a device',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    _linkedDevice
+                        ? 'If $_childName gets a new phone, reinstalls '
+                            'Natter or no longer has access to the current '
+                            'device, you can safely release this connection.'
+                        : '$_childName can connect using their existing '
+                            'child code. Their profile and friendships '
+                            'will continue as before.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.70),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.45,
+                    ),
+                  ),
+
+                  if (_linkedDevice) ...[
+                    const SizedBox(height: 16),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _confirmReleaseChildDeviceLink,
+                        icon: const Icon(
+                          Icons.swap_horiz_rounded,
+                        ),
+                        label: const Text(
+                          'Move to a new device',
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withValues(
+                              alpha: 0.18,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+
                 const SizedBox(height: 18),
 
 NatterSurface(
