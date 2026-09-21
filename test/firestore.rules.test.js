@@ -382,14 +382,22 @@ describe('conversation update actor authorization', () => {
     );
   });
 
-  test('a linked participant can update unread and read state', async () => {
+  test('a linked participant can update legacy read state only', async () => {
     const db = firestoreFor('child-a-auth');
     await assertSucceeds(
       updateDoc(doc(db, conversationPath), {
-        unreadCounts: {'child-a': 0, 'child-b': 1},
         lastReadAtByChildId: {
           'child-a': new Date('2026-09-08T10:00:00Z'),
         },
+      }),
+    );
+  });
+
+  test('a linked participant cannot update legacy unread counts', async () => {
+    const db = firestoreFor('child-a-auth');
+    await assertFails(
+      updateDoc(doc(db, conversationPath), {
+        unreadCounts: {'child-a': 0, 'child-b': 1},
       }),
     );
   });
@@ -403,16 +411,17 @@ describe('conversation update actor authorization', () => {
     );
   });
 
-  test('a linked participant can update message summary state', async () => {
-    const db = firestoreFor('child-a-auth');
-    await assertSucceeds(
-      updateDoc(doc(db, conversationPath), {
-        lastMessage: 'Hello',
-        lastMessageSenderChildId: 'child-a',
-        lastMessageAt: new Date('2026-09-08T10:00:00Z'),
-      }),
-    );
-  });
+  test('a linked participant cannot update legacy message summary state',
+      async () => {
+        const db = firestoreFor('child-a-auth');
+        await assertFails(
+          updateDoc(doc(db, conversationPath), {
+            lastMessage: 'Hello',
+            lastMessageSenderChildId: 'child-a',
+            lastMessageAt: new Date('2026-09-08T10:00:00Z'),
+          }),
+        );
+      });
 
   for (const [label, context] of [
     ['Parent A', () => firestoreFor('parent-a')],

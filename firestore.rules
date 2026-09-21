@@ -272,6 +272,15 @@ service cloud.firestore {
       ]);
     }
 
+    function conversationLegacyProjectionFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'lastMessage',
+        'lastMessageSenderChildId',
+        'lastMessageAt',
+        'unreadCounts'
+      ]);
+    }
+
     function childLinkageUnchanged() {
       return request.resource.data.linkedAuthUid
           == resource.data.linkedAuthUid
@@ -398,6 +407,7 @@ service cloud.firestore {
       allow read: if isLinkedConversationParticipant(resource.data);
       allow update: if isLinkedConversationParticipant(resource.data)
         && conversationCanonicalIdentityUnchanged()
+        && conversationLegacyProjectionFieldsUnchanged()
         && validBlockedByChildIdsUpdate(resource.data);
 
       match /messages/{messageId} {
