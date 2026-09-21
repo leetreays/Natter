@@ -19557,7 +19557,10 @@ isBlocked
   if (!context.mounted) return;
 
   try {
-    await AppStateScope.of(context).clearRememberedDeviceMode();
+    final state = AppStateScope.of(context);
+
+    await state.unlinkActiveChildDevice();
+    await state.clearRememberedDeviceMode();
 
     if (!context.mounted) return;
 
