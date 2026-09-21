@@ -4976,56 +4976,118 @@ Stream<List<ConversationRecord>> conversationsForChildStream({
       .collection('conversation_refs');
 
   return Stream<List<ConversationRecord>>.multi((controller) {
-    QuerySnapshot<Map<String, dynamic>>? latestConversations;
-    QuerySnapshot<Map<String, dynamic>>? latestProjections;
+    final projectionByConversationId =
+        <String, Map<String, dynamic>>{};
+
+    final conversationSnapshots =
+        <String, DocumentSnapshot<Map<String, dynamic>>>{};
+
+    final loadedConversationIds = <String>{};
+
+    final conversationSubscriptions = <String,
+        StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>>{};
+
+    bool hasProjectionSnapshot = false;
 
     void emitCombinedState() {
-      final conversations = latestConversations;
-      final projections = latestProjections;
+      if (!hasProjectionSnapshot) return;
 
-      if (conversations == null || projections == null) {
+      final targetIds = projectionByConversationId.keys.toSet();
+
+      if (!loadedConversationIds.containsAll(targetIds)) {
         return;
       }
 
-      final projectionByConversationId = <String, Map<String, dynamic>>{
-        for (final doc in projections.docs) doc.id: doc.data(),
-      };
+      final items = <ConversationRecord>[];
 
-      final items = conversations.docs
-          .map(
-            (doc) => ConversationRecord.fromDoc(
-              doc,
-              projection: projectionByConversationId[doc.id],
-            ),
-          )
-          .where((conversation) => conversation.status == 'active')
-          .toList();
+      for (final conversationId in targetIds) {
+        final snapshot = conversationSnapshots[conversationId];
+
+        if (snapshot == null || !snapshot.exists) {
+          continue;
+        }
+
+        final conversation = ConversationRecord.fromDoc(
+          snapshot,
+          projection: projectionByConversationId[conversationId],
+        );
+
+        if (conversation.status == 'active') {
+          items.add(conversation);
+        }
+      }
 
       controller.add(items);
     }
 
-    final conversationsSubscription = conversationsRef()
-        .where('participantChildIds', arrayContains: childId)
-        .snapshots()
-        .listen(
-      (snapshot) {
-        latestConversations = snapshot;
-        emitCombinedState();
-      },
-      onError: controller.addError,
-    );
-
     final projectionsSubscription = projectionRef.snapshots().listen(
-      (snapshot) {
-        latestProjections = snapshot;
+      (snapshot) async {
+        hasProjectionSnapshot = true;
+
+        final nextProjections = <String, Map<String, dynamic>>{
+          for (final doc in snapshot.docs) doc.id: doc.data(),
+        };
+
+        final nextIds = nextProjections.keys.toSet();
+        final currentIds = conversationSubscriptions.keys.toSet();
+
+        final removedIds = currentIds.difference(nextIds);
+
+        for (final conversationId in removedIds) {
+          final subscription =
+              conversationSubscriptions.remove(conversationId);
+
+          if (subscription != null) {
+            await subscription.cancel();
+          }
+
+          conversationSnapshots.remove(conversationId);
+          loadedConversationIds.remove(conversationId);
+        }
+
+        projectionByConversationId
+          ..clear()
+          ..addAll(nextProjections);
+
+        final addedIds = nextIds.difference(currentIds);
+
+        for (final conversationId in addedIds) {
+          final subscription = conversationsRef()
+              .doc(conversationId)
+              .snapshots()
+              .listen(
+            (conversationSnapshot) {
+              if (!projectionByConversationId
+                  .containsKey(conversationId)) {
+                return;
+              }
+
+              conversationSnapshots[conversationId] =
+                  conversationSnapshot;
+
+              loadedConversationIds.add(conversationId);
+
+              emitCombinedState();
+            },
+            onError: controller.addError,
+          );
+
+          conversationSubscriptions[conversationId] =
+              subscription;
+        }
+
         emitCombinedState();
       },
       onError: controller.addError,
     );
 
     controller.onCancel = () async {
-      await conversationsSubscription.cancel();
       await projectionsSubscription.cancel();
+
+      for (final subscription
+          in conversationSubscriptions.values) {
+        await subscription.cancel();
+      }
     };
   });
 }
