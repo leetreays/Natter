@@ -25485,43 +25485,121 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
   Future<void> _confirmReleaseChildDeviceLink() async {
     final confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: true,
       builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF172442),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 30,
           ),
-          title: const Text(
-            'Move to a new device?',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
+          child: NatterSurface(
+            style: NatterSurfaceStyle.primary,
+            padding: const EdgeInsets.fromLTRB(
+              22,
+              24,
+              22,
+              20,
+            ),
+            borderRadius: 28,
+            glow: NatterGlowTone.grow,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const NatterIconBadge(
+                  icon: Icons.devices_rounded,
+                  accent: NatterBrand.green,
+                  glow: NatterGlowTone.grow,
+                  size: 50,
+                  iconSize: 24,
+                ),
+
+                const SizedBox(height: 18),
+
+                const Text(
+                  'Use a different device?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Text(
+                  'We’ll make $_childName’s child code ready to use again. '
+                  'Nothing from their Natter journey will be removed — '
+                  'their profile, friendships and progress will stay '
+                  'exactly where they are.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.76),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    height: 1.48,
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext, false);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor:
+                              Colors.white.withValues(alpha: 0.72),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                        ),
+                        child: const Text(
+                          'Not yet',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(dialogContext, true);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: NatterBrand.green,
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Make code ready',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          content: Text(
-            'This will disconnect $_childName from the current device. '
-            'Their Natter profile, friendships and journey will stay safe. '
-            'They can then use the same child code on another device.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.76),
-              height: 1.45,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, false);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext, true);
-              },
-              child: const Text('Disconnect device'),
-            ),
-          ],
         );
       },
     );
@@ -25536,7 +25614,7 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '$_childName is ready to connect to a new device.',
+            '$_childName’s code is ready to use on another device.',
           ),
         ),
       );
@@ -25546,7 +25624,7 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Natter couldn’t disconnect this device right now. '
+            'Natter couldn’t get the child code ready right now. '
             'Please try again.',
           ),
         ),
@@ -26691,7 +26769,7 @@ NatterSurface(
       const NatterSectionHeader(
         title: 'Device access',
         subtitle:
-            'Manage how your child connects to Natter.',
+            'Keep your child’s Natter journey connected.',
       ),
 
       const SizedBox(height: 18),
@@ -26725,8 +26803,8 @@ NatterSurface(
                 children: [
                   Text(
                     _linkedDevice
-                        ? 'Connected to a device'
-                        : 'Ready for a device',
+                        ? 'Connected and ready'
+                        : 'Ready to connect',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -26738,12 +26816,13 @@ NatterSurface(
 
                   Text(
                     _linkedDevice
-                        ? 'If $_childName gets a new phone, reinstalls '
-                            'Natter or no longer has access to the current '
-                            'device, you can safely release this connection.'
-                        : '$_childName can connect using their existing '
-                            'child code. Their profile and friendships '
-                            'will continue as before.',
+                        ? 'If $_childName gets a new phone or needs Natter '
+                            'set up again, you can make their child code '
+                            'ready to use on another device. Their profile, '
+                            'friendships and journey will stay just as they are.'
+                        : '$_childName can use their existing child code '
+                            'on another device and pick up right where '
+                            'they left off.',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.70),
                       fontSize: 13,
@@ -26763,7 +26842,7 @@ NatterSurface(
                           Icons.swap_horiz_rounded,
                         ),
                         label: const Text(
-                          'Move to a new device',
+                          'Use a different device',
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
