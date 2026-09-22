@@ -25593,78 +25593,62 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
 
                         const Spacer(),
 
-                        Row(
+                        Column(
                           children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 52,
-                                child: TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(
-                                      dialogContext,
-                                      false,
-                                    );
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor:
-                                        Colors.white.withValues(
-                                      alpha: 0.72,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(17),
-                                    ),
+                            SizedBox(
+                              width: 260,
+                              height: 52,
+                              child: FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    dialogContext,
+                                    true,
+                                  );
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: NatterBrand.green,
+                                  foregroundColor: NatterBrand.navy,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        BorderRadius.circular(17),
                                   ),
-                                  child: const Text(
-                                    'Not yet',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                ),
+                                child: const Text(
+                                  'Make code ready',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                               ),
                             ),
 
-                            const SizedBox(width: 12),
+                            const SizedBox(height: 6),
 
-                            Expanded(
-                              flex: 2,
-                              child: SizedBox(
-                                height: 52,
-                                child: FilledButton(
-                                  onPressed: () {
-                                    Navigator.pop(
-                                      dialogContext,
-                                      true,
-                                    );
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor:
-                                        NatterBrand.green.withValues(
-                                      alpha: 0.18,
-                                    ),
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    side: BorderSide(
-                                      color:
-                                          NatterBrand.green.withValues(
-                                        alpha: 0.42,
-                                      ),
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(17),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'Make code ready',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(
+                                  dialogContext,
+                                  false,
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor:
+                                    Colors.white.withValues(
+                                  alpha: 0.72,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 28,
+                                  vertical: 10,
+                                ),
+                              ),
+                              child: const Text(
+                                'Not yet',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
