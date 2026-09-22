@@ -25486,118 +25486,195 @@ class _ParentRulesScreenState extends State<ParentRulesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
+      barrierColor:
+          const Color(0xFF06112E).withValues(alpha: 0.78),
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
+            horizontal: 20,
             vertical: 30,
           ),
-          child: NatterSurface(
-            style: NatterSurfaceStyle.primary,
-            padding: const EdgeInsets.fromLTRB(
-              22,
-              24,
-              22,
-              20,
-            ),
-            borderRadius: 28,
-            glow: NatterGlowTone.grow,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const NatterIconBadge(
-                  icon: Icons.devices_rounded,
-                  accent: NatterBrand.green,
-                  glow: NatterGlowTone.grow,
-                  size: 50,
-                  iconSize: 24,
+          child: Container(
+            width: double.infinity,
+            height: 390,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.14),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.32),
+                  blurRadius: 34,
+                  offset: const Offset(0, 16),
                 ),
-
-                const SizedBox(height: 18),
-
-                const Text(
-                  'Use a different device?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                    height: 1.15,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Text(
-                  'We’ll make $_childName’s child code ready to use again. '
-                  'Nothing from their Natter journey will be removed — '
-                  'their profile, friendships and progress will stay '
-                  'exactly where they are.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.76),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    height: 1.48,
-                  ),
-                ),
-
-                const SizedBox(height: 22),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(dialogContext, false);
-                        },
-                        style: TextButton.styleFrom(
-                          foregroundColor:
-                              Colors.white.withValues(alpha: 0.72),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
-                        ),
-                        child: const Text(
-                          'Not yet',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(dialogContext, true);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: NatterBrand.green,
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: const Text(
-                          'Make code ready',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                BoxShadow(
+                  color: NatterBrand.green.withValues(alpha: 0.08),
+                  blurRadius: 28,
+                  spreadRadius: 2,
                 ),
               ],
+            ),
+            child: NatterWorld(
+              stage: NatterWorldStage.parentMorning,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            const Color(0x1606112E),
+                            const Color(0x2E06112E),
+                            const Color(0x5206112E),
+                          ],
+                          stops: const [
+                            0,
+                            0.58,
+                            1,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      24,
+                      26,
+                      24,
+                      22,
+                    ),
+                    child: Column(
+                      children: [
+                        const NatterIconBadge(
+                          icon: Icons.devices_rounded,
+                          accent: NatterBrand.green,
+                          glow: NatterGlowTone.grow,
+                          size: 52,
+                          iconSize: 24,
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        const Text(
+                          'Use a different device?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w900,
+                            height: 1.15,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Text(
+                          'We’ll make $_childName’s child code ready '
+                          'to use again. Nothing from their Natter '
+                          'journey will be removed — their profile, '
+                          'friendships and progress will stay exactly '
+                          'where they are.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(
+                              alpha: 0.78,
+                            ),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            height: 1.48,
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SizedBox(
+                                height: 52,
+                                child: TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(
+                                      dialogContext,
+                                      false,
+                                    );
+                                  },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor:
+                                        Colors.white.withValues(
+                                      alpha: 0.72,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(17),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Not yet',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(width: 12),
+
+                            Expanded(
+                              flex: 2,
+                              child: SizedBox(
+                                height: 52,
+                                child: FilledButton(
+                                  onPressed: () {
+                                    Navigator.pop(
+                                      dialogContext,
+                                      true,
+                                    );
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor:
+                                        NatterBrand.green.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    foregroundColor: Colors.white,
+                                    elevation: 0,
+                                    side: BorderSide(
+                                      color:
+                                          NatterBrand.green.withValues(
+                                        alpha: 0.42,
+                                      ),
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(17),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Make code ready',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
