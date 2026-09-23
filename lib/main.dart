@@ -1,8 +1,10 @@
 import 'dart:math';  
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -27,6 +29,14 @@ Future<void> main() async{
     options:
 DefaultFirebaseOptions.currentPlatform,
   );
+
+  if (kIsWeb) {
+    await FirebaseAppCheck.instance.activate(
+      providerWeb: ReCaptchaEnterpriseProvider(
+        '6LdedMstAAAAAChYWhetXbAbeC_4ejSiTOtIIdDV',
+      ),
+    );
+  }
 
   runApp(const NatterApp());
 }
