@@ -37,29 +37,7 @@ DefaultFirebaseOptions.currentPlatform,
       ),
     );
 
-    try {
-      final result = await FirebaseAppCheck.instance.getTokenResult(true);
-
-      final tokenPresent = result?.token.isNotEmpty ?? false;
-      final expiresAt =
-          result?.expirationTime?.toIso8601String() ?? 'unknown';
-
-      debugPrint(
-        '[AppCheck diagnostic] SUCCESS '
-        'tokenPresent=$tokenPresent '
-        'expiresAt=$expiresAt',
-      );
-    } on FirebaseException catch (e) {
-      debugPrint(
-        '[AppCheck diagnostic] FIREBASE ERROR '
-        'code=${e.code} message=${e.message}',
-      );
-    } catch (e) {
-      debugPrint(
-        '[AppCheck diagnostic] ERROR '
-        'type=${e.runtimeType} message=$e',
-      );
-    }
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
   }
 
   runApp(const NatterApp());
