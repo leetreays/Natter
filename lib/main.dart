@@ -33,7 +33,7 @@ DefaultFirebaseOptions.currentPlatform,
   if (kIsWeb) {
     await FirebaseAppCheck.instance.activate(
       providerWeb: ReCaptchaEnterpriseProvider(
-        '6LdedMstAAAAAChYWhetXbAbeC_4ejSiTOtIIdDV',
+        '6LdedMstAAAAAChYWhetXbAbeC_4ejSiTOtlIdDV',
       ),
     );
 
