@@ -1,4 +1,4 @@
-package com.example.natter
+package uk.co.getnatter.natter
 
 import io.flutter.embedding.android.FlutterActivity
 

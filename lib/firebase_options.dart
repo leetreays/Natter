@@ -61,7 +61,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDsGrsYsOqrQ1TlrPqMyKKfa7Dm2hZa6TQ',
-    appId: '1:249192010846:android:807250c7e4815e637d90cf',
+    appId: '1:249192010846:android:ed65fd9ee5674c867d90cf',
     messagingSenderId: '249192010846',
     projectId: 'natter-drp',
     storageBucket: 'natter-drp.firebasestorage.app',
