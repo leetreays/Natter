@@ -36,9 +36,13 @@ DefaultFirebaseOptions.currentPlatform,
         '6LdedMstAAAAAChYWhetXbAbeC_4ejSiTOtlIdDV',
       ),
     );
-
-    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  } else if (defaultTargetPlatform == TargetPlatform.android) {
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: const AndroidPlayIntegrityProvider(),
+    );
   }
+
+  await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
 
   runApp(const NatterApp());
 }
