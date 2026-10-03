@@ -87,6 +87,327 @@ class NatterBrand {
   static const logoPath = 'assets/natter-logo-transBG.png';
 }
 
+/// Central visual language for the child experience.
+///
+/// NatterBrand owns the overall Natter identity.
+/// NatterChildTheme defines how that identity is expressed
+/// throughout child-facing screens.
+class NatterChildTheme {
+  const NatterChildTheme._();
+
+  // ---------------------------------------------------------------------------
+  // COLOUR
+  // ---------------------------------------------------------------------------
+
+  static const Color background = NatterBrand.navy;
+
+  static const Color surface = Color(0xFF13233E);
+  static const Color surfaceRaised = Color(0xFF192B48);
+  static const Color surfaceQuiet = Color(0xFF0F1D34);
+
+  static const Color heroTop = Color(0xFF17345C);
+  static const Color heroBottom = Color(0xFF102542);
+
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xB8F8FAFC);
+  static const Color textMuted = Color(0x8FF8FAFC);
+
+  static const Color border = Color(0x1AFFFFFF);
+  static const Color borderStrong = Color(0x2EFFFFFF);
+
+  // Semantic accents remain part of the shared Natter brand.
+  static const Color connect = NatterBrand.blue;
+  static const Color protect = NatterBrand.pink;
+  static const Color grow = NatterBrand.green;
+  static const Color reflect = NatterBrand.yellow;
+
+  // ---------------------------------------------------------------------------
+  // SPACING
+  // ---------------------------------------------------------------------------
+
+  static const double spaceXs = 4;
+  static const double spaceSm = 8;
+  static const double spaceMd = 12;
+  static const double spaceLg = 16;
+  static const double spaceXl = 20;
+  static const double space2Xl = 24;
+  static const double space3Xl = 32;
+
+  static const double screenHorizontalPadding = 20;
+  static const double screenTopPadding = 16;
+  static const double screenBottomPadding = 28;
+
+  // ---------------------------------------------------------------------------
+  // SHAPE
+  // ---------------------------------------------------------------------------
+
+  static const double radiusSmall = 14;
+  static const double radiusMedium = 18;
+  static const double radiusLarge = 24;
+  static const double radiusHero = 28;
+  static const double radiusPill = 999;
+
+  // ---------------------------------------------------------------------------
+  // TYPOGRAPHY
+  // ---------------------------------------------------------------------------
+
+  static const TextStyle screenTitle = TextStyle(
+    color: textPrimary,
+    fontSize: 28,
+    fontWeight: FontWeight.w900,
+    height: 1.10,
+    letterSpacing: -0.4,
+  );
+
+  static const TextStyle sectionTitle = TextStyle(
+    color: textPrimary,
+    fontSize: 19,
+    fontWeight: FontWeight.w900,
+    height: 1.18,
+    letterSpacing: -0.2,
+  );
+
+  static const TextStyle cardTitle = TextStyle(
+    color: textPrimary,
+    fontSize: 16,
+    fontWeight: FontWeight.w900,
+    height: 1.22,
+  );
+
+  static const TextStyle body = TextStyle(
+    color: textSecondary,
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    height: 1.45,
+  );
+
+  static const TextStyle bodyStrong = TextStyle(
+    color: textPrimary,
+    fontSize: 14,
+    fontWeight: FontWeight.w800,
+    height: 1.4,
+  );
+
+  static const TextStyle caption = TextStyle(
+    color: textMuted,
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+    height: 1.35,
+  );
+
+  static const TextStyle button = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w900,
+  );
+
+  // ---------------------------------------------------------------------------
+  // CONTROLS
+  // ---------------------------------------------------------------------------
+
+  static const double primaryButtonHeight = 56;
+  static const double iconButtonSize = 44;
+}
+
+enum NatterChildSurfaceStyle {
+  standard,
+  raised,
+  quiet,
+  hero,
+}
+
+/// Standard child-facing card/surface.
+///
+/// Changing the child card treatment here will update every child screen
+/// that uses this component.
+class NatterChildSurface extends StatelessWidget {
+  const NatterChildSurface({
+    super.key,
+    required this.child,
+    this.style = NatterChildSurfaceStyle.standard,
+    this.padding = const EdgeInsets.all(
+      NatterChildTheme.spaceXl,
+    ),
+    this.borderRadius = NatterChildTheme.radiusLarge,
+  });
+
+  final Widget child;
+  final NatterChildSurfaceStyle style;
+  final EdgeInsetsGeometry padding;
+  final double borderRadius;
+
+  Color get _background {
+    switch (style) {
+      case NatterChildSurfaceStyle.standard:
+        return NatterChildTheme.surface;
+
+      case NatterChildSurfaceStyle.raised:
+        return NatterChildTheme.surfaceRaised;
+
+      case NatterChildSurfaceStyle.quiet:
+        return NatterChildTheme.surfaceQuiet;
+
+      case NatterChildSurfaceStyle.hero:
+        return NatterChildTheme.heroTop;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hero = style == NatterChildSurfaceStyle.hero;
+    final raised =
+        style == NatterChildSurfaceStyle.raised || hero;
+
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: hero ? null : _background,
+        gradient: hero
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  NatterChildTheme.heroTop,
+                  NatterChildTheme.heroBottom,
+                ],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: raised
+              ? NatterChildTheme.borderStrong
+              : NatterChildTheme.border,
+        ),
+        boxShadow: raised
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : null,
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Standard heading treatment for child-facing screen sections.
+class NatterChildSectionHeader extends StatelessWidget {
+  const NatterChildSectionHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
+
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final heading = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: NatterChildTheme.sectionTitle,
+        ),
+        if (subtitle != null &&
+            subtitle!.trim().isNotEmpty) ...[
+          const SizedBox(
+            height: NatterChildTheme.spaceXs,
+          ),
+          Text(
+            subtitle!,
+            style: NatterChildTheme.body,
+          ),
+        ],
+      ],
+    );
+
+    if (trailing == null) {
+      return heading;
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: heading),
+        const SizedBox(
+          width: NatterChildTheme.spaceLg,
+        ),
+        trailing!,
+      ],
+    );
+  }
+}
+
+/// Primary child-facing action.
+///
+/// This is separate from the parent/shared button so child controls can
+/// evolve without unexpectedly changing the parent experience.
+class NatterChildPrimaryButton extends StatelessWidget {
+  const NatterChildPrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.icon,
+    this.enabled = true,
+  });
+
+  final String label;
+  final VoidCallback onPressed;
+  final IconData? icon;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: NatterChildTheme.primaryButtonHeight,
+      child: FilledButton(
+        onPressed: enabled ? onPressed : null,
+        style: FilledButton.styleFrom(
+          backgroundColor: NatterChildTheme.grow,
+          foregroundColor: Colors.black,
+          disabledBackgroundColor:
+              NatterChildTheme.grow.withValues(alpha: 0.38),
+          disabledForegroundColor:
+              Colors.black.withValues(alpha: 0.46),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusMedium,
+            ),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 20,
+              ),
+              const SizedBox(
+                width: NatterChildTheme.spaceSm,
+              ),
+            ],
+            Text(
+              label,
+              style: NatterChildTheme.button,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 enum AlertType { blockedWord, quietHours, contactRequest, safetyCoach }
 
 enum SafetyLevel { ok, coach, protect, block }
