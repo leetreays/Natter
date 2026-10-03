@@ -38,7 +38,9 @@ DefaultFirebaseOptions.currentPlatform,
     );
   } else if (defaultTargetPlatform == TargetPlatform.android) {
     await FirebaseAppCheck.instance.activate(
-      providerAndroid: const AndroidPlayIntegrityProvider(),
+      providerAndroid: kDebugMode
+          ? AndroidDebugProvider()
+          : const AndroidPlayIntegrityProvider(),
     );
   }
 
