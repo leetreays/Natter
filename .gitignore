@@ -70,3 +70,9 @@ node_modules/
 
 # Local Firebase Android configuration
 android/app/google-services.json
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+ios/Runner/GeneratedPluginRegistrant.h
+ios/Runner/GeneratedPluginRegistrant.m
