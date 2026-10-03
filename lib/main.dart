@@ -19122,78 +19122,87 @@ await showDialog<void>(
   }
  Widget _buildEmptyState(BuildContext context) {
   return SizedBox(
-    height: MediaQuery.of(context).size.height - 210,
+    height: MediaQuery.of(context).size.height - 230,
     child: Column(
       children: [
         const Spacer(),
 
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C2A48),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
+        NatterChildSurface(
+          style: NatterChildSurfaceStyle.hero,
+          padding: const EdgeInsets.fromLTRB(
+            NatterChildTheme.space2Xl,
+            NatterChildTheme.space3Xl,
+            NatterChildTheme.space2Xl,
+            NatterChildTheme.space2Xl,
           ),
           child: Column(
             children: [
-              Image.asset(
-                'assets/chirp_welcome.png',
-                height: 92,
+              Container(
+                width: 96,
+                height: 96,
+                padding: const EdgeInsets.all(
+                  NatterChildTheme.spaceSm,
+                ),
+                decoration: BoxDecoration(
+                  color: NatterChildTheme.connect.withValues(
+                    alpha: 0.10,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: NatterChildTheme.connect.withValues(
+                      alpha: 0.22,
+                    ),
+                  ),
+                ),
+                child: Image.asset(
+                  'assets/chirp_welcome.png',
+                ),
               ),
-              const SizedBox(height: 18),
+
+              const SizedBox(
+                height: NatterChildTheme.spaceXl,
+              ),
+
               const Text(
-                'Let’s get started',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Add your first friend to begin chatting.',
+                'Your chats start here',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.72),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  height: 1.35,
-                ),
+                style: NatterChildTheme.screenTitle,
               ),
-              const SizedBox(height: 22),
-              ElevatedButton(
+
+              const SizedBox(
+                height: NatterChildTheme.spaceSm,
+              ),
+
+              const Text(
+                'Add your first friend and start building your Natter circle.',
+                textAlign: TextAlign.center,
+                style: NatterChildTheme.body,
+              ),
+
+              const SizedBox(
+                height: NatterChildTheme.space2Xl,
+              ),
+
+              NatterChildPrimaryButton(
+                label: 'Add your first friend',
+                icon: Icons.person_add_alt_1_rounded,
                 onPressed: () => _addFriendDialog(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: NatterBrand.green,
-                  foregroundColor: Colors.black,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-                child: const Text(
-                  'Add Friend',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                  ),
-                ),
+              ),
+
+              const SizedBox(
+                height: NatterChildTheme.spaceMd,
+              ),
+
+              const Text(
+                'Your grown-up will approve new friendships.',
+                textAlign: TextAlign.center,
+                style: NatterChildTheme.caption,
               ),
             ],
           ),
         ),
 
         const Spacer(),
-
-        const SizedBox(height: 8),
       ],
     ),
   );
@@ -19411,14 +19420,24 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
   Padding(
-  padding: const EdgeInsets.only(bottom: 12),
-  child: Text(
-    '${state.effectiveChildName}’s Chats',
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 20,
-      fontWeight: FontWeight.w900,
-    ),
+  padding: const EdgeInsets.only(
+    bottom: NatterChildTheme.spaceXl,
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '${state.effectiveChildName}’s chats',
+        style: NatterChildTheme.screenTitle,
+      ),
+      const SizedBox(
+        height: NatterChildTheme.spaceXs,
+      ),
+      const Text(
+        'Your friendships, all in one place.',
+        style: NatterChildTheme.body,
+      ),
+    ],
   ),
 ),
             if (!isNewChild && !state.hasSentFirstMessage && state.isInOnboarding) ...[
