@@ -101,6 +101,20 @@ class NatterChildTheme {
 
   static const Color background = NatterBrand.navy;
 
+  // Child environment — "Natter Night".
+  //
+  // A calm, dimensional alternative to the old literal star-field.
+  // These values are intentionally centralised so the entire child world
+  // can be tuned from one place.
+  static const Color environmentTop = Color(0xFF081B36);
+  static const Color environmentMid = Color(0xFF07152C);
+  static const Color environmentBottom = Color(0xFF040C20);
+
+  static const Color environmentBlueGlow = Color(0x403DA6F3);
+  static const Color environmentPinkGlow = Color(0x18FF5DA2);
+  static const Color environmentGreenGlow = Color(0x16A4D35A);
+  static const Color environmentYellowGlow = Color(0x10FBC02D);
+
   static const Color surface = Color(0xFF13233E);
   static const Color surfaceRaised = Color(0xFF192B48);
   static const Color surfaceQuiet = Color(0xFF0F1D34);
@@ -309,6 +323,138 @@ class NatterChildSurface extends StatelessWidget {
   }
 }
 
+
+/// Shared background environment for child-facing Natter screens.
+///
+/// This deliberately avoids a literal space/galaxy theme. Instead it uses
+/// restrained Natter colour glows over deep navy to create depth and a little
+/// magic without competing with the content.
+class NatterChildBackground extends StatelessWidget {
+  const NatterChildBackground({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return RepaintBoundary(
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 0.48, 1.0],
+            colors: [
+              NatterChildTheme.environmentTop,
+              NatterChildTheme.environmentMid,
+              NatterChildTheme.environmentBottom,
+            ],
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Primary Natter-blue atmospheric light.
+            Align(
+              alignment: const Alignment(0.72, -0.92),
+              child: FractionallySizedBox(
+                widthFactor: 1.05,
+                heightFactor: 0.42,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      radius: 0.72,
+                      colors: [
+                        NatterChildTheme.environmentBlueGlow,
+                        Color(0x003DA6F3),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // A very restrained pink warmth toward the lower-left.
+            Align(
+              alignment: const Alignment(-1.05, 0.52),
+              child: FractionallySizedBox(
+                widthFactor: 0.82,
+                heightFactor: 0.38,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      radius: 0.72,
+                      colors: [
+                        NatterChildTheme.environmentPinkGlow,
+                        Color(0x00FF5DA2),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Growth green — present, but deliberately quiet.
+            Align(
+              alignment: const Alignment(1.08, 0.88),
+              child: FractionallySizedBox(
+                widthFactor: 0.84,
+                heightFactor: 0.36,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      radius: 0.74,
+                      colors: [
+                        NatterChildTheme.environmentGreenGlow,
+                        Color(0x00A4D35A),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Tiny warm highlight so the environment still carries all of
+            // the core Natter palette without becoming multicoloured.
+            Align(
+              alignment: const Alignment(-0.55, -0.12),
+              child: FractionallySizedBox(
+                widthFactor: 0.48,
+                heightFactor: 0.22,
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    gradient: RadialGradient(
+                      radius: 0.72,
+                      colors: [
+                        NatterChildTheme.environmentYellowGlow,
+                        Color(0x00FBC02D),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Gentle lower vignette gives floating controls somewhere calm
+            // to sit and adds depth without visible texture.
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: [0.0, 0.62, 1.0],
+                  colors: [
+                    Color(0x00000000),
+                    Color(0x00000000),
+                    Color(0x46020818),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Standard heading treatment for child-facing screen sections.
 class NatterChildSectionHeader extends StatelessWidget {
   const NatterChildSectionHeader({
@@ -457,9 +603,9 @@ class NatterChildTopBar extends StatelessWidget
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            NatterBrand.navy,
-            Color(0xFF0D2A50),
-            Color(0xFF091A38),
+            NatterChildTheme.environmentTop,
+            Color(0xFF0A2340),
+            NatterChildTheme.environmentTop,
           ],
         ),
         border: Border(
@@ -19458,6 +19604,9 @@ final isNewChild = realApprovedContacts.isEmpty;
 floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
   child: Stack(
   children: [
+    const Positioned.fill(
+      child: NatterChildBackground(),
+    ),
     Column(
   children: [
     Expanded(
