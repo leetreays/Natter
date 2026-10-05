@@ -112,8 +112,13 @@ class NatterChildTheme {
 
   // Atmospheric light only. Brand pink/green/yellow are deliberately
   // reserved for meaningful UI moments rather than background decoration.
-  static const Color environmentBlueGlow = Color(0x243DA6F3);
-  static const Color environmentPurpleGlow = Color(0x209C6BFF);
+  static const Color environmentBlueGlow = Color(0x303DA6F3);
+  static const Color environmentPurpleGlow = Color(0x289C6BFF);
+
+  // Aurora accents. These are intentionally translucent: they should
+  // read as coloured atmosphere rather than decorative shapes.
+  static const Color environmentPinkMist = Color(0x20FF5DA2);
+  static const Color environmentGreenMist = Color(0x18A4D35A);
 
   static const Color surface = Color(0xFF13233E);
   static const Color surfaceRaised = Color(0xFF192B48);
@@ -383,6 +388,60 @@ class NatterChildBackground extends StatelessWidget {
                 colors: [
                   NatterChildTheme.environmentBlueGlow,
                   Color(0x103DA6F3),
+                  Color(0x003DA6F3),
+                ],
+              ),
+            ),
+          ),
+
+          // Pink aurora: a broad diagonal wash rather than a local glow.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(-1.15, -0.55),
+                end: Alignment(1.10, 0.55),
+                stops: [0.0, 0.24, 0.43, 0.60, 1.0],
+                colors: [
+                  Color(0x00FF5DA2),
+                  Color(0x08FF5DA2),
+                  NatterChildTheme.environmentPinkMist,
+                  Color(0x08FF5DA2),
+                  Color(0x00FF5DA2),
+                ],
+              ),
+            ),
+          ),
+
+          // Green aurora crosses from the opposite direction. It is
+          // deliberately quieter than the pink so the screen does not
+          // become multicoloured or game-like.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(1.20, -0.18),
+                end: Alignment(-1.10, 0.82),
+                stops: [0.0, 0.28, 0.48, 0.66, 1.0],
+                colors: [
+                  Color(0x00A4D35A),
+                  Color(0x05A4D35A),
+                  NatterChildTheme.environmentGreenMist,
+                  Color(0x05A4D35A),
+                  Color(0x00A4D35A),
+                ],
+              ),
+            ),
+          ),
+
+          // Cool glare where the atmospheric colours meet.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.18, -0.08),
+                radius: 0.88,
+                stops: [0.0, 0.34, 1.0],
+                colors: [
+                  Color(0x183DA6F3),
+                  Color(0x083DA6F3),
                   Color(0x003DA6F3),
                 ],
               ),
