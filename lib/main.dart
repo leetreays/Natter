@@ -109,8 +109,9 @@ class NatterChildTheme {
   static const Color heroBottom = Color(0xFF102542);
 
   static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xB8F8FAFC);
-  static const Color textMuted = Color(0x8FF8FAFC);
+  static const Color textSecondary = Color(0xFFD6E7F5);
+  static const Color textMuted = Color(0xFFA9BDD1);
+  static const Color screenSubtitleColor = Color(0xFFB9DDF8);
 
   static const Color border = Color(0x1AFFFFFF);
   static const Color borderStrong = Color(0x2EFFFFFF);
@@ -157,6 +158,21 @@ class NatterChildTheme {
     fontWeight: FontWeight.w900,
     height: 1.10,
     letterSpacing: -0.4,
+  );
+
+  static const TextStyle screenSubtitle = TextStyle(
+    color: screenSubtitleColor,
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    height: 1.35,
+  );
+
+  static const TextStyle heroTitle = TextStyle(
+    color: textPrimary,
+    fontSize: 24,
+    fontWeight: FontWeight.w900,
+    height: 1.12,
+    letterSpacing: -0.3,
   );
 
   static const TextStyle sectionTitle = TextStyle(
@@ -402,6 +418,167 @@ class NatterChildPrimaryButton extends StatelessWidget {
               style: NatterChildTheme.button,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Shared navigation/header treatment for child-facing screens.
+///
+/// This keeps the Natter identity, child profile, friend code and journey
+/// affordance visually consistent across the child experience.
+class NatterChildTopBar extends StatelessWidget
+    implements PreferredSizeWidget {
+  const NatterChildTopBar({
+    super.key,
+    required this.profileIcon,
+    required this.friendCode,
+    required this.onProfileTap,
+    required this.onFriendCodeTap,
+    required this.onJourneyTap,
+  });
+
+  final IconData profileIcon;
+  final String friendCode;
+  final VoidCallback onProfileTap;
+  final VoidCallback onFriendCodeTap;
+  final VoidCallback onJourneyTap;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(82);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            NatterBrand.navy,
+            Color(0xFF0D2A50),
+            Color(0xFF091A38),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: NatterChildTheme.connect.withValues(alpha: 0.18),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            NatterChildTheme.spaceXl,
+            NatterChildTheme.spaceSm,
+            NatterChildTheme.spaceXl,
+            NatterChildTheme.spaceSm,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Image.asset(
+                  NatterBrand.logoPath,
+                  height: 54,
+                ),
+              ),
+
+              GestureDetector(
+                onTap: onProfileTap,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.16,
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.32,
+                          ),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(
+                        profileIcon,
+                        color: NatterChildTheme.textPrimary,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: NatterChildTheme.spaceXs,
+                    ),
+                    GestureDetector(
+                      onTap: onFriendCodeTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            NatterChildTheme.radiusPill,
+                          ),
+                          border: Border.all(
+                            color: NatterChildTheme.connect.withValues(
+                              alpha: 0.30,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          friendCode,
+                          style: const TextStyle(
+                            color: NatterChildTheme.textPrimary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.9,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: onJourneyTap,
+                  child: Container(
+                    width: NatterChildTheme.iconButtonSize,
+                    height: NatterChildTheme.iconButtonSize,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.20,
+                        ),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.explore_rounded,
+                      color: NatterChildTheme.textPrimary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -19121,89 +19298,83 @@ await showDialog<void>(
     );
   }
  Widget _buildEmptyState(BuildContext context) {
-  return SizedBox(
-    height: MediaQuery.of(context).size.height - 230,
-    child: Column(
-      children: [
-        const Spacer(),
-
-        NatterChildSurface(
-          style: NatterChildSurfaceStyle.hero,
-          padding: const EdgeInsets.fromLTRB(
-            NatterChildTheme.space2Xl,
-            NatterChildTheme.space3Xl,
-            NatterChildTheme.space2Xl,
-            NatterChildTheme.space2Xl,
+  return Padding(
+    padding: const EdgeInsets.only(
+      top: NatterChildTheme.spaceSm,
+    ),
+    child: NatterChildSurface(
+      style: NatterChildSurfaceStyle.hero,
+      padding: const EdgeInsets.fromLTRB(
+        NatterChildTheme.spaceXl,
+        NatterChildTheme.space2Xl,
+        NatterChildTheme.spaceXl,
+        NatterChildTheme.spaceXl,
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            padding: const EdgeInsets.all(
+              NatterChildTheme.spaceSm,
+            ),
+            decoration: BoxDecoration(
+              color: NatterChildTheme.connect.withValues(
+                alpha: 0.10,
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: NatterChildTheme.connect.withValues(
+                  alpha: 0.22,
+                ),
+              ),
+            ),
+            child: Image.asset(
+              'assets/chirp_welcome.png',
+            ),
           ),
-          child: Column(
-            children: [
-              Container(
-                width: 96,
-                height: 96,
-                padding: const EdgeInsets.all(
-                  NatterChildTheme.spaceSm,
-                ),
-                decoration: BoxDecoration(
-                  color: NatterChildTheme.connect.withValues(
-                    alpha: 0.10,
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: NatterChildTheme.connect.withValues(
-                      alpha: 0.22,
-                    ),
-                  ),
-                ),
-                child: Image.asset(
-                  'assets/chirp_welcome.png',
-                ),
-              ),
 
-              const SizedBox(
-                height: NatterChildTheme.spaceXl,
-              ),
-
-              const Text(
-                'Your chats start here',
-                textAlign: TextAlign.center,
-                style: NatterChildTheme.screenTitle,
-              ),
-
-              const SizedBox(
-                height: NatterChildTheme.spaceSm,
-              ),
-
-              const Text(
-                'Add your first friend and start building your Natter circle.',
-                textAlign: TextAlign.center,
-                style: NatterChildTheme.body,
-              ),
-
-              const SizedBox(
-                height: NatterChildTheme.space2Xl,
-              ),
-
-              NatterChildPrimaryButton(
-                label: 'Add your first friend',
-                icon: Icons.person_add_alt_1_rounded,
-                onPressed: () => _addFriendDialog(context),
-              ),
-
-              const SizedBox(
-                height: NatterChildTheme.spaceMd,
-              ),
-
-              const Text(
-                'Your grown-up will approve new friendships.',
-                textAlign: TextAlign.center,
-                style: NatterChildTheme.caption,
-              ),
-            ],
+          const SizedBox(
+            height: NatterChildTheme.spaceLg,
           ),
-        ),
 
-        const Spacer(),
-      ],
+          const Text(
+            'Your chats start here',
+            textAlign: TextAlign.center,
+            style: NatterChildTheme.heroTitle,
+          ),
+
+          const SizedBox(
+            height: NatterChildTheme.spaceSm,
+          ),
+
+          const Text(
+            'Add your first friend and start building your Natter circle.',
+            textAlign: TextAlign.center,
+            style: NatterChildTheme.body,
+          ),
+
+          const SizedBox(
+            height: NatterChildTheme.spaceXl,
+          ),
+
+          NatterChildPrimaryButton(
+            label: 'Add your first friend',
+            icon: Icons.person_add_alt_1_rounded,
+            onPressed: () => _addFriendDialog(context),
+          ),
+
+          const SizedBox(
+            height: NatterChildTheme.spaceMd,
+          ),
+
+          const Text(
+            'Your grown-up will approve new friendships.',
+            textAlign: TextAlign.center,
+            style: NatterChildTheme.caption,
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -19254,160 +19425,48 @@ final isNewChild = realApprovedContacts.isEmpty;
     .toList();
 
     return BrandScaffold(
-    appBar: PreferredSize(
-  preferredSize: const Size.fromHeight(90),
-  child: Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-  begin: Alignment.centerLeft,
-  end: Alignment.centerRight,
-  colors: [
-    const Color(0xFF06112E),
-    const Color(0xFF102B5C),
-    const Color(0xFF06112E),
-  ],
-),
-      boxShadow: [
-        BoxShadow(
-          color: NatterBrand.blue.withOpacity(0.18),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-    child: SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Image.asset(
-                'assets/natter-logo-transBG.png',
-                height: 64,
-              ),
-            ),
+    appBar: NatterChildTopBar(
+      profileIcon: _avatarIcon(state.effectiveChildAvatar),
+      friendCode: state.activeChildFriendCode ?? '',
+      onProfileTap: () => Navigator.push(
+        context,
+        calmRoute(const ProfileScreen()),
+      ),
+      onFriendCodeTap: () {
+        final code = state.activeChildFriendCode ?? '';
+        if (code.isEmpty) return;
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  calmRoute(const JourneyScreen()),
-                ),
-                icon: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.16),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.explore_rounded,
-                    color: Colors.white,
-                    size: 23,
-                  ),
+        Clipboard.setData(
+          ClipboardData(text: code),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Code copied'),
+          ),
+        );
+      },
+      onJourneyTap: () => Navigator.push(
+        context,
+        calmRoute(const JourneyScreen()),
+      ),
+    ),
+      floatingActionButton: isNewChild
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => _addFriendDialog(context),
+              backgroundColor: NatterBrand.green,
+              foregroundColor: Colors.black,
+              icon: const Icon(
+                Icons.person_add_alt_1_rounded,
+              ),
+              label: const Text(
+                'Add Friend',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
-
-            GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                calmRoute(const ProfileScreen()),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-  Container(
-    width: 38,
-    height: 38,
-    decoration: BoxDecoration(
-      color: NatterBrand.blue.withOpacity(0.22),
-      shape: BoxShape.circle,
-      border: Border.all(
-        color: Colors.white.withOpacity(0.14),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: NatterBrand.blue.withOpacity(0.25),
-          blurRadius: 14,
-        ),
-      ],
-    ),
-    alignment: Alignment.center,
-    child: Icon(
-  _avatarIcon(state.effectiveChildAvatar),
-  color: Colors.white,
-  size: 24,
-    ),
-  ),
-  const SizedBox(height: 6),
-  GestureDetector(
-    onTap: () {
-      final code = state.activeChildFriendCode ?? '';
-      if (code.isEmpty) return;
-
-      Clipboard.setData(ClipboardData(text: code));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Code copied')),
-      );
-    },
-    child: Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
-      decoration: BoxDecoration(
-  color: Colors.white.withOpacity(0.10),
-  borderRadius: BorderRadius.circular(999),
-  border: Border.all(
-    color: NatterBrand.blue.withOpacity(0.35),
-  ),
-  boxShadow: [
-    BoxShadow(
-      color: NatterBrand.blue.withOpacity(0.22),
-      blurRadius: 10,
-      offset: const Offset(0, 2),
-    ),
-  ],
-),
-      child: Text(
-        state.activeChildFriendCode ?? '',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1,
-          fontSize: 12,
-        ),
-      ),
-    ),
-  ),
-],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  ),
-),
-      floatingActionButton: FloatingActionButton.extended(
-  onPressed: () => _addFriendDialog(context),
-  backgroundColor: NatterBrand.green,
-  foregroundColor: Colors.black,
-  icon: const Icon(Icons.person_add_alt_1_rounded),
-  label: const Text(
-    'Add Friend',
-    style: TextStyle(fontWeight: FontWeight.w900),
-  ),
-),
 floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
   child: Stack(
   children: [
@@ -19435,7 +19494,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
       const Text(
         'Your friendships, all in one place.',
-        style: NatterChildTheme.body,
+        style: NatterChildTheme.screenSubtitle,
       ),
     ],
   ),
