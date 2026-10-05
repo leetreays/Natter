@@ -677,20 +677,16 @@ class NatterChildTopBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          stops: [0.0, 0.58, 1.0],
           colors: [
-            NatterChildTheme.environmentTop,
-            Color(0xFF0A2340),
-            NatterChildTheme.environmentTop,
+            Color(0x52030D22),
+            Color(0x24030D22),
+            Color(0x00030D22),
           ],
-        ),
-        border: Border(
-          bottom: BorderSide(
-            color: NatterChildTheme.connect.withValues(alpha: 0.18),
-          ),
         ),
       ),
       child: SafeArea(
@@ -8998,21 +8994,54 @@ class BrandScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
 
+  // Optional shared environment. When supplied, the same background can
+  // continue behind both the page content and its app bar.
+  final Widget? background;
+  final bool extendBodyBehindAppBar;
+
   const BrandScaffold({
     super.key,
     this.appBar,
     required this.child,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
+    this.background,
+    this.extendBodyBehindAppBar = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final content = SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          top: extendBodyBehindAppBar
+              ? (appBar?.preferredSize.height ?? 0)
+              : 0,
+        ),
+        child: child,
+      ),
+    );
+
     return Scaffold(
+      backgroundColor:
+          background != null ? Colors.transparent : null,
+      extendBodyBehindAppBar: extendBodyBehindAppBar,
       appBar: appBar,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
-      body: BubblyBackground(child: SafeArea(child: child)),
+      body: background == null
+          ? BubblyBackground(
+              child: content,
+            )
+          : Stack(
+              fit: StackFit.expand,
+              children: [
+                Positioned.fill(
+                  child: background!,
+                ),
+                content,
+              ],
+            ),
     );
   }
 }
@@ -19640,7 +19669,9 @@ final isNewChild = realApprovedContacts.isEmpty;
     .toList();
 
     return BrandScaffold(
-    appBar: NatterChildTopBar(
+      background: const NatterChildBackground(),
+      extendBodyBehindAppBar: true,
+      appBar: NatterChildTopBar(
       profileIcon: _avatarIcon(state.effectiveChildAvatar),
       friendCode: state.activeChildFriendCode ?? '',
       onProfileTap: () => Navigator.push(
@@ -19681,12 +19712,9 @@ final isNewChild = realApprovedContacts.isEmpty;
         ),
       ),
 floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-  child: Stack(
-  children: [
-    const Positioned.fill(
-      child: NatterChildBackground(),
-    ),
-    Column(
+      child: Stack(
+        children: [
+          Column(
   children: [
     Expanded(
       child: RepaintBoundary(
