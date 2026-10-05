@@ -19349,23 +19349,13 @@ await showDialog<void>(
           ),
 
           const Text(
-            'Add your first friend and start building your Natter circle.',
+            'Use Add Friend to start building your Natter circle.',
             textAlign: TextAlign.center,
             style: NatterChildTheme.body,
           ),
 
           const SizedBox(
-            height: NatterChildTheme.spaceXl,
-          ),
-
-          NatterChildPrimaryButton(
-            label: 'Add your first friend',
-            icon: Icons.person_add_alt_1_rounded,
-            onPressed: () => _addFriendDialog(context),
-          ),
-
-          const SizedBox(
-            height: NatterChildTheme.spaceMd,
+            height: NatterChildTheme.spaceLg,
           ),
 
           const Text(
@@ -19451,22 +19441,20 @@ final isNewChild = realApprovedContacts.isEmpty;
         calmRoute(const JourneyScreen()),
       ),
     ),
-      floatingActionButton: isNewChild
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => _addFriendDialog(context),
-              backgroundColor: NatterBrand.green,
-              foregroundColor: Colors.black,
-              icon: const Icon(
-                Icons.person_add_alt_1_rounded,
-              ),
-              label: const Text(
-                'Add Friend',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _addFriendDialog(context),
+        backgroundColor: NatterBrand.green,
+        foregroundColor: Colors.black,
+        icon: const Icon(
+          Icons.person_add_alt_1_rounded,
+        ),
+        label: const Text(
+          'Add Friend',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
 floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
   child: Stack(
   children: [
