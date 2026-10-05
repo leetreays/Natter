@@ -106,14 +106,14 @@ class NatterChildTheme {
   // A calm, dimensional alternative to the old literal star-field.
   // These values are intentionally centralised so the entire child world
   // can be tuned from one place.
-  static const Color environmentTop = Color(0xFF081B36);
-  static const Color environmentMid = Color(0xFF07152C);
-  static const Color environmentBottom = Color(0xFF040C20);
+  static const Color environmentTop = Color(0xFF07162F);
+  static const Color environmentMid = Color(0xFF06132B);
+  static const Color environmentBottom = Color(0xFF030D22);
 
-  static const Color environmentBlueGlow = Color(0x403DA6F3);
-  static const Color environmentPinkGlow = Color(0x18FF5DA2);
-  static const Color environmentGreenGlow = Color(0x16A4D35A);
-  static const Color environmentYellowGlow = Color(0x10FBC02D);
+  // Atmospheric light only. Brand pink/green/yellow are deliberately
+  // reserved for meaningful UI moments rather than background decoration.
+  static const Color environmentBlueGlow = Color(0x243DA6F3);
+  static const Color environmentPurpleGlow = Color(0x209C6BFF);
 
   static const Color surface = Color(0xFF13233E);
   static const Color surfaceRaised = Color(0xFF192B48);
@@ -334,125 +334,145 @@ class NatterChildBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.0, 0.48, 1.0],
-            colors: [
-              NatterChildTheme.environmentTop,
-              NatterChildTheme.environmentMid,
-              NatterChildTheme.environmentBottom,
-            ],
+    return const RepaintBoundary(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Deep Natter navy foundation.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.0, 0.50, 1.0],
+                colors: [
+                  NatterChildTheme.environmentTop,
+                  NatterChildTheme.environmentMid,
+                  NatterChildTheme.environmentBottom,
+                ],
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Primary Natter-blue atmospheric light.
-            Align(
-              alignment: const Alignment(0.72, -0.92),
-              child: FractionallySizedBox(
-                widthFactor: 1.05,
-                heightFactor: 0.42,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.72,
-                      colors: [
-                        NatterChildTheme.environmentBlueGlow,
-                        Color(0x003DA6F3),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
 
-            // A very restrained pink warmth toward the lower-left.
-            Align(
-              alignment: const Alignment(-1.05, 0.52),
-              child: FractionallySizedBox(
-                widthFactor: 0.82,
-                heightFactor: 0.38,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.72,
-                      colors: [
-                        NatterChildTheme.environmentPinkGlow,
-                        Color(0x00FF5DA2),
-                      ],
-                    ),
-                  ),
-                ),
+          // Broad violet atmosphere from beyond the upper-right edge.
+          //
+          // This fills the entire screen rather than living inside a
+          // smaller rectangular box, so there is no visible boundary.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(1.05, -0.72),
+                radius: 1.30,
+                stops: [0.0, 0.44, 1.0],
+                colors: [
+                  NatterChildTheme.environmentPurpleGlow,
+                  Color(0x0D9C6BFF),
+                  Color(0x009C6BFF),
+                ],
               ),
             ),
+          ),
 
-            // Growth green — present, but deliberately quiet.
-            Align(
-              alignment: const Alignment(1.08, 0.88),
-              child: FractionallySizedBox(
-                widthFactor: 0.84,
-                heightFactor: 0.36,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.74,
-                      colors: [
-                        NatterChildTheme.environmentGreenGlow,
-                        Color(0x00A4D35A),
-                      ],
-                    ),
-                  ),
-                ),
+          // Cool blue light rising very gently from the lower-left.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-1.02, 0.86),
+                radius: 1.34,
+                stops: [0.0, 0.46, 1.0],
+                colors: [
+                  NatterChildTheme.environmentBlueGlow,
+                  Color(0x103DA6F3),
+                  Color(0x003DA6F3),
+                ],
               ),
             ),
+          ),
 
-            // Tiny warm highlight so the environment still carries all of
-            // the core Natter palette without becoming multicoloured.
-            Align(
-              alignment: const Alignment(-0.55, -0.12),
-              child: FractionallySizedBox(
-                widthFactor: 0.48,
-                heightFactor: 0.22,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 0.72,
-                      colors: [
-                        NatterChildTheme.environmentYellowGlow,
-                        Color(0x00FBC02D),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+          // Sparse ambient points: enough wonder to feel alive without
+          // returning to the old literal star-field.
+          IgnorePointer(
+            child: CustomPaint(
+              painter: _NatterAmbientDustPainter(),
             ),
+          ),
 
-            // Gentle lower vignette gives floating controls somewhere calm
-            // to sit and adds depth without visible texture.
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: [0.0, 0.62, 1.0],
-                  colors: [
-                    Color(0x00000000),
-                    Color(0x00000000),
-                    Color(0x46020818),
-                  ],
-                ),
+          // Very gentle lower vignette for depth and floating controls.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.0, 0.68, 1.0],
+                colors: [
+                  Color(0x00000000),
+                  Color(0x00000000),
+                  Color(0x24000618),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+/// Tiny, deterministic ambient light points.
+///
+/// These are intentionally sparse, soft and irregular. They should read
+/// more like atmosphere/dust than a space or galaxy background.
+class _NatterAmbientDustPainter extends CustomPainter {
+  const _NatterAmbientDustPainter();
+
+  static const List<Offset> _points = [
+    Offset(0.07, 0.18),
+    Offset(0.18, 0.34),
+    Offset(0.31, 0.12),
+    Offset(0.46, 0.27),
+    Offset(0.63, 0.16),
+    Offset(0.79, 0.31),
+    Offset(0.91, 0.11),
+    Offset(0.12, 0.55),
+    Offset(0.39, 0.48),
+    Offset(0.70, 0.57),
+    Offset(0.88, 0.44),
+    Offset(0.22, 0.73),
+    Offset(0.53, 0.68),
+    Offset(0.81, 0.78),
+    Offset(0.08, 0.89),
+    Offset(0.37, 0.92),
+    Offset(0.66, 0.86),
+    Offset(0.94, 0.94),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint();
+
+    for (var i = 0; i < _points.length; i++) {
+      final point = _points[i];
+
+      final opacity = 0.10 + ((i % 4) * 0.025);
+      final radius = 0.55 + ((i % 3) * 0.28);
+
+      paint.color = NatterChildTheme.textSecondary.withValues(
+        alpha: opacity,
+      );
+
+      canvas.drawCircle(
+        Offset(
+          point.dx * size.width,
+          point.dy * size.height,
+        ),
+        radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_NatterAmbientDustPainter oldDelegate) => false;
 }
 
 /// Standard heading treatment for child-facing screen sections.
