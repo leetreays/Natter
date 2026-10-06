@@ -18526,6 +18526,7 @@ class NatterChildChatTile extends StatelessWidget {
     required this.hasUnread,
     required this.isBlocked,
     required this.onTap,
+    this.avatar,
   });
 
   final String name;
@@ -18536,19 +18537,25 @@ class NatterChildChatTile extends StatelessWidget {
   final bool isBlocked;
   final VoidCallback onTap;
 
+  // Avatar-ready now; conversation data can supply the real child
+  // avatar later without another redesign of the chat tile.
+  final Widget? avatar;
+
   @override
   Widget build(BuildContext context) {
-    const radius = 20.0;
+    const radius = 22.0;
 
     final borderColor = isBlocked
-        ? NatterChildTheme.protect.withValues(alpha: 0.22)
+        ? NatterChildTheme.protect.withValues(alpha: 0.24)
         : hasUnread
-            ? NatterChildTheme.connect.withValues(alpha: 0.52)
-            : NatterChildTheme.border;
+            ? NatterChildTheme.connect.withValues(alpha: 0.38)
+            : Colors.white.withValues(alpha: 0.09);
 
-    final backgroundColor = hasUnread
-        ? NatterChildTheme.surfaceRaised
-        : NatterChildTheme.surface.withValues(alpha: 0.94);
+    final glassStart = isBlocked
+        ? NatterChildTheme.protect.withValues(alpha: 0.09)
+        : hasUnread
+            ? NatterChildTheme.connect.withValues(alpha: 0.14)
+            : Colors.white.withValues(alpha: 0.045);
 
     final initial = name.trim().isNotEmpty
         ? name.trim().substring(0, 1).toUpperCase()
@@ -18572,208 +18579,279 @@ class NatterChildChatTile extends StatelessWidget {
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOutCubic,
               constraints: const BoxConstraints(
-                minHeight: 74,
+                minHeight: 72,
               ),
               padding: const EdgeInsets.fromLTRB(
                 14,
+                11,
                 12,
-                12,
-                12,
+                11,
               ),
               decoration: BoxDecoration(
-                color: backgroundColor,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  stops: const [0.0, 0.52, 1.0],
+                  colors: [
+                    glassStart,
+                    NatterChildTheme.surfaceRaised.withValues(
+                      alpha: hasUnread ? 0.72 : 0.62,
+                    ),
+                    NatterChildTheme.surface.withValues(
+                      alpha: 0.54,
+                    ),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(
                   color: borderColor,
-                  width: hasUnread ? 1.3 : 1,
+                  width: hasUnread ? 1.2 : 1,
                 ),
-                boxShadow: hasUnread
-                    ? [
-                        BoxShadow(
-                          color: NatterChildTheme.connect.withValues(
-                            alpha: 0.14,
-                          ),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  // Friend identity.
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                  if (hasUnread)
+                    BoxShadow(
                       color: NatterChildTheme.connect.withValues(
-                        alpha: 0.11,
+                        alpha: 0.10,
                       ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: NatterChildTheme.connect.withValues(
-                          alpha: 0.26,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: NatterChildTheme.connect.withValues(
-                            alpha: 0.08,
-                          ),
-                          blurRadius: 12,
-                        ),
-                      ],
+                      blurRadius: 22,
+                      spreadRadius: -3,
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      initial,
-                      style: const TextStyle(
-                        color: NatterChildTheme.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(
-                    width: NatterChildTheme.spaceMd,
-                  ),
-
-                  // Friendship identity + latest conversation.
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: NatterChildTheme.cardTitle.copyWith(
-                            fontSize: 17,
-                            color: isBlocked
-                                ? NatterChildTheme.textPrimary.withValues(
-                                    alpha: 0.84,
-                                  )
-                                : NatterChildTheme.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          preview,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: NatterChildTheme.caption.copyWith(
-                            fontSize: 13,
-                            color: hasUnread
-                                ? NatterChildTheme.textSecondary
-                                : NatterChildTheme.textMuted,
-                            fontWeight: hasUnread
-                                ? FontWeight.w800
-                                : FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(
-                    width: NatterChildTheme.spaceSm,
-                  ),
-
                   if (isBlocked)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                    BoxShadow(
+                      color: NatterChildTheme.protect.withValues(
+                        alpha: 0.07,
                       ),
-                      decoration: BoxDecoration(
-                        color: NatterChildTheme.protect.withValues(
-                          alpha: 0.10,
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          NatterChildTheme.radiusPill,
-                        ),
-                        border: Border.all(
-                          color: NatterChildTheme.protect.withValues(
-                            alpha: 0.22,
+                      blurRadius: 20,
+                      spreadRadius: -4,
+                    ),
+                ],
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // A tiny glass-edge highlight. This is deliberately
+                  // restrained: it should register as polish, not a line.
+                  Positioned(
+                    top: -11,
+                    left: 20,
+                    right: 20,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 1,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Colors.white.withValues(alpha: 0.16),
+                              Colors.transparent,
+                            ],
                           ),
                         ),
                       ),
-                      child: Text(
-                        'Blocked',
-                        style: NatterChildTheme.caption.copyWith(
-                          color: NatterChildTheme.textSecondary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    )
-                  else ...[
-                    if (hasUnread) ...[
+                    ),
+                  ),
+
+                  Row(
+                    children: [
+                      // Friendship identity. Real avatars can replace the
+                      // fallback initial later through the avatar parameter.
                       Container(
-                        width: 27,
-                        height: 27,
+                        width: 48,
+                        height: 48,
+                        padding: const EdgeInsets.all(1.2),
                         decoration: BoxDecoration(
-                          color: NatterChildTheme.connect,
                           shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              NatterChildTheme.connect.withValues(
+                                alpha: 0.38,
+                              ),
+                              Colors.white.withValues(alpha: 0.09),
+                              NatterChildTheme.protect.withValues(
+                                alpha: 0.20,
+                              ),
+                            ],
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: NatterChildTheme.connect.withValues(
-                                alpha: 0.28,
+                                alpha: 0.10,
                               ),
-                              blurRadius: 10,
+                              blurRadius: 14,
                             ),
                           ],
                         ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          unreadCount > 9 ? '9+' : '$unreadCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NatterChildTheme.surface.withValues(
+                              alpha: 0.82,
+                            ),
                           ),
+                          clipBehavior: Clip.antiAlias,
+                          child: avatar ??
+                              Center(
+                                child: Text(
+                                  initial,
+                                  style: const TextStyle(
+                                    color: NatterChildTheme.textPrimary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
                         ),
                       ),
+
+                      const SizedBox(
+                        width: NatterChildTheme.spaceMd,
+                      ),
+
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: NatterChildTheme.cardTitle.copyWith(
+                                fontSize: 17,
+                                color: isBlocked
+                                    ? NatterChildTheme.textPrimary.withValues(
+                                        alpha: 0.84,
+                                      )
+                                    : NatterChildTheme.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              preview,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: NatterChildTheme.caption.copyWith(
+                                fontSize: 13,
+                                color: hasUnread
+                                    ? NatterChildTheme.textSecondary
+                                    : NatterChildTheme.textMuted,
+                                fontWeight: hasUnread
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                       const SizedBox(
                         width: NatterChildTheme.spaceSm,
                       ),
+
+                      if (isBlocked)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: NatterChildTheme.protect.withValues(
+                              alpha: 0.08,
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              NatterChildTheme.radiusPill,
+                            ),
+                            border: Border.all(
+                              color: NatterChildTheme.protect.withValues(
+                                alpha: 0.20,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'Blocked',
+                            style: NatterChildTheme.caption.copyWith(
+                              color: NatterChildTheme.textSecondary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        )
+                      else ...[
+                        if (hasUnread) ...[
+                          Container(
+                            width: 25,
+                            height: 25,
+                            decoration: BoxDecoration(
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.15,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: NatterChildTheme.connect.withValues(
+                                  alpha: 0.42,
+                                ),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      NatterChildTheme.connect.withValues(
+                                    alpha: 0.16,
+                                  ),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              unreadCount > 9 ? '9+' : '$unreadCount',
+                              style: const TextStyle(
+                                color: NatterChildTheme.textPrimary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: NatterChildTheme.spaceSm,
+                          ),
+                        ],
+
+                        // Let the friendship stage feel like part of the
+                        // atmosphere rather than another UI control.
+                        Text(
+                          stageEmoji,
+                          style: TextStyle(
+                            fontSize: 18,
+                            shadows: [
+                              Shadow(
+                                color: Colors.white.withValues(
+                                  alpha: 0.18,
+                                ),
+                                blurRadius: 9,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 5),
+
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 20,
+                          color: NatterChildTheme.textMuted.withValues(
+                            alpha: 0.62,
+                          ),
+                        ),
+                      ],
                     ],
-
-                    // Relationship stage belongs to the friendship rather
-                    // than the message preview, so give it its own quiet orb.
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: NatterChildTheme.surfaceQuiet.withValues(
-                          alpha: 0.88,
-                        ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: NatterChildTheme.borderStrong,
-                        ),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        stageEmoji,
-                        style: const TextStyle(
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 4),
-
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: NatterChildTheme.textMuted.withValues(
-                        alpha: 0.68,
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
