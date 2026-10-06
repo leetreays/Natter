@@ -18512,6 +18512,286 @@ class _ProgressBarCard extends StatelessWidget {
   }
 }
 
+class ChirpNudge extends StatefulWidget {
+  final String message;
+
+  const ChirpNudge({
+    super.key,
+    required this.message,
+  });
+
+  @override
+  State<ChirpNudge> createState() => _ChirpNudgeState();
+}
+
+class _ChirpNudgeState extends State<ChirpNudge> {
+  bool _expanded = false;
+  bool _visible = false;
+  bool _dismissed = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      setState(() {
+        _visible = true;
+      });
+    });
+  }
+
+  Future<void> _dismiss() async {
+    setState(() {
+      _visible = false;
+    });
+
+    await Future<void>.delayed(
+      const Duration(milliseconds: 220),
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      _dismissed = true;
+    });
+  }
+
+  Widget _chirpOrb() {
+    return Container(
+      width: 50,
+      height: 50,
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF123253).withValues(alpha: 0.96),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: NatterBrand.blue.withValues(alpha: 0.42),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NatterBrand.blue.withValues(alpha: 0.28),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: NatterBrand.pink.withValues(alpha: 0.18),
+            blurRadius: 24,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Image.asset(
+        'assets/chirp_prompt.png',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed) {
+      return const SizedBox.shrink();
+    }
+
+    final availableWidth =
+        MediaQuery.sizeOf(context).width - 32;
+
+    final expandedWidth =
+        availableWidth > 360.0 ? 360.0 : availableWidth;
+
+    return Semantics(
+      button: true,
+      label: _expanded
+          ? 'Chirp friendship nudge'
+          : 'Open Chirp friendship nudge',
+      child: AnimatedOpacity(
+        opacity: _visible ? 1 : 0,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        child: AnimatedScale(
+          scale: _visible ? 1 : 0.84,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutBack,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _expanded = !_expanded;
+                });
+              },
+              borderRadius: BorderRadius.circular(30),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+                width: _expanded ? expandedWidth : 62,
+                height: _expanded ? 88 : 62,
+                padding: EdgeInsets.symmetric(
+                  horizontal: _expanded ? 8 : 6,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: _expanded
+                      ? const Color(0xFF132745).withValues(alpha: 0.96)
+                      : const Color(0xFF102946).withValues(alpha: 0.90),
+                  borderRadius: BorderRadius.circular(
+                    _expanded ? 24 : 31,
+                  ),
+                  border: Border.all(
+                    color: NatterBrand.blue.withValues(
+                      alpha: _expanded ? 0.30 : 0.22,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: NatterBrand.blue.withValues(alpha: 0.16),
+                      blurRadius: _expanded ? 24 : 18,
+                      spreadRadius: _expanded ? 1 : 0,
+                    ),
+                    BoxShadow(
+                      color: NatterBrand.pink.withValues(alpha: 0.12),
+                      blurRadius: _expanded ? 30 : 22,
+                      spreadRadius: _expanded ? 1 : 0,
+                    ),
+                  ],
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: _expanded
+                      ? Row(
+                          key: const ValueKey('chirp-expanded'),
+                          children: [
+                            _chirpOrb(),
+                            const SizedBox(
+                              width: NatterChildTheme.spaceSm,
+                            ),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'CHIRP',
+                                    style: TextStyle(
+                                      color: NatterBrand.blue.withValues(
+                                        alpha: 0.90,
+                                      ),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    widget.message,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.22,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              tooltip: 'Dismiss',
+                              onPressed: _dismiss,
+                              visualDensity: VisualDensity.compact,
+                              icon: Icon(
+                                Icons.close_rounded,
+                                size: 18,
+                                color: Colors.white.withValues(
+                                  alpha: 0.62,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Center(
+                          key: const ValueKey('chirp-collapsed'),
+                          child: _chirpOrb(),
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatsChirpNudge extends StatelessWidget {
+  final AppState state;
+
+  const _ChatsChirpNudge({
+    required this.state,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final childId = state.activeChildId;
+
+    if (childId == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Preserve the existing first-message onboarding prompt,
+    // but present it through the same Chirp interaction.
+    if (!state.hasSentFirstMessage && state.isInOnboarding) {
+      const message = 'Try saying hello to a friend 👋';
+
+      return const ChirpNudge(
+        key: ValueKey('chirp-onboarding'),
+        message: message,
+      );
+    }
+
+    return StreamBuilder<List<ConversationRecord>>(
+      stream: state.conversationsForChildStream(
+        childId: childId,
+      ),
+      builder: (context, snapshot) {
+        final conversations =
+            snapshot.data ?? const <ConversationRecord>[];
+
+        if (conversations.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final suggestedFriend = state.friendNeedingNudge(
+          conversations,
+          childId,
+        );
+
+        if (suggestedFriend == null) {
+          return const SizedBox.shrink();
+        }
+
+        final message = suggestedFriend.type == 'reply'
+            ? '${suggestedFriend.name} is waiting to hear from you 💛'
+            : 'Maybe check in with ${suggestedFriend.name} 💛';
+
+        return ChirpNudge(
+          key: ValueKey(
+            'chirp-${suggestedFriend.type}-${suggestedFriend.name}',
+          ),
+          message: message,
+        );
+      },
+    );
+  }
+}
+
 class ChatsScreen extends StatelessWidget {
   const ChatsScreen({super.key});
 
@@ -19734,31 +20014,6 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     ],
   ),
 ),
-            if (!isNewChild && !state.hasSentFirstMessage && state.isInOnboarding) ...[
-              BrandCard(
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/chirp_prompt.png',
-                      height: 56,
-                      width: 56,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Chirp says: Try saying hello to Ava 👋',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-
             if (!isNewChild)
             BrandCard(
               child: Column(
@@ -19872,47 +20127,8 @@ StreamBuilder<List<ChildContactRequest>>(
               return _buildEmptyState(context);
             }
 
-            final suggestedFriend = state.friendNeedingNudge(
-              conversations,
-              state.activeChildId!,
-            );
-
-            String? nudgeText;
-
-            if (suggestedFriend != null) {
-              nudgeText = suggestedFriend.type == 'reply'
-                  ? '${suggestedFriend.name} is waiting to hear from you 💛'
-                  : 'Maybe check in with ${suggestedFriend.name} 💛';
-            }
-
             return Column(
               children: [
-                if (nudgeText != null) ...[
-                  const SizedBox(height: 16),
-                  BrandCard(
-                    child: Row(
-                      children: [
-                        Image.asset(
-                          'assets/chirp_prompt.png',
-                          height: 48,
-                          width: 48,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            nudgeText,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
                 ...sortedConversations.map((conversation) {
 
       String otherChildName = '';
@@ -20180,6 +20396,13 @@ isBlocked
           ),
         ),
       ],
+    ),
+    Positioned(
+      top: 88,
+      right: 16,
+      child: _ChatsChirpNudge(
+        state: state,
+      ),
     ),
     Positioned(
   left: 0,
