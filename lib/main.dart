@@ -18796,7 +18796,7 @@ class _ChatsHeaderWithChirpState
             AnimatedPositioned(
               duration: const Duration(milliseconds: 320),
               curve: Curves.easeOutCubic,
-              top: showExpanded ? 0 : 28,
+              top: 0,
               right: 0,
               child: ChirpNudge(
                 key: const ValueKey('chirp-contextual'),
