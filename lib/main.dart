@@ -18512,6 +18512,278 @@ class _ProgressBarCard extends StatelessWidget {
   }
 }
 
+/// Central friendship/conversation row for the child experience.
+///
+/// Keep the visual treatment here so every conversation row evolves
+/// together rather than accumulating screen-specific styling.
+class NatterChildChatTile extends StatelessWidget {
+  const NatterChildChatTile({
+    super.key,
+    required this.name,
+    required this.preview,
+    required this.stageEmoji,
+    required this.unreadCount,
+    required this.hasUnread,
+    required this.isBlocked,
+    required this.onTap,
+  });
+
+  final String name;
+  final String preview;
+  final String stageEmoji;
+  final int unreadCount;
+  final bool hasUnread;
+  final bool isBlocked;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const radius = 20.0;
+
+    final borderColor = isBlocked
+        ? NatterChildTheme.protect.withValues(alpha: 0.22)
+        : hasUnread
+            ? NatterChildTheme.connect.withValues(alpha: 0.52)
+            : NatterChildTheme.border;
+
+    final backgroundColor = hasUnread
+        ? NatterChildTheme.surfaceRaised
+        : NatterChildTheme.surface.withValues(alpha: 0.94);
+
+    final initial = name.trim().isNotEmpty
+        ? name.trim().substring(0, 1).toUpperCase()
+        : '?';
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: NatterChildTheme.spaceSm,
+      ),
+      child: Semantics(
+        button: true,
+        label: isBlocked
+            ? '$name, blocked friendship'
+            : '$name, $preview',
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(radius),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              constraints: const BoxConstraints(
+                minHeight: 74,
+              ),
+              padding: const EdgeInsets.fromLTRB(
+                14,
+                12,
+                12,
+                12,
+              ),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(
+                  color: borderColor,
+                  width: hasUnread ? 1.3 : 1,
+                ),
+                boxShadow: hasUnread
+                    ? [
+                        BoxShadow(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.14,
+                          ),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  // Friend identity.
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: NatterChildTheme.connect.withValues(
+                        alpha: 0.11,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.26,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.08,
+                          ),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      initial,
+                      style: const TextStyle(
+                        color: NatterChildTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(
+                    width: NatterChildTheme.spaceMd,
+                  ),
+
+                  // Friendship identity + latest conversation.
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: NatterChildTheme.cardTitle.copyWith(
+                            fontSize: 17,
+                            color: isBlocked
+                                ? NatterChildTheme.textPrimary.withValues(
+                                    alpha: 0.84,
+                                  )
+                                : NatterChildTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          preview,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: NatterChildTheme.caption.copyWith(
+                            fontSize: 13,
+                            color: hasUnread
+                                ? NatterChildTheme.textSecondary
+                                : NatterChildTheme.textMuted,
+                            fontWeight: hasUnread
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(
+                    width: NatterChildTheme.spaceSm,
+                  ),
+
+                  if (isBlocked)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: NatterChildTheme.protect.withValues(
+                          alpha: 0.10,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          NatterChildTheme.radiusPill,
+                        ),
+                        border: Border.all(
+                          color: NatterChildTheme.protect.withValues(
+                            alpha: 0.22,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'Blocked',
+                        style: NatterChildTheme.caption.copyWith(
+                          color: NatterChildTheme.textSecondary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    )
+                  else ...[
+                    if (hasUnread) ...[
+                      Container(
+                        width: 27,
+                        height: 27,
+                        decoration: BoxDecoration(
+                          color: NatterChildTheme.connect,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.28,
+                              ),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          unreadCount > 9 ? '9+' : '$unreadCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: NatterChildTheme.spaceSm,
+                      ),
+                    ],
+
+                    // Relationship stage belongs to the friendship rather
+                    // than the message preview, so give it its own quiet orb.
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: NatterChildTheme.surfaceQuiet.withValues(
+                          alpha: 0.88,
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: NatterChildTheme.borderStrong,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        stageEmoji,
+                        style: const TextStyle(
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 4),
+
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 20,
+                      color: NatterChildTheme.textMuted.withValues(
+                        alpha: 0.68,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class ChirpNudge extends StatefulWidget {
   final String message;
   final ValueChanged<bool>? onExpandedChanged;
@@ -20215,11 +20487,6 @@ StreamBuilder<List<ChildContactRequest>>(
           final unreadCount = conversation.unreadCount;
 final hasUnread = conversation.hasUnread;
 
-          final suggestedFriend = state.friendNeedingNudge(
-  conversations,
-  state.activeChildId!,
-);
-
 String previewText;
 
 if (isBlocked) {
@@ -20240,175 +20507,27 @@ final friendshipBand = state.friendshipHealthBand(
   repairMomentum: repairMomentum,
 );
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(14),
-                onTap: () {
-  Navigator.push(
-    context,
-    calmRoute(
-      ChatScreen(
-        contactName: otherChildName,
-        conversationId: conversation.id,
-        friendshipId: conversation.friendshipId,
-      ),
-    ),
-  );
-},
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-  color: hasUnread
-      ? const Color(0xFF284A72)
-      : const Color(0xFF1C2A48),
-  borderRadius: BorderRadius.circular(14),
-  border: Border.all(
-    color: hasUnread
-        ? NatterBrand.green.withOpacity(0.75)
-        : Colors.white.withOpacity(0.05),
-    width: hasUnread ? 1.5 : 1,
-  ),
-  boxShadow: hasUnread
-      ? [
-          BoxShadow(
-            color: NatterBrand.green.withOpacity(0.24),
-            blurRadius: 16,
-            offset: const Offset(0, 5),
-          ),
-        ]
-      : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.25),
-            blurRadius: 10,
-            spreadRadius: 0,
-          ),
-        ],
-),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: NatterBrand.yellow.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          otherChildName.isNotEmpty
-                              ? otherChildName.substring(0, 1)
-                              : '?',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-  children: [
-    Expanded(
-      child: Text(
-        otherChildName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontWeight: hasUnread ? FontWeight.w900 : FontWeight.w800,
-          letterSpacing: hasUnread ? 0.2 : 0,
-        ),
-      ),
-    ),
-    const SizedBox(width: 6),
-    Text(
-      friendshipEmoji(friendshipBand),
-      style: const TextStyle(fontSize: 15),
-    ),
-  ],
-),
-                            const SizedBox(height: 2),
-                            Text(
-  previewText,
-  maxLines: 1,
-  overflow: TextOverflow.ellipsis,
-  style: TextStyle(
-    color: hasUnread
-        ? Colors.white.withOpacity(0.86)
-        : Colors.white.withOpacity(0.65),
-    fontSize: 12,
-    fontWeight: hasUnread ? FontWeight.w800 : FontWeight.w600,
-  ),
-),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      if (hasUnread)
-  Container(
-    margin: const EdgeInsets.only(right: 8),
-    width: 28,
-    height: 28,
-    decoration: BoxDecoration(
-      color: NatterBrand.green,
-      shape: BoxShape.circle,
-      boxShadow: [
-        BoxShadow(
-          color: NatterBrand.green.withOpacity(0.45),
-          blurRadius: 10,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    alignment: Alignment.center,
-    child: Text(
-      unreadCount > 9 ? '9+' : '$unreadCount',
-      style: const TextStyle(
-        color: Colors.black,
-        fontWeight: FontWeight.w900,
-        fontSize: 12,
-      ),
-    ),
-  ),
-isBlocked
-    ? Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.10),
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: const Text(
-          'BLOCKED',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.4,
-          ),
-        ),
-      )
-    : const Icon(
-        Icons.chevron_right,
-        size: 20,
-        color: Colors.white54,
-                      ),
-                    ],
+          return NatterChildChatTile(
+            name: otherChildName,
+            preview: previewText,
+            stageEmoji: friendshipEmoji(friendshipBand),
+            unreadCount: unreadCount,
+            hasUnread: hasUnread,
+            isBlocked: isBlocked,
+            onTap: () {
+              Navigator.push(
+                context,
+                calmRoute(
+                  ChatScreen(
+                    contactName: otherChildName,
+                    conversationId: conversation.id,
+                    friendshipId: conversation.friendshipId,
                   ),
                 ),
-              ),
-            ),
-          );}).toList(),
+              );
+            },
+          );
+        }).toList(),
                 
             ...outgoing.map((request) => _pendingOutgoingCard(request)).toList(),
             ...incoming.map((request) => _pendingIncomingCard(request)).toList(),
