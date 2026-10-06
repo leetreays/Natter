@@ -18745,17 +18745,6 @@ class _ChatsChirpNudge extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    // Preserve the existing first-message onboarding prompt,
-    // but present it through the same Chirp interaction.
-    if (!state.hasSentFirstMessage && state.isInOnboarding) {
-      const message = 'Try saying hello to a friend 👋';
-
-      return const ChirpNudge(
-        key: ValueKey('chirp-onboarding'),
-        message: message,
-      );
-    }
-
     return StreamBuilder<List<ConversationRecord>>(
       stream: state.conversationsForChildStream(
         childId: childId,
@@ -18781,11 +18770,20 @@ class _ChatsChirpNudge extends StatelessWidget {
             ? '${suggestedFriend.name} is waiting to hear from you 💛'
             : 'Maybe check in with ${suggestedFriend.name} 💛';
 
-        return ChirpNudge(
-          key: ValueKey(
-            'chirp-${suggestedFriend.type}-${suggestedFriend.name}',
+        return Padding(
+          padding: const EdgeInsets.only(
+            top: NatterChildTheme.spaceMd,
+            bottom: NatterChildTheme.spaceLg,
           ),
-          message: message,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: ChirpNudge(
+              key: ValueKey(
+                'chirp-${suggestedFriend.type}-${suggestedFriend.name}',
+              ),
+              message: message,
+            ),
+          ),
         );
       },
     );
@@ -20014,6 +20012,9 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     ],
   ),
 ),
+            _ChatsChirpNudge(
+              state: state,
+            ),
             if (!isNewChild)
             BrandCard(
               child: Column(
@@ -20396,13 +20397,6 @@ isBlocked
           ),
         ),
       ],
-    ),
-    Positioned(
-      top: 88,
-      right: 16,
-      child: _ChatsChirpNudge(
-        state: state,
-      ),
     ),
     Positioned(
   left: 0,
