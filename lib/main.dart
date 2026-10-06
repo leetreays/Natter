@@ -18514,10 +18514,12 @@ class _ProgressBarCard extends StatelessWidget {
 
 class ChirpNudge extends StatefulWidget {
   final String message;
+  final ValueChanged<bool>? onExpandedChanged;
 
   const ChirpNudge({
     super.key,
     required this.message,
+    this.onExpandedChanged,
   });
 
   @override
@@ -18543,7 +18545,12 @@ class _ChirpNudgeState extends State<ChirpNudge> {
   }
 
   Future<void> _dismiss() async {
+    if (_expanded) {
+      widget.onExpandedChanged?.call(false);
+    }
+
     setState(() {
+      _expanded = false;
       _visible = false;
     });
 
@@ -18619,9 +18626,13 @@ class _ChirpNudgeState extends State<ChirpNudge> {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
+                final nextExpanded = !_expanded;
+
                 setState(() {
-                  _expanded = !_expanded;
+                  _expanded = nextExpanded;
                 });
+
+                widget.onExpandedChanged?.call(nextExpanded);
               },
               borderRadius: BorderRadius.circular(30),
               child: AnimatedContainer(
@@ -18730,23 +18741,90 @@ class _ChirpNudgeState extends State<ChirpNudge> {
   }
 }
 
-class _ChatsChirpNudge extends StatelessWidget {
+class _ChatsHeaderWithChirp extends StatefulWidget {
   final AppState state;
 
-  const _ChatsChirpNudge({
+  const _ChatsHeaderWithChirp({
     required this.state,
   });
 
   @override
+  State<_ChatsHeaderWithChirp> createState() =>
+      _ChatsHeaderWithChirpState();
+}
+
+class _ChatsHeaderWithChirpState
+    extends State<_ChatsHeaderWithChirp> {
+  bool _chirpExpanded = false;
+
+  Widget _header({
+    required String? message,
+  }) {
+    final hasNudge = message != null;
+    final showExpanded = hasNudge && _chirpExpanded;
+
+    return SizedBox(
+      height: 96,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: AnimatedOpacity(
+              opacity: showExpanded ? 0.12 : 1.0,
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${widget.state.effectiveChildName}’s chats',
+                    style: NatterChildTheme.screenTitle,
+                  ),
+                  const SizedBox(
+                    height: NatterChildTheme.spaceXs,
+                  ),
+                  const Text(
+                    'Your friendships, all in one place.',
+                    style: NatterChildTheme.screenSubtitle,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          if (hasNudge)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeOutCubic,
+              top: showExpanded ? 0 : 28,
+              right: 0,
+              child: ChirpNudge(
+                key: const ValueKey('chirp-contextual'),
+                message: message,
+                onExpandedChanged: (expanded) {
+                  if (!mounted) return;
+
+                  setState(() {
+                    _chirpExpanded = expanded;
+                  });
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final childId = state.activeChildId;
+    final childId = widget.state.activeChildId;
 
     if (childId == null) {
-      return const SizedBox.shrink();
+      return _header(message: null);
     }
 
     return StreamBuilder<List<ConversationRecord>>(
-      stream: state.conversationsForChildStream(
+      stream: widget.state.conversationsForChildStream(
         childId: childId,
       ),
       builder: (context, snapshot) {
@@ -18754,36 +18832,45 @@ class _ChatsChirpNudge extends StatelessWidget {
             snapshot.data ?? const <ConversationRecord>[];
 
         if (conversations.isEmpty) {
-          return const SizedBox.shrink();
+          if (_chirpExpanded) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || !_chirpExpanded) return;
+
+              setState(() {
+                _chirpExpanded = false;
+              });
+            });
+          }
+
+          return _header(message: null);
         }
 
-        final suggestedFriend = state.friendNeedingNudge(
+        final suggestedFriend =
+            widget.state.friendNeedingNudge(
           conversations,
           childId,
         );
 
         if (suggestedFriend == null) {
-          return const SizedBox.shrink();
+          if (_chirpExpanded) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || !_chirpExpanded) return;
+
+              setState(() {
+                _chirpExpanded = false;
+              });
+            });
+          }
+
+          return _header(message: null);
         }
 
         final message = suggestedFriend.type == 'reply'
             ? '${suggestedFriend.name} is waiting to hear from you 💛'
             : 'Maybe check in with ${suggestedFriend.name} 💛';
 
-        return Padding(
-          padding: const EdgeInsets.only(
-            top: NatterChildTheme.spaceMd,
-            bottom: NatterChildTheme.spaceLg,
-          ),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: ChirpNudge(
-              key: ValueKey(
-                'chirp-${suggestedFriend.type}-${suggestedFriend.name}',
-              ),
-              message: message,
-            ),
-          ),
+        return _header(
+          message: message,
         );
       },
     );
@@ -19991,28 +20078,7 @@ floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     physics: const ClampingScrollPhysics(),
     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
     children: [
-  Padding(
-  padding: const EdgeInsets.only(
-    bottom: NatterChildTheme.spaceXl,
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '${state.effectiveChildName}’s chats',
-        style: NatterChildTheme.screenTitle,
-      ),
-      const SizedBox(
-        height: NatterChildTheme.spaceXs,
-      ),
-      const Text(
-        'Your friendships, all in one place.',
-        style: NatterChildTheme.screenSubtitle,
-      ),
-    ],
-  ),
-),
-            _ChatsChirpNudge(
+            _ChatsHeaderWithChirp(
               state: state,
             ),
             if (!isNewChild)
