@@ -8994,10 +8994,9 @@ class BrandScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
 
-  // Optional shared environment. When supplied, the same background can
-  // continue behind both the page content and its app bar.
+  // Optional shared environment. When supplied, it sits behind the whole
+  // scaffold so the same child world continues through header and content.
   final Widget? background;
-  final bool extendBodyBehindAppBar;
 
   const BrandScaffold({
     super.key,
@@ -9006,42 +9005,35 @@ class BrandScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.background,
-    this.extendBodyBehindAppBar = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final content = SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          top: extendBodyBehindAppBar
-              ? (appBar?.preferredSize.height ?? 0)
-              : 0,
-        ),
-        child: child,
-      ),
-    );
-
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor:
           background != null ? Colors.transparent : null,
-      extendBodyBehindAppBar: extendBodyBehindAppBar,
       appBar: appBar,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
       body: background == null
           ? BubblyBackground(
-              child: content,
+              child: SafeArea(child: child),
             )
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                Positioned.fill(
-                  child: background!,
-                ),
-                content,
-              ],
-            ),
+          : SafeArea(child: child),
+    );
+
+    if (background == null) {
+      return scaffold;
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: background!,
+        ),
+        scaffold,
+      ],
     );
   }
 }
@@ -19670,7 +19662,6 @@ final isNewChild = realApprovedContacts.isEmpty;
 
     return BrandScaffold(
       background: const NatterChildBackground(),
-      extendBodyBehindAppBar: true,
       appBar: NatterChildTopBar(
       profileIcon: _avatarIcon(state.effectiveChildAvatar),
       friendCode: state.activeChildFriendCode ?? '',
