@@ -19321,12 +19321,12 @@ Widget _pendingFriendshipCard({
             ),
             decoration: BoxDecoration(
               color: NatterChildTheme.connect.withValues(
-                alpha: 0.095,
+                alpha: 0.060,
               ),
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(
                 color: NatterChildTheme.connect.withValues(
-                  alpha: 0.16,
+                  alpha: 0.12,
                 ),
               ),
               boxShadow: [
@@ -19337,7 +19337,7 @@ Widget _pendingFriendshipCard({
                 ),
                 BoxShadow(
                   color: NatterChildTheme.connect.withValues(
-                    alpha: 0.055,
+                    alpha: 0.040,
                   ),
                   blurRadius: 24,
                   spreadRadius: -5,
@@ -19360,14 +19360,14 @@ Widget _pendingFriendshipCard({
                         width: 50,
                         height: 50,
                         child: CircularProgressIndicator(
-                          value: 0.72,
-                          strokeWidth: 1.5,
+                          value: 0.64,
+                          strokeWidth: 1.0,
                           backgroundColor: Colors.white.withValues(
-                            alpha: 0.045,
+                            alpha: 0.020,
                           ),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             NatterChildTheme.connect.withValues(
-                              alpha: 0.46,
+                              alpha: 0.22,
                             ),
                           ),
                         ),
@@ -19490,8 +19490,8 @@ Widget _pendingOutgoingCard(ChildContactRequest request) {
         ? 'Friendship request sent'
         : 'Waiting to connect with $name',
     message: name.isEmpty
-        ? 'Waiting for their grown-up to approve this friendship.'
-        : '$name’s grown-up needs to approve this friendship first.',
+        ? 'Waiting for their grown-up to approve.'
+        : 'Waiting for $name’s grown-up to approve.',
   );
 }
 
@@ -19504,7 +19504,7 @@ Widget _pendingIncomingCard(ChildContactRequest request) {
         ? 'Someone wants to connect'
         : '$name wants to connect',
     message:
-        'Waiting for your grown-up to approve this friendship.',
+        'Waiting for your grown-up to approve.',
   );
 }
 
