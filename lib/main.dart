@@ -18963,165 +18963,163 @@ class _NatterChildChatTileState
                               ),
 
                               if (widget.isBlocked)
-                                Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.end,
-                                  children: [
-                                    if (timestampText.isNotEmpty) ...[
-                                      Text(
-                                        timestampText,
-                                        style: NatterChildTheme.caption
-                                            .copyWith(
-                                          color: NatterChildTheme.textMuted
-                                              .withValues(alpha: 0.76),
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w700,
+                                SizedBox(
+                                  width: 64,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      if (timestampText.isNotEmpty) ...[
+                                        Text(
+                                          timestampText,
+                                          textAlign: TextAlign.center,
+                                          style: NatterChildTheme.caption
+                                              .copyWith(
+                                            color: NatterChildTheme.textMuted
+                                                .withValues(alpha: 0.68),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w700,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                    ],
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: NatterChildTheme.protect
-                                            .withValues(alpha: 0.07),
-                                        borderRadius: BorderRadius.circular(
-                                          NatterChildTheme.radiusPill,
+                                        const SizedBox(height: 5),
+                                      ],
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 9,
+                                          vertical: 6,
                                         ),
-                                        border: Border.all(
+                                        decoration: BoxDecoration(
                                           color: NatterChildTheme.protect
-                                              .withValues(alpha: 0.24),
+                                              .withValues(alpha: 0.07),
+                                          borderRadius:
+                                              BorderRadius.circular(
+                                            NatterChildTheme.radiusPill,
+                                          ),
+                                          border: Border.all(
+                                            color: NatterChildTheme.protect
+                                                .withValues(alpha: 0.24),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Blocked',
+                                          style: NatterChildTheme.caption
+                                              .copyWith(
+                                            color: NatterChildTheme
+                                                .textSecondary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                         ),
                                       ),
-                                      child: Text(
-                                        'Blocked',
-                                        style: NatterChildTheme.caption
-                                            .copyWith(
-                                          color:
-                                              NatterChildTheme.textSecondary,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 )
                               else
-                                Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.end,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    if (timestampText.isNotEmpty) ...[
-                                      Text(
-                                        timestampText,
-                                        style: NatterChildTheme.caption
-                                            .copyWith(
-                                          color: widget.hasUnread
-                                              ? NatterChildTheme.connect
-                                                  .withValues(alpha: 0.88)
-                                              : NatterChildTheme.textMuted
-                                                  .withValues(alpha: 0.76),
-                                          fontSize: 10.5,
-                                          fontWeight: widget.hasUnread
-                                              ? FontWeight.w800
-                                              : FontWeight.w700,
+                                    if (widget.hasUnread) ...[
+                                      Container(
+                                        width: 25,
+                                        height: 25,
+                                        decoration: BoxDecoration(
+                                          color: NatterChildTheme.connect
+                                              .withValues(alpha: 0.13),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: NatterChildTheme.connect
+                                                .withValues(alpha: 0.40),
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: NatterChildTheme.connect
+                                                  .withValues(alpha: 0.14),
+                                              blurRadius: 10,
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          widget.unreadCount > 9
+                                              ? '9+'
+                                              : '${widget.unreadCount}',
+                                          style: const TextStyle(
+                                            color:
+                                                NatterChildTheme.textPrimary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      const SizedBox(width: 7),
                                     ],
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (widget.hasUnread) ...[
+                                    SizedBox(
+                                      width: 58,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          if (timestampText.isNotEmpty) ...[
+                                            Text(
+                                              timestampText,
+                                              textAlign: TextAlign.center,
+                                              style: NatterChildTheme.caption
+                                                  .copyWith(
+                                                color: widget.hasUnread
+                                                    ? NatterChildTheme.connect
+                                                        .withValues(
+                                                        alpha: 0.78,
+                                                      )
+                                                    : NatterChildTheme
+                                                        .textMuted
+                                                        .withValues(
+                                                        alpha: 0.68,
+                                                      ),
+                                                fontSize: 10.5,
+                                                fontWeight: widget.hasUnread
+                                                    ? FontWeight.w800
+                                                    : FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                          ],
                                           Container(
-                                            width: 25,
-                                            height: 25,
+                                            width: 34,
+                                            height: 34,
                                             decoration: BoxDecoration(
-                                              color: NatterChildTheme.connect
-                                                  .withValues(alpha: 0.13),
+                                              color: Colors.white.withValues(
+                                                alpha: 0.045,
+                                              ),
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color:
-                                                    NatterChildTheme.connect
-                                                        .withValues(
-                                                  alpha: 0.40,
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.10,
                                                 ),
                                               ),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: NatterChildTheme
-                                                      .connect
-                                                      .withValues(
-                                                    alpha: 0.14,
-                                                  ),
-                                                  blurRadius: 10,
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.10),
+                                                  blurRadius: 8,
+                                                  offset:
+                                                      const Offset(0, 3),
                                                 ),
                                               ],
                                             ),
                                             alignment: Alignment.center,
                                             child: Text(
-                                              widget.unreadCount > 9
-                                                  ? '9+'
-                                                  : '${widget.unreadCount}',
+                                              widget.stageEmoji,
                                               style: const TextStyle(
-                                                color: NatterChildTheme
-                                                    .textPrimary,
-                                                fontSize: 10,
-                                                fontWeight:
-                                                    FontWeight.w900,
+                                                fontSize: 16,
                                               ),
                                             ),
-                                          ),
-                                          const SizedBox(
-                                            width: NatterChildTheme.spaceSm,
                                           ),
                                         ],
-                                        Container(
-                                          width: 34,
-                                          height: 34,
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.045,
-                                            ),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.10,
-                                              ),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withValues(alpha: 0.10),
-                                                blurRadius: 8,
-                                                offset:
-                                                    const Offset(0, 3),
-                                              ),
-                                            ],
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Text(
-                                            widget.stageEmoji,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Icon(
-                                          Icons.chevron_right_rounded,
-                                          size: 20,
-                                          color: NatterChildTheme.textMuted
-                                              .withValues(alpha: 0.62),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ],
                                 ),
