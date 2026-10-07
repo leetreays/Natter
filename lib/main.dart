@@ -1,4 +1,5 @@
 import 'dart:math';  
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -18516,7 +18517,7 @@ class _ProgressBarCard extends StatelessWidget {
 ///
 /// Keep the visual treatment here so every conversation row evolves
 /// together rather than accumulating screen-specific styling.
-class NatterChildChatTile extends StatelessWidget {
+class NatterChildChatTile extends StatefulWidget {
   const NatterChildChatTile({
     super.key,
     required this.name,
@@ -18537,29 +18538,42 @@ class NatterChildChatTile extends StatelessWidget {
   final bool isBlocked;
   final VoidCallback onTap;
 
-  // Avatar-ready now; conversation data can supply the real child
-  // avatar later without another redesign of the chat tile.
+  // Avatar-ready: later we can supply the real friend's avatar
+  // without changing the tile architecture again.
   final Widget? avatar;
+
+  @override
+  State<NatterChildChatTile> createState() =>
+      _NatterChildChatTileState();
+}
+
+class _NatterChildChatTileState
+    extends State<NatterChildChatTile> {
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     const radius = 22.0;
 
-    final borderColor = isBlocked
-        ? NatterChildTheme.protect.withValues(alpha: 0.24)
-        : hasUnread
-            ? NatterChildTheme.connect.withValues(alpha: 0.38)
-            : Colors.white.withValues(alpha: 0.09);
-
-    final glassStart = isBlocked
-        ? NatterChildTheme.protect.withValues(alpha: 0.09)
-        : hasUnread
-            ? NatterChildTheme.connect.withValues(alpha: 0.14)
-            : Colors.white.withValues(alpha: 0.045);
-
-    final initial = name.trim().isNotEmpty
-        ? name.trim().substring(0, 1).toUpperCase()
+    final initial = widget.name.trim().isNotEmpty
+        ? widget.name.trim().substring(0, 1).toUpperCase()
         : '?';
+
+    final borderColor = _pressed
+        ? Colors.white.withValues(alpha: 0.24)
+        : widget.isBlocked
+            ? NatterChildTheme.protect.withValues(alpha: 0.30)
+            : widget.hasUnread
+                ? NatterChildTheme.connect.withValues(alpha: 0.34)
+                : Colors.white.withValues(alpha: 0.12);
+
+    // Keep the fill deliberately light. The atmosphere underneath
+    // should provide most of the colour.
+    final glassTint = widget.isBlocked
+        ? const Color(0xFF22152D).withValues(alpha: 0.30)
+        : widget.hasUnread
+            ? const Color(0xFF102B46).withValues(alpha: 0.28)
+            : NatterChildTheme.surface.withValues(alpha: 0.22);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -18567,292 +18581,335 @@ class NatterChildChatTile extends StatelessWidget {
       ),
       child: Semantics(
         button: true,
-        label: isBlocked
-            ? '$name, blocked friendship'
-            : '$name, $preview',
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(radius),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutCubic,
-              constraints: const BoxConstraints(
-                minHeight: 72,
-              ),
-              padding: const EdgeInsets.fromLTRB(
-                14,
-                11,
-                12,
-                11,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  stops: const [0.0, 0.52, 1.0],
-                  colors: [
-                    glassStart,
-                    NatterChildTheme.surfaceRaised.withValues(
-                      alpha: hasUnread ? 0.72 : 0.62,
-                    ),
-                    NatterChildTheme.surface.withValues(
-                      alpha: 0.54,
-                    ),
-                  ],
+        label: widget.isBlocked
+            ? '${widget.name}, blocked friendship'
+            : '${widget.name}, ${widget.preview}',
+        child: AnimatedScale(
+          scale: _pressed ? 0.985 : 1.0,
+          duration: const Duration(milliseconds: 110),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: _pressed ? 0.10 : 0.16,
+                  ),
+                  blurRadius: _pressed ? 10 : 18,
+                  offset: Offset(
+                    0,
+                    _pressed ? 3 : 7,
+                  ),
                 ),
-                borderRadius: BorderRadius.circular(radius),
-                border: Border.all(
-                  color: borderColor,
-                  width: hasUnread ? 1.2 : 1,
-                ),
-                boxShadow: [
+                if (widget.hasUnread)
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.18),
-                    blurRadius: 18,
-                    offset: const Offset(0, 8),
+                    color: NatterChildTheme.connect.withValues(
+                      alpha: 0.09,
+                    ),
+                    blurRadius: 20,
+                    spreadRadius: -4,
                   ),
-                  if (hasUnread)
-                    BoxShadow(
-                      color: NatterChildTheme.connect.withValues(
-                        alpha: 0.10,
-                      ),
-                      blurRadius: 22,
-                      spreadRadius: -3,
+                if (widget.isBlocked)
+                  BoxShadow(
+                    color: NatterChildTheme.protect.withValues(
+                      alpha: 0.08,
                     ),
-                  if (isBlocked)
-                    BoxShadow(
-                      color: NatterChildTheme.protect.withValues(
-                        alpha: 0.07,
-                      ),
-                      blurRadius: 20,
-                      spreadRadius: -4,
-                    ),
-                ],
-              ),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // A tiny glass-edge highlight. This is deliberately
-                  // restrained: it should register as polish, not a line.
-                  Positioned(
-                    top: -11,
-                    left: 20,
-                    right: 20,
-                    child: IgnorePointer(
-                      child: Container(
-                        height: 1,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              Colors.white.withValues(alpha: 0.16),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    blurRadius: 20,
+                    spreadRadius: -4,
                   ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(radius),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(
+                  sigmaX: 10,
+                  sigmaY: 10,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: widget.onTap,
+                    onHighlightChanged: (pressed) {
+                      if (_pressed == pressed) return;
 
-                  Row(
-                    children: [
-                      // Friendship identity. Real avatars can replace the
-                      // fallback initial later through the avatar parameter.
-                      Container(
-                        width: 48,
-                        height: 48,
-                        padding: const EdgeInsets.all(1.2),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              NatterChildTheme.connect.withValues(
-                                alpha: 0.38,
-                              ),
-                              Colors.white.withValues(alpha: 0.09),
-                              NatterChildTheme.protect.withValues(
-                                alpha: 0.20,
-                              ),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: NatterChildTheme.connect.withValues(
-                                alpha: 0.10,
-                              ),
-                              blurRadius: 14,
-                            ),
-                          ],
+                      setState(() {
+                        _pressed = pressed;
+                      });
+                    },
+                    splashColor: NatterChildTheme.connect.withValues(
+                      alpha: 0.10,
+                    ),
+                    highlightColor: Colors.white.withValues(
+                      alpha: 0.025,
+                    ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 140),
+                      curve: Curves.easeOut,
+                      constraints: const BoxConstraints(
+                        minHeight: 72,
+                      ),
+                      padding: const EdgeInsets.fromLTRB(
+                        14,
+                        11,
+                        12,
+                        11,
+                      ),
+                      decoration: BoxDecoration(
+                        color: glassTint,
+                        borderRadius: BorderRadius.circular(radius),
+                        border: Border.all(
+                          color: borderColor,
+                          width: widget.hasUnread ? 1.2 : 1,
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: NatterChildTheme.surface.withValues(
-                              alpha: 0.82,
-                            ),
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          child: avatar ??
-                              Center(
-                                child: Text(
-                                  initial,
-                                  style: const TextStyle(
-                                    color: NatterChildTheme.textPrimary,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
+                      ),
+                      child: Stack(
+                        children: [
+                          // Specular top-edge highlight: this is the
+                          // reflective detail, not a card-wide gradient.
+                          Positioned(
+                            top: 0,
+                            left: 18,
+                            right: 18,
+                            child: IgnorePointer(
+                              child: Container(
+                                height: 1,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.white.withValues(
+                                        alpha: _pressed ? 0.28 : 0.17,
+                                      ),
+                                      Colors.transparent,
+                                    ],
                                   ),
                                 ),
                               ),
-                        ),
-                      ),
+                            ),
+                          ),
 
-                      const SizedBox(
-                        width: NatterChildTheme.spaceMd,
-                      ),
-
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: NatterChildTheme.cardTitle.copyWith(
-                                fontSize: 17,
-                                color: isBlocked
-                                    ? NatterChildTheme.textPrimary.withValues(
-                                        alpha: 0.84,
+                          // A tiny brightening while physically pressed.
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: AnimatedContainer(
+                                duration:
+                                    const Duration(milliseconds: 100),
+                                color: _pressed
+                                    ? Colors.white.withValues(
+                                        alpha: 0.025,
                                       )
-                                    : NatterChildTheme.textPrimary,
+                                    : Colors.transparent,
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              preview,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: NatterChildTheme.caption.copyWith(
-                                fontSize: 13,
-                                color: hasUnread
-                                    ? NatterChildTheme.textSecondary
-                                    : NatterChildTheme.textMuted,
-                                fontWeight: hasUnread
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          ),
 
-                      const SizedBox(
-                        width: NatterChildTheme.spaceSm,
-                      ),
+                          Row(
+                            children: [
+                              // Identity orb. Later the real child avatar
+                              // simply replaces the fallback initial.
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(
+                                    alpha: 0.045,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: NatterChildTheme.connect
+                                        .withValues(alpha: 0.24),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: NatterChildTheme.connect
+                                          .withValues(alpha: 0.08),
+                                      blurRadius: 12,
+                                    ),
+                                  ],
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: widget.avatar ??
+                                    Center(
+                                      child: Text(
+                                        initial,
+                                        style: const TextStyle(
+                                          color: NatterChildTheme.textPrimary,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                              ),
 
-                      if (isBlocked)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: NatterChildTheme.protect.withValues(
-                              alpha: 0.08,
-                            ),
-                            borderRadius: BorderRadius.circular(
-                              NatterChildTheme.radiusPill,
-                            ),
-                            border: Border.all(
-                              color: NatterChildTheme.protect.withValues(
-                                alpha: 0.20,
+                              const SizedBox(
+                                width: NatterChildTheme.spaceMd,
                               ),
-                            ),
-                          ),
-                          child: Text(
-                            'Blocked',
-                            style: NatterChildTheme.caption.copyWith(
-                              color: NatterChildTheme.textSecondary,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        )
-                      else ...[
-                        if (hasUnread) ...[
-                          Container(
-                            width: 25,
-                            height: 25,
-                            decoration: BoxDecoration(
-                              color: NatterChildTheme.connect.withValues(
-                                alpha: 0.15,
-                              ),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: NatterChildTheme.connect.withValues(
-                                  alpha: 0.42,
+
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: NatterChildTheme.cardTitle
+                                          .copyWith(
+                                        fontSize: 17,
+                                        color: widget.isBlocked
+                                            ? NatterChildTheme.textPrimary
+                                                .withValues(alpha: 0.84)
+                                            : NatterChildTheme.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      widget.preview,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          NatterChildTheme.caption.copyWith(
+                                        fontSize: 13,
+                                        color: widget.hasUnread
+                                            ? NatterChildTheme.textSecondary
+                                            : NatterChildTheme.textMuted,
+                                        fontWeight: widget.hasUnread
+                                            ? FontWeight.w800
+                                            : FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color:
-                                      NatterChildTheme.connect.withValues(
-                                    alpha: 0.16,
+
+                              const SizedBox(
+                                width: NatterChildTheme.spaceSm,
+                              ),
+
+                              if (widget.isBlocked)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
                                   ),
-                                  blurRadius: 10,
+                                  decoration: BoxDecoration(
+                                    color: NatterChildTheme.protect
+                                        .withValues(alpha: 0.07),
+                                    borderRadius: BorderRadius.circular(
+                                      NatterChildTheme.radiusPill,
+                                    ),
+                                    border: Border.all(
+                                      color: NatterChildTheme.protect
+                                          .withValues(alpha: 0.24),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Blocked',
+                                    style:
+                                        NatterChildTheme.caption.copyWith(
+                                      color:
+                                          NatterChildTheme.textSecondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                )
+                              else ...[
+                                if (widget.hasUnread) ...[
+                                  Container(
+                                    width: 25,
+                                    height: 25,
+                                    decoration: BoxDecoration(
+                                      color: NatterChildTheme.connect
+                                          .withValues(alpha: 0.13),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: NatterChildTheme.connect
+                                            .withValues(alpha: 0.40),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: NatterChildTheme.connect
+                                              .withValues(alpha: 0.14),
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      widget.unreadCount > 9
+                                          ? '9+'
+                                          : '${widget.unreadCount}',
+                                      style: const TextStyle(
+                                        color:
+                                            NatterChildTheme.textPrimary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: NatterChildTheme.spaceSm,
+                                  ),
+                                ],
+
+                                // Friendship stage returns to a contained
+                                // glass orb rather than floating freely.
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(
+                                      alpha: 0.045,
+                                    ),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.10,
+                                      ),
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.10,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    widget.stageEmoji,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(width: 4),
+
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 20,
+                                  color: NatterChildTheme.textMuted
+                                      .withValues(alpha: 0.62),
                                 ),
                               ],
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              unreadCount > 9 ? '9+' : '$unreadCount',
-                              style: const TextStyle(
-                                color: NatterChildTheme.textPrimary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: NatterChildTheme.spaceSm,
-                          ),
-                        ],
-
-                        // Let the friendship stage feel like part of the
-                        // atmosphere rather than another UI control.
-                        Text(
-                          stageEmoji,
-                          style: TextStyle(
-                            fontSize: 18,
-                            shadows: [
-                              Shadow(
-                                color: Colors.white.withValues(
-                                  alpha: 0.18,
-                                ),
-                                blurRadius: 9,
-                              ),
                             ],
                           ),
-                        ),
-
-                        const SizedBox(width: 5),
-
-                        Icon(
-                          Icons.chevron_right_rounded,
-                          size: 20,
-                          color: NatterChildTheme.textMuted.withValues(
-                            alpha: 0.62,
-                          ),
-                        ),
-                      ],
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
