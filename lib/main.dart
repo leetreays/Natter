@@ -19295,6 +19295,7 @@ Widget _pendingFriendshipCard({
       : '?';
 
   const radius = 24.0;
+  const connectBlue = NatterBrand.blue;
 
   return Padding(
     padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceSm),
@@ -19320,13 +19321,13 @@ Widget _pendingFriendshipCard({
               12,
             ),
             decoration: BoxDecoration(
-              color: NatterChildTheme.connect.withValues(
-                alpha: 0.060,
+              color: connectBlue.withValues(
+                alpha: 0.085,
               ),
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(
-                color: NatterChildTheme.connect.withValues(
-                  alpha: 0.12,
+                color: connectBlue.withValues(
+                  alpha: 0.22,
                 ),
               ),
               boxShadow: [
@@ -19336,10 +19337,10 @@ Widget _pendingFriendshipCard({
                   offset: const Offset(0, 7),
                 ),
                 BoxShadow(
-                  color: NatterChildTheme.connect.withValues(
-                    alpha: 0.040,
+                  color: connectBlue.withValues(
+                    alpha: 0.075,
                   ),
-                  blurRadius: 24,
+                  blurRadius: 28,
                   spreadRadius: -5,
                 ),
               ],
@@ -19366,8 +19367,8 @@ Widget _pendingFriendshipCard({
                             alpha: 0.020,
                           ),
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            NatterChildTheme.connect.withValues(
-                              alpha: 0.22,
+                            connectBlue.withValues(
+                              alpha: 0.52,
                             ),
                           ),
                         ),
@@ -19381,16 +19382,16 @@ Widget _pendingFriendshipCard({
                           ),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withValues(
-                              alpha: 0.07,
+                            color: connectBlue.withValues(
+                              alpha: 0.22,
                             ),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: NatterChildTheme.connect.withValues(
-                                alpha: 0.09,
+                              color: connectBlue.withValues(
+                                alpha: 0.18,
                               ),
-                              blurRadius: 13,
+                              blurRadius: 16,
                             ),
                           ],
                         ),
@@ -19451,22 +19452,22 @@ Widget _pendingFriendshipCard({
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: NatterChildTheme.connect.withValues(
-                      alpha: 0.085,
+                    color: connectBlue.withValues(
+                      alpha: 0.12,
                     ),
                     borderRadius: BorderRadius.circular(
                       NatterChildTheme.radiusPill,
                     ),
                     border: Border.all(
-                      color: NatterChildTheme.connect.withValues(
-                        alpha: 0.20,
+                      color: connectBlue.withValues(
+                        alpha: 0.34,
                       ),
                     ),
                   ),
                   child: Text(
                     'Pending',
                     style: NatterChildTheme.caption.copyWith(
-                      color: NatterChildTheme.textSecondary,
+                      color: connectBlue.withValues(alpha: 0.95),
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                     ),
