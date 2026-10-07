@@ -18513,6 +18513,191 @@ class _ProgressBarCard extends StatelessWidget {
   }
 }
 
+String _formatChatListTimestamp(DateTime value) {
+  final messageTime = value.toLocal();
+  final now = DateTime.now();
+
+  final today = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  );
+
+  final messageDay = DateTime(
+    messageTime.year,
+    messageTime.month,
+    messageTime.day,
+  );
+
+  final dayDifference = today.difference(messageDay).inDays;
+
+  if (dayDifference == 0) {
+    final hour = messageTime.hour.toString().padLeft(2, '0');
+    final minute = messageTime.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  if (dayDifference == 1) {
+    return 'Yesterday';
+  }
+
+  final day = messageTime.day.toString().padLeft(2, '0');
+  final month = messageTime.month.toString().padLeft(2, '0');
+  final year =
+      (messageTime.year % 100).toString().padLeft(2, '0');
+
+  return '$day.$month.$year';
+}
+
+class NatterChildAddFriendButton extends StatefulWidget {
+  const NatterChildAddFriendButton({
+    super.key,
+    required this.onPressed,
+  });
+
+  final VoidCallback onPressed;
+
+  @override
+  State<NatterChildAddFriendButton> createState() =>
+      _NatterChildAddFriendButtonState();
+}
+
+class _NatterChildAddFriendButtonState
+    extends State<NatterChildAddFriendButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    const connectBlue = NatterBrand.blue;
+    const radius = 999.0;
+
+    return Semantics(
+      button: true,
+      label: 'Add Friend',
+      child: AnimatedScale(
+        scale: _pressed ? 0.965 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            boxShadow: [
+              BoxShadow(
+                color: connectBlue.withValues(
+                  alpha: _pressed ? 0.24 : 0.15,
+                ),
+                blurRadius: _pressed ? 16 : 24,
+                spreadRadius: _pressed ? 0 : 1,
+              ),
+              BoxShadow(
+                color: NatterBrand.pink.withValues(alpha: 0.07),
+                blurRadius: 28,
+                spreadRadius: -4,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 20,
+                offset: const Offset(0, 7),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: 16,
+                sigmaY: 16,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onPressed,
+                  onHighlightChanged: (pressed) {
+                    if (_pressed == pressed) return;
+
+                    setState(() {
+                      _pressed = pressed;
+                    });
+                  },
+                  splashColor: connectBlue.withValues(alpha: 0.16),
+                  highlightColor: Colors.white.withValues(alpha: 0.04),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 120),
+                    curve: Curves.easeOut,
+                    padding: const EdgeInsets.fromLTRB(
+                      8,
+                      7,
+                      16,
+                      7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B213A).withValues(
+                        alpha: _pressed ? 0.80 : 0.68,
+                      ),
+                      borderRadius: BorderRadius.circular(radius),
+                      border: Border.all(
+                        color: connectBlue.withValues(
+                          alpha: _pressed ? 0.50 : 0.32,
+                        ),
+                        width: 1.1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: connectBlue.withValues(
+                              alpha: _pressed ? 0.20 : 0.12,
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: connectBlue.withValues(
+                                alpha: _pressed ? 0.58 : 0.40,
+                              ),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: connectBlue.withValues(
+                                  alpha: _pressed ? 0.22 : 0.13,
+                                ),
+                                blurRadius: 13,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.person_add_alt_1_rounded,
+                            color: NatterChildTheme.textPrimary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        const Text(
+                          'Add Friend',
+                          style: TextStyle(
+                            color: NatterChildTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Central friendship/conversation row for the child experience.
 ///
 /// Keep the visual treatment here so every conversation row evolves
@@ -18527,6 +18712,7 @@ class NatterChildChatTile extends StatefulWidget {
     required this.hasUnread,
     required this.isBlocked,
     required this.onTap,
+    this.lastMessageTime,
     this.avatar,
   });
 
@@ -18537,6 +18723,7 @@ class NatterChildChatTile extends StatefulWidget {
   final bool hasUnread;
   final bool isBlocked;
   final VoidCallback onTap;
+  final DateTime? lastMessageTime;
 
   // Avatar-ready: later we can supply the real friend's avatar
   // without changing the tile architecture again.
@@ -18558,6 +18745,12 @@ class _NatterChildChatTileState
     final initial = widget.name.trim().isNotEmpty
         ? widget.name.trim().substring(0, 1).toUpperCase()
         : '?';
+
+    final timestampText = widget.lastMessageTime == null
+        ? ''
+        : _formatChatListTimestamp(
+            widget.lastMessageTime!,
+          );
 
     final borderColor = _pressed
         ? Colors.white.withValues(alpha: 0.28)
@@ -18770,115 +18963,168 @@ class _NatterChildChatTileState
                               ),
 
                               if (widget.isBlocked)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: NatterChildTheme.protect
-                                        .withValues(alpha: 0.07),
-                                    borderRadius: BorderRadius.circular(
-                                      NatterChildTheme.radiusPill,
-                                    ),
-                                    border: Border.all(
-                                      color: NatterChildTheme.protect
-                                          .withValues(alpha: 0.24),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Blocked',
-                                    style:
-                                        NatterChildTheme.caption.copyWith(
-                                      color:
-                                          NatterChildTheme.textSecondary,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                )
-                              else ...[
-                                if (widget.hasUnread) ...[
-                                  Container(
-                                    width: 25,
-                                    height: 25,
-                                    decoration: BoxDecoration(
-                                      color: NatterChildTheme.connect
-                                          .withValues(alpha: 0.13),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: NatterChildTheme.connect
-                                            .withValues(alpha: 0.40),
+                                Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.end,
+                                  children: [
+                                    if (timestampText.isNotEmpty) ...[
+                                      Text(
+                                        timestampText,
+                                        style: NatterChildTheme.caption
+                                            .copyWith(
+                                          color: NatterChildTheme.textMuted
+                                              .withValues(alpha: 0.76),
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: NatterChildTheme.connect
-                                              .withValues(alpha: 0.14),
-                                          blurRadius: 10,
+                                      const SizedBox(height: 5),
+                                    ],
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: NatterChildTheme.protect
+                                            .withValues(alpha: 0.07),
+                                        borderRadius: BorderRadius.circular(
+                                          NatterChildTheme.radiusPill,
+                                        ),
+                                        border: Border.all(
+                                          color: NatterChildTheme.protect
+                                              .withValues(alpha: 0.24),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Blocked',
+                                        style: NatterChildTheme.caption
+                                            .copyWith(
+                                          color:
+                                              NatterChildTheme.textSecondary,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.end,
+                                  children: [
+                                    if (timestampText.isNotEmpty) ...[
+                                      Text(
+                                        timestampText,
+                                        style: NatterChildTheme.caption
+                                            .copyWith(
+                                          color: widget.hasUnread
+                                              ? NatterChildTheme.connect
+                                                  .withValues(alpha: 0.88)
+                                              : NatterChildTheme.textMuted
+                                                  .withValues(alpha: 0.76),
+                                          fontSize: 10.5,
+                                          fontWeight: widget.hasUnread
+                                              ? FontWeight.w800
+                                              : FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                    ],
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (widget.hasUnread) ...[
+                                          Container(
+                                            width: 25,
+                                            height: 25,
+                                            decoration: BoxDecoration(
+                                              color: NatterChildTheme.connect
+                                                  .withValues(alpha: 0.13),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color:
+                                                    NatterChildTheme.connect
+                                                        .withValues(
+                                                  alpha: 0.40,
+                                                ),
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: NatterChildTheme
+                                                      .connect
+                                                      .withValues(
+                                                    alpha: 0.14,
+                                                  ),
+                                                  blurRadius: 10,
+                                                ),
+                                              ],
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              widget.unreadCount > 9
+                                                  ? '9+'
+                                                  : '${widget.unreadCount}',
+                                              style: const TextStyle(
+                                                color: NatterChildTheme
+                                                    .textPrimary,
+                                                fontSize: 10,
+                                                fontWeight:
+                                                    FontWeight.w900,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: NatterChildTheme.spaceSm,
+                                          ),
+                                        ],
+                                        Container(
+                                          width: 34,
+                                          height: 34,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.045,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.10,
+                                              ),
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black
+                                                    .withValues(alpha: 0.10),
+                                                blurRadius: 8,
+                                                offset:
+                                                    const Offset(0, 3),
+                                              ),
+                                            ],
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            widget.stageEmoji,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.chevron_right_rounded,
+                                          size: 20,
+                                          color: NatterChildTheme.textMuted
+                                              .withValues(alpha: 0.62),
                                         ),
                                       ],
                                     ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      widget.unreadCount > 9
-                                          ? '9+'
-                                          : '${widget.unreadCount}',
-                                      style: const TextStyle(
-                                        color:
-                                            NatterChildTheme.textPrimary,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: NatterChildTheme.spaceSm,
-                                  ),
-                                ],
-
-                                // Friendship stage returns to a contained
-                                // glass orb rather than floating freely.
-                                Container(
-                                  width: 34,
-                                  height: 34,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.045,
-                                    ),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.10,
-                                      ),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.10,
-                                        ),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    widget.stageEmoji,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                    ),
-                                  ),
+                                  ],
                                 ),
-
-                                const SizedBox(width: 4),
-
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  size: 20,
-                                  color: NatterChildTheme.textMuted
-                                      .withValues(alpha: 0.62),
-                                ),
-                              ],
                             ],
                           ),
                         ],
@@ -19322,12 +19568,12 @@ Widget _pendingFriendshipCard({
             ),
             decoration: BoxDecoration(
               color: connectBlue.withValues(
-                alpha: 0.085,
+                alpha: 0.055,
               ),
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(
                 color: connectBlue.withValues(
-                  alpha: 0.22,
+                  alpha: 0.16,
                 ),
               ),
               boxShadow: [
@@ -19338,7 +19584,7 @@ Widget _pendingFriendshipCard({
                 ),
                 BoxShadow(
                   color: connectBlue.withValues(
-                    alpha: 0.075,
+                    alpha: 0.045,
                   ),
                   blurRadius: 28,
                   spreadRadius: -5,
@@ -19361,14 +19607,14 @@ Widget _pendingFriendshipCard({
                         width: 50,
                         height: 50,
                         child: CircularProgressIndicator(
-                          value: 0.64,
+                          value: 0.56,
                           strokeWidth: 1.0,
                           backgroundColor: Colors.white.withValues(
                             alpha: 0.020,
                           ),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             connectBlue.withValues(
-                              alpha: 0.52,
+                              alpha: 0.38,
                             ),
                           ),
                         ),
@@ -19383,13 +19629,13 @@ Widget _pendingFriendshipCard({
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: connectBlue.withValues(
-                              alpha: 0.22,
+                              alpha: 0.16,
                             ),
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: connectBlue.withValues(
-                                alpha: 0.18,
+                                alpha: 0.11,
                               ),
                               blurRadius: 16,
                             ),
@@ -19453,21 +19699,21 @@ Widget _pendingFriendshipCard({
                   ),
                   decoration: BoxDecoration(
                     color: connectBlue.withValues(
-                      alpha: 0.12,
+                      alpha: 0.09,
                     ),
                     borderRadius: BorderRadius.circular(
                       NatterChildTheme.radiusPill,
                     ),
                     border: Border.all(
                       color: connectBlue.withValues(
-                        alpha: 0.34,
+                        alpha: 0.28,
                       ),
                     ),
                   ),
                   child: Text(
                     'Pending',
                     style: NatterChildTheme.caption.copyWith(
-                      color: connectBlue.withValues(alpha: 0.95),
+                      color: connectBlue.withValues(alpha: 0.88),
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                     ),
@@ -20471,21 +20717,11 @@ final isNewChild = realApprovedContacts.isEmpty;
         calmRoute(const JourneyScreen()),
       ),
     ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: NatterChildAddFriendButton(
         onPressed: () => _addFriendDialog(context),
-        backgroundColor: NatterBrand.green,
-        foregroundColor: Colors.black,
-        icon: const Icon(
-          Icons.person_add_alt_1_rounded,
-        ),
-        label: const Text(
-          'Add Friend',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
       ),
-floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.endFloat,
       child: Stack(
         children: [
           Column(
@@ -20603,10 +20839,18 @@ StreamBuilder<List<ChildContactRequest>>(
             final conversations = conversationSnapshot.data ?? [];
 
             final sortedConversations =
-    List<ConversationRecord>.from(conversations)
-      ..sort((a, b) {
-        return b.lastMessageTime.compareTo(a.lastMessageTime);
-      });
+                List<ConversationRecord>.from(conversations)
+                  ..sort((a, b) {
+                    final byActivity = b.lastMessageTime.compareTo(
+                      a.lastMessageTime,
+                    );
+
+                    if (byActivity != 0) {
+                      return byActivity;
+                    }
+
+                    return a.id.compareTo(b.id);
+                  });
 
             if (conversations.isEmpty && !hasPending) {
               return _buildEmptyState(context);
@@ -20660,6 +20904,10 @@ final friendshipBand = state.friendshipHealthBand(
             unreadCount: unreadCount,
             hasUnread: hasUnread,
             isBlocked: isBlocked,
+            lastMessageTime: conversation.lastMessage.isEmpty ||
+                    conversation.lastMessageTime.millisecondsSinceEpoch <= 0
+                ? null
+                : conversation.lastMessageTime,
             onTap: () {
               Navigator.push(
                 context,
