@@ -19284,193 +19284,227 @@ Widget _smallErrorCard(String message) {
   );
 }
 
-Widget _pendingOutgoingCard(ChildContactRequest request) {
+Widget _pendingFriendshipCard({
+  required String name,
+  required String title,
+  required String message,
+}) {
+  final trimmedName = name.trim();
+  final initial = trimmedName.isNotEmpty
+      ? trimmedName.substring(0, 1).toUpperCase()
+      : '?';
+
+  const radius = 24.0;
+
   return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C2A48),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-  color: NatterBrand.green.withOpacity(0.20),
-),
-        boxShadow: [
-  BoxShadow(
-    color: NatterBrand.green.withOpacity(0.14),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+    padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceSm),
+    child: Semantics(
+      container: true,
+      label: '$title. $message',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(
+            sigmaX: 16,
+            sigmaY: 16,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(
+              minHeight: 82,
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              14,
+              12,
+              14,
+              12,
+            ),
             decoration: BoxDecoration(
-              color: NatterBrand.blue.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(14),
+              color: NatterChildTheme.connect.withValues(
+                alpha: 0.095,
+              ),
+              borderRadius: BorderRadius.circular(radius),
               border: Border.all(
-                color: NatterBrand.blue.withOpacity(0.28),
+                color: NatterChildTheme.connect.withValues(
+                  alpha: 0.16,
+                ),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.09),
+                  blurRadius: 22,
+                  offset: const Offset(0, 7),
+                ),
+                BoxShadow(
+                  color: NatterChildTheme.connect.withValues(
+                    alpha: 0.055,
+                  ),
+                  blurRadius: 24,
+                  spreadRadius: -5,
+                ),
+              ],
             ),
-            alignment: Alignment.center,
-            child: Text(
-              request.recipientChildName.isNotEmpty
-                  ? request.recipientChildName[0].toUpperCase()
-                  : '?',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                const Text(
-                  'Almost there',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
+                // A friendship that is not quite complete yet.
+                // The partial ring gives pending friendships their
+                // own visual language without turning this into a
+                // conventional status card.
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(
+                          value: 0.72,
+                          strokeWidth: 1.5,
+                          backgroundColor: Colors.white.withValues(
+                            alpha: 0.045,
+                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            NatterChildTheme.connect.withValues(
+                              alpha: 0.46,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(
+                            alpha: 0.04,
+                          ),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                              alpha: 0.07,
+                            ),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.09,
+                              ),
+                              blurRadius: 13,
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          initial,
+                          style: const TextStyle(
+                            color: NatterChildTheme.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-  'Waiting for ${request.recipientChildName}’s grown-up to approve this friendship.',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.70),
-    fontWeight: FontWeight.w600,
-    fontSize: 12,
-    height: 1.25,
-  ),
-),
+
+                const SizedBox(
+                  width: NatterChildTheme.spaceMd,
+                ),
+
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: NatterChildTheme.cardTitle.copyWith(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        message,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: NatterChildTheme.caption.copyWith(
+                          fontSize: 12.5,
+                          height: 1.24,
+                          color: NatterChildTheme.textSecondary
+                              .withValues(alpha: 0.82),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(
+                  width: NatterChildTheme.spaceSm,
+                ),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NatterChildTheme.connect.withValues(
+                      alpha: 0.085,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusPill,
+                    ),
+                    border: Border.all(
+                      color: NatterChildTheme.connect.withValues(
+                        alpha: 0.20,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    'Pending',
+                    style: NatterChildTheme.caption.copyWith(
+                      color: NatterChildTheme.textSecondary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: NatterBrand.blue.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: NatterBrand.blue.withOpacity(0.26),
-              ),
-            ),
-            child: const Text(
-              'PENDING',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.4,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     ),
   );
 }
 
+Widget _pendingOutgoingCard(ChildContactRequest request) {
+  final name = request.recipientChildName.trim();
+
+  return _pendingFriendshipCard(
+    name: name,
+    title: name.isEmpty
+        ? 'Friendship request sent'
+        : 'Waiting to connect with $name',
+    message: name.isEmpty
+        ? 'Waiting for their grown-up to approve this friendship.'
+        : '$name’s grown-up needs to approve this friendship first.',
+  );
+}
+
 Widget _pendingIncomingCard(ChildContactRequest request) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C2A48),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterBrand.blue.withOpacity(0.20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: NatterBrand.blue.withOpacity(0.12),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: NatterBrand.blue.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: NatterBrand.blue.withOpacity(0.28),
-              ),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              request.requesterChildName.isNotEmpty
-                  ? request.requesterChildName[0].toUpperCase()
-                  : '?',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${request.requesterChildName} wants to connect',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-  'Your grown-up needs to approve this friendship first.',
-  style: TextStyle(
-    color: Colors.white.withOpacity(0.70),
-    fontWeight: FontWeight.w600,
-    fontSize: 12,
-    height: 1.25,
-  ),
-),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: NatterBrand.blue.withOpacity(0.18),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: NatterBrand.blue.withOpacity(0.26),
-              ),
-            ),
-            child: const Text(
-              'PENDING',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.4,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
+  final name = request.requesterChildName.trim();
+
+  return _pendingFriendshipCard(
+    name: name,
+    title: name.isEmpty
+        ? 'Someone wants to connect'
+        : '$name wants to connect',
+    message:
+        'Waiting for your grown-up to approve this friendship.',
   );
 }
 
