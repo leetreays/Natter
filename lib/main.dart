@@ -18553,27 +18553,27 @@ class _NatterChildChatTileState
 
   @override
   Widget build(BuildContext context) {
-    const radius = 22.0;
+    const radius = 24.0;
 
     final initial = widget.name.trim().isNotEmpty
         ? widget.name.trim().substring(0, 1).toUpperCase()
         : '?';
 
     final borderColor = _pressed
-        ? Colors.white.withValues(alpha: 0.24)
+        ? Colors.white.withValues(alpha: 0.28)
         : widget.isBlocked
-            ? NatterChildTheme.protect.withValues(alpha: 0.30)
+            ? NatterChildTheme.protect.withValues(alpha: 0.18)
             : widget.hasUnread
-                ? NatterChildTheme.connect.withValues(alpha: 0.34)
-                : Colors.white.withValues(alpha: 0.12);
+                ? NatterChildTheme.connect.withValues(alpha: 0.20)
+                : Colors.white.withValues(alpha: 0.07);
 
     // Keep the fill deliberately light. The atmosphere underneath
     // should provide most of the colour.
     final glassTint = widget.isBlocked
-        ? const Color(0xFF22152D).withValues(alpha: 0.30)
+        ? const Color(0xFF22152D).withValues(alpha: 0.16)
         : widget.hasUnread
-            ? const Color(0xFF102B46).withValues(alpha: 0.28)
-            : NatterChildTheme.surface.withValues(alpha: 0.22);
+            ? const Color(0xFF102B46).withValues(alpha: 0.17)
+            : NatterChildTheme.surface.withValues(alpha: 0.14);
 
     return Padding(
       padding: const EdgeInsets.only(
@@ -18585,8 +18585,8 @@ class _NatterChildChatTileState
             ? '${widget.name}, blocked friendship'
             : '${widget.name}, ${widget.preview}',
         child: AnimatedScale(
-          scale: _pressed ? 0.985 : 1.0,
-          duration: const Duration(milliseconds: 110),
+          scale: _pressed ? 0.972 : 1.0,
+          duration: const Duration(milliseconds: 90),
           curve: Curves.easeOutCubic,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 140),
@@ -18596,12 +18596,12 @@ class _NatterChildChatTileState
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(
-                    alpha: _pressed ? 0.10 : 0.16,
+                    alpha: _pressed ? 0.07 : 0.10,
                   ),
-                  blurRadius: _pressed ? 10 : 18,
+                  blurRadius: _pressed ? 14 : 24,
                   offset: Offset(
                     0,
-                    _pressed ? 3 : 7,
+                    _pressed ? 2 : 7,
                   ),
                 ),
                 if (widget.hasUnread)
@@ -18626,8 +18626,8 @@ class _NatterChildChatTileState
               borderRadius: BorderRadius.circular(radius),
               child: BackdropFilter(
                 filter: ui.ImageFilter.blur(
-                  sigmaX: 10,
-                  sigmaY: 10,
+                  sigmaX: 16,
+                  sigmaY: 16,
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -18641,10 +18641,10 @@ class _NatterChildChatTileState
                       });
                     },
                     splashColor: NatterChildTheme.connect.withValues(
-                      alpha: 0.10,
+                      alpha: 0.16,
                     ),
                     highlightColor: Colors.white.withValues(
-                      alpha: 0.025,
+                      alpha: 0.045,
                     ),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 140),
@@ -18668,30 +18668,6 @@ class _NatterChildChatTileState
                       ),
                       child: Stack(
                         children: [
-                          // Specular top-edge highlight: this is the
-                          // reflective detail, not a card-wide gradient.
-                          Positioned(
-                            top: 0,
-                            left: 18,
-                            right: 18,
-                            child: IgnorePointer(
-                              child: Container(
-                                height: 1,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.white.withValues(
-                                        alpha: _pressed ? 0.28 : 0.17,
-                                      ),
-                                      Colors.transparent,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
                           // A tiny brightening while physically pressed.
                           Positioned.fill(
                             child: IgnorePointer(
@@ -18700,7 +18676,7 @@ class _NatterChildChatTileState
                                     const Duration(milliseconds: 100),
                                 color: _pressed
                                     ? Colors.white.withValues(
-                                        alpha: 0.025,
+                                        alpha: 0.060,
                                       )
                                     : Colors.transparent,
                               ),
