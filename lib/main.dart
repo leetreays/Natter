@@ -19664,57 +19664,64 @@ Widget _pendingFriendshipCard({
                     children: [
                       Text(
                         title,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: NatterChildTheme.cardTitle.copyWith(
                           fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        message,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: NatterChildTheme.caption.copyWith(
-                          fontSize: 12.5,
-                          height: 1.24,
-                          color: NatterChildTheme.textSecondary
-                              .withValues(alpha: 0.82),
-                        ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              message,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: NatterChildTheme.caption.copyWith(
+                                fontSize: 12.5,
+                                height: 1.24,
+                                color: NatterChildTheme.textSecondary
+                                    .withValues(alpha: 0.82),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: NatterChildTheme.spaceSm,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: connectBlue.withValues(
+                                alpha: 0.09,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                NatterChildTheme.radiusPill,
+                              ),
+                              border: Border.all(
+                                color: connectBlue.withValues(
+                                  alpha: 0.28,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              'Pending',
+                              style: NatterChildTheme.caption.copyWith(
+                                color: connectBlue.withValues(
+                                  alpha: 0.88,
+                                ),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ),
-
-                const SizedBox(
-                  width: NatterChildTheme.spaceSm,
-                ),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: connectBlue.withValues(
-                      alpha: 0.09,
-                    ),
-                    borderRadius: BorderRadius.circular(
-                      NatterChildTheme.radiusPill,
-                    ),
-                    border: Border.all(
-                      color: connectBlue.withValues(
-                        alpha: 0.28,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    'Pending',
-                    style: NatterChildTheme.caption.copyWith(
-                      color: connectBlue.withValues(alpha: 0.88),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                    ),
                   ),
                 ),
               ],
