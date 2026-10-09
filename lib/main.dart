@@ -706,7 +706,7 @@ class NatterChildTopBar extends StatelessWidget
                 alignment: Alignment.centerLeft,
                 child: Image.asset(
                   NatterBrand.logoPath,
-                  height: 54,
+                  height: NatterChildTheme.iconButtonSize,
                 ),
               ),
 
