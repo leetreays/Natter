@@ -19768,6 +19768,159 @@ String friendshipEmoji(String band) {
   }
 }
   
+void _showFriendRequestSentNotice(
+  BuildContext context, {
+  required String friendName,
+}) {
+  const connectBlue = NatterBrand.blue;
+
+  final messenger = ScaffoldMessenger.of(context);
+
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(
+          20,
+          0,
+          20,
+          96,
+        ),
+        padding: EdgeInsets.zero,
+        duration: const Duration(seconds: 4),
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(
+              sigmaX: 18,
+              sigmaY: 18,
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(
+                12,
+                11,
+                16,
+                11,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0B2038).withValues(
+                  alpha: 0.88,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: connectBlue.withValues(
+                    alpha: 0.30,
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: connectBlue.withValues(
+                      alpha: 0.14,
+                    ),
+                    blurRadius: 24,
+                    spreadRadius: -2,
+                  ),
+                  BoxShadow(
+                    color: NatterBrand.pink.withValues(
+                      alpha: 0.07,
+                    ),
+                    blurRadius: 28,
+                    spreadRadius: -6,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: connectBlue.withValues(
+                        alpha: 0.12,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: connectBlue.withValues(
+                          alpha: 0.38,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: connectBlue.withValues(
+                            alpha: 0.16,
+                          ),
+                          blurRadius: 14,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: NatterChildTheme.textPrimary,
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: NatterChildTheme.spaceMd,
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CONNECT',
+                          style: TextStyle(
+                            color: connectBlue.withValues(
+                              alpha: 0.92,
+                            ),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          friendName.trim().isEmpty
+                              ? 'Friend request sent'
+                              : 'Request sent to $friendName',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: NatterChildTheme.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            height: 1.15,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Waiting for their grown-up to approve.',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: NatterChildTheme.textSecondary
+                                .withValues(alpha: 0.82),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+}
+
 Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
@@ -20149,12 +20302,9 @@ await showDialog<void>(
 
                                   if (!context.mounted) return;
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '$friendName is now waiting for parent approval ⏳',
-                                      ),
-                                    ),
+                                  _showFriendRequestSentNotice(
+                                    context,
+                                    friendName: friendName,
                                   );
                                 } on FirebaseFunctionsException catch (e) {
                                   if (!context.mounted) return;
