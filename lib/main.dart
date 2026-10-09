@@ -17677,7 +17677,7 @@ String _habitsMessage(String stage) {
   }
 }
 
-class CeremonyScreen extends StatelessWidget {
+class CeremonyScreen extends StatefulWidget {
   final String name;
   final List<String> promises;
 
@@ -17688,46 +17688,480 @@ class CeremonyScreen extends StatelessWidget {
   });
 
   @override
+  State<CeremonyScreen> createState() => _CeremonyScreenState();
+}
+
+class _CeremonyScreenState extends State<CeremonyScreen> {
+  bool _showSeal = false;
+  bool _showContent = false;
+  bool _showEnter = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(
+      const Duration(milliseconds: 120),
+      () {
+        if (!mounted) return;
+        setState(() => _showSeal = true);
+      },
+    );
+
+    Future.delayed(
+      const Duration(milliseconds: 430),
+      () {
+        if (!mounted) return;
+        setState(() => _showContent = true);
+      },
+    );
+
+    Future.delayed(
+      const Duration(milliseconds: 760),
+      () {
+        if (!mounted) return;
+        setState(() => _showEnter = true);
+      },
+    );
+  }
+
+  Color _promiseAccent(String promise) {
+    switch (promise) {
+      case 'Be kind':
+      case 'Take breaks':
+        return NatterChildTheme.grow;
+
+      case 'No secrets from adults':
+      case 'If it feels weird, stop':
+        return NatterChildTheme.protect;
+
+      case 'Ask before adding friends':
+      case 'Keep it text-only':
+      default:
+        return NatterChildTheme.connect;
+    }
+  }
+
+  IconData _promiseIcon(String promise) {
+    switch (promise) {
+      case 'Be kind':
+        return Icons.favorite_rounded;
+
+      case 'No secrets from adults':
+        return Icons.shield_rounded;
+
+      case 'If it feels weird, stop':
+        return Icons.pan_tool_alt_rounded;
+
+      case 'Ask before adding friends':
+        return Icons.person_add_alt_1_rounded;
+
+      case 'Keep it text-only':
+        return Icons.chat_bubble_rounded;
+
+      case 'Take breaks':
+      default:
+        return Icons.bedtime_rounded;
+    }
+  }
+
+  void _enterNatter() {
+    Navigator.pushReplacement(
+      context,
+      calmRoute(const ChatsScreen()),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final badge = badgeForPromises(promises.toSet());
+    final badge = badgeForPromises(widget.promises.toSet());
 
     return BrandScaffold(
-      appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Sealed'),
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
+      background: const NatterChildBackground(),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              NatterChildTheme.screenHorizontalPadding,
+              NatterChildTheme.spaceSm,
+              NatterChildTheme.screenHorizontalPadding,
+              0,
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: NatterChildTheme.iconButtonSize,
+                  height: NatterChildTheme.iconButtonSize,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.maybePop(context),
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusPill,
+                      ),
+                      splashColor:
+                          NatterChildTheme.connect.withValues(
+                        alpha: 0.14,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(
+                            alpha: 0.045,
+                          ),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                              alpha: 0.10,
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: NatterChildTheme.textPrimary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      NatterBrand.logoPath,
+                      height: 42,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: NatterChildTheme.iconButtonSize,
+                  height: NatterChildTheme.iconButtonSize,
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: ListView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                NatterChildTheme.screenHorizontalPadding,
+                NatterChildTheme.spaceXl,
+                NatterChildTheme.screenHorizontalPadding,
+                NatterChildTheme.spaceLg,
+              ),
+              children: [
+                AnimatedOpacity(
+                  opacity: _showSeal ? 1 : 0,
+                  duration: const Duration(milliseconds: 620),
+                  curve: Curves.easeOutCubic,
+                  child: AnimatedScale(
+                    scale: _showSeal ? 1 : 0.88,
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeOutBack,
+                    child: Column(
+                      children: [
+                        _NatterPromiseSeal(
+                          badge: badge,
+                        ),
+                        const SizedBox(
+                          height: NatterChildTheme.spaceLg,
+                        ),
+                        Text(
+                          badge.title.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: NatterChildTheme.grow
+                                .withValues(alpha: 0.92),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.spaceXl,
+                ),
+
+                AnimatedOpacity(
+                  opacity: _showContent ? 1 : 0,
+                  duration: const Duration(milliseconds: 540),
+                  curve: Curves.easeOut,
+                  child: AnimatedSlide(
+                    offset: _showContent
+                        ? Offset.zero
+                        : const Offset(0, 0.045),
+                    duration: const Duration(milliseconds: 620),
+                    curve: Curves.easeOutCubic,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Your promises are sealed',
+                          textAlign: TextAlign.center,
+                          style:
+                              NatterChildTheme.screenTitle.copyWith(
+                            fontSize: 30,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: NatterChildTheme.spaceSm,
+                        ),
+
+                        Text(
+                          '${widget.name}, these promises are yours to carry into Natter.',
+                          textAlign: TextAlign.center,
+                          style: NatterChildTheme.screenSubtitle
+                              .copyWith(
+                            fontSize: 15,
+                            height: 1.42,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: NatterChildTheme.space2Xl,
+                        ),
+
+                        ...widget.promises.map(
+                          (promise) => Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: NatterChildTheme.spaceMd,
+                            ),
+                            child: _NatterSealedPromise(
+                              label: promise,
+                              icon: _promiseIcon(promise),
+                              accent: _promiseAccent(promise),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: NatterChildTheme.spaceLg,
+                        ),
+
+                        Text(
+                          'Your Natter journey begins here.',
+                          textAlign: TextAlign.center,
+                          style: NatterChildTheme.bodyStrong.copyWith(
+                            color: NatterChildTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          AnimatedOpacity(
+            opacity: _showEnter ? 1 : 0,
+            duration: const Duration(milliseconds: 500),
+            child: AnimatedSlide(
+              offset: _showEnter
+                  ? Offset.zero
+                  : const Offset(0, 0.20),
+              duration: const Duration(milliseconds: 580),
+              curve: Curves.easeOutCubic,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  NatterChildTheme.screenHorizontalPadding,
+                  NatterChildTheme.spaceSm,
+                  NatterChildTheme.screenHorizontalPadding,
+                  NatterChildTheme.screenBottomPadding,
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Connect',
+                          style: TextStyle(
+                            color: NatterChildTheme.connect,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          '  ·  ',
+                          style: TextStyle(
+                            color: NatterChildTheme.textMuted
+                                .withValues(alpha: 0.70),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          'Protect',
+                          style: TextStyle(
+                            color: NatterChildTheme.protect,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          '  ·  ',
+                          style: TextStyle(
+                            color: NatterChildTheme.textMuted
+                                .withValues(alpha: 0.70),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          'Grow',
+                          style: TextStyle(
+                            color: NatterChildTheme.grow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: NatterChildTheme.spaceMd,
+                    ),
+
+                    _NatterEnterButton(
+                      onPressed: _enterNatter,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
+    );
+  }
+}
+
+class _NatterPromiseSeal extends StatelessWidget {
+  const _NatterPromiseSeal({
+    required this.badge,
+  });
+
+  final NatterBadge badge;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: NatterChildTheme.connect.withValues(
+              alpha: 0.17,
+            ),
+            blurRadius: 34,
+            spreadRadius: 2,
+            offset: const Offset(-10, 0),
+          ),
+          BoxShadow(
+            color: NatterChildTheme.protect.withValues(
+              alpha: 0.15,
+            ),
+            blurRadius: 34,
+            spreadRadius: 1,
+            offset: const Offset(10, -4),
+          ),
+          BoxShadow(
+            color: NatterChildTheme.grow.withValues(
+              alpha: 0.14,
+            ),
+            blurRadius: 32,
+            spreadRadius: 0,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Container(
+        width: 126,
+        height: 126,
+        padding: const EdgeInsets.all(1.4),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: SweepGradient(
+            colors: [
+              NatterChildTheme.connect,
+              NatterChildTheme.protect,
+              NatterChildTheme.grow,
+              NatterChildTheme.connect,
+            ],
+          ),
+        ),
+        child: ClipOval(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(
+              sigmaX: 18,
+              sigmaY: 18,
+            ),
             child: Container(
-              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-  color: const Color(0xFF1C2A48).withOpacity(0.94),
-  borderRadius: BorderRadius.circular(28),
-  border: Border.all(color: Colors.white.withOpacity(0.10)),
-  boxShadow: [
-    BoxShadow(
-      color: NatterBrand.blue.withOpacity(0.24),
-      blurRadius: 22,
-      offset: const Offset(0, 10),
-    ),
-  ],
-),
-              child: _SimpleCeremony(
-                name: name,
-                promises: promises,
-                badge: badge,
-                onEnter: () {
-                  Navigator.pushReplacement(
-                    context,
-                    calmRoute(const ChatsScreen()),
-                  );
-                },
+                shape: BoxShape.circle,
+                color: const Color(0xFF0B2038).withValues(
+                  alpha: 0.82,
+                ),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 82,
+                    height: 82,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: badge.color.withValues(
+                        alpha: 0.10,
+                      ),
+                      border: Border.all(
+                        color: badge.color.withValues(
+                          alpha: 0.30,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: badge.color.withValues(
+                            alpha: 0.14,
+                          ),
+                          blurRadius: 18,
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Icon(
+                      badge.icon,
+                      color: NatterChildTheme.textPrimary,
+                      size: 42,
+                    ),
+                  ),
+
+                  Positioned(
+                    bottom: 19,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _NatterSealDot(
+                          color: NatterChildTheme.connect,
+                        ),
+                        const SizedBox(width: 5),
+                        _NatterSealDot(
+                          color: NatterChildTheme.protect,
+                        ),
+                        const SizedBox(width: 5),
+                        _NatterSealDot(
+                          color: NatterChildTheme.grow,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -17737,126 +18171,258 @@ class CeremonyScreen extends StatelessWidget {
   }
 }
 
-class _SimpleCeremony extends StatelessWidget {
-  final String name;
-  final List<String> promises;
-  final NatterBadge badge;
-  final VoidCallback onEnter;
-
-  const _SimpleCeremony({
-    required this.name,
-    required this.promises,
-    required this.badge,
-    required this.onEnter,
+class _NatterSealDot extends StatelessWidget {
+  const _NatterSealDot({
+    required this.color,
   });
+
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-  Icons.verified_rounded,
-  size: 72,
-  color: NatterBrand.green,
-  shadows: [
-    Shadow(
-      color: NatterBrand.green.withOpacity(0.45),
-      blurRadius: 18,
-    ),
-  ],
-),
-          const SizedBox(height: 10),
-          Text(
-            'Welcome to Natter',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.2,
+    return Container(
+      width: 6,
+      height: 6,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.42),
+            blurRadius: 7,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NatterSealedPromise extends StatelessWidget {
+  const _NatterSealedPromise({
+    required this.label,
+    required this.icon,
+    required this.accent,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(
+        NatterChildTheme.radiusLarge,
+      ),
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(
+          sigmaX: 16,
+          sigmaY: 16,
+        ),
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: 62,
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            12,
+            9,
+            14,
+            9,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10233D).withValues(
+              alpha: 0.42,
+            ),
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusLarge,
+            ),
+            border: Border.all(
+              color: accent.withValues(
+                alpha: 0.22,
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 34,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            'Your promises:',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.85),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...promises.map(
-            (p) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 14,
-                ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Colors.white.withOpacity(0.18)),
+                  color: accent.withValues(
+                    alpha: 0.10,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: accent.withValues(
+                      alpha: 0.25,
+                    ),
+                  ),
                 ),
+                alignment: Alignment.center,
+                child: Icon(
+                  icon,
+                  color: accent,
+                  size: 19,
+                ),
+              ),
+
+              const SizedBox(
+                width: NatterChildTheme.spaceMd,
+              ),
+
+              Expanded(
                 child: Text(
-                  p,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
+                  label,
+                  style: NatterChildTheme.cardTitle.copyWith(
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+
+              Icon(
+                Icons.check_rounded,
+                color: accent.withValues(alpha: 0.84),
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NatterEnterButton extends StatefulWidget {
+  const _NatterEnterButton({
+    required this.onPressed,
+  });
+
+  final VoidCallback onPressed;
+
+  @override
+  State<_NatterEnterButton> createState() =>
+      _NatterEnterButtonState();
+}
+
+class _NatterEnterButtonState
+    extends State<_NatterEnterButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Enter Natter',
+      child: AnimatedScale(
+        scale: _pressed ? 0.98 : 1,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusPill,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: NatterChildTheme.connect
+          .withValues(alpha: 0.10),
+                blurRadius: 24,
+                spreadRadius: -2,
+              ),
+              BoxShadow(
+                color: NatterChildTheme.protect
+                    .withValues(alpha: 0.07),
+                blurRadius: 28,
+                spreadRadius: -5,
+              ),
+              BoxShadow(
+                color: NatterChildTheme.grow
+                    .withValues(alpha: 0.10),
+                blurRadius: 24,
+                spreadRadius: -3,
+              ),
+            ],
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(1.1),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  NatterChildTheme.connect,
+                  NatterChildTheme.protect,
+                  NatterChildTheme.grow,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusPill,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusPill,
+              ),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(
+                  sigmaX: 18,
+                  sigmaY: 18,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: widget.onPressed,
+                    onHighlightChanged: (pressed) {
+                      if (_pressed == pressed) return;
+
+                      setState(() {
+                        _pressed = pressed;
+                      });
+                    },
+                    splashColor: NatterChildTheme.connect
+                        .withValues(alpha: 0.13),
+                    highlightColor:
+                        Colors.white.withValues(alpha: 0.04),
+                    child: AnimatedContainer(
+                      duration: const Duration(
+                        milliseconds: 120,
+                      ),
+                      height:
+                          NatterChildTheme.primaryButtonHeight,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0B2038)
+                            .withValues(
+                          alpha: _pressed ? 0.90 : 0.78,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          NatterChildTheme.radiusPill,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Enter Natter',
+                            style: NatterChildTheme.button,
+                          ),
+                          const SizedBox(
+                            width: NatterChildTheme.spaceSm,
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: NatterChildTheme.textPrimary,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 18),
-          BadgeCard(name: name, badge: badge),
-          const SizedBox(height: 18),
-          Text(
-            "You're officially in. 🌿",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: NatterBrand.green.withOpacity(0.95),
-            ),
-          ),
-          const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-  onPressed: onEnter,
-  style: ElevatedButton.styleFrom(
-    backgroundColor: NatterBrand.green,
-    foregroundColor: Colors.black,
-    elevation: 0,
-    padding: const EdgeInsets.symmetric(vertical: 16),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(999),
-    ),
-  ),
-  child: const Text(
-    'Enter Natter ✨',
-    style: TextStyle(
-      fontWeight: FontWeight.w900,
-      fontSize: 16,
-    ),
-  ),
-),
-          ),
-        ],
+        ),
       ),
     );
   }
