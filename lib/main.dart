@@ -16126,14 +16126,17 @@ class _RiteScreenState extends State<RiteScreen> {
 
 class PromiseScreen extends StatefulWidget {
   final String name;
-  const PromiseScreen({super.key, required this.name});
+
+  const PromiseScreen({
+    super.key,
+    required this.name,
+  });
 
   @override
   State<PromiseScreen> createState() => _PromiseScreenState();
 }
 
-class _PromiseScreenState extends State<PromiseScreen>
-    with TickerProviderStateMixin {
+class _PromiseScreenState extends State<PromiseScreen> {
   final options = const [
     'Be kind',
     'No secrets from adults',
@@ -16143,309 +16146,867 @@ class _PromiseScreenState extends State<PromiseScreen>
     'Take breaks',
   ];
 
-  late AnimationController _pulseController;
-  late AnimationController _glowController;
-  late Animation<double> _glowAnimation;
-
-  @override
-void initState() {
-  super.initState();
-
-  _pulseController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 900),
-    lowerBound: 0.9,
-    upperBound: 1.1,
-  )..repeat(reverse: true);
-
-  _glowController = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 2),
-  )..repeat(reverse: true);
-
-  _glowAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
-    CurvedAnimation(
-      parent: _glowController,
-      curve: Curves.easeInOut,
-    ),
-  );
-}
-  
-  @override
-void dispose() {
-  _pulseController.dispose();   // existing (chips glow)
-  _glowController.dispose();    // new (button glow)
-  super.dispose();
-}
-
   final Set<String> selected = {};
 
   bool justCompletedPromiseSet = false;
 
+  Color _accentForPromise(String promise) {
+    switch (promise) {
+      case 'Be kind':
+      case 'Take breaks':
+        return NatterChildTheme.grow;
+
+      case 'No secrets from adults':
+      case 'If it feels weird, stop':
+        return NatterChildTheme.protect;
+
+      case 'Ask before adding friends':
+      case 'Keep it text-only':
+      default:
+        return NatterChildTheme.connect;
+    }
+  }
+
+  IconData _iconForPromise(String promise) {
+    switch (promise) {
+      case 'Be kind':
+        return Icons.favorite_rounded;
+
+      case 'No secrets from adults':
+        return Icons.shield_rounded;
+
+      case 'If it feels weird, stop':
+        return Icons.pan_tool_alt_rounded;
+
+      case 'Ask before adding friends':
+        return Icons.person_add_alt_1_rounded;
+
+      case 'Keep it text-only':
+        return Icons.chat_bubble_rounded;
+
+      case 'Take breaks':
+      default:
+        return Icons.bedtime_rounded;
+    }
+  }
+
+  void _togglePromise(String promise) {
+    final isOn = selected.contains(promise);
+
+    if (!isOn && selected.length >= 3) {
+      return;
+    }
+
+    setState(() {
+      final beforeCount = selected.length;
+
+      if (isOn) {
+        selected.remove(promise);
+        justCompletedPromiseSet = false;
+      } else {
+        selected.add(promise);
+
+        if (beforeCount == 2 && selected.length == 3) {
+          justCompletedPromiseSet = true;
+
+          Future.delayed(
+            const Duration(milliseconds: 900),
+            () {
+              if (!mounted) return;
+
+              setState(() {
+                justCompletedPromiseSet = false;
+              });
+            },
+          );
+        }
+      }
+    });
+  }
+
   Future<void> _seal() async {
-  final promises = selected.toList();
+    final promises = selected.toList();
 
-  print('SEAL tapped');
-  print('Name: ${widget.name}');
-  print('Promises: $promises');
+    try {
+      await AppStateScope.of(context).recordRite(
+        name: widget.name,
+        promises: promises,
+      );
 
-  try {
-    print('About to call recordRite');
+      if (!mounted) return;
 
-    await AppStateScope.of(context).recordRite(
-      name: widget.name,
-      promises: promises,
-    );
-
-    print('recordRite completed successfully');
-
-    if (!mounted) return;
-
-    Navigator.push(
-      context,
-      calmRoute(
-        CeremonyScreen(
-          name: widget.name,
-          promises: promises,
+      Navigator.push(
+        context,
+        calmRoute(
+          CeremonyScreen(
+            name: widget.name,
+            promises: promises,
+          ),
         ),
-      ),
-    );
-  } catch (e, st) {
-    print('SEAL ERROR: $e');
-    print(st);
+      );
+    } catch (e) {
+      if (!mounted) return;
 
-    if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            behavior: SnackBarBehavior.floating,
+            content: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusMedium,
+              ),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(
+                  sigmaX: 16,
+                  sigmaY: 16,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(
+                    NatterChildTheme.spaceLg,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1527).withValues(
+                      alpha: 0.90,
+                    ),
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusMedium,
+                    ),
+                    border: Border.all(
+                      color: NatterChildTheme.protect.withValues(
+                        alpha: 0.34,
+                      ),
+                    ),
+                  ),
+                  child: const Text(
+                    'Your promises could not be saved just yet. Please try again.',
+                    style: NatterChildTheme.bodyStrong,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+    }
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Could not save your promises: $e'),
+  @override
+  Widget build(BuildContext context) {
+    final canContinue = selected.length == 3;
+    final remaining = 3 - selected.length;
+
+    return BrandScaffold(
+      background: const NatterChildBackground(),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              NatterChildTheme.screenHorizontalPadding,
+              NatterChildTheme.spaceSm,
+              NatterChildTheme.screenHorizontalPadding,
+              0,
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: NatterChildTheme.iconButtonSize,
+                  height: NatterChildTheme.iconButtonSize,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.maybePop(context),
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusPill,
+                      ),
+                      splashColor: NatterChildTheme.connect.withValues(
+                        alpha: 0.14,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(
+                            alpha: 0.055,
+                          ),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                              alpha: 0.11,
+                            ),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: NatterChildTheme.textPrimary,
+                          size: 21,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      NatterBrand.logoPath,
+                      height: 42,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: NatterChildTheme.iconButtonSize,
+                  height: NatterChildTheme.iconButtonSize,
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: ListView(
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                NatterChildTheme.screenHorizontalPadding,
+                NatterChildTheme.spaceXl,
+                NatterChildTheme.screenHorizontalPadding,
+                NatterChildTheme.spaceLg,
+              ),
+              children: [
+                Text(
+                  'Your Natter promises',
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.screenTitle.copyWith(
+                    fontSize: 30,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.spaceSm,
+                ),
+
+                Text(
+                  '${widget.name}, choose three promises to begin your journey.',
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.screenSubtitle.copyWith(
+                    fontSize: 15,
+                  ),
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.spaceXl,
+                ),
+
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusPill,
+                    ),
+                    child: BackdropFilter(
+                      filter: ui.ImageFilter.blur(
+                        sigmaX: 14,
+                        sigmaY: 14,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 13,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(
+                            alpha: 0.045,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            NatterChildTheme.radiusPill,
+                          ),
+                          border: Border.all(
+                            color: Colors.white.withValues(
+                              alpha: 0.10,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ...List.generate(
+                              3,
+                              (index) {
+                                final active =
+                                    selected.length > index;
+
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    right: index == 2 ? 0 : 6,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(
+                                      milliseconds: 180,
+                                    ),
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: active
+                                          ? [
+                                              NatterChildTheme.connect,
+                                              NatterChildTheme.protect,
+                                              NatterChildTheme.grow,
+                                            ][index]
+                                          : Colors.white.withValues(
+                                              alpha: 0.14,
+                                            ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: active
+                                          ? [
+                                              BoxShadow(
+                                                color: [
+                                                  NatterChildTheme.connect,
+                                                  NatterChildTheme.protect,
+                                                  NatterChildTheme.grow,
+                                                ][index]
+                                                    .withValues(
+                                                  alpha: 0.34,
+                                                ),
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            AnimatedSwitcher(
+                              duration: const Duration(
+                                milliseconds: 180,
+                              ),
+                              child: Text(
+                                selected.length == 3
+                                    ? '3 of 3 chosen'
+                                    : '${selected.length} of 3 chosen',
+                                key: ValueKey(selected.length),
+                                style: NatterChildTheme.caption.copyWith(
+                                  color:
+                                      NatterChildTheme.textSecondary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.space2Xl,
+                ),
+
+                ...options.map(
+                  (promise) {
+                    final isSelected =
+                        selected.contains(promise);
+                    final enabled =
+                        isSelected || selected.length < 3;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: NatterChildTheme.spaceMd,
+                      ),
+                      child: _NatterPromiseTile(
+                        label: promise,
+                        icon: _iconForPromise(promise),
+                        accent: _accentForPromise(promise),
+                        selected: isSelected,
+                        enabled: enabled,
+                        onTap: () => _togglePromise(promise),
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.spaceSm,
+                ),
+              ],
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              NatterChildTheme.screenHorizontalPadding,
+              NatterChildTheme.spaceSm,
+              NatterChildTheme.screenHorizontalPadding,
+              NatterChildTheme.screenBottomPadding,
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 22,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(
+                      milliseconds: 220,
+                    ),
+                    child: Text(
+                      justCompletedPromiseSet
+                          ? 'Your three promises are ready ✨'
+                          : canContinue
+                              ? 'Your three promises are ready'
+                              : remaining == 1
+                                  ? 'Choose 1 more promise'
+                                  : 'Choose $remaining more promises',
+                      key: ValueKey(
+                        '$justCompletedPromiseSet-$remaining',
+                      ),
+                      textAlign: TextAlign.center,
+                      style: NatterChildTheme.caption.copyWith(
+                        color: canContinue
+                            ? NatterChildTheme.textSecondary
+                            : NatterChildTheme.textMuted,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(
+                  height: NatterChildTheme.spaceSm,
+                ),
+
+                _NatterPromiseSealButton(
+                  enabled: canContinue,
+                  onPressed: _seal,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+class _NatterPromiseTile extends StatefulWidget {
+  const _NatterPromiseTile({
+    required this.label,
+    required this.icon,
+    required this.accent,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color accent;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  State<_NatterPromiseTile> createState() =>
+      _NatterPromiseTileState();
+}
+
+class _NatterPromiseTileState
+    extends State<_NatterPromiseTile> {
+  bool _pressed = false;
+
   @override
   Widget build(BuildContext context) {
-    final remaining = 3 - selected.length;
-    final canContinue = selected.length >= 3;
-    final isLocked = selected.length >= 3;
+    final selected = widget.selected;
+    final enabled = widget.enabled;
 
-    return BrandScaffold(
-      appBar: AppBar(
-        title: const BrandedAppBarTitle(title: 'Your promises'),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Column(
-              children: [
-                Container(
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(24),
-    boxShadow: [
-      BoxShadow(
-        color: NatterBrand.blue.withOpacity(0.20),
-        blurRadius: 18,
-        offset: const Offset(0, 8),
-      ),
-    ],
-  ),
-  child: BrandCard(
-    child: Column(
-      children: [
-        Text(
-          'Okay, ${widget.name} 😊',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: widget.label,
+      child: AnimatedScale(
+        scale: _pressed ? 0.985 : 1,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusLarge,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: _pressed ? 0.06 : 0.10,
+                ),
+                blurRadius: _pressed ? 12 : 22,
+                offset: Offset(
+                  0,
+                  _pressed ? 2 : 7,
+                ),
+              ),
+              if (selected)
+                BoxShadow(
+                  color: widget.accent.withValues(
+                    alpha: 0.12,
+                  ),
+                  blurRadius: 22,
+                  spreadRadius: -3,
+                ),
+            ],
           ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Pick 3 promises for your Natter life:',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-                const SizedBox(height: 16),
-Expanded(
-  child: Center(
-    child: SingleChildScrollView(
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 12,
-        runSpacing: 12,
-        children: options.map((t) {
-          final isOn = selected.contains(t);
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusLarge,
+            ),
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: 16,
+                sigmaY: 16,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: enabled ? widget.onTap : null,
+                  onHighlightChanged: (pressed) {
+                    if (!enabled || _pressed == pressed) {
+                      return;
+                    }
 
-          return ScaleTransition(
-            scale: isOn ? _pulseController : const AlwaysStoppedAnimation(1),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOut,
-              decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(16),
-  boxShadow: isOn
-      ? [
-          BoxShadow(
-            color: NatterBrand.blue.withOpacity(0.30),
-            blurRadius: 16,
-            spreadRadius: 1,
-          ),
-        ]
-      : [],
-),
-              child: ChoiceChip(
-                label: Text(
-                  t,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                    color: isOn
-    ? Colors.white
-    : (isLocked
-        ? Colors.white.withOpacity(0.38)
-        : Colors.white.withOpacity(0.90)),
+                    setState(() {
+                      _pressed = pressed;
+                    });
+                  },
+                  splashColor: widget.accent.withValues(
+                    alpha: 0.13,
+                  ),
+                  highlightColor: Colors.white.withValues(
+                    alpha: 0.035,
+                  ),
+                  child: AnimatedContainer(
+                    duration: const Duration(
+                      milliseconds: 180,
+                    ),
+                    curve: Curves.easeOut,
+                    constraints: const BoxConstraints(
+                      minHeight: 68,
+                    ),
+                    padding: const EdgeInsets.fromLTRB(
+                      13,
+                      11,
+                      14,
+                      11,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? widget.accent.withValues(
+                              alpha: 0.090,
+                            )
+                          : const Color(0xFF10233D)
+                              .withValues(
+                              alpha: enabled ? 0.48 : 0.28,
+                            ),
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusLarge,
+                      ),
+                      border: Border.all(
+                        color: selected
+                            ? widget.accent.withValues(
+                                alpha: 0.42,
+                              )
+                            : Colors.white.withValues(
+                                alpha: enabled ? 0.11 : 0.055,
+                ),
+                        width: selected ? 1.2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(
+                            milliseconds: 180,
+                          ),
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: widget.accent.withValues(
+                              alpha: selected ? 0.17 : 0.075,
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.accent.withValues(
+                                alpha: selected ? 0.46 : 0.18,
+                              ),
+                            ),
+                            boxShadow: selected
+                                ? [
+                                    BoxShadow(
+                                      color:
+                                          widget.accent.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      blurRadius: 13,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          alignment: Alignment.center,
+                          child: Icon(
+                            widget.icon,
+                            color: enabled
+                                ? widget.accent
+                                : widget.accent.withValues(
+                                    alpha: 0.34,
+                                  ),
+                            size: 21,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          width: NatterChildTheme.spaceMd,
+                        ),
+
+                        Expanded(
+                          child: Text(
+                            widget.label,
+                            style:
+                                NatterChildTheme.cardTitle.copyWith(
+                              color: enabled
+                                  ? NatterChildTheme.textPrimary
+                                  : NatterChildTheme.textMuted
+                                      .withValues(
+                                      alpha: 0.52,
+                                    ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          width: NatterChildTheme.spaceSm,
+                        ),
+
+                        AnimatedSwitcher(
+                          duration: const Duration(
+                            milliseconds: 180,
+                          ),
+                          transitionBuilder: (
+                            child,
+                            animation,
+                          ) {
+                            return ScaleTransition(
+                              scale: animation,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: selected
+                              ? Container(
+                                  key: const ValueKey(
+                                    'selected',
+                                  ),
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        widget.accent.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color:
+                                          widget.accent.withValues(
+                                        alpha: 0.50,
+                                      ),
+                                    ),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Icon(
+                                    Icons.check_rounded,
+                                    color: NatterChildTheme
+                                        .textPrimary,
+                                    size: 17,
+                                  ),
+                                )
+                              : const SizedBox(
+                                  key: ValueKey(
+                                    'not-selected',
+                                  ),
+                                  width: 28,
+                                  height: 28,
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                selected: isOn,
-                showCheckmark: false,
-                elevation: isOn ? 6 : 0,
-                shadowColor: NatterBrand.blue.withOpacity(0.35),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                labelPadding: EdgeInsets.zero,
-                backgroundColor: isLocked && !isOn
-    ? const Color(0xFF1C2A48).withOpacity(0.55)
-    : const Color(0xFF243F6B).withOpacity(0.92),
-selectedColor: NatterBrand.blue.withOpacity(0.85),
-                side: BorderSide(
-  color: isOn
-      ? NatterBrand.blue.withOpacity(0.95)
-      : (isLocked
-          ? Colors.white.withOpacity(0.10)
-          : Colors.white.withOpacity(0.18)),
-  width: isOn ? 2 : 1.4,
-),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                onSelected: (_) {
-                  setState(() {
-                    final beforeCount = selected.length;
-
-                    if (isOn) {
-                      selected.remove(t);
-                      justCompletedPromiseSet = false;
-                    } else if (!isLocked) {
-                      selected.add(t);
-
-                      if (beforeCount == 2 && selected.length == 3) {
-                        justCompletedPromiseSet = true;
-
-                        Future.delayed(const Duration(milliseconds: 900), () {
-                          if (!mounted) return;
-                          setState(() {
-                            justCompletedPromiseSet = false;
-                          });
-                        });
-                      }
-                    }
-                  });
-                },
               ),
             ),
-          );
-        }).toList(),
-      ),
-    ),
-  ),
-),
-const SizedBox(height: 10),
-AnimatedSwitcher(
-  duration: const Duration(milliseconds: 250),
-  child: Text(
-    justCompletedPromiseSet
-        ? '✨ Beautiful choice. Your promise set is complete.'
-        : canContinue
-            ? 'Your promise set is complete ✨'
-            : 'Choose $remaining more',
-    key: ValueKey(
-      justCompletedPromiseSet
-          ? 'justCompleted'
-          : canContinue
-              ? 'complete'
-              : 'remaining',
-    ),
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-      fontWeight: FontWeight.w700,
-    ),
-    textAlign: TextAlign.center,
-  ),
-),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: AnimatedBuilder(
-  animation: _glowAnimation,
-  builder: (context, child) {
-    final scale = canContinue ? _glowAnimation.value : 1.0;
-
-    return Transform.scale(
-      scale: scale,
-      child: child,
-    );
-  },
-  child: Container(
-    decoration: BoxDecoration(
-  borderRadius: BorderRadius.circular(999),
-  boxShadow: canContinue
-      ? [
-          BoxShadow(
-            color: NatterBrand.green.withOpacity(0.45),
-            blurRadius: 18,
-            spreadRadius: 1,
           ),
-        ]
-      : [],
-),
-    child: ElevatedButton(
-      onPressed: canContinue ? _seal : null,
-      style: ElevatedButton.styleFrom(
-        backgroundColor:
-            canContinue ? NatterBrand.green : Colors.grey.shade700,
-        foregroundColor: Colors.black,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(999),
         ),
       ),
-      child: const Text(
-        'Seal My Promises ✨',
-        style: TextStyle(
-          fontWeight: FontWeight.w900,
-          fontSize: 16,
-        ),
-      ),
-    ),
-  ),
-),
+    );
+  }
+}
+
+class _NatterPromiseSealButton extends StatefulWidget {
+  const _NatterPromiseSealButton({
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  State<_NatterPromiseSealButton> createState() =>
+      _NatterPromiseSealButtonState();
+}
+
+class _NatterPromiseSealButtonState
+    extends State<_NatterPromiseSealButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = widget.enabled;
+
+    final edgeColors = enabled
+        ? [
+            NatterChildTheme.connect.withValues(
+              alpha: 0.62,
+            ),
+            NatterChildTheme.protect.withValues(
+              alpha: 0.40,
+            ),
+            NatterChildTheme.grow.withValues(
+              alpha: 0.58,
+            ),
+          ]
+        : [
+            Colors.white.withValues(alpha: 0.09),
+            Colors.white.withValues(alpha: 0.06),
+            Colors.white.withValues(alpha: 0.09),
+          ];
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: 'Seal my promises',
+      child: AnimatedScale(
+        scale: _pressed ? 0.98 : 1,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOutCubic,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(
+              NatterChildTheme.radiusPill,
+            ),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: NatterChildTheme.connect
+                          .withValues(alpha: 0.10),
+                      blurRadius: 24,
+                      spreadRadius: -2,
+                    ),
+                    BoxShadow(
+                      color: NatterChildTheme.protect
+                          .withValues(alpha: 0.07),
+                      blurRadius: 28,
+                      spreadRadius: -5,
+                    ),
+                    BoxShadow(
+                      color: NatterChildTheme.grow
+                          .withValues(alpha: 0.10),
+                      blurRadius: 24,
+                      spreadRadius: -3,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(1.1),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: edgeColors,
+              ),
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusPill,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusPill,
+              ),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(
+                  sigmaX: 18,
+                  sigmaY: 18,
                 ),
-              ],
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: enabled ? widget.onPressed : null,
+                    onHighlightChanged: (pressed) {
+                      if (!enabled || _pressed == pressed) {
+                        return;
+                      }
+
+                      setState(() {
+                        _pressed = pressed;
+                      });
+                    },
+                    splashColor: NatterChildTheme.grow
+                        .withValues(alpha: 0.13),
+                    highlightColor:
+                        Colors.white.withValues(alpha: 0.04),
+                    child: AnimatedContainer(
+                      duration: const Duration(
+                        milliseconds: 120,
+                      ),
+                      height: NatterChildTheme.primaryButtonHeight,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0B2038).withValues(
+                          alpha: enabled
+                              ? (_pressed ? 0.88 : 0.76)
+                              : 0.38,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          NatterChildTheme.radiusPill,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.verified_rounded,
+                            color: enabled
+                                ? NatterChildTheme.grow
+                                : NatterChildTheme.textMuted
+                                    .withValues(alpha: 0.44),
+                            size: 21,
+                          ),
+                          const SizedBox(
+                            width: NatterChildTheme.spaceSm,
+                          ),
+                          Text(
+                            'Seal my promises',
+                            style: NatterChildTheme.button.copyWith(
+                              color: enabled
+                                  ? NatterChildTheme.textPrimary
+                                  : NatterChildTheme.textMuted
+                                      .withValues(alpha: 0.50),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
