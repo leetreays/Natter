@@ -18109,57 +18109,32 @@ class _NatterPromiseSeal extends StatelessWidget {
                   alpha: 0.82,
                 ),
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 82,
-                    height: 82,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
+              child: Container(
+                width: 86,
+                height: 86,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: badge.color.withValues(
+                    alpha: 0.10,
+                  ),
+                  border: Border.all(
+                    color: badge.color.withValues(
+                      alpha: 0.30,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
                       color: badge.color.withValues(
-                        alpha: 0.10,
+                        alpha: 0.14,
                       ),
-                      border: Border.all(
-                        color: badge.color.withValues(
-                          alpha: 0.30,
-                        ),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: badge.color.withValues(
-                            alpha: 0.14,
-                          ),
-                          blurRadius: 18,
-                        ),
-                      ],
+                      blurRadius: 18,
                     ),
-                    alignment: Alignment.center,
-                    child: const _NatterShieldMark(
-                      size: 58,
-                    ),
-                  ),
-
-                  Positioned(
-                    bottom: 19,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _NatterSealDot(
-                          color: NatterChildTheme.connect,
-                        ),
-                        const SizedBox(width: 5),
-                        _NatterSealDot(
-                          color: NatterChildTheme.protect,
-                        ),
-                        const SizedBox(width: 5),
-                        _NatterSealDot(
-                          color: NatterChildTheme.grow,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: const _NatterShieldMark(
+                  size: 64,
+                ),
               ),
             ),
           ),
@@ -18198,52 +18173,52 @@ class _NatterShieldPainter extends CustomPainter {
     final shield = Path()
       ..moveTo(w * 0.50, h * 0.07)
       ..cubicTo(
-        w * 0.62,
-        h * 0.14,
-        w * 0.73,
-        h * 0.18,
-        w * 0.88,
-        h * 0.21,
+        w * 0.63,
+        h * 0.15,
+        w * 0.75,
+        h * 0.20,
+        w * 0.89,
+        h * 0.22,
       )
-      ..lineTo(w * 0.88, h * 0.52)
+      ..lineTo(w * 0.89, h * 0.52)
       ..cubicTo(
-        w * 0.88,
+        w * 0.89,
         h * 0.68,
-        w * 0.78,
-        h * 0.77,
-        w * 0.58,
+        w * 0.79,
+        h * 0.78,
+        w * 0.60,
         h * 0.84,
       )
       ..cubicTo(
-        w * 0.51,
+        w * 0.52,
         h * 0.92,
-        w * 0.42,
+        w * 0.43,
         h * 0.97,
-        w * 0.35,
-        h * 0.98,
+        w * 0.34,
+        h * 0.99,
       )
       ..cubicTo(
         w * 0.37,
-        h * 0.91,
+        h * 0.90,
         w * 0.39,
-        h * 0.85,
+        h * 0.84,
         w * 0.39,
-        h * 0.82,
+        h * 0.80,
       )
       ..cubicTo(
         w * 0.20,
-        h * 0.75,
-        w * 0.12,
-        h * 0.65,
-        w * 0.12,
+        h * 0.73,
+        w * 0.11,
+        h * 0.64,
+        w * 0.11,
         h * 0.52,
       )
-      ..lineTo(w * 0.12, h * 0.21)
+      ..lineTo(w * 0.11, h * 0.22)
       ..cubicTo(
-        w * 0.28,
-        h * 0.18,
-        w * 0.39,
-        h * 0.14,
+        w * 0.25,
+        h * 0.20,
+        w * 0.37,
+        h * 0.15,
         w * 0.50,
         h * 0.07,
       )
@@ -18301,8 +18276,8 @@ class _NatterShieldPainter extends CustomPainter {
 
     canvas.restore();
 
-    final dotY = h * 0.57;
-    final dotRadius = w * 0.055;
+    final dotY = h * 0.55;
+    final dotRadius = w * 0.057;
 
     final dots = [
       (Offset(w * 0.33, dotY), NatterChildTheme.connect),
@@ -18334,32 +18309,6 @@ class _NatterShieldPainter extends CustomPainter {
     covariant _NatterShieldPainter oldDelegate,
   ) {
     return false;
-  }
-}
-
-class _NatterSealDot extends StatelessWidget {
-  const _NatterSealDot({
-    required this.color,
-  });
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 6,
-      height: 6,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.42),
-            blurRadius: 7,
-          ),
-        ],
-      ),
-    );
   }
 }
 
