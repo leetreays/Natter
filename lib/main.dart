@@ -18135,10 +18135,8 @@ class _NatterPromiseSeal extends StatelessWidget {
                       ],
                     ),
                     alignment: Alignment.center,
-                    child: Icon(
-                      badge.icon,
-                      color: NatterChildTheme.textPrimary,
-                      size: 42,
+                    child: const _NatterShieldMark(
+                      size: 58,
                     ),
                   ),
 
@@ -18168,6 +18166,174 @@ class _NatterPromiseSeal extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _NatterShieldMark extends StatelessWidget {
+  const _NatterShieldMark({
+    required this.size,
+  });
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: size,
+      child: CustomPaint(
+        painter: const _NatterShieldPainter(),
+      ),
+    );
+  }
+}
+
+class _NatterShieldPainter extends CustomPainter {
+  const _NatterShieldPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final shield = Path()
+      ..moveTo(w * 0.50, h * 0.07)
+      ..cubicTo(
+        w * 0.62,
+        h * 0.14,
+        w * 0.73,
+        h * 0.18,
+        w * 0.88,
+        h * 0.21,
+      )
+      ..lineTo(w * 0.88, h * 0.52)
+      ..cubicTo(
+        w * 0.88,
+        h * 0.68,
+        w * 0.78,
+        h * 0.77,
+        w * 0.58,
+        h * 0.84,
+      )
+      ..cubicTo(
+        w * 0.51,
+        h * 0.92,
+        w * 0.42,
+        h * 0.97,
+        w * 0.35,
+        h * 0.98,
+      )
+      ..cubicTo(
+        w * 0.37,
+        h * 0.91,
+        w * 0.39,
+        h * 0.85,
+        w * 0.39,
+        h * 0.82,
+      )
+      ..cubicTo(
+        w * 0.20,
+        h * 0.75,
+        w * 0.12,
+        h * 0.65,
+        w * 0.12,
+        h * 0.52,
+      )
+      ..lineTo(w * 0.12, h * 0.21)
+      ..cubicTo(
+        w * 0.28,
+        h * 0.18,
+        w * 0.39,
+        h * 0.14,
+        w * 0.50,
+        h * 0.07,
+      )
+      ..close();
+
+    final bounds = Rect.fromLTWH(0, 0, w, h);
+
+    final fill = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color(0xFF17284F),
+          Color(0xFF06112E),
+        ],
+      ).createShader(bounds)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(shield, fill);
+
+    final outline = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = w * 0.065
+      ..strokeJoin = StrokeJoin.round
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(shield, outline);
+
+    canvas.save();
+    canvas.clipPath(shield);
+
+    final gloss = Path()
+      ..moveTo(w * 0.18, h * 0.25)
+      ..quadraticBezierTo(
+        w * 0.45,
+        h * 0.11,
+        w * 0.70,
+        h * 0.20,
+      )
+      ..lineTo(w * 0.55, h * 0.34)
+      ..quadraticBezierTo(
+        w * 0.34,
+        h * 0.28,
+        w * 0.18,
+        h * 0.40,
+      )
+      ..close();
+
+    canvas.drawPath(
+      gloss,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.075),
+    );
+
+    canvas.restore();
+
+    final dotY = h * 0.57;
+    final dotRadius = w * 0.055;
+
+    final dots = [
+      (Offset(w * 0.33, dotY), NatterChildTheme.connect),
+      (Offset(w * 0.50, dotY), NatterChildTheme.protect),
+      (Offset(w * 0.67, dotY), NatterChildTheme.grow),
+    ];
+
+    for (final dot in dots) {
+      canvas.drawCircle(
+        dot.$1,
+        dotRadius,
+        Paint()..color = dot.$2,
+      );
+
+      canvas.drawCircle(
+        dot.$1.translate(
+          -dotRadius * 0.25,
+          -dotRadius * 0.30,
+        ),
+        dotRadius * 0.22,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.30),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(
+    covariant _NatterShieldPainter oldDelegate,
+  ) {
+    return false;
   }
 }
 
@@ -18402,9 +18568,11 @@ class _NatterEnterButtonState
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
+                          Text(
                             'Enter Natter',
-                            style: NatterChildTheme.button,
+                            style: NatterChildTheme.button.copyWith(
+                              color: NatterChildTheme.textPrimary,
+                            ),
                           ),
                           const SizedBox(
                             width: NatterChildTheme.spaceSm,
