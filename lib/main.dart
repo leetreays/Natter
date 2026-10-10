@@ -21172,6 +21172,155 @@ void _showFriendRequestSentNotice(
     );
 }
 
+
+void _showAddFriendNotice(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required Color accent,
+  required IconData icon,
+  String label = 'CONNECT',
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(
+          20,
+          0,
+          20,
+          96,
+        ),
+        padding: EdgeInsets.zero,
+        duration: const Duration(seconds: 4),
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(
+              sigmaX: 18,
+              sigmaY: 18,
+            ),
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(
+                12,
+                11,
+                16,
+                11,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0B2038).withValues(
+                  alpha: 0.90,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: accent.withValues(
+                    alpha: 0.34,
+                  ),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: accent.withValues(
+                      alpha: 0.16,
+                    ),
+                    blurRadius: 24,
+                    spreadRadius: -2,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: accent.withValues(
+                        alpha: 0.12,
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: accent.withValues(
+                          alpha: 0.40,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withValues(
+                            alpha: 0.16,
+                          ),
+                          blurRadius: 14,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      icon,
+                      color: NatterChildTheme.textPrimary,
+                      size: 21,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: NatterChildTheme.spaceMd,
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          style: TextStyle(
+                            color: accent.withValues(
+                              alpha: 0.94,
+                            ),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color:
+                                NatterChildTheme.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            height: 1.15,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          message,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: NatterChildTheme
+                                .textSecondary
+                                .withValues(alpha: 0.82),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+}
+
 Future<void> _addFriendDialog(BuildContext context) async {
     final state = AppStateScope.of(context);
     final controller = TextEditingController();
@@ -21601,12 +21750,14 @@ await showDialog<void>(
                                     friendName == null ||
                                     friendName.isEmpty) {
                                   Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'That friend code was not recognised.',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title: 'Code not recognised',
+                                    message:
+                                        'Check the code and try again.',
+                                    accent:
+                                        NatterChildTheme.connect,
+                                    icon: Icons.search_off_rounded,
                                   );
                                   return;
                                 }
@@ -21614,48 +21765,62 @@ await showDialog<void>(
                                 if (friendResult['childId'] ==
                                     state.activeChildId) {
                                   Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'That is your own friend code.',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title: 'That code is yours',
+                                    message:
+                                        'Ask your friend for their Natter code instead.',
+                                    accent: NatterBrand.pink,
+                                    icon:
+                                        Icons.person_outline_rounded,
+                                    label: 'NOT THIS ONE',
                                   );
                                   return;
                                 }
 
                                 if (friendName == null) {
                                   Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'That friend code was not recognised.',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title: 'Code not recognised',
+                                    message:
+                                        'Check the code and try again.',
+                                    accent:
+                                        NatterChildTheme.connect,
+                                    icon: Icons.search_off_rounded,
                                   );
                                   return;
                                 }
 
                                 if (state.isApproved(friendName)) {
                                   Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '$friendName is already in your chats 🙂',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title:
+                                        '$friendName is already connected',
+                                    message:
+                                        'You can find them in your chats.',
+                                    accent: NatterBrand.green,
+                                    icon:
+                                        Icons.check_circle_outline_rounded,
+                                    label: 'CONNECTED',
                                   );
                                   return;
                                 }
 
                                 if (state.isPending(friendName)) {
                                   Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '$friendName is already waiting for approval ⏳',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title:
+                                        '$friendName is already waiting',
+                                    message:
+                                        'A grown-up still needs to approve this friendship.',
+                                    accent:
+                                        NatterChildTheme.connect,
+                                    icon:
+                                        Icons.hourglass_top_rounded,
+                                    label: 'PENDING',
                                   );
                                   return;
                                 }
@@ -21691,12 +21856,15 @@ await showDialog<void>(
                                     'code=${e.code} message=${e.message} details=${e.details}',
                                   );
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Could not send request: ${e.code} / ${e.message ?? 'no message'}',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title: 'Request not sent',
+                                    message:
+                                        'Something got in the way. Try again in a moment.',
+                                    accent: NatterBrand.pink,
+                                    icon:
+                                        Icons.error_outline_rounded,
+                                    label: 'TRY AGAIN',
                                   );
                                 } catch (e) {
                                   if (!context.mounted) return;
@@ -21705,12 +21873,15 @@ await showDialog<void>(
                                     'CREATE FRIEND REQUEST UNKNOWN ERROR: $e',
                                   );
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Could not send request: $e',
-                                      ),
-                                    ),
+                                  _showAddFriendNotice(
+                                    context,
+                                    title: 'Request not sent',
+                                    message:
+                                        'Something got in the way. Try again in a moment.',
+                                    accent: NatterBrand.pink,
+                                    icon:
+                                        Icons.error_outline_rounded,
+                                    label: 'TRY AGAIN',
                                   );
                                 } finally {
                                   submitting.value = false;
