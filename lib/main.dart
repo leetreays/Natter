@@ -24863,29 +24863,40 @@ Widget _buildFriendshipMilestoneCard() {
     final friend = state.getFriendByName(widget.contactName);
 
   return Scaffold(
-  backgroundColor: const Color(0xFF0A3554),
+  backgroundColor: const Color(0xFF06112E),
   appBar: AppBar(
   backgroundColor: Colors.transparent,
   surfaceTintColor: Colors.transparent,
   elevation: 0,
   scrolledUnderElevation: 0,
   centerTitle: true,
+  toolbarHeight: 76,
   flexibleSpace: Container(
     decoration: BoxDecoration(
       gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          const Color(0xFF06112E),
-          const Color(0xFF0B3F63),
-          const Color(0xFF06112E),
+          const Color(0xFF081935).withValues(alpha: 0.98),
+          const Color(0xFF0A2545).withValues(alpha: 0.96),
+          const Color(0xFF0B1C3B).withValues(alpha: 0.98),
         ],
+      ),
+      border: Border(
+        bottom: BorderSide(
+          color: NatterChildTheme.connect.withValues(
+            alpha: 0.12,
+          ),
+        ),
       ),
       boxShadow: [
         BoxShadow(
-          color: NatterBrand.blue.withOpacity(0.18),
-          blurRadius: 16,
-          offset: const Offset(0, 6),
+          color: NatterChildTheme.connect.withValues(
+            alpha: 0.10,
+          ),
+          blurRadius: 24,
+          spreadRadius: -4,
+          offset: const Offset(0, 8),
         ),
       ],
     ),
@@ -24920,11 +24931,12 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
           widget.contactName,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 22,
+            fontSize: 23,
             fontWeight: FontWeight.w900,
+            letterSpacing: -0.35,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 4),
         GestureDetector(
   onTap: () {
     Navigator.push(
@@ -24937,23 +24949,45 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       ),
     );
   },
-  child: Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(
-        '${friendshipEmoji(band)} ${friendshipLabel(band)}',
-        style: TextStyle(
-          color: Colors.white.withOpacity(0.85),
-          fontSize: 13,
-          fontWeight: FontWeight.w800,
+  child: Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 4,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white.withValues(
+        alpha: 0.035,
+      ),
+      borderRadius: BorderRadius.circular(999),
+      border: Border.all(
+        color: NatterChildTheme.connect.withValues(
+          alpha: 0.14,
         ),
       ),
-      Icon(
-        Icons.chevron_right_rounded,
-        size: 18,
-        color: Colors.white.withOpacity(0.55),
-      ),
-    ],
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '${friendshipEmoji(band)} ${friendshipLabel(band)}',
+          style: TextStyle(
+            color: Colors.white.withValues(
+              alpha: 0.82,
+            ),
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(width: 2),
+        Icon(
+          Icons.chevron_right_rounded,
+          size: 16,
+          color: Colors.white.withValues(
+            alpha: 0.42,
+          ),
+        ),
+      ],
+    ),
   ),
 ),
       ],
@@ -24968,13 +25002,15 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
   child: DecoratedBox(
     decoration: BoxDecoration(
       gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
         colors: [
-          Color(0xFF071331),
-          Color(0xFF0A3554),
+          Color(0xFF07152F),
+          Color(0xFF0A2947),
+          Color(0xFF081B38),
           Color(0xFF06112E),
         ],
+        stops: [0.0, 0.34, 0.68, 1.0],
       ),
     ),
   ),
