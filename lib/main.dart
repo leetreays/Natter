@@ -21216,41 +21216,86 @@ await showDialog<void>(
       builder: (context, isSubmitting, _) {
         return Dialog(
           backgroundColor: Colors.transparent,
+          elevation: 0,
           insetPadding: const EdgeInsets.all(18),
           child: Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.72),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.18)),
+              color: const Color(0xFF0A1C34).withValues(
+                alpha: 0.90,
+              ),
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusLarge,
+              ),
+              border: Border.all(
+                color: NatterChildTheme.connect.withValues(
+                  alpha: 0.26,
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: NatterChildTheme.connect.withValues(
+                    alpha: 0.12,
+                  ),
+                  blurRadius: 28,
+                  spreadRadius: -4,
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: NatterChildTheme.connect.withValues(
+                      alpha: 0.12,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: NatterChildTheme.connect.withValues(
+                        alpha: 0.34,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.person_add_alt_1_rounded,
+                    color: NatterChildTheme.textPrimary,
+                    size: 27,
+                  ),
+                ),
+                const SizedBox(
+                  height: NatterChildTheme.spaceMd,
+                ),
                 const Text(
                   'Add a friend',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Ask your friend for their code',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Enter a friend code. A parent will approve it.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontWeight: FontWeight.w700,
+                    color: NatterChildTheme.textPrimary,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 24,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Ask your friend for their Natter code.',
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.body.copyWith(
+                    color: NatterChildTheme.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Their grown-up will approve the friendship.',
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.caption.copyWith(
+                    color: NatterChildTheme.textMuted.withValues(
+                      alpha: 0.84,
+                    ),
                   ),
                 ),
                 if (isSubmitting) ...[
@@ -21286,6 +21331,8 @@ await showDialog<void>(
                         controller: lettersController,
                         enabled: !isSubmitting,
                         focusNode: lettersFocus,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
                         textCapitalization: TextCapitalization.characters,
                         autocorrect: false,
                         enableSuggestions: false,
@@ -21306,7 +21353,9 @@ await showDialog<void>(
                             letterSpacing: 2,
                           ),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.08),
+                          fillColor: NatterChildTheme.connect.withValues(
+                            alpha: 0.055,
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 18,
@@ -21323,11 +21372,15 @@ await showDialog<void>(
                               color: Colors.white.withOpacity(0.10),
                             ),
                           ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(18)),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(18),
+                            ),
                             borderSide: BorderSide(
-                              color: NatterBrand.yellow,
-                              width: 2,
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.78,
+                              ),
+                              width: 1.5,
                             ),
                           ),
                         ),
@@ -21390,7 +21443,9 @@ await showDialog<void>(
                             letterSpacing: 2,
                           ),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.08),
+                          fillColor: NatterChildTheme.connect.withValues(
+                            alpha: 0.055,
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 18,
@@ -21407,11 +21462,15 @@ await showDialog<void>(
                               color: Colors.white.withOpacity(0.10),
                             ),
                           ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(18)),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(18),
+                            ),
                             borderSide: BorderSide(
-                              color: NatterBrand.yellow,
-                              width: 2,
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.78,
+                              ),
+                              width: 1.5,
                             ),
                           ),
                         ),
@@ -21442,13 +21501,25 @@ await showDialog<void>(
                         onPressed:
                             isSubmitting ? null : () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
+                          foregroundColor:
+                              NatterChildTheme.textSecondary,
+                          backgroundColor:
+                              Colors.white.withValues(
+                            alpha: 0.025,
+                          ),
                           side: BorderSide(
-                            color: Colors.white.withOpacity(0.22),
+                            color: Colors.white.withValues(
+                              alpha: 0.14,
+                            ),
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
+                            borderRadius: BorderRadius.circular(
+                              NatterChildTheme.radiusPill,
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
                         ),
                         child: const Text(
                           'Cancel',
@@ -21590,7 +21661,59 @@ await showDialog<void>(
                                   submitting.value = false;
                                 }
                               },
-                        child: Text(isSubmitting ? 'Sending...' : 'Request'),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 0,
+                          backgroundColor:
+                              NatterChildTheme.connect.withValues(
+                            alpha: 0.18,
+                          ),
+                          foregroundColor:
+                              NatterChildTheme.textPrimary,
+                          disabledBackgroundColor:
+                              Colors.white.withValues(
+                            alpha: 0.04,
+                          ),
+                          side: BorderSide(
+                            color: NatterChildTheme.connect.withValues(
+                              alpha: 0.42,
+                            ),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              NatterChildTheme.radiusPill,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                          ),
+                        ),
+                        child: isSubmitting
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: NatterChildTheme.textPrimary,
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 7),
+                                  Text(
+                                    'Request',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
