@@ -25119,8 +25119,8 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                         Icon(
                           Icons.nightlight_round,
                           size: 14,
-                          color: NatterBrand.pink.withValues(
-                            alpha: 0.88,
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.56,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -25143,8 +25143,8 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                         Icon(
                           Icons.wb_twilight_rounded,
                           size: 15,
-                          color: NatterBrand.yellow.withValues(
-                            alpha: 0.90,
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.56,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -26710,7 +26710,9 @@ else
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
       constraints: const BoxConstraints(maxWidth: 420),
       decoration: BoxDecoration(
-        color: bubbleColor,
+        color: msg.isFlagged && !msg.fromMe
+            ? const Color(0xFF0B2038).withValues(alpha: 0.94)
+            : bubbleColor,
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(22),
           topRight: const Radius.circular(22),
@@ -26719,19 +26721,28 @@ else
         ),
         border: msg.isFlagged
             ? Border.all(
-                color: NatterBrand.yellow.withOpacity(0.85),
-                width: 1.6,
+                color: NatterBrand.pink.withValues(alpha: 0.34),
+                width: 1.2,
               )
             : null,
-        boxShadow: msg.fromMe
+        boxShadow: msg.isFlagged && !msg.fromMe
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.28),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+                  color: NatterBrand.pink.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  spreadRadius: -3,
+                  offset: const Offset(0, 5),
                 ),
               ]
-            : [],
+            : msg.fromMe
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.28),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : [],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -26739,13 +26750,25 @@ else
           if (msg.isFlagged && !msg.fromMe)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                'Flagged message',
-                style: TextStyle(
-                  color: NatterBrand.yellow.withOpacity(0.95),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    size: 13,
+                    color: NatterBrand.pink.withValues(alpha: 0.88),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'MESSAGE CHECK',
+                    style: TextStyle(
+                      color: NatterBrand.pink.withValues(alpha: 0.92),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 9.5,
+                      letterSpacing: 1.05,
+                    ),
+                  ),
+                ],
               ),
             ),
           Text(
