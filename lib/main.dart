@@ -21221,24 +21221,38 @@ await showDialog<void>(
           child: Container(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A1C34).withValues(
-                alpha: 0.90,
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0B244A),
+                  Color(0xFF091C3A),
+                  Color(0xFF08203F),
+                ],
               ),
               borderRadius: BorderRadius.circular(
                 NatterChildTheme.radiusLarge,
               ),
               border: Border.all(
                 color: NatterChildTheme.connect.withValues(
-                  alpha: 0.26,
+                  alpha: 0.42,
                 ),
+                width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
                   color: NatterChildTheme.connect.withValues(
-                    alpha: 0.12,
+                    alpha: 0.20,
                   ),
-                  blurRadius: 28,
-                  spreadRadius: -4,
+                  blurRadius: 34,
+                  spreadRadius: 1,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: 0.28,
+                  ),
+                  blurRadius: 26,
+                  offset: const Offset(0, 12),
                 ),
               ],
             ),
@@ -21246,24 +21260,62 @@ await showDialog<void>(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 58,
-                  height: 58,
+                  width: 82,
+                  height: 82,
                   decoration: BoxDecoration(
-                    color: NatterChildTheme.connect.withValues(
-                      alpha: 0.12,
-                    ),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: NatterChildTheme.connect.withValues(
-                        alpha: 0.34,
-                      ),
+                    gradient: RadialGradient(
+                      colors: [
+                        NatterChildTheme.connect.withValues(
+                          alpha: 0.24,
+                        ),
+                        NatterChildTheme.connect.withValues(
+                          alpha: 0.08,
+                        ),
+                        Colors.transparent,
+                      ],
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.30,
+                        ),
+                        blurRadius: 30,
+                        spreadRadius: 4,
+                      ),
+                    ],
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(
-                    Icons.person_add_alt_1_rounded,
-                    color: NatterChildTheme.textPrimary,
-                    size: 27,
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          NatterChildTheme.connect.withValues(
+                            alpha: 0.30,
+                          ),
+                          NatterChildTheme.connect.withValues(
+                            alpha: 0.12,
+                          ),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.52,
+                        ),
+                        width: 1.4,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: NatterChildTheme.textPrimary,
+                      size: 29,
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -21354,7 +21406,7 @@ await showDialog<void>(
                           ),
                           filled: true,
                           fillColor: NatterChildTheme.connect.withValues(
-                            alpha: 0.055,
+                            alpha: 0.085,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -21378,9 +21430,9 @@ await showDialog<void>(
                             ),
                             borderSide: BorderSide(
                               color: NatterChildTheme.connect.withValues(
-                                alpha: 0.78,
+                                alpha: 0.98,
                               ),
-                              width: 1.5,
+                              width: 2.0,
                             ),
                           ),
                         ),
@@ -21411,9 +21463,12 @@ await showDialog<void>(
                       child: Text(
                         '-',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.85),
-                          fontSize: 28,
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.92,
+                          ),
+                          fontSize: 30,
                           fontWeight: FontWeight.w900,
+                          height: 1,
                         ),
                       ),
                     ),
@@ -21444,7 +21499,7 @@ await showDialog<void>(
                           ),
                           filled: true,
                           fillColor: NatterChildTheme.connect.withValues(
-                            alpha: 0.055,
+                            alpha: 0.085,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -21468,9 +21523,9 @@ await showDialog<void>(
                             ),
                             borderSide: BorderSide(
                               color: NatterChildTheme.connect.withValues(
-                                alpha: 0.78,
+                                alpha: 0.98,
                               ),
-                              width: 1.5,
+                              width: 2.0,
                             ),
                           ),
                         ),
@@ -21665,7 +21720,7 @@ await showDialog<void>(
                           elevation: 0,
                           backgroundColor:
                               NatterChildTheme.connect.withValues(
-                            alpha: 0.18,
+                            alpha: 0.30,
                           ),
                           foregroundColor:
                               NatterChildTheme.textPrimary,
@@ -21673,10 +21728,15 @@ await showDialog<void>(
                               Colors.white.withValues(
                             alpha: 0.04,
                           ),
+                          shadowColor:
+                              NatterChildTheme.connect.withValues(
+                            alpha: 0.26,
+                          ),
                           side: BorderSide(
                             color: NatterChildTheme.connect.withValues(
-                              alpha: 0.42,
+                              alpha: 0.72,
                             ),
+                            width: 1.3,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
