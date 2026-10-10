@@ -25021,19 +25021,103 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         if (quiet)
           Container(
             width: double.infinity,
-            margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            padding: const EdgeInsets.fromLTRB(14, 11, 16, 11),
             decoration: BoxDecoration(
-              color: const Color(0xFF20385F),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Quiet Hours are ON (${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)})',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.055),
+                  NatterChildTheme.connect.withValues(alpha: 0.055),
+                  Colors.white.withValues(alpha: 0.025),
+                ],
               ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: NatterChildTheme.connect.withValues(
+                  alpha: 0.18,
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: NatterChildTheme.connect.withValues(
+                    alpha: 0.07,
+                  ),
+                  blurRadius: 18,
+                  spreadRadius: -3,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: NatterChildTheme.connect.withValues(
+                      alpha: 0.10,
+                    ),
+                    border: Border.all(
+                      color: NatterChildTheme.connect.withValues(
+                        alpha: 0.24,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: NatterChildTheme.connect.withValues(
+                          alpha: 0.12,
+                        ),
+                        blurRadius: 14,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.nightlight_round,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'QUIET TIME',
+                        style: TextStyle(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.92,
+                          ),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Messages are paused for now',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.66),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
             ),
           ),
         if (feedback != null)
@@ -25182,34 +25266,99 @@ if (pauseUntil is Timestamp) {
                 if (isBlockedByMe)
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF20385F),
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          NatterBrand.pink.withValues(alpha: 0.10),
+                          Colors.white.withValues(alpha: 0.045),
+                          Colors.white.withValues(alpha: 0.025),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: NatterBrand.pink.withValues(
+                          alpha: 0.28,
+                        ),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: NatterBrand.pink.withValues(
+                            alpha: 0.08,
+                          ),
+                          blurRadius: 20,
+                          spreadRadius: -3,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        const Text(
-                          'This conversation is blocked',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NatterBrand.pink.withValues(
+                              alpha: 0.11,
+                            ),
+                            border: Border.all(
+                              color: NatterBrand.pink.withValues(
+                                alpha: 0.34,
+                              ),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.block_rounded,
                             color: Colors.white,
-                            fontWeight: FontWeight.w900,
+                            size: 21,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'You can unblock to continue chatting.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.72),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'PAUSED CONNECTION',
+                                style: TextStyle(
+                                  color: NatterBrand.pink.withValues(
+                                    alpha: 0.94,
+                                  ),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.15,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const Text(
+                                'This conversation is blocked',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'You can unblock when you are ready.',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(
+                                    alpha: 0.64,
+                                  ),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
+                        const SizedBox(width: 10),
+                        OutlinedButton(
                           onPressed: () async {
                             await state.unblockFriendship(
                               friendshipId: widget.friendshipId,
@@ -25223,7 +25372,32 @@ if (pauseUntil is Timestamp) {
                                   '${widget.contactName} has been unblocked.';
                             });
                           },
-                          child: const Text('Unblock'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                NatterChildTheme.connect.withValues(
+                              alpha: 0.10,
+                            ),
+                            side: BorderSide(
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.38,
+                              ),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                          ),
+                          child: const Text(
+                            'Unblock',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -25231,30 +25405,73 @@ if (pauseUntil is Timestamp) {
                 if (isBlockedByOther)
                   Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF20385F),
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.050),
+                          NatterBrand.pink.withValues(alpha: 0.055),
+                          Colors.white.withValues(alpha: 0.022),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: NatterBrand.pink.withValues(
+                          alpha: 0.20,
+                        ),
+                      ),
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        const Text(
-                          'This conversation is unavailable right now',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: NatterBrand.pink.withValues(
+                              alpha: 0.09,
+                            ),
+                            border: Border.all(
+                              color: NatterBrand.pink.withValues(
+                                alpha: 0.24,
+                              ),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.lock_outline_rounded,
                             color: Colors.white,
-                            fontWeight: FontWeight.w900,
+                            size: 19,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'You cannot send messages in this chat at the moment.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.72),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'This conversation is unavailable right now',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Messages cannot be sent in this chat at the moment.',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(
+                                    alpha: 0.62,
+                                  ),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
