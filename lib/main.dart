@@ -26340,16 +26340,17 @@ if (displayedBanner == 'pause')
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: NatterBrand.blue.withOpacity(0.18),
+        color: NatterChildTheme.connect.withValues(alpha: 0.10),
         shape: BoxShape.circle,
         border: Border.all(
-          color: NatterBrand.blue.withOpacity(0.26),
+          color: NatterChildTheme.connect.withValues(alpha: 0.30),
         ),
         boxShadow: [
           BoxShadow(
-            color: NatterBrand.blue.withOpacity(0.16),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: NatterChildTheme.connect.withValues(alpha: 0.13),
+            blurRadius: 16,
+            spreadRadius: -2,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -26383,7 +26384,7 @@ if (displayedBanner == 'pause')
             fontWeight: FontWeight.w600,
           ),
           filled: true,
-          fillColor: const Color(0xFF243F6B).withOpacity(0.94),
+          fillColor: const Color(0xFF102744).withValues(alpha: 0.82),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 18,
             vertical: 13,
@@ -26395,13 +26396,13 @@ if (displayedBanner == 'pause')
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(999),
             borderSide: BorderSide(
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha: 0.09),
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(999),
             borderSide: BorderSide(
-              color: NatterBrand.blue.withOpacity(0.55),
+              color: NatterChildTheme.connect.withValues(alpha: 0.68),
               width: 1.4,
             ),
           ),
@@ -26423,8 +26424,8 @@ if (displayedBanner == 'pause')
         height: 50,
         decoration: BoxDecoration(
           color: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
-              ? Colors.white.withOpacity(0.12)
-              : NatterBrand.green,
+              ? Colors.white.withValues(alpha: 0.10)
+              : NatterBrand.green.withValues(alpha: 0.92),
           shape: BoxShape.circle,
           border: Border.all(
             color: _isSendLocked
@@ -26435,9 +26436,10 @@ if (displayedBanner == 'pause')
               ? []
               : [
                   BoxShadow(
-                    color: NatterBrand.green.withOpacity(0.32),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
+                    color: NatterBrand.green.withValues(alpha: 0.22),
+                    blurRadius: 16,
+                    spreadRadius: -2,
+                    offset: const Offset(0, 4),
                   ),
                 ],
         ),
@@ -26540,8 +26542,8 @@ class _Bubble extends StatelessWidget {
     final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
 
     final bubbleColor = msg.fromMe
-        ? const Color(0xFF2A5FAF)
-        : const Color(0xFF243F6B).withOpacity(0.82);
+        ? NatterChildTheme.connect.withValues(alpha: 0.62)
+        : const Color(0xFF142B4D).withValues(alpha: 0.78);
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -26724,7 +26726,12 @@ else
                 color: NatterBrand.pink.withValues(alpha: 0.34),
                 width: 1.2,
               )
-            : null,
+            : Border.all(
+                color: msg.fromMe
+                    ? NatterChildTheme.connect.withValues(alpha: 0.22)
+                    : Colors.white.withValues(alpha: 0.07),
+                width: 1.0,
+              ),
         boxShadow: msg.isFlagged && !msg.fromMe
             ? [
                 BoxShadow(
@@ -26737,12 +26744,22 @@ else
             : msg.fromMe
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.28),
+                      color: NatterChildTheme.connect.withValues(
+                        alpha: 0.09,
+                      ),
                       blurRadius: 14,
-                      offset: const Offset(0, 6),
+                      spreadRadius: -3,
+                      offset: const Offset(0, 5),
                     ),
                   ]
-                : [],
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      spreadRadius: -4,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
