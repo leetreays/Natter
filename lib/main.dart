@@ -25075,7 +25075,7 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                     ],
                   ),
                   child: const Icon(
-                    Icons.nightlight_round,
+                    Icons.schedule_rounded,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -25109,13 +25109,58 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                     ],
                   ),
                 ),
-                Text(
-                  '${_formatTime(state.quietStart)}–${_formatTime(state.quietEnd)}',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.66),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w800,
-                  ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.nightlight_round,
+                          size: 14,
+                          color: NatterBrand.pink.withValues(
+                            alpha: 0.88,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _formatTime(state.quietStart),
+                          style: TextStyle(
+                            color: Colors.white.withValues(
+                              alpha: 0.78,
+                            ),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.wb_twilight_rounded,
+                          size: 15,
+                          color: NatterBrand.yellow.withValues(
+                            alpha: 0.90,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _formatTime(state.quietEnd),
+                          style: TextStyle(
+                            color: Colors.white.withValues(
+                              alpha: 0.78,
+                            ),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
