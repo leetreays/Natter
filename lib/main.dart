@@ -25036,23 +25036,9 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
 
   body: Stack(
   children: [
-    Positioned.fill(
-  child: DecoratedBox(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          Color(0xFF07152F),
-          Color(0xFF0A2947),
-          Color(0xFF081B38),
-          Color(0xFF06112E),
-        ],
-        stops: [0.0, 0.34, 0.68, 1.0],
-      ),
+    const Positioned.fill(
+      child: NatterChildBackground(),
     ),
-  ),
-),
     SafeArea(
       child: Column(
         children: [
