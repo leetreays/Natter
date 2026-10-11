@@ -23351,30 +23351,66 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.all(18),
           child: Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 17),
             decoration: BoxDecoration(
-  color: const Color(0xFF1C2A48).withOpacity(0.96),
-  borderRadius: BorderRadius.circular(24),
-  border: Border.all(color: Colors.white.withOpacity(0.10)),
-  boxShadow: [
-    BoxShadow(
-      color: NatterBrand.blue.withOpacity(0.22),
-      blurRadius: 22,
-      offset: const Offset(0, 10),
-    ),
-  ],
-),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color.lerp(
+                    const Color(0xFF081A34),
+                    NatterBrand.pink,
+                    0.13,
+                  )!.withValues(alpha: 0.98),
+                  const Color(0xFF07172F).withValues(alpha: 0.98),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: NatterBrand.pink.withValues(alpha: 0.34),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: NatterBrand.pink.withValues(alpha: 0.12),
+                  blurRadius: 26,
+                  spreadRadius: -3,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.favorite_rounded,
-                  color: NatterBrand.pink,
-                  size: 42,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: NatterBrand.pink.withValues(alpha: 0.10),
+                    border: Border.all(
+                      color: NatterBrand.pink.withValues(alpha: 0.30),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.favorite_border_rounded,
+                    color: NatterBrand.pink.withValues(alpha: 0.96),
+                    size: 25,
+                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 11),
+                Text(
+                  'PAUSE AND CHECK',
+                  style: TextStyle(
+                    color: NatterBrand.pink.withValues(alpha: 0.94),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.15,
+                  ),
+                ),
+                const SizedBox(height: 4),
                 const Text(
-                  'Pause and check',
+                  'Before you send',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -23382,12 +23418,12 @@ class _ChatScreenState extends State<ChatScreen> {
                     fontSize: 22,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 9),
                 Text(
                   reason,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white.withValues(alpha: 0.68),
                     fontWeight: FontWeight.w700,
                     height: 1.35,
                   ),
@@ -23397,9 +23433,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
+                    color: const Color(0xFF102744).withValues(alpha: 0.88),
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white.withOpacity(0.16)),
+                    border: Border.all(
+                      color: NatterChildTheme.connect.withValues(alpha: 0.20),
+                    ),
                   ),
                   child: Text(
                     suggestion,
@@ -23412,86 +23450,86 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Column(
-  children: [
-    SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          controller.text = suggestion;
-          controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length),
-          );
-          Navigator.pop(ctx, false);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: NatterBrand.green,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        child: const Text(
-          'Use kinder version',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 15,
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(height: 10),
-    Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(
-                color: Colors.white.withOpacity(0.22),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            child: const Text(
-              'Keep editing',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: NatterBrand.blue,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-            ),
-            child: const Text(
-              'Send with care',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  ],
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      controller.text = suggestion;
+                      controller.selection = TextSelection.fromPosition(
+                        TextPosition(offset: controller.text.length),
+                      );
+                      Navigator.pop(ctx, false);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          NatterBrand.green.withValues(alpha: 0.92),
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    child: const Text(
+                      'Use kinder version',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.14),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: const Text(
+                          'Keep editing',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              NatterBrand.pink.withValues(alpha: 0.08),
+                          side: BorderSide(
+                            color: NatterBrand.pink.withValues(alpha: 0.32),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        child: const Text(
+                          'Send with care',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -25175,22 +25213,28 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
     ),
     margin: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: const Color(0xFF21345C),
+      color: feedback == 'Take a short pause before replying.'
+          ? Color.lerp(
+              const Color(0xFF081A34),
+              NatterBrand.pink,
+              0.10,
+            )!.withValues(alpha: 0.97)
+          : const Color(0xFF21345C),
       borderRadius: BorderRadius.circular(20),
       border: Border.all(
         color: feedback == 'Take a short pause before replying.'
-            ? NatterBrand.yellow.withOpacity(0.38)
-            : Colors.white.withOpacity(0.08),
+            ? NatterBrand.pink.withValues(alpha: 0.32)
+            : Colors.white.withValues(alpha: 0.08),
         width: feedback == 'Take a short pause before replying.'
-            ? 1.3
+            ? 1.2
             : 1,
       ),
       boxShadow: feedback == 'Take a short pause before replying.'
           ? [
               BoxShadow(
-                color: NatterBrand.yellow.withOpacity(0.10),
-                blurRadius: 14,
-                spreadRadius: 1,
+                color: NatterBrand.pink.withValues(alpha: 0.09),
+                blurRadius: 16,
+                spreadRadius: -2,
                 offset: const Offset(0, 4),
               ),
             ]
@@ -25202,7 +25246,7 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         if (feedback == 'Take a short pause before replying.') ...[
           Icon(
             Icons.pause_circle_filled_rounded,
-            color: NatterBrand.yellow.withOpacity(0.95),
+            color: NatterBrand.pink.withValues(alpha: 0.94),
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -26201,7 +26245,7 @@ return Padding(
           shape: BoxShape.circle,
           border: Border.all(
             color: _isSendLocked
-                ? NatterBrand.yellow.withOpacity(0.35)
+                ? NatterBrand.pink.withValues(alpha: 0.42)
                 : Colors.transparent,
           ),
           boxShadow: (isBlockedByMe || isBlockedByOther || !_canSend || _isSendLocked)
@@ -26236,7 +26280,7 @@ return Padding(
                       strokeWidth: 3,
                       backgroundColor: Colors.white.withOpacity(0.12),
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        NatterBrand.green.withOpacity(0.85),
+                        NatterBrand.pink.withValues(alpha: 0.90),
                       ),
                     );
                   },
@@ -26300,11 +26344,12 @@ class _ConversationCoachCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            accent.withValues(
-              alpha: stronger ? 0.12 : 0.075,
-            ),
-            Colors.white.withValues(alpha: 0.035),
-            const Color(0xFF081A34).withValues(alpha: 0.74),
+            Color.lerp(
+              const Color(0xFF081A34),
+              accent,
+              stronger ? 0.14 : 0.08,
+            )!.withValues(alpha: 0.96),
+            const Color(0xFF07182F).withValues(alpha: 0.94),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
