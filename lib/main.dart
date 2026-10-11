@@ -17325,107 +17325,182 @@ String _habitsMessage(String stage) {
 }
   
   Widget _treeHeroCard({
-  required Map<String, String>? nourishment,
-  required Map<String, int> growth,
-  required String treeEmoji,
-  required String growthMessage,
-}) {
+    required Map<String, String>? nourishment,
+    required Map<String, int> growth,
+    required String treeEmoji,
+    required String growthMessage,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(22),
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF10254A),
+        color: const Color(0xFF0B1D38).withValues(alpha: 0.90),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: Colors.white.withOpacity(0.10),
+          color: NatterChildTheme.grow.withValues(alpha: 0.22),
         ),
         boxShadow: [
           BoxShadow(
-            color: NatterBrand.green.withOpacity(0.12),
-            blurRadius: 22,
+            color: NatterChildTheme.grow.withValues(alpha: 0.08),
+            blurRadius: 28,
+            spreadRadius: -4,
             offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         children: [
+          Text(
+            'YOUR JOURNEY TREE',
+            style: TextStyle(
+              color: NatterChildTheme.grow.withValues(alpha: 0.92),
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.35,
+            ),
+          ),
+          const SizedBox(height: 6),
           const Text(
             'Your Tree',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 26,
+              fontSize: 28,
               fontWeight: FontWeight.w900,
+              letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 7),
           Text(
-            'Every thoughtful choice helps your tree grow.',
+            'Healthy habits help your tree take root and grow.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.78),
+              color: Colors.white.withValues(alpha: 0.68),
               fontWeight: FontWeight.w700,
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 22),
-          SizedBox(
-  width: 200,
-  height: 200,
-  child: Image.asset(
-    'assets/seedling_1_circle.png',
-    fit: BoxFit.contain,
-  ),
-),
-          const SizedBox(height: 18),
+          const SizedBox(height: 24),
+
+          Container(
+            width: 214,
+            height: 214,
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF07172F).withValues(alpha: 0.82),
+              border: Border.all(
+                color: NatterChildTheme.grow.withValues(alpha: 0.36),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: NatterChildTheme.grow.withValues(alpha: 0.13),
+                  blurRadius: 30,
+                  spreadRadius: 1,
+                ),
+                BoxShadow(
+                  color: NatterChildTheme.connect.withValues(alpha: 0.08),
+                  blurRadius: 34,
+                  spreadRadius: -3,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/seedling_1_circle.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
           Text(
-  _treeVariantName(growth),
+            _treeVariantName(growth),
+            textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 6),
+
+          const SizedBox(height: 7),
+
           Text(
-          growthMessage,
+            growthMessage,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
+              color: Colors.white.withValues(alpha: 0.68),
               fontWeight: FontWeight.w700,
-              height: 1.35,
+              height: 1.38,
             ),
           ),
+
           if (nourishment != null) ...[
-  const SizedBox(height: 18),
-  Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.07),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.08),
-      ),
-    ),
-    child: Column(
-      children: [
-        Text(
-          nourishment['emoji'] ?? '🌱',
-          style: const TextStyle(fontSize: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          nourishment['text'] ?? 'Your tree is growing.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.78),
-            fontWeight: FontWeight.w800,
-            height: 1.35,
-          ),
-        ),
-      ],
-    ),
-  ),
-],
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+              decoration: BoxDecoration(
+                color: NatterChildTheme.grow.withValues(alpha: 0.075),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: NatterChildTheme.grow.withValues(alpha: 0.20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: NatterChildTheme.grow.withValues(alpha: 0.10),
+                      border: Border.all(
+                        color: NatterChildTheme.grow.withValues(alpha: 0.24),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      nourishment['emoji'] ?? '🌱',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'RECENT GROWTH',
+                          style: TextStyle(
+                            color: NatterChildTheme.grow.withValues(
+                              alpha: 0.90,
+                            ),
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          nourishment['text'] ??
+                              'Your tree is growing.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.82),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
