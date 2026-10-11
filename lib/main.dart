@@ -24909,36 +24909,7 @@ Widget _buildFriendshipMilestoneCard() {
   scrolledUnderElevation: 0,
   centerTitle: true,
   toolbarHeight: 76,
-  flexibleSpace: Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          const Color(0xFF081935).withValues(alpha: 0.98),
-          const Color(0xFF0A2545).withValues(alpha: 0.96),
-          const Color(0xFF0B1C3B).withValues(alpha: 0.98),
-        ],
-      ),
-      border: Border(
-        bottom: BorderSide(
-          color: NatterChildTheme.connect.withValues(
-            alpha: 0.12,
-          ),
-        ),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: NatterChildTheme.connect.withValues(
-            alpha: 0.10,
-          ),
-          blurRadius: 24,
-          spreadRadius: -4,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-  ),
+  flexibleSpace: const NatterChildBackground(),
   leading: IconButton(
     icon: const Icon(
       Icons.arrow_back_rounded,
