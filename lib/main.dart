@@ -17029,7 +17029,12 @@ class _JourneyScreenState extends State<JourneyScreen> {
     final state = AppStateScope.of(context);
     
     return BrandScaffold(
+      background: const NatterChildBackground(),
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const BrandedAppBarTitle(title: 'Journey'),
       ),
       child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
