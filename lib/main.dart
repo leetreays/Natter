@@ -26531,14 +26531,10 @@ class _Bubble extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 13),
               constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    NatterBrand.pink.withValues(alpha: 0.12),
-                    Colors.white.withValues(alpha: 0.035),
-                    const Color(0xFF081A34).withValues(alpha: 0.88),
-                  ],
+                color: Color.lerp(
+                  const Color(0xFF081A34),
+                  NatterBrand.pink,
+                  0.10,
                 ),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
