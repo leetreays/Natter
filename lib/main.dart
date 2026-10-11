@@ -24900,16 +24900,20 @@ Widget _buildFriendshipMilestoneCard() {
     final quiet = state.isQuietNow();
     final friend = state.getFriendByName(widget.contactName);
 
-  return Scaffold(
-  backgroundColor: const Color(0xFF06112E),
-  appBar: AppBar(
+  return Stack(
+    children: [
+      const Positioned.fill(
+        child: NatterChildBackground(),
+      ),
+      Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
   backgroundColor: Colors.transparent,
   surfaceTintColor: Colors.transparent,
   elevation: 0,
   scrolledUnderElevation: 0,
   centerTitle: true,
   toolbarHeight: 76,
-  flexibleSpace: const NatterChildBackground(),
   leading: IconButton(
     icon: const Icon(
       Icons.arrow_back_rounded,
@@ -25007,9 +25011,6 @@ title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
 
   body: Stack(
   children: [
-    const Positioned.fill(
-      child: NatterChildBackground(),
-    ),
     SafeArea(
       child: Column(
         children: [
@@ -26271,7 +26272,9 @@ return Padding(
   _buildFriendshipMilestoneCard(),
 ],
 ),
-);
+      ),
+    ],
+  );
   }
 }
 
