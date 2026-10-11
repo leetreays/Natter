@@ -26542,8 +26542,8 @@ class _Bubble extends StatelessWidget {
     final align = msg.fromMe ? Alignment.centerRight : Alignment.centerLeft;
 
     final bubbleColor = msg.fromMe
-        ? NatterChildTheme.connect.withValues(alpha: 0.62)
-        : const Color(0xFF142B4D).withValues(alpha: 0.78);
+        ? const Color(0xFF184D82).withValues(alpha: 0.88)
+        : const Color(0xFF132844).withValues(alpha: 0.90);
 
     if (msg.isHidden) {
       return const SizedBox.shrink();
@@ -26723,29 +26723,33 @@ else
         ),
         border: msg.isFlagged
             ? Border.all(
-                color: NatterBrand.pink.withValues(alpha: 0.34),
-                width: 1.2,
+                color: NatterBrand.pink.withValues(
+                  alpha: msg.fromMe ? 0.72 : 0.38,
+                ),
+                width: msg.fromMe ? 1.6 : 1.2,
               )
             : Border.all(
                 color: msg.fromMe
-                    ? NatterChildTheme.connect.withValues(alpha: 0.22)
-                    : Colors.white.withValues(alpha: 0.07),
+                    ? NatterChildTheme.connect.withValues(alpha: 0.34)
+                    : Colors.white.withValues(alpha: 0.09),
                 width: 1.0,
               ),
-        boxShadow: msg.isFlagged && !msg.fromMe
+        boxShadow: msg.isFlagged
             ? [
                 BoxShadow(
-                  color: NatterBrand.pink.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  spreadRadius: -3,
-                  offset: const Offset(0, 5),
+                  color: NatterBrand.pink.withValues(
+                    alpha: msg.fromMe ? 0.18 : 0.09,
+                  ),
+                  blurRadius: msg.fromMe ? 18 : 16,
+                  spreadRadius: msg.fromMe ? -1 : -3,
+                  offset: const Offset(0, 4),
                 ),
               ]
             : msg.fromMe
                 ? [
                     BoxShadow(
                       color: NatterChildTheme.connect.withValues(
-                        alpha: 0.09,
+                        alpha: 0.12,
                       ),
                       blurRadius: 14,
                       spreadRadius: -3,
@@ -26754,7 +26758,7 @@ else
                   ]
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withValues(alpha: 0.09),
                       blurRadius: 10,
                       spreadRadius: -4,
                       offset: const Offset(0, 4),
