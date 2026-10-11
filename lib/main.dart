@@ -26042,298 +26042,70 @@ return Padding(
           },
         ),
       if (displayedBanner == 'worsening')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4A3540),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: const Color(0xFFFFB3C7).withOpacity(0.22),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.favorite_rounded,
-          color: Color(0xFFFFB3C7),
-          size: 18,
+        const _ConversationCoachCard(
+          accent: NatterBrand.pink,
+          icon: Icons.favorite_rounded,
+          label: 'CHECK IN',
+          message:
+              'This chat seems to be getting more tense. Let’s slow things down 💛',
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This chat seems to be getting more tense. Let’s slow things down 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
       if (displayedBanner == 'warming')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF32486A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: Colors.white.withOpacity(0.08),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.wb_twilight_rounded,
-          color: NatterBrand.yellow,
-          size: 18,
+        const _ConversationCoachCard(
+          accent: NatterChildTheme.connect,
+          icon: Icons.wb_twilight_rounded,
+          label: 'TAKE A MOMENT',
+          message:
+              'This chat is getting a little tense. Take a moment before replying.',
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This chat is getting a little tense. Take a moment before replying.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.82),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
+      if (displayedBanner == 'heated')
+        const _ConversationCoachCard(
+          accent: NatterBrand.pink,
+          icon: Icons.favorite_border_rounded,
+          label: 'SLOW IT DOWN',
+          message:
+              'This chat feels heated. Let’s slow it down before replying.',
         ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'heated')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF3A435F),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.yellow.withOpacity(0.18),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.wb_twilight_rounded,
-          color: NatterBrand.yellow,
-          size: 18,
+      if (displayedBanner == 'burst')
+        const _ConversationCoachCard(
+          accent: NatterChildTheme.connect,
+          icon: Icons.hourglass_bottom_rounded,
+          label: 'GIVE IT SPACE',
+          message:
+              'You’ve sent a few messages quickly. Give your friend a chance to reply 💛',
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This chat feels heated. Let’s slow it down before replying.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
+      if (displayedBanner == 'targeting')
+        const _ConversationCoachCard(
+          accent: NatterBrand.pink,
+          icon: Icons.favorite_border_rounded,
+          label: 'FRIENDSHIP RESET',
+          message:
+              'This friendship may need a reset. A kind message can help turn things around 💛',
         ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'burst')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    decoration: BoxDecoration(
-      color: const Color(0xFF32486A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.green.withOpacity(0.18),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.hourglass_bottom_rounded,
-          color: NatterBrand.green,
-          size: 18,
+      if (displayedBanner == 'continued_targeting')
+        const _ConversationCoachCard(
+          accent: NatterBrand.pink,
+          icon: Icons.pause_circle_outline_rounded,
+          label: 'TIME TO RESET',
+          message:
+              'This chat still feels difficult. It might be time to pause and reset 💛',
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'You’ve sent a few messages quickly. Give your friend a chance to reply 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
+      if (displayedBanner == 'cooling')
+        const _ConversationCoachCard(
+          accent: NatterBrand.green,
+          icon: Icons.eco_rounded,
+          label: 'SETTLING',
+          message:
+              'This chat is settling. Keep going calmly 💛',
         ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'targeting')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF32486A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.yellow.withOpacity(0.20),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.favorite_border_rounded,
-          color: NatterBrand.yellow,
-          size: 18,
+      if (displayedBanner == 'pause')
+        const _ConversationCoachCard(
+          accent: NatterBrand.pink,
+          icon: Icons.pause_rounded,
+          label: 'NATTER PAUSE',
+          message:
+              'Take a short pause — this chat will reopen shortly.',
+          stronger: true,
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This friendship may need a reset. A kind message can help turn things around 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'continued_targeting')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF4A3540),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.yellow.withOpacity(0.28),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.pause_circle_outline_rounded,
-          color: NatterBrand.yellow,
-          size: 18,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This chat still feels difficult. It might be time to pause and reset 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.86),
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'cooling')
-  Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF2F4A4A),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: NatterBrand.green.withOpacity(0.18),
-      ),
-    ),
-    child: Row(
-      children: [
-        const Icon(
-          Icons.eco_rounded,
-          color: NatterBrand.green,
-          size: 18,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'This chat is settling. Keep going calmly 💛',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.84),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-if (displayedBanner == 'pause')
-  AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 14,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: const Color(0xFF21345C),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(
-        color: NatterBrand.blue.withOpacity(0.28),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: NatterBrand.blue.withOpacity(0.16),
-          blurRadius: 14,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: NatterBrand.blue.withOpacity(0.18),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.pause_rounded,
-            color: NatterBrand.yellow,
-            size: 18,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'Natter pause is on. Take a breath — this chat will reopen shortly.',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.86),
-              fontWeight: FontWeight.w800,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ), 
       Row(
   children: [
     Container(
@@ -26502,6 +26274,110 @@ if (displayedBanner == 'pause')
   }
 }
 
+class _ConversationCoachCard extends StatelessWidget {
+  final Color accent;
+  final IconData icon;
+  final String label;
+  final String message;
+  final bool stronger;
+
+  const _ConversationCoachCard({
+    required this.accent,
+    required this.icon,
+    required this.label,
+    required this.message,
+    this.stronger = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(13, 11, 14, 11),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            accent.withValues(
+              alpha: stronger ? 0.12 : 0.075,
+            ),
+            Colors.white.withValues(alpha: 0.035),
+            const Color(0xFF081A34).withValues(alpha: 0.74),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: accent.withValues(
+            alpha: stronger ? 0.38 : 0.24,
+          ),
+          width: stronger ? 1.3 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(
+              alpha: stronger ? 0.11 : 0.055,
+            ),
+            blurRadius: stronger ? 20 : 14,
+            spreadRadius: -3,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: accent.withValues(alpha: 0.10),
+              border: Border.all(
+                color: accent.withValues(alpha: 0.28),
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: accent.withValues(alpha: 0.94),
+              size: 19,
+            ),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: accent.withValues(alpha: 0.94),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.05,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.86),
+                    fontSize: 12.5,
+                    fontWeight:
+                        stronger ? FontWeight.w800 : FontWeight.w700,
+                    height: 1.30,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _Msg {
   final bool fromMe;
   final String text;
@@ -26553,21 +26429,43 @@ class _Bubble extends StatelessWidget {
       return Center(
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 10),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(13, 10, 14, 10),
           decoration: BoxDecoration(
-            color: NatterBrand.yellow.withOpacity(0.15),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                NatterChildTheme.connect.withValues(alpha: 0.075),
+                Colors.white.withValues(alpha: 0.028),
+                const Color(0xFF081A34).withValues(alpha: 0.72),
+              ],
+            ),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: NatterBrand.yellow.withOpacity(0.35),
+              color: NatterChildTheme.connect.withValues(alpha: 0.20),
             ),
           ),
-          child: Text(
-            msg.text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.auto_awesome_rounded,
+                size: 14,
+                color: NatterChildTheme.connect.withValues(alpha: 0.82),
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  msg.text,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -26585,19 +26483,28 @@ class _Bubble extends StatelessWidget {
           if (showProtectedCard)
             Container(
               margin: const EdgeInsets.symmetric(vertical: 6),
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 13),
               constraints: const BoxConstraints(maxWidth: 420),
               decoration: BoxDecoration(
-                color: const Color(0xFF2C3E5F),
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    NatterBrand.pink.withValues(alpha: 0.12),
+                    Colors.white.withValues(alpha: 0.035),
+                    const Color(0xFF081A34).withValues(alpha: 0.88),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                  color: NatterBrand.blue.withOpacity(0.32),
+                  color: NatterBrand.pink.withValues(alpha: 0.34),
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: NatterBrand.blue.withOpacity(0.16),
-                    blurRadius: 12,
+                    color: NatterBrand.pink.withValues(alpha: 0.10),
+                    blurRadius: 20,
+                    spreadRadius: -3,
                     offset: const Offset(0, 5),
                   ),
                 ],
@@ -26605,38 +26512,59 @@ class _Bubble extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: NatterBrand.yellow.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: const Text(
-                      'Protected delivery',
-                      style: TextStyle(
-                        color: NatterBrand.yellow,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        letterSpacing: 0.4,
+                  Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: NatterBrand.pink.withValues(alpha: 0.10),
+                          border: Border.all(
+                            color: NatterBrand.pink.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.shield_outlined,
+                          color: NatterBrand.pink.withValues(alpha: 0.94),
+                          size: 19,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 11),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'PROTECTED DELIVERY',
+                              style: TextStyle(
+                                color: NatterBrand.pink.withValues(alpha: 0.94),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9.5,
+                                letterSpacing: 1.05,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'This message might not feel kind.',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const Text(
-                    'This message might not feel kind.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     'You are in control. Choose what feels best for you.',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.70),
                       fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
                       height: 1.3,
                     ),
                   ),
@@ -26648,55 +26576,69 @@ class _Bubble extends StatelessWidget {
                       ElevatedButton(
                         onPressed: onReveal,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: NatterBrand.yellow,
-                          foregroundColor: Colors.black,
+                          backgroundColor:
+                              NatterBrand.pink.withValues(alpha: 0.92),
+                          foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
-                        child: const Text('Read it'),
+                        child: const Text(
+                          'Read it',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
                       OutlinedButton(
                         onPressed: onHide,
                         style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
                           side: BorderSide(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.14),
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
                         child: const Text(
                           'Not now',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                       OutlinedButton(
                         onPressed: onBlock,
                         style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
                           side: BorderSide(
-                            color: Colors.white.withOpacity(0.2),
+                            color: NatterBrand.pink.withValues(alpha: 0.28),
                           ),
+                          backgroundColor:
+                              NatterBrand.pink.withValues(alpha: 0.05),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(999),
                           ),
                         ),
                         child: const Text(
                           'Block contact',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ],
@@ -26810,17 +26752,27 @@ else
               padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2D466F),
+                  color: const Color(0xFF0C203A).withValues(alpha: 0.82),
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.08),
+                    color: msg.fromMe
+                        ? NatterChildTheme.connect.withValues(alpha: 0.22)
+                        : Colors.white.withValues(alpha: 0.10),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      spreadRadius: -4,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Text(
                   msg.reaction!,
-                  style: const TextStyle(fontSize: 18),
+                  style: const TextStyle(fontSize: 17),
                 ),
               ),
             ),
