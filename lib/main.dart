@@ -15583,7 +15583,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
           final habitsStage = _rootStage(scores['habits'] ?? 0);
 
           return ListView(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(vertical: 14),
             children: [
               _treeHeroCard(
                 nourishment: _recentNourishment(docs),
@@ -15592,11 +15592,14 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 growthMessage: _treeGrowthMessage(growth),
               ),
               const SizedBox(height: 12),
-              _growthRootsCard(
-                communicationStage: communicationStage,
-                reflectionStage: reflectionStage,
-                friendshipStage: friendshipStage,
-                habitsStage: habitsStage,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: _growthRootsCard(
+                  communicationStage: communicationStage,
+                  reflectionStage: reflectionStage,
+                  friendshipStage: friendshipStage,
+                  habitsStage: habitsStage,
+                ),
               ),
               const SizedBox(height: 12),
               _journeyMemoriesCard(docs),
@@ -15853,14 +15856,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
   }) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF091A33),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.22),
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
+      color: Colors.transparent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -15890,34 +15886,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   ),
                 ),
                 Positioned(
-                  top: 25,
-                  left: 20,
-                  right: 20,
-                  child: Column(
-                    children: [
-                      Text(
-                        'YOUR JOURNEY TREE',
-                        style: TextStyle(
-                          color: NatterChildTheme.grow,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Your Tree',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 31,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  bottom: 18,
+                  bottom: 28,
                   left: 20,
                   right: 20,
                   child: Text(
@@ -15925,7 +15894,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 25,
+                      fontSize: 32,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
