@@ -17382,33 +17382,29 @@ String _habitsMessage(String stage) {
           const SizedBox(height: 24),
 
           Container(
-            width: 214,
-            height: 214,
-            padding: const EdgeInsets.all(7),
+            width: double.infinity,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF07172F).withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: NatterChildTheme.grow.withValues(alpha: 0.36),
-                width: 1.2,
+                color: NatterChildTheme.grow.withValues(alpha: 0.24),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: NatterChildTheme.grow.withValues(alpha: 0.13),
-                  blurRadius: 30,
-                  spreadRadius: 1,
-                ),
-                BoxShadow(
-                  color: NatterChildTheme.connect.withValues(alpha: 0.08),
-                  blurRadius: 34,
-                  spreadRadius: -3,
+                  color: NatterChildTheme.connect.withValues(alpha: 0.12),
+                  blurRadius: 28,
+                  spreadRadius: -6,
                 ),
               ],
             ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/seedling_1_circle.png',
-                fit: BoxFit.cover,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(23),
+              child: AspectRatio(
+                aspectRatio: 1.45,
+                child: Image.asset(
+                  'assets/journey_seedling.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
               ),
             ),
           ),

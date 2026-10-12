@@ -42,6 +42,7 @@ flutter:
     - assets/splash/natter_splash_icon.png
     - assets/seedling_1.png
     - assets/seedling_1_circle.png
+    - assets/journey_seedling.png
 
 flutter_native_splash:
   color: "#06112E"
