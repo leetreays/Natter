@@ -15854,121 +15854,117 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String treeEmoji,
     required String growthMessage,
   }) {
-    return Container(
-      width: double.infinity,
-      color: Colors.transparent,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AspectRatio(
-            aspectRatio: 0.94,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(
-                  'assets/journey_seedling.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                ),
-                const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: [0.0, 0.35, 0.72, 1.0],
-                      colors: [
-                        Color(0xC908142C),
-                        Color(0x0008142C),
-                        Color(0x2208142C),
-                        Color(0xFF091A33),
-                      ],
-                    ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AspectRatio(
+          aspectRatio: 0.94,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                'assets/journey_seedling.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.38, 0.70, 1.0],
+                    colors: [
+                      Color(0x8808142C),
+                      Color(0x0008142C),
+                      Color(0x3308142C),
+                      Color(0xFF091A33),
+                    ],
                   ),
                 ),
-                Positioned(
-                  bottom: 28,
-                  left: 20,
-                  right: 20,
-                  child: Text(
-                    _treeVariantName(growth),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 22),
-            child: Column(
-              children: [
-                Text(
-                  growthMessage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.78),
-                    fontWeight: FontWeight.w700,
-                    height: 1.4,
-                  ),
-                ),
-                if (nourishment != null) ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: NatterChildTheme.grow.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: NatterChildTheme.grow.withValues(alpha: 0.20),
+              ),
+              Positioned(
+                bottom: 28,
+                left: 24,
+                right: 24,
+                child: Column(
+                  children: [
+                    Text(
+                      _treeVariantName(growth),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    child: Row(
+                    const SizedBox(height: 10),
+                    Text(
+                      growthMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.84),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (nourishment != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF102B35),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: NatterChildTheme.grow.withValues(alpha: 0.24),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.spa_rounded,
+                    color: NatterChildTheme.grow,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          nourishment['emoji'] ?? '🌱',
-                          style: const TextStyle(fontSize: 24),
+                          'RECENT GROWTH',
+                          style: TextStyle(
+                            color: NatterChildTheme.grow,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'RECENT GROWTH',
-                                style: TextStyle(
-                                  color: NatterChildTheme.grow,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                nourishment['text'] ?? 'Your tree is growing.',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1.35,
-                                ),
-                              ),
-                            ],
+                        const SizedBox(height: 5),
+                        Text(
+                          nourishment['text'] ?? 'Your tree is growing.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -15978,13 +15974,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String friendshipStage,
     required String habitsStage,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF182E57),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -15992,20 +15983,20 @@ class _JourneyScreenState extends State<JourneyScreen> {
             'Growth Roots',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 21,
+              fontSize: 24,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            'These roots grow as you practise kind, thoughtful communication.',
+            'The habits helping your tree grow.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+              color: Colors.white.withValues(alpha: 0.68),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
           _rootTile(
             icon: Icons.chat_bubble_rounded,
             title: 'Communication',
@@ -16042,16 +16033,26 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String stage,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: const Color(0xFF0D223B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(
+          color: NatterChildTheme.grow.withValues(alpha: 0.14),
+        ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: NatterBrand.green, size: 22),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: NatterChildTheme.grow.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: NatterChildTheme.grow, size: 22),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -16061,27 +16062,30 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.70),
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
+                    color: Colors.white.withValues(alpha: 0.67),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  stage,
+                  style: TextStyle(
+                    color: NatterChildTheme.grow,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
-            ),
-          ),
-          Text(
-            stage,
-            style: TextStyle(
-              color: NatterBrand.yellow.withOpacity(0.95),
-              fontWeight: FontWeight.w900,
-              fontSize: 12,
             ),
           ),
         ],
