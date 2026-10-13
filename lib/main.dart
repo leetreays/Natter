@@ -15975,7 +15975,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String habitsStage,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -16134,13 +16134,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
       });
     }
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF182E57),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.10)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -16148,20 +16143,20 @@ class _JourneyScreenState extends State<JourneyScreen> {
             'Journey Memories',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 21,
+              fontSize: 24,
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            'Special moments from your digital journey appear here.',
+            'Little moments worth remembering.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.72),
-              fontWeight: FontWeight.w700,
-              height: 1.35,
+              color: Colors.white.withValues(alpha: 0.68),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
           ...memories.take(4).map((memory) {
             return _memoryTile(
               memory['emoji']!,
@@ -16176,17 +16171,28 @@ class _JourneyScreenState extends State<JourneyScreen> {
 
   Widget _memoryTile(String emoji, String title, String subtitle) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: const Color(0xFF0D223B),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
+        border: Border.all(
+          color: NatterChildTheme.grow.withValues(alpha: 0.16),
+        ),
       ),
       child: Row(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 12),
+          Container(
+            width: 46,
+            height: 46,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: NatterChildTheme.grow.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 23)),
+          ),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -16195,16 +16201,18 @@ class _JourneyScreenState extends State<JourneyScreen> {
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.70),
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
+                    color: Colors.white.withValues(alpha: 0.68),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
                   ),
                 ),
               ],
