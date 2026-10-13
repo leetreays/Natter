@@ -76,3 +76,8 @@ android/app/google-services.json
 android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
 ios/Runner/GeneratedPluginRegistrant.h
 ios/Runner/GeneratedPluginRegistrant.m
+
+# Flutter test-generated files
+/build/native_assets/
+/build/test_cache/
+/build/unit_test_assets/
