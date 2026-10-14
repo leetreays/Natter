@@ -14,7 +14,7 @@ void main() {
     bool flagged = false,
   }) {
     return {
-      'senderChildId': sender,
+      'senderUid': sender,
       'createdAtMs': time,
       'journeySendRoute': route,
       'isFlagged': flagged,
@@ -79,7 +79,7 @@ void main() {
   });
 
   test('missing sender identity is excluded', () {
-    final data = message('direct_unflagged')..remove('senderChildId');
+    final data = message('direct_unflagged')..remove('senderUid');
 
     expect(
       adapter.activityFor(messageId: 'five', childId: 'child-a', data: data),

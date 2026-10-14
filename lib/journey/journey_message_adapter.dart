@@ -36,7 +36,7 @@ class JourneyMessageAdapter {
     required String childId,
     required Map<String, dynamic> data,
   }) {
-    if (childId.isEmpty || data['senderChildId'] != childId) {
+    if (childId.isEmpty || data['senderUid'] != childId) {
       return null;
     }
 
