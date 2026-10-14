@@ -6189,6 +6189,7 @@ class AppState extends ChangeNotifier {
     required String conversationId,
     required String text,
     bool isFlagged = false,
+    String journeySendRoute = 'unverified',
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return false;
@@ -6229,6 +6230,8 @@ class AppState extends ChangeNotifier {
       'createdAt': FieldValue.serverTimestamp(),
       'createdAtMs': DateTime.now().millisecondsSinceEpoch,
       'isFlagged': isFlagged,
+      // Journey metadata only: never an automatic growth award.
+      'journeySendRoute': isFlagged ? 'protected_delivery' : journeySendRoute,
       'receiverAction': '',
       'receiverActionAt': null,
       'receiverActionByChildId': null,
@@ -21864,7 +21867,11 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> _sendMessageNow(String text, {bool flagged = false}) async {
+  Future<void> _sendMessageNow(
+    String text, {
+    bool flagged = false,
+    String journeySendRoute = 'unverified',
+  }) async {
     final state = AppStateScope.of(context);
     _stallTimer?.cancel();
 
@@ -21878,6 +21885,7 @@ class _ChatScreenState extends State<ChatScreen> {
       conversationId: widget.conversationId,
       text: text,
       isFlagged: flagged,
+      journeySendRoute: journeySendRoute,
     );
 
     if (!delivered) {
@@ -22436,7 +22444,9 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
-    await _sendMessageNow(text);
+    // This attempt passed without triggering the safety coach.
+    // It is not proof that earlier guidance was unnecessary.
+    await _sendMessageNow(text, journeySendRoute: 'direct_unflagged');
   }
 
   @override
