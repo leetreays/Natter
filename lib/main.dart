@@ -13,6 +13,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
+import 'journey/journey_guidance_session.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -21897,6 +21898,8 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
 
+    _journeyGuidanceSession.completeAttempt(delivered: true);
+
     if (!flagged) {
       _sendLockTimer?.cancel();
       _sendLockedUntil = null;
@@ -21944,6 +21947,11 @@ class _ChatScreenState extends State<ChatScreen> {
       await state.markConversationRead(widget.conversationId);
     });
   }
+
+  // Tracks guidance during this chat's current composition session.
+  // It is intentionally not a child-facing score.
+  final JourneyGuidanceSession _journeyGuidanceSession =
+      JourneyGuidanceSession();
 
   void _send() async {
     final state = AppStateScope.of(context);
@@ -22038,6 +22046,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     if (adjustedLevel == SafetyLevel.block) {
+      _journeyGuidanceSession.recordGuidance();
       setState(() {
         feedback = safety.reason ?? "That word isn’t allowed on Natter.";
       });
@@ -22105,6 +22114,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (adjustedLevel == SafetyLevel.protect) {
+      _journeyGuidanceSession.recordGuidance();
       state.recordCoachPrompt();
 
       await state.conversationsRef().doc(widget.conversationId).update({
@@ -22286,6 +22296,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (adjustedLevel == SafetyLevel.coach) {
+      _journeyGuidanceSession.recordGuidance();
       state.recordCoachPrompt();
 
       await state.conversationsRef().doc(widget.conversationId).update({
@@ -22446,7 +22457,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // This attempt passed without triggering the safety coach.
     // It is not proof that earlier guidance was unnecessary.
-    await _sendMessageNow(text, journeySendRoute: 'direct_unflagged');
+    await _sendMessageNow(
+      text,
+      journeySendRoute: _journeyGuidanceSession.routeForAttempt(
+        protectedDelivery: false,
+      ),
+    );
   }
 
   @override
