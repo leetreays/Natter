@@ -6231,8 +6231,6 @@ class AppState extends ChangeNotifier {
       'createdAt': FieldValue.serverTimestamp(),
       'createdAtMs': DateTime.now().millisecondsSinceEpoch,
       'isFlagged': isFlagged,
-      // Journey metadata only: never an automatic growth award.
-      'journeySendRoute': isFlagged ? 'protected_delivery' : journeySendRoute,
       'receiverAction': '',
       'receiverActionAt': null,
       'receiverActionByChildId': null,
