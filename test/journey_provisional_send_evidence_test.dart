@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:natter/journey/journey_provisional_send_evidence.dart';
+import 'package:natter/journey/journey_message_adapter.dart';
 
 void main() {
   JourneyProvisionalSendEvidence assess(
@@ -20,7 +21,7 @@ void main() {
 
   test('direct send is provisional, never verified independence', () {
     final evidence = assess('direct_unflagged');
-    expect(evidence.route, JourneyObservedSendRoute.directUnflagged);
+    expect(evidence.route, JourneySendRoute.directUnflagged);
     expect(evidence.isProvisionalDirectCandidate, isTrue);
     expect(evidence.independenceVerified, isFalse);
     expect(evidence.guidanceReported, isFalse);
@@ -28,7 +29,7 @@ void main() {
 
   test('coached retry retains guidance classification', () {
     final evidence = assess('direct_after_guidance');
-    expect(evidence.route, JourneyObservedSendRoute.directAfterGuidance);
+    expect(evidence.route, JourneySendRoute.directAfterGuidance);
     expect(evidence.guidanceReported, isTrue);
     expect(evidence.isProvisionalDirectCandidate, isFalse);
     expect(evidence.independenceVerified, isFalse);
@@ -36,20 +37,20 @@ void main() {
 
   test('protected delivery cannot be independent', () {
     final evidence = assess('protected_delivery');
-    expect(evidence.route, JourneyObservedSendRoute.protectedDelivery);
+    expect(evidence.route, JourneySendRoute.protectedDelivery);
     expect(evidence.guidanceReported, isTrue);
     expect(evidence.independenceVerified, isFalse);
   });
 
   test('flagged message overrides a claimed direct route', () {
     final evidence = assess('direct_unflagged', flagged: true);
-    expect(evidence.route, JourneyObservedSendRoute.protectedDelivery);
+    expect(evidence.route, JourneySendRoute.protectedDelivery);
     expect(evidence.isProvisionalDirectCandidate, isFalse);
   });
 
   test('historical messages without route remain unverified', () {
     final evidence = assess(null);
-    expect(evidence.route, JourneyObservedSendRoute.unverified);
+    expect(evidence.route, JourneySendRoute.unverified);
     expect(evidence.isProvisionalDirectCandidate, isFalse);
     expect(evidence.independenceVerified, isFalse);
   });
@@ -57,7 +58,7 @@ void main() {
   test('unknown and malformed routes remain unverified', () {
     for (final route in ['independent', 'verified', '', 'other']) {
       final evidence = assess(route);
-      expect(evidence.route, JourneyObservedSendRoute.unverified);
+      expect(evidence.route, JourneySendRoute.unverified);
       expect(evidence.isProvisionalDirectCandidate, isFalse);
     }
   });
