@@ -1,21 +1,16 @@
+import 'journey_message_adapter.dart';
+
 /// Privacy-preserving, provisional observations about a message send.
 ///
 /// These values describe what the client reported. They are not proof of
 /// independence and must never be used alone to award Journey readiness.
-enum JourneyObservedSendRoute {
-  directUnflagged,
-  directAfterGuidance,
-  protectedDelivery,
-  unverified,
-}
-
 class JourneyProvisionalSendEvidence {
   const JourneyProvisionalSendEvidence({
     required this.route,
     required this.hasMessageIdentity,
   });
 
-  final JourneyObservedSendRoute route;
+  final JourneySendRoute route;
   final bool hasMessageIdentity;
 
   /// Client-side observations cannot authoritatively verify independence.
@@ -24,12 +19,12 @@ class JourneyProvisionalSendEvidence {
   /// Whether the reported route says that Natter guidance was encountered.
   /// Unknown and historical routes must not be interpreted as guidance-free.
   bool get guidanceReported =>
-      route == JourneyObservedSendRoute.directAfterGuidance ||
-      route == JourneyObservedSendRoute.protectedDelivery;
+      route == JourneySendRoute.directAfterGuidance ||
+      route == JourneySendRoute.protectedDelivery;
 
   /// An unflagged direct send is only a *candidate* for future verification.
   bool get isProvisionalDirectCandidate =>
-      hasMessageIdentity && route == JourneyObservedSendRoute.directUnflagged;
+      hasMessageIdentity && route == JourneySendRoute.directUnflagged;
 
   static JourneyProvisionalSendEvidence fromMessage({
     required String childId,
@@ -38,7 +33,7 @@ class JourneyProvisionalSendEvidence {
     final ownsMessage = childId.isNotEmpty && data['senderUid'] == childId;
     if (!ownsMessage) {
       return const JourneyProvisionalSendEvidence(
-        route: JourneyObservedSendRoute.unverified,
+        route: JourneySendRoute.unverified,
         hasMessageIdentity: false,
       );
     }
@@ -46,17 +41,12 @@ class JourneyProvisionalSendEvidence {
     // Flagging takes precedence over any self-reported direct-send route.
     if (data['isFlagged'] == true) {
       return const JourneyProvisionalSendEvidence(
-        route: JourneyObservedSendRoute.protectedDelivery,
+        route: JourneySendRoute.protectedDelivery,
         hasMessageIdentity: true,
       );
     }
 
-    final route = switch (data['journeySendRoute']) {
-      'direct_unflagged' => JourneyObservedSendRoute.directUnflagged,
-      'direct_after_guidance' => JourneyObservedSendRoute.directAfterGuidance,
-      'protected_delivery' => JourneyObservedSendRoute.protectedDelivery,
-      _ => JourneyObservedSendRoute.unverified,
-    };
+    final route = const JourneyMessageAdapter().routeOf(data);
 
     return JourneyProvisionalSendEvidence(
       route: route,
