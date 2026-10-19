@@ -217,6 +217,7 @@ service cloud.firestore {
           'createdAt',
           'createdAtMs',
           'isFlagged',
+          'journeySendRoute',
           'receiverAction',
           'receiverActionAt',
           'receiverActionByChildId'
@@ -237,6 +238,20 @@ service cloud.firestore {
         && request.resource.data.text.matches('.*\\S.*')
         && request.resource.data.text.size() <= 10000
         && request.resource.data.isFlagged is bool
+        && (!request.resource.data.keys().hasAny(['journeySendRoute'])
+          || (
+            request.resource.data.journeySendRoute in [
+              'direct_unflagged',
+              'direct_after_guidance',
+              'protected_delivery',
+              'unverified'
+            ]
+            && (
+              request.resource.data.isFlagged == true
+                ? request.resource.data.journeySendRoute == 'protected_delivery'
+                : request.resource.data.journeySendRoute != 'protected_delivery'
+            )
+          ))
         && request.resource.data.receiverAction == ''
         && request.resource.data.receiverActionAt == null
         && request.resource.data.receiverActionByChildId == null
