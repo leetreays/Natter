@@ -238,6 +238,8 @@ service cloud.firestore {
         && request.resource.data.text.matches('.*\\S.*')
         && request.resource.data.text.size() <= 10000
         && request.resource.data.isFlagged is bool
+        // Client-reported route is provisional. Rules validate shape and flag
+        // consistency, not absence of coaching or graduation readiness.
         && (!request.resource.data.keys().hasAny(['journeySendRoute'])
           || (
             request.resource.data.journeySendRoute in [
