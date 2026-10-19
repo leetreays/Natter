@@ -27,6 +27,13 @@ void main() {
     expect(evidence.guidanceReported, isFalse);
   });
 
+  test('client-claimed direct route is never verified independence', () {
+    // Even a direct route reported by a client cannot prove no guidance occurred.
+    final claimed = assess('direct_unflagged');
+    expect(claimed.isProvisionalDirectCandidate, isTrue);
+    expect(claimed.independenceVerified, isFalse);
+  });
+
   test('coached retry retains guidance classification', () {
     final evidence = assess('direct_after_guidance');
     expect(evidence.route, JourneySendRoute.directAfterGuidance);
