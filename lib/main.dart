@@ -6235,9 +6235,9 @@ class AppState extends ChangeNotifier {
       'journeySendRoute': isFlagged
           ? 'protected_delivery'
           : (journeySendRoute == 'direct_unflagged' ||
-                  journeySendRoute == 'direct_after_guidance'
-              ? journeySendRoute
-              : 'unverified'),
+                    journeySendRoute == 'direct_after_guidance'
+                ? journeySendRoute
+                : 'unverified'),
       'receiverAction': '',
       'receiverActionAt': null,
       'receiverActionByChildId': null,
