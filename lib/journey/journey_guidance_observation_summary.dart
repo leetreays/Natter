@@ -43,9 +43,9 @@ class JourneyGuidanceObservationAnalyzer {
     const adapter = JourneyMessageAdapter();
 
     for (final message in messages) {
-      if (message.id.isEmpty || !seenIds.add(message.id)) continue;
       final data = message.data;
       if (childId.isEmpty || data['senderUid'] != childId) continue;
+      if (message.id.isEmpty || !seenIds.add(message.id)) continue;
 
       final timestamp = data['createdAtMs'];
       if (timestamp is! num || !timestamp.isFinite || timestamp <= 0) {
