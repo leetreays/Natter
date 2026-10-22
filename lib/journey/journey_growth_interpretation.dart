@@ -1,7 +1,12 @@
 import 'journey_observation_period_comparison.dart';
 
 /// A descriptive change between two windows, never an independence judgement.
-enum JourneyObservedChange { increased, decreased, unchanged, insufficientEvidence }
+enum JourneyObservedChange {
+  increased,
+  decreased,
+  unchanged,
+  insufficientEvidence,
+}
 
 /// Read-only interpretation of client-reported Journey observations.
 ///
@@ -60,10 +65,7 @@ class JourneyGrowthInterpreter {
         earlier.protectedDeliveryDays,
         later.protectedDeliveryDays,
       ),
-      unverifiedDays: change(
-        earlier.unverifiedDays,
-        later.unverifiedDays,
-      ),
+      unverifiedDays: change(earlier.unverifiedDays, later.unverifiedDays),
       hasComparableActivity: hasActivity,
     );
   }
