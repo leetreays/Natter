@@ -13,25 +13,23 @@ void main() {
     DateTime at,
     String route, {
     String child = 'child-a',
-  }) =>
-      JourneyGuidanceObservation(id, {
-        'senderUid': child,
-        'createdAtMs': at.millisecondsSinceEpoch,
-        'journeySendRoute': route,
-        'isFlagged': false,
-      });
+  }) => JourneyGuidanceObservation(id, {
+    'senderUid': child,
+    'createdAtMs': at.millisecondsSinceEpoch,
+    'journeySendRoute': route,
+    'isFlagged': false,
+  });
 
   JourneyObservationPeriodComparison compare(
     Iterable<JourneyGuidanceObservation> messages,
-  ) =>
-      analyzer.compare(
-        childId: 'child-a',
-        messages: messages,
-        earlierStart: start,
-        earlierEnd: middle,
-        laterStart: middle,
-        laterEnd: end,
-      );
+  ) => analyzer.compare(
+    childId: 'child-a',
+    messages: messages,
+    earlierStart: start,
+    earlierEnd: middle,
+    laterStart: middle,
+    laterEnd: end,
+  );
 
   test('compares distinct UTC days rather than message totals', () {
     final result = compare([
@@ -54,7 +52,11 @@ void main() {
 
   test('excludes messages outside windows and from another child', () {
     final result = compare([
-      message('before', start.subtract(const Duration(days: 1)), 'direct_unflagged'),
+      message(
+        'before',
+        start.subtract(const Duration(days: 1)),
+        'direct_unflagged',
+      ),
       message('after', end, 'direct_unflagged'),
       message('other', middle, 'direct_unflagged', child: 'child-b'),
     ]);
