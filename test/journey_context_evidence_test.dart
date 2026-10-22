@@ -129,17 +129,20 @@ void main() {
     );
   });
 
-  test('unrelated friendship milestones are not individual repair evidence', () {
-    expect(
-      adapter.friendshipMoment(
-        friendshipId: 'child-a_child-b',
-        documentId: 'consistent_kindness',
-        data: {
-          'friendshipId': 'child-a_child-b',
-          'type': 'consistent_kindness',
-        },
-      ),
-      isNull,
-    );
-  });
+  test(
+    'unrelated friendship milestones are not individual repair evidence',
+    () {
+      expect(
+        adapter.friendshipMoment(
+          friendshipId: 'child-a_child-b',
+          documentId: 'consistent_kindness',
+          data: {
+            'friendshipId': 'child-a_child-b',
+            'type': 'consistent_kindness',
+          },
+        ),
+        isNull,
+      );
+    },
+  );
 }
