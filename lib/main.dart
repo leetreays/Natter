@@ -15649,7 +15649,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 ),
                 child: NatterChildSectionHeader(
                   title: 'Your story so far',
-                  subtitle: 'Little moments, new friendships, and things you are learning.',
+                  subtitle:
+                      'Little moments, new friendships, and things you are learning.'
                 ),
               ),
               const SizedBox(height: NatterChildTheme.spaceXl),
@@ -16044,7 +16045,8 @@ class _JourneyScreenState extends State<JourneyScreen> {
                       ),
                       const SizedBox(height: NatterChildTheme.spaceXs),
                       Text(
-                        nourishment['text'] ?? 'Every journey has small moments.',
+                        nourishment['text'] ??
+                            'Every journey has small moments.'
                         style: NatterChildTheme.body,
                       ),
                     ],
@@ -16266,7 +16268,6 @@ class _JourneyScreenState extends State<JourneyScreen> {
       ),
     );
   }
-
 }
 
 class CeremonyScreen extends StatefulWidget {
