@@ -15650,7 +15650,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                 child: NatterChildSectionHeader(
                   title: 'Your story so far',
                   subtitle:
-                      'Little moments, new friendships, and things you are learning.'
+                      'Little moments, new friendships, and things you are learning.',
                 ),
               ),
               const SizedBox(height: NatterChildTheme.spaceXl),
