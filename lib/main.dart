@@ -17848,54 +17848,54 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   child: Column(
-              children: [
-                Container(
-                  width: 110,
-                  height: 110,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        NatterChildTheme.connect.withValues(alpha: 0.24),
-                        NatterChildTheme.grow.withValues(alpha: 0.10),
-                      ],
-                    ),
-                    border: Border.all(
-                      color: NatterChildTheme.connect.withValues(alpha: 0.38),
-                      width: 1.3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: NatterChildTheme.connect.withValues(alpha: 0.12),
-                        blurRadius: 28,
-                        spreadRadius: 2,
+                    children: [
+                      Container(
+                        width: 110,
+                        height: 110,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              NatterChildTheme.connect.withValues(alpha: 0.24),
+                              NatterChildTheme.grow.withValues(alpha: 0.10),
+                            ],
+                          ),
+                          border: Border.all(
+                            color: NatterChildTheme.connect.withValues(alpha: 0.38),
+                            width: 1.3,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: NatterChildTheme.connect.withValues(alpha: 0.12),
+                              blurRadius: 28,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          _initialFor(name),
+                          style: NatterChildTheme.screenTitle.copyWith(
+                            fontSize: 52,
+                            color: NatterChildTheme.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceXl),
+                      Text(
+                        name,
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.screenTitle.copyWith(fontSize: 32),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceSm),
+                      const Text(
+                        'Your space to connect, protect and grow.',
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.screenSubtitle,
                       ),
                     ],
-                  ),
-                  child: Text(
-                    _initialFor(name),
-                    style: NatterChildTheme.screenTitle.copyWith(
-                      fontSize: 52,
-                      color: NatterChildTheme.textPrimary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: NatterChildTheme.spaceXl),
-                Text(
-                  name,
-                  textAlign: TextAlign.center,
-                  style: NatterChildTheme.screenTitle.copyWith(fontSize: 32),
-                ),
-                const SizedBox(height: NatterChildTheme.spaceSm),
-                const Text(
-                  'Your space to connect, protect and grow.',
-                  textAlign: TextAlign.center,
-                  style: NatterChildTheme.screenSubtitle,
-                ),
-              ],
                   ),
                 ),
               ),
