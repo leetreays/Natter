@@ -17678,16 +17678,45 @@ class _AvatarBuilderScreenState extends State<AvatarBuilderScreen> {
   }
 }
 
+/// A child-owned identity space. Avatar customisation remains future work;
+/// do not reintroduce legacy levels, points, badges or the old builder here.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Widget _sectionTitle(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w900,
-        fontSize: 18,
+  String _initialFor(String name) {
+    final trimmed = name.trim();
+    return trimmed.isEmpty ? 'N' : trimmed.substring(0, 1).toUpperCase();
+  }
+
+  Widget _promiseChip(String promise) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.spaceMd,
+        vertical: NatterChildTheme.spaceSm + 2,
+      ),
+      decoration: BoxDecoration(
+        color: NatterChildTheme.grow.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(
+          NatterChildTheme.radiusPill,
+        ),
+        border: Border.all(
+          color: NatterChildTheme.grow.withValues(alpha: 0.22),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.favorite_rounded,
+            size: 14,
+            color: NatterChildTheme.grow,
+          ),
+          const SizedBox(width: NatterChildTheme.spaceSm),
+          Text(
+            promise,
+            style: NatterChildTheme.bodyStrong.copyWith(fontSize: 13),
+          ),
+        ],
       ),
     );
   }
@@ -17695,136 +17724,223 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    final displayName = state.effectiveChildName;
+    final name = state.effectiveChildName;
+    final friendCode = (state.activeChildFriendCode ?? '').trim();
 
     return BrandScaffold(
+      background: const NatterChildBackground(),
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const BrandedAppBarTitle(title: 'My Profile'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.maybePop(context),
         ),
       ),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        physics: const ClampingScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          NatterChildTheme.screenHorizontalPadding,
+          NatterChildTheme.spaceLg,
+          NatterChildTheme.screenHorizontalPadding,
+          NatterChildTheme.space3Xl,
+        ),
         children: [
-          BrandCard(
+          const NatterChildSectionHeader(
+            title: 'Your Natter space',
+            subtitle: 'A little corner of Natter that belongs to you.',
+          ),
+          const SizedBox(height: NatterChildTheme.spaceXl),
+          NatterChildSurface(
+            style: NatterChildSurfaceStyle.hero,
+            padding: const EdgeInsets.symmetric(
+              horizontal: NatterChildTheme.spaceXl,
+              vertical: NatterChildTheme.space3Xl,
+            ),
             child: Column(
               children: [
-                AvatarPreview(avatar: state.avatar, size: 120),
-                const SizedBox(height: 14),
-                Text(
-                  displayName,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  state.currentLevel.title,
-                  style: const TextStyle(
-                    color: NatterBrand.yellow,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  state.currentLevel.description,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.84),
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      calmRoute(const AvatarBuilderScreen()),
+                Container(
+                  width: 110,
+                  height: 110,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        NatterChildTheme.connect.withValues(alpha: 0.24),
+                        NatterChildTheme.grow.withValues(alpha: 0.10),
+                      ],
                     ),
-                    child: const Text('Edit Avatar'),
+                    border: Border.all(
+                      color: NatterChildTheme.connect.withValues(alpha: 0.38),
+                      width: 1.3,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: NatterChildTheme.connect.withValues(alpha: 0.12),
+                        blurRadius: 28,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _initialFor(name),
+                    style: NatterChildTheme.screenTitle.copyWith(
+                      fontSize: 52,
+                      color: NatterChildTheme.textPrimary,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _sectionTitle('Progress'),
-                const SizedBox(height: 14),
-                _ProgressBarCard(state: state),
-                const SizedBox(height: 14),
+                const SizedBox(height: NatterChildTheme.spaceXl),
                 Text(
-                  'Next goal: ${state.currentLevel.nextGoal}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.84),
-                    fontWeight: FontWeight.w700,
-                    height: 1.3,
-                  ),
+                  name,
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.screenTitle.copyWith(fontSize: 32),
+                ),
+                const SizedBox(height: NatterChildTheme.spaceSm),
+                const Text(
+                  'Your space to connect, protect and grow.',
+                  textAlign: TextAlign.center,
+                  style: NatterChildTheme.screenSubtitle,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _sectionTitle('Stats'),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+          const SizedBox(height: NatterChildTheme.space3Xl),
+          const NatterChildSectionHeader(
+            title: 'My Promises',
+            subtitle: 'The things you chose to carry with you.',
+          ),
+          const SizedBox(height: NatterChildTheme.spaceLg),
+          NatterChildSurface(
+            style: NatterChildSurfaceStyle.quiet,
+            child: state.lastPromises.isEmpty
+                ? const Text(
+                    'Your Natter promises will live here once they are saved.',
+                    style: NatterChildTheme.body,
+                  )
+                : Wrap(
+                    spacing: NatterChildTheme.spaceSm,
+                    runSpacing: NatterChildTheme.spaceSm,
+                    children: [
+                      for (final promise in state.lastPromises)
+                        _promiseChip(promise),
+                    ],
+                  ),
+          ),
+          const SizedBox(height: NatterChildTheme.space3Xl),
+          const NatterChildSectionHeader(
+            title: 'My Journey',
+            subtitle: 'Every friendship has a story. So do you.',
+          ),
+          const SizedBox(height: NatterChildTheme.spaceLg),
+          Semantics(
+            button: true,
+            label: 'Open your Journey',
+            child: GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                calmRoute(const JourneyScreen()),
+              ),
+              child: NatterChildSurface(
+                style: NatterChildSurfaceStyle.raised,
+                padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+                child: Row(
                   children: [
-                    _ProfileStatTile(
-                      label: 'Stars',
-                      value: state.kindnessStars.toString(),
+                    Container(
+                      width: 52,
+                      height: 52,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: NatterChildTheme.grow.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          NatterChildTheme.radiusMedium,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.spa_rounded,
+                        color: NatterChildTheme.grow,
+                        size: 27,
+                      ),
                     ),
-                    _ProfileStatTile(
-                      label: 'Streak',
-                      value: state.kindnessStreak.toString(),
+                    const SizedBox(width: NatterChildTheme.spaceLg),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Explore your Journey',
+                            style: NatterChildTheme.cardTitle,
+                          ),
+                          SizedBox(height: NatterChildTheme.spaceXs),
+                          Text(
+                            'The moments that are part of your story.',
+                            style: NatterChildTheme.body,
+                          ),
+                        ],
+                      ),
                     ),
-                    _ProfileStatTile(
-                      label: 'Rewrites',
-                      value: state.kindnessRewrites.toString(),
-                    ),
-                    _ProfileStatTile(
-                      label: 'Friends',
-                      value: state.approvedContacts.length.toString(),
+                    const SizedBox(width: NatterChildTheme.spaceSm),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: NatterChildTheme.textSecondary,
+                      size: 24,
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-          if (state.isGraduated) ...[
-            const SizedBox(height: 14),
-            BrandCard(
-              child: Row(
+          if (friendCode.isNotEmpty) ...[
+            const SizedBox(height: NatterChildTheme.space3Xl),
+            const NatterChildSectionHeader(
+              title: 'My Friend Code',
+              subtitle: 'Share your code with someone you know to connect.',
+            ),
+            const SizedBox(height: NatterChildTheme.spaceLg),
+            NatterChildSurface(
+              style: NatterChildSurfaceStyle.quiet,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.school_rounded,
-                    color: NatterBrand.yellow,
-                    size: 28,
+                  Text(
+                    friendCode,
+                    style: NatterChildTheme.heroTitle.copyWith(
+                      color: NatterChildTheme.connect,
+                      letterSpacing: 1.0,
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Natter Graduate 🎓',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20,
+                  const SizedBox(height: NatterChildTheme.spaceMd),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: friendCode));
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Friend code copied')),
+                        );
+                      },
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      label: const Text('Copy my code'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: NatterChildTheme.connect,
+                        side: BorderSide(
+                          color: NatterChildTheme.connect.withValues(
+                            alpha: 0.38,
+                          ),
+                        ),
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            NatterChildTheme.radiusMedium,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -17832,172 +17948,38 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
+          const SizedBox(height: NatterChildTheme.space3Xl),
+          NatterChildSurface(
+            style: NatterChildSurfaceStyle.quiet,
+            padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+            child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _sectionTitle('Badges'),
-                const SizedBox(height: 14),
-                if (state.earnedBadges.isEmpty)
-                  Text(
-                    'No badges yet.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.84),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
-                else
-                  ...state.earnedBadges.map(
-                    (badge) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: BadgeCard(name: displayName, badge: badge),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          BrandCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.favorite_rounded,
-                      color: NatterBrand.yellow,
-                      size: 22,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Friendship Moments',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
+                Icon(
+                  Icons.shield_outlined,
+                  color: NatterChildTheme.protect,
+                  size: 25,
                 ),
-                const SizedBox(height: 12),
-                if (state.friendshipMoments.isEmpty)
-                  Text(
-                    'No friendship moments yet.',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.84),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
-                else
-                  ...state.friendshipMoments
-                      .take(6)
-                      .map(
-                        (moment) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.10),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.16),
-                              ),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: NatterBrand.yellow.withOpacity(0.18),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: NatterBrand.yellow.withOpacity(
-                                        0.45,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    moment.icon,
-                                    color: NatterBrand.yellow,
-                                    size: 18,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        moment.title,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        moment.description,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.84),
-                                          fontWeight: FontWeight.w700,
-                                          height: 1.3,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                SizedBox(width: NatterChildTheme.spaceMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your conversations are yours',
+                        style: NatterChildTheme.cardTitle,
                       ),
+                      SizedBox(height: NatterChildTheme.spaceXs),
+                      Text(
+                        'Parents understand friendships through guidance, not by reading your messages.',
+                        style: NatterChildTheme.body,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-
-          const SizedBox(height: 14),
-          if (state.lastPromises.isNotEmpty)
-            BrandCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _sectionTitle('My Promises'),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: state.lastPromises.map((p) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.10),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.18),
-                          ),
-                        ),
-                        child: Text(
-                          p,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 20),
         ],
       ),
     );
