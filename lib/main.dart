@@ -17688,33 +17688,35 @@ class ProfileScreen extends StatelessWidget {
     return trimmed.isEmpty ? 'N' : trimmed.substring(0, 1).toUpperCase();
   }
 
-  Widget _promiseChip(String promise) {
-    return Container(
+  Widget _promiseRow(String promise) {
+    return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: NatterChildTheme.spaceMd,
-        vertical: NatterChildTheme.spaceSm + 2,
-      ),
-      decoration: BoxDecoration(
-        color: NatterChildTheme.grow.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(
-          NatterChildTheme.radiusPill,
-        ),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.22),
-        ),
+        vertical: NatterChildTheme.spaceMd,
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.favorite_rounded,
-            size: 14,
-            color: NatterChildTheme.grow,
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: NatterChildTheme.grow.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusSmall,
+              ),
+            ),
+            child: const Icon(
+              Icons.favorite_rounded,
+              size: 18,
+              color: NatterChildTheme.grow,
+            ),
           ),
-          const SizedBox(width: NatterChildTheme.spaceSm),
-          Text(
-            promise,
-            style: NatterChildTheme.bodyStrong.copyWith(fontSize: 13),
+          const SizedBox(width: NatterChildTheme.spaceLg),
+          Expanded(
+            child: Text(
+              promise,
+              style: NatterChildTheme.bodyStrong,
+            ),
           ),
         ],
       ),
@@ -17724,16 +17726,31 @@ class ProfileScreen extends StatelessWidget {
   Widget _promisesCard(List<String> promises) {
     return NatterChildSurface(
       style: NatterChildSurfaceStyle.quiet,
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.spaceXl,
+        vertical: NatterChildTheme.spaceSm,
+      ),
       child: promises.isEmpty
-          ? const Text(
-              'Your Natter promises will live here once they are saved.',
-              style: NatterChildTheme.body,
+          ? const Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: NatterChildTheme.spaceLg,
+              ),
+              child: Text(
+                'Your Natter promises will live here once they are saved.',
+                style: NatterChildTheme.body,
+              ),
             )
-          : Wrap(
-              spacing: NatterChildTheme.spaceSm,
-              runSpacing: NatterChildTheme.spaceSm,
+          : Column(
               children: [
-                for (final promise in promises) _promiseChip(promise),
+                for (var i = 0; i < promises.length; i++) ...[
+                  _promiseRow(promises[i]),
+                  if (i < promises.length - 1)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: NatterChildTheme.border,
+                    ),
+                ],
               ],
             ),
     );
@@ -17796,13 +17813,41 @@ class ProfileScreen extends StatelessWidget {
             subtitle: 'A little corner of Natter that belongs to you.',
           ),
           const SizedBox(height: NatterChildTheme.spaceXl),
-          NatterChildSurface(
-            style: NatterChildSurfaceStyle.hero,
-            padding: const EdgeInsets.symmetric(
-              horizontal: NatterChildTheme.spaceXl,
-              vertical: NatterChildTheme.space3Xl,
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusLarge,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.10),
+                  blurRadius: 24,
+                  offset: const Offset(0, 7),
+                ),
+              ],
             ),
-            child: Column(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                NatterChildTheme.radiusLarge,
+              ),
+              child: BackdropFilter(
+                filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: NatterChildTheme.spaceXl,
+                    vertical: NatterChildTheme.space3Xl,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NatterChildTheme.surface.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusLarge,
+                    ),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.085),
+                    ),
+                  ),
+                  child: Column(
               children: [
                 Container(
                   width: 110,
@@ -17851,6 +17896,9 @@ class ProfileScreen extends StatelessWidget {
                   style: NatterChildTheme.screenSubtitle,
                 ),
               ],
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(height: NatterChildTheme.space3Xl),
