@@ -15582,6 +15582,51 @@ class _JourneyScreenState extends State<JourneyScreen> {
             .collection('signals')
             .snapshots(),
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: NatterChildTheme.grow,
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(
+                  NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: const NatterChildSurface(
+                  style: NatterChildSurfaceStyle.quiet,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        color: NatterChildTheme.textSecondary,
+                        size: 32,
+                      ),
+                      SizedBox(height: NatterChildTheme.spaceLg),
+                      Text(
+                        'Your Journey is resting for a moment',
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.sectionTitle,
+                      ),
+                      SizedBox(height: NatterChildTheme.spaceSm),
+                      Text(
+                        'We couldn\'t load your moments just now. Try opening Journey again soon.',
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
           final docs = snapshot.data?.docs ?? [];
           final scores = _journeyRootScores(docs);
           final growth = _treeGrowth(docs);
@@ -15592,27 +15637,42 @@ class _JourneyScreenState extends State<JourneyScreen> {
           final habitsStage = _rootStage(scores['habits'] ?? 0);
 
           return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.only(
+              top: NatterChildTheme.spaceSm,
+              bottom: NatterChildTheme.space3Xl,
+            ),
             children: [
-              _treeHeroCard(
-                nourishment: _recentNourishment(docs),
-                growth: growth,
-                treeEmoji: _treeEmoji(growth),
-                growthMessage: _treeGrowthMessage(growth),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: _growthRootsCard(
-                  communicationStage: communicationStage,
-                  reflectionStage: reflectionStage,
-                  friendshipStage: friendshipStage,
-                  habitsStage: habitsStage,
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: NatterChildSectionHeader(
+                  title: 'Your story so far',
+                  subtitle:
+                      'Little moments, new friendships, and things you are learning.'
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: NatterChildTheme.spaceXl),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: _treeHeroCard(
+                  nourishment: _recentNourishment(docs),
+                  growth: growth,
+                  growthMessage: _treeGrowthMessage(growth),
+                ),
+              ),
+              const SizedBox(height: NatterChildTheme.space3Xl),
+              _growthRootsCard(
+                communicationStage: communicationStage,
+                reflectionStage: reflectionStage,
+                friendshipStage: friendshipStage,
+                habitsStage: habitsStage,
+              ),
+              const SizedBox(height: NatterChildTheme.space2Xl),
               _journeyMemoriesCard(docs),
-              const SizedBox(height: 80),
             ],
           );
         },
@@ -15705,28 +15765,6 @@ class _JourneyScreenState extends State<JourneyScreen> {
     };
   }
 
-  String _treeEmoji(Map<String, int> growth) {
-    switch (_treeVisualStage(growth)) {
-      case 'sapling':
-        return '🌳';
-
-      case 'flourishing_seedling':
-        return '🌿';
-
-      case 'branching_seedling':
-        return '🍃';
-
-      case 'strong_seedling':
-        return '🍃';
-
-      case 'growing_seedling':
-        return '🌱';
-
-      default:
-        return '🌱';
-    }
-  }
-
   String _treeVariantName(Map<String, int> growth) {
     final total =
         (growth['leaves'] ?? 0) +
@@ -15775,18 +15813,18 @@ class _JourneyScreenState extends State<JourneyScreen> {
         (growth['roots'] ?? 0);
 
     if (total >= 80) {
-      return 'Your roots are strong and your tree is flourishing.';
+      return 'So many moments are becoming part of your story.';
     }
 
     if (total >= 40) {
-      return 'Your tree is growing stronger with every thoughtful choice.';
+      return 'Your tree has room for every new experience.';
     }
 
     if (total >= 15) {
-      return 'Your tree is taking root and beginning to grow.';
+      return 'Your tree is taking root, one moment at a time.';
     }
 
-    return 'Your journey towards confident, kind digital communication has begun.';
+    return 'Your journey towards kind, confident communication has begun.';
   }
 
   Map<String, String>? _recentNourishment(
@@ -15798,22 +15836,21 @@ class _JourneyScreenState extends State<JourneyScreen> {
       if (context == 'rewrite_used') {
         return {
           'emoji': '💛',
-          'text': 'Your tree grew stronger because you chose kinder words.',
+          'text': 'You had a chance to try kinder words with Natter.',
         };
       }
 
       if (context == 'pause_respected') {
         return {
           'emoji': '🧘',
-          'text': 'Your tree grew stronger because you took a calm pause.',
+          'text': 'A pause gave the conversation some breathing room.',
         };
       }
 
       if (context == 'conversation_recovered') {
         return {
           'emoji': '🌿',
-          'text':
-              'Your tree grew stronger because a friendship moment became calmer.',
+          'text': 'A difficult friendship moment became calmer.',
         };
       }
     }
@@ -15822,157 +15859,203 @@ class _JourneyScreenState extends State<JourneyScreen> {
   }
 
   String _communicationMessage(String stage) {
-    if (stage == 'Strong') return 'You often choose thoughtful words.';
-    if (stage == 'Growing') return 'Your communication skills are developing.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to practise kind communication.';
+    if (stage == 'Deep roots') {
+      return 'There have been many chances to practise kinder words.';
+    }
+    if (stage == 'Roots spreading') {
+      return 'You have had more moments to try kinder words.';
+    }
+    if (stage == 'Small roots') {
+      return 'You are starting to try kinder words with support.';
     }
     return 'Finding words that are clear and kind.';
   }
 
   String _reflectionMessage(String stage) {
-    if (stage == 'Strong') return 'You often take time before replying.';
-    if (stage == 'Growing') return 'You are learning to pause and think.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to notice when a pause helps.';
+    if (stage == 'Deep roots') {
+      return 'Many pauses have made room for conversations to settle.';
     }
-    return 'Taking a moment before replying.';
+    if (stage == 'Roots spreading') {
+      return 'Pauses have given messages a little breathing room.';
+    }
+    if (stage == 'Small roots') {
+      return 'A pause can make space before messages continue.';
+    }
+    return 'Learning how a little space can help.';
   }
 
   String _friendshipMessage(String stage) {
-    if (stage == 'Strong') return 'You are building caring friendship habits.';
-    if (stage == 'Growing') return 'You are learning how friendships recover.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to help friendships grow.';
+    if (stage == 'Deep roots') {
+      return 'Many difficult friendship moments have become calmer.';
     }
-    return 'Helping friendships recover and grow.';
+    if (stage == 'Roots spreading') {
+      return 'Some tricky moments have started to settle.';
+    }
+    if (stage == 'Small roots') {
+      return 'Friendships can recover after difficult moments.';
+    }
+    return 'Discovering how friendships grow and change.';
   }
 
   String _habitsMessage(String stage) {
-    if (stage == 'Strong') return 'You are building healthy digital routines.';
-    if (stage == 'Growing') return 'Your digital habits are developing.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to learn healthy routines online.';
+    if (stage == 'Deep roots') {
+      return 'Quiet Time has been part of many messaging moments.';
     }
-    return 'Learning healthy routines online.';
+    if (stage == 'Roots spreading') {
+      return 'There have been more chances to notice Quiet Time.';
+    }
+    if (stage == 'Small roots') {
+      return 'Quiet Time can remind you when to take a break.';
+    }
+    return 'Learning when messages can wait.';
   }
 
   Widget _treeHeroCard({
     required Map<String, String>? nourishment,
     required Map<String, int> growth,
-    required String treeEmoji,
     required String growthMessage,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AspectRatio(
-          aspectRatio: 0.94,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                'assets/journey_seedling.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-              ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: [0.0, 0.38, 0.70, 1.0],
-                    colors: [
-                      Color(0x8808142C),
-                      Color(0x0008142C),
-                      Color(0x3308142C),
-                      Color(0xFF091A33),
-                    ],
-                  ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(NatterChildTheme.radiusHero),
+          child: AspectRatio(
+            aspectRatio: 0.94,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/journey_seedling.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
                 ),
-              ),
-              Positioned(
-                bottom: 28,
-                left: 24,
-                right: 24,
-                child: Column(
-                  children: [
-                    Text(
-                      _treeVariantName(growth),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      growthMessage,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.84),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (nourishment != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF102B35),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: NatterChildTheme.grow.withValues(alpha: 0.24),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.spa_rounded,
-                    color: NatterChildTheme.grow,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'RECENT GROWTH',
-                          style: TextStyle(
-                            color: NatterChildTheme.grow,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          nourishment['text'] ?? 'Your tree is growing.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.88),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            height: 1.4,
-                          ),
-                        ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.38, 0.70, 1.0],
+                      colors: [
+                        Color(0x8808142C),
+                        Color(0x0008142C),
+                        Color(0x3308142C),
+                        Color(0xFF091A33),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: NatterChildTheme.spaceXl,
+                  left: NatterChildTheme.spaceXl,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NatterChildTheme.spaceMd,
+                      vertical: NatterChildTheme.spaceSm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: NatterChildTheme.environmentBottom.withValues(
+                        alpha: 0.74,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusPill,
+                      ),
+                      border: Border.all(
+                        color: NatterChildTheme.grow.withValues(alpha: 0.32),
+                      ),
+                    ),
+                    child: const Text(
+                      'YOUR JOURNEY',
+                      style: TextStyle(
+                        color: NatterChildTheme.grow,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: NatterChildTheme.space2Xl,
+                  left: NatterChildTheme.spaceXl,
+                  right: NatterChildTheme.spaceXl,
+                  child: Column(
+                    children: [
+                      Text(
+                        _treeVariantName(growth),
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.screenTitle.copyWith(
+                          fontSize: 30,
+                        ),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceSm),
+                      Text(
+                        growthMessage,
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.body.copyWith(
+                          color: NatterChildTheme.textPrimary.withValues(
+                            alpha: 0.86,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+        if (nourishment != null) ...[
+          const SizedBox(height: NatterChildTheme.spaceMd),
+          NatterChildSurface(
+            style: NatterChildSurfaceStyle.quiet,
+            padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: NatterChildTheme.grow.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusSmall,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.spa_rounded,
+                    color: NatterChildTheme.grow,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: NatterChildTheme.spaceMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'A MOMENT TO NOTICE',
+                        style: TextStyle(
+                          color: NatterChildTheme.grow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceXs),
+                      Text(
+                        nourishment['text'] ??
+                            'Every journey has small moments.',
+                        style: NatterChildTheme.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -15984,48 +16067,41 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String habitsStage,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.screenHorizontalPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Growth Roots',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+          const NatterChildSectionHeader(
+            title: 'Growth Roots',
+            subtitle: 'The little things that help friendships take root.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'The habits helping your tree grow.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.68),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: NatterChildTheme.spaceLg),
           _rootTile(
             icon: Icons.chat_bubble_rounded,
+            accent: NatterChildTheme.connect,
             title: 'Communication',
             subtitle: _communicationMessage(communicationStage),
             stage: communicationStage,
           ),
           _rootTile(
             icon: Icons.self_improvement_rounded,
+            accent: NatterChildTheme.reflect,
             title: 'Reflection',
             subtitle: _reflectionMessage(reflectionStage),
             stage: reflectionStage,
           ),
           _rootTile(
             icon: Icons.volunteer_activism_rounded,
+            accent: NatterChildTheme.grow,
             title: 'Friendship',
             subtitle: _friendshipMessage(friendshipStage),
             stage: friendshipStage,
           ),
           _rootTile(
             icon: Icons.nightlight_round,
+            accent: NatterChildTheme.protect,
             title: 'Digital Habits',
             subtitle: _habitsMessage(habitsStage),
             stage: habitsStage,
@@ -16037,67 +16113,52 @@ class _JourneyScreenState extends State<JourneyScreen> {
 
   Widget _rootTile({
     required IconData icon,
+    required Color accent,
     required String title,
     required String subtitle,
     required String stage,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D223B),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.14),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceMd),
+      child: NatterChildSurface(
+        style: NatterChildSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(
+                  NatterChildTheme.radiusSmall,
+                ),
+              ),
+              child: Icon(icon, color: accent, size: 22),
+            ),
+            const SizedBox(width: NatterChildTheme.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: NatterChildTheme.cardTitle),
+                  const SizedBox(height: NatterChildTheme.spaceXs),
+                  Text(
+                    subtitle,
+                    style: NatterChildTheme.body.copyWith(fontSize: 13),
+                  ),
+                  const SizedBox(height: NatterChildTheme.spaceSm),
+                  Text(
+                    stage,
+                    style: NatterChildTheme.caption.copyWith(color: accent),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: NatterChildTheme.grow.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: NatterChildTheme.grow, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.67),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  stage,
-                  style: TextStyle(
-                    color: NatterChildTheme.grow,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -16114,23 +16175,23 @@ class _JourneyScreenState extends State<JourneyScreen> {
     if (hasContext('rewrite_used')) {
       memories.add({
         'emoji': '💛',
-        'title': 'Kind rewrite',
-        'subtitle': 'You chose kinder words.',
+        'title': 'A kinder rewrite',
+        'subtitle': 'You tried a kinder way to say it with Natter\'s help.',
       });
     }
 
     if (hasContext('pause_respected')) {
       memories.add({
         'emoji': '🧘',
-        'title': 'Calm pause',
-        'subtitle': 'You took time before continuing.',
+        'title': 'A little breathing room',
+        'subtitle': 'A pause gave the conversation time to settle.',
       });
     }
 
     if (hasContext('conversation_recovered')) {
       memories.add({
         'emoji': '🌿',
-        'title': 'Friendship repair',
+        'title': 'A calmer conversation',
         'subtitle': 'A difficult friendship moment became calmer.',
       });
     }
@@ -16144,28 +16205,17 @@ class _JourneyScreenState extends State<JourneyScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 22),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.screenHorizontalPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Journey Memories',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+          const NatterChildSectionHeader(
+            title: 'Journey Memories',
+            subtitle: 'Little moments worth remembering.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Little moments worth remembering.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.68),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: NatterChildTheme.spaceLg),
           ...memories.take(4).map((memory) {
             return _memoryTile(
               memory['emoji']!,
@@ -16179,55 +16229,42 @@ class _JourneyScreenState extends State<JourneyScreen> {
   }
 
   Widget _memoryTile(String emoji, String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D223B),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceMd),
+      child: NatterChildSurface(
+        style: NatterChildSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: NatterChildTheme.grow.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(
+                  NatterChildTheme.radiusSmall,
+                ),
+              ),
+              child: Text(emoji, style: const TextStyle(fontSize: 23)),
+            ),
+            const SizedBox(width: NatterChildTheme.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: NatterChildTheme.cardTitle),
+                  const SizedBox(height: NatterChildTheme.spaceXs),
+                  Text(
+                    subtitle,
+                    style: NatterChildTheme.body.copyWith(fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: NatterChildTheme.grow.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Text(emoji, style: const TextStyle(fontSize: 23)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.68),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
