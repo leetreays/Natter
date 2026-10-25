@@ -15812,18 +15812,18 @@ class _JourneyScreenState extends State<JourneyScreen> {
         (growth['roots'] ?? 0);
 
     if (total >= 80) {
-      return 'Your roots are strong and your tree is flourishing.';
+      return 'So many moments are becoming part of your story.';
     }
 
     if (total >= 40) {
-      return 'Your tree is growing stronger with every thoughtful choice.';
+      return 'Your tree has room for every new experience.';
     }
 
     if (total >= 15) {
-      return 'Your tree is taking root and beginning to grow.';
+      return 'Your tree is taking root, one moment at a time.';
     }
 
-    return 'Your journey towards confident, kind digital communication has begun.';
+    return 'Your journey towards kind, confident communication has begun.';
   }
 
   Map<String, String>? _recentNourishment(
@@ -15835,22 +15835,21 @@ class _JourneyScreenState extends State<JourneyScreen> {
       if (context == 'rewrite_used') {
         return {
           'emoji': '💛',
-          'text': 'Your tree grew stronger because you chose kinder words.',
+          'text': 'You had a chance to try kinder words with Natter.',
         };
       }
 
       if (context == 'pause_respected') {
         return {
           'emoji': '🧘',
-          'text': 'Your tree grew stronger because you took a calm pause.',
+          'text': 'A pause gave the conversation some breathing room.',
         };
       }
 
       if (context == 'conversation_recovered') {
         return {
           'emoji': '🌿',
-          'text':
-              'Your tree grew stronger because a friendship moment became calmer.',
+          'text': 'A difficult friendship moment became calmer.',
         };
       }
     }
@@ -15859,39 +15858,55 @@ class _JourneyScreenState extends State<JourneyScreen> {
   }
 
   String _communicationMessage(String stage) {
-    if (stage == 'Strong') return 'You often choose thoughtful words.';
-    if (stage == 'Growing') return 'Your communication skills are developing.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to practise kind communication.';
+    if (stage == 'Deep roots') {
+      return 'There have been many chances to practise kinder words.';
+    }
+    if (stage == 'Roots spreading') {
+      return 'You have had more moments to try kinder words.';
+    }
+    if (stage == 'Small roots') {
+      return 'You are starting to try kinder words with support.';
     }
     return 'Finding words that are clear and kind.';
   }
 
   String _reflectionMessage(String stage) {
-    if (stage == 'Strong') return 'You often take time before replying.';
-    if (stage == 'Growing') return 'You are learning to pause and think.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to notice when a pause helps.';
+    if (stage == 'Deep roots') {
+      return 'Many pauses have made room for conversations to settle.';
     }
-    return 'Taking a moment before replying.';
+    if (stage == 'Roots spreading') {
+      return 'Pauses have given messages a little breathing room.';
+    }
+    if (stage == 'Small roots') {
+      return 'A pause can make space before messages continue.';
+    }
+    return 'Learning how a little space can help.';
   }
 
   String _friendshipMessage(String stage) {
-    if (stage == 'Strong') return 'You are building caring friendship habits.';
-    if (stage == 'Growing') return 'You are learning how friendships recover.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to help friendships grow.';
+    if (stage == 'Deep roots') {
+      return 'Many difficult friendship moments have become calmer.';
     }
-    return 'Helping friendships recover and grow.';
+    if (stage == 'Roots spreading') {
+      return 'Some tricky moments have started to settle.';
+    }
+    if (stage == 'Small roots') {
+      return 'Friendships can recover after difficult moments.';
+    }
+    return 'Discovering how friendships grow and change.';
   }
 
   String _habitsMessage(String stage) {
-    if (stage == 'Strong') return 'You are building healthy digital routines.';
-    if (stage == 'Growing') return 'Your digital habits are developing.';
-    if (stage == 'Sprouting') {
-      return 'You are beginning to learn healthy routines online.';
+    if (stage == 'Deep roots') {
+      return 'Quiet Time has been part of many messaging moments.';
     }
-    return 'Learning healthy routines online.';
+    if (stage == 'Roots spreading') {
+      return 'There have been more chances to notice Quiet Time.';
+    }
+    if (stage == 'Small roots') {
+      return 'Quiet Time can remind you when to take a break.';
+    }
+    return 'Learning when messages can wait.';
   }
 
   Widget _treeHeroCard({
