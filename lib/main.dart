@@ -16050,48 +16050,41 @@ class _JourneyScreenState extends State<JourneyScreen> {
     required String habitsStage,
   }) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.screenHorizontalPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Growth Roots',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+          const NatterChildSectionHeader(
+            title: 'Growth Roots',
+            subtitle: 'The little things that help friendships take root.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'The habits helping your tree grow.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.68),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: NatterChildTheme.spaceLg),
           _rootTile(
             icon: Icons.chat_bubble_rounded,
+            accent: NatterChildTheme.connect,
             title: 'Communication',
             subtitle: _communicationMessage(communicationStage),
             stage: communicationStage,
           ),
           _rootTile(
             icon: Icons.self_improvement_rounded,
+            accent: NatterChildTheme.reflect,
             title: 'Reflection',
             subtitle: _reflectionMessage(reflectionStage),
             stage: reflectionStage,
           ),
           _rootTile(
             icon: Icons.volunteer_activism_rounded,
+            accent: NatterChildTheme.protect,
             title: 'Friendship',
             subtitle: _friendshipMessage(friendshipStage),
             stage: friendshipStage,
           ),
           _rootTile(
             icon: Icons.nightlight_round,
+            accent: NatterChildTheme.grow,
             title: 'Digital Habits',
             subtitle: _habitsMessage(habitsStage),
             stage: habitsStage,
@@ -16103,67 +16096,52 @@ class _JourneyScreenState extends State<JourneyScreen> {
 
   Widget _rootTile({
     required IconData icon,
+    required Color accent,
     required String title,
     required String subtitle,
     required String stage,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D223B),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.14),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceMd),
+      child: NatterChildSurface(
+        style: NatterChildSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(
+                  NatterChildTheme.radiusSmall,
+                ),
+              ),
+              child: Icon(icon, color: accent, size: 22),
+            ),
+            const SizedBox(width: NatterChildTheme.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: NatterChildTheme.cardTitle),
+                  const SizedBox(height: NatterChildTheme.spaceXs),
+                  Text(
+                    subtitle,
+                    style: NatterChildTheme.body.copyWith(fontSize: 13),
+                  ),
+                  const SizedBox(height: NatterChildTheme.spaceSm),
+                  Text(
+                    stage,
+                    style: NatterChildTheme.caption.copyWith(color: accent),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: NatterChildTheme.grow.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: NatterChildTheme.grow, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.67),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  stage,
-                  style: TextStyle(
-                    color: NatterChildTheme.grow,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
