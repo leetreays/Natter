@@ -17690,9 +17690,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _promiseRow(String promise) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: NatterChildTheme.spaceMd,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: NatterChildTheme.spaceMd),
       child: Row(
         children: [
           Container(
@@ -17701,9 +17699,7 @@ class ProfileScreen extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: NatterChildTheme.grow.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(
-                NatterChildTheme.radiusSmall,
-              ),
+              borderRadius: BorderRadius.circular(NatterChildTheme.radiusSmall),
             ),
             child: const Icon(
               Icons.favorite_rounded,
@@ -17712,12 +17708,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: NatterChildTheme.spaceLg),
-          Expanded(
-            child: Text(
-              promise,
-              style: NatterChildTheme.bodyStrong,
-            ),
-          ),
+          Expanded(child: Text(promise, style: NatterChildTheme.bodyStrong)),
         ],
       ),
     );
@@ -17732,9 +17723,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: promises.isEmpty
           ? const Padding(
-              padding: EdgeInsets.symmetric(
-                vertical: NatterChildTheme.spaceLg,
-              ),
+              padding: EdgeInsets.symmetric(vertical: NatterChildTheme.spaceLg),
               child: Text(
                 'Your Natter promises will live here once they are saved.',
                 style: NatterChildTheme.body,
@@ -17815,9 +17804,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: NatterChildTheme.spaceXl),
           Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                NatterChildTheme.radiusLarge,
-              ),
+              borderRadius: BorderRadius.circular(NatterChildTheme.radiusLarge),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.10),
@@ -17827,9 +17814,7 @@ class ProfileScreen extends StatelessWidget {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(
-                NatterChildTheme.radiusLarge,
-              ),
+              borderRadius: BorderRadius.circular(NatterChildTheme.radiusLarge),
               child: BackdropFilter(
                 filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                 child: Container(
@@ -17864,12 +17849,16 @@ class ProfileScreen extends StatelessWidget {
                             ],
                           ),
                           border: Border.all(
-                            color: NatterChildTheme.connect.withValues(alpha: 0.38),
+                            color: NatterChildTheme.connect.withValues(
+                              alpha: 0.38,
+                            ),
                             width: 1.3,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: NatterChildTheme.connect.withValues(alpha: 0.12),
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.12,
+                              ),
                               blurRadius: 28,
                               spreadRadius: 2,
                             ),
@@ -17887,7 +17876,9 @@ class ProfileScreen extends StatelessWidget {
                       Text(
                         name,
                         textAlign: TextAlign.center,
-                        style: NatterChildTheme.screenTitle.copyWith(fontSize: 32),
+                        style: NatterChildTheme.screenTitle.copyWith(
+                          fontSize: 32,
+                        ),
                       ),
                       const SizedBox(height: NatterChildTheme.spaceSm),
                       const Text(
@@ -17918,10 +17909,8 @@ class ProfileScreen extends StatelessWidget {
             button: true,
             label: 'Open your Journey',
             child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                calmRoute(const JourneyScreen()),
-              ),
+              onTap: () =>
+                  Navigator.push(context, calmRoute(const JourneyScreen())),
               child: NatterChildSurface(
                 style: NatterChildSurfaceStyle.raised,
                 padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
@@ -17988,9 +17977,7 @@ class ProfileScreen extends StatelessWidget {
                     NatterChildTheme.radiusLarge,
                   ),
                   onTap: () async {
-                    await Clipboard.setData(
-                      ClipboardData(text: friendCode),
-                    );
+                    await Clipboard.setData(ClipboardData(text: friendCode));
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Friend code copied')),
