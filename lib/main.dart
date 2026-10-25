@@ -15582,6 +15582,51 @@ class _JourneyScreenState extends State<JourneyScreen> {
             .collection('signals')
             .snapshots(),
         builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: NatterChildTheme.grow,
+              ),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(
+                  NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: const NatterChildSurface(
+                  style: NatterChildSurfaceStyle.quiet,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        color: NatterChildTheme.textSecondary,
+                        size: 32,
+                      ),
+                      SizedBox(height: NatterChildTheme.spaceLg),
+                      Text(
+                        'Your Journey is resting for a moment',
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.sectionTitle,
+                      ),
+                      SizedBox(height: NatterChildTheme.spaceSm),
+                      Text(
+                        'We couldn\'t load your moments just now. Try opening Journey again soon.',
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
           final docs = snapshot.data?.docs ?? [];
           final scores = _journeyRootScores(docs);
           final growth = _treeGrowth(docs);
@@ -15592,27 +15637,41 @@ class _JourneyScreenState extends State<JourneyScreen> {
           final habitsStage = _rootStage(scores['habits'] ?? 0);
 
           return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.only(
+              top: NatterChildTheme.spaceSm,
+              bottom: NatterChildTheme.space3Xl,
+            ),
             children: [
-              _treeHeroCard(
-                nourishment: _recentNourishment(docs),
-                growth: growth,
-                treeEmoji: _treeEmoji(growth),
-                growthMessage: _treeGrowthMessage(growth),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: _growthRootsCard(
-                  communicationStage: communicationStage,
-                  reflectionStage: reflectionStage,
-                  friendshipStage: friendshipStage,
-                  habitsStage: habitsStage,
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: NatterChildSectionHeader(
+                  title: 'Your story so far',
+                  subtitle: 'Little moments, new friendships, and things you are learning.',
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: NatterChildTheme.spaceXl),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                ),
+                child: _treeHeroCard(
+                  nourishment: _recentNourishment(docs),
+                  growth: growth,
+                  growthMessage: _treeGrowthMessage(growth),
+                ),
+              ),
+              const SizedBox(height: NatterChildTheme.space3Xl),
+              _growthRootsCard(
+                communicationStage: communicationStage,
+                reflectionStage: reflectionStage,
+                friendshipStage: friendshipStage,
+                habitsStage: habitsStage,
+              ),
+              const SizedBox(height: NatterChildTheme.space2Xl),
               _journeyMemoriesCard(docs),
-              const SizedBox(height: 80),
             ],
           );
         },
