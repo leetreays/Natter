@@ -15764,28 +15764,6 @@ class _JourneyScreenState extends State<JourneyScreen> {
     };
   }
 
-  String _treeEmoji(Map<String, int> growth) {
-    switch (_treeVisualStage(growth)) {
-      case 'sapling':
-        return '🌳';
-
-      case 'flourishing_seedling':
-        return '🌿';
-
-      case 'branching_seedling':
-        return '🍃';
-
-      case 'strong_seedling':
-        return '🍃';
-
-      case 'growing_seedling':
-        return '🌱';
-
-      default:
-        return '🌱';
-    }
-  }
-
   String _treeVariantName(Map<String, int> growth) {
     final total =
         (growth['leaves'] ?? 0) +
@@ -15919,119 +15897,148 @@ class _JourneyScreenState extends State<JourneyScreen> {
   Widget _treeHeroCard({
     required Map<String, String>? nourishment,
     required Map<String, int> growth,
-    required String treeEmoji,
     required String growthMessage,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AspectRatio(
-          aspectRatio: 0.94,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                'assets/journey_seedling.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-              ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    stops: [0.0, 0.38, 0.70, 1.0],
-                    colors: [
-                      Color(0x8808142C),
-                      Color(0x0008142C),
-                      Color(0x3308142C),
-                      Color(0xFF091A33),
-                    ],
-                  ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(NatterChildTheme.radiusHero),
+          child: AspectRatio(
+            aspectRatio: 0.94,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset(
+                  'assets/journey_seedling.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
                 ),
-              ),
-              Positioned(
-                bottom: 28,
-                left: 24,
-                right: 24,
-                child: Column(
-                  children: [
-                    Text(
-                      _treeVariantName(growth),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      growthMessage,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.84),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (nourishment != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 30),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF102B35),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: NatterChildTheme.grow.withValues(alpha: 0.24),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.spa_rounded,
-                    color: NatterChildTheme.grow,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'RECENT GROWTH',
-                          style: TextStyle(
-                            color: NatterChildTheme.grow,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          nourishment['text'] ?? 'Your tree is growing.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.88),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            height: 1.4,
-                          ),
-                        ),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.38, 0.70, 1.0],
+                      colors: [
+                        Color(0x8808142C),
+                        Color(0x0008142C),
+                        Color(0x3308142C),
+                        Color(0xFF091A33),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                Positioned(
+                  top: NatterChildTheme.spaceXl,
+                  left: NatterChildTheme.spaceXl,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: NatterChildTheme.spaceMd,
+                      vertical: NatterChildTheme.spaceSm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: NatterChildTheme.environmentBottom.withValues(
+                        alpha: 0.74,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusPill,
+                      ),
+                      border: Border.all(
+                        color: NatterChildTheme.grow.withValues(alpha: 0.32),
+                      ),
+                    ),
+                    child: const Text(
+                      'YOUR JOURNEY',
+                      style: TextStyle(
+                        color: NatterChildTheme.grow,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: NatterChildTheme.space2Xl,
+                  left: NatterChildTheme.spaceXl,
+                  right: NatterChildTheme.spaceXl,
+                  child: Column(
+                    children: [
+                      Text(
+                        _treeVariantName(growth),
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.screenTitle.copyWith(
+                          fontSize: 30,
+                        ),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceSm),
+                      Text(
+                        growthMessage,
+                        textAlign: TextAlign.center,
+                        style: NatterChildTheme.body.copyWith(
+                          color: NatterChildTheme.textPrimary.withValues(
+                            alpha: 0.86,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+        if (nourishment != null) ...[
+          const SizedBox(height: NatterChildTheme.spaceMd),
+          NatterChildSurface(
+            style: NatterChildSurfaceStyle.quiet,
+            padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: NatterChildTheme.grow.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(
+                      NatterChildTheme.radiusSmall,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.spa_rounded,
+                    color: NatterChildTheme.grow,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: NatterChildTheme.spaceMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'A MOMENT TO NOTICE',
+                        style: TextStyle(
+                          color: NatterChildTheme.grow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: NatterChildTheme.spaceXs),
+                      Text(
+                        nourishment['text'] ?? 'Every journey has small moments.',
+                        style: NatterChildTheme.body,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
