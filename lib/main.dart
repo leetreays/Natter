@@ -17750,9 +17750,12 @@ class ProfileScreen extends StatelessWidget {
       stream: state.childDocRef().snapshots(),
       builder: (context, snapshot) {
         final saved = snapshot.data?.data()?['promises'];
-        final storedPromises = saved is List
-            ? saved.whereType<String>().where((p) => p.trim().isNotEmpty).toList()
-            : <String>[];
+        final storedPromises = <String>[];
+        if (saved is List) {
+          storedPromises.addAll(
+            saved.whereType<String>().where((p) => p.trim().isNotEmpty),
+          );
+        }
         return _promisesCard(
           storedPromises.isNotEmpty ? storedPromises : state.lastPromises,
         );
@@ -17944,7 +17947,9 @@ class ProfileScreen extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        await Clipboard.setData(ClipboardData(text: friendCode));
+                        await Clipboard.setData(
+                          ClipboardData(text: friendCode),
+                        );
                         if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Friend code copied')),
@@ -17995,7 +18000,8 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       SizedBox(height: NatterChildTheme.spaceXs),
                       Text(
-                        'Parents understand friendships through guidance, not by reading your messages.',
+                        'Parents understand friendships through guidance, '
+                        'not by reading your messages.',
                         style: NatterChildTheme.body,
                       ),
                     ],
