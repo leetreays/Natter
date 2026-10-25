@@ -16158,23 +16158,23 @@ class _JourneyScreenState extends State<JourneyScreen> {
     if (hasContext('rewrite_used')) {
       memories.add({
         'emoji': '💛',
-        'title': 'Kind rewrite',
-        'subtitle': 'You chose kinder words.',
+        'title': 'A kinder rewrite',
+        'subtitle': 'You tried a kinder way to say it with Natter\'s help.',
       });
     }
 
     if (hasContext('pause_respected')) {
       memories.add({
         'emoji': '🧘',
-        'title': 'Calm pause',
-        'subtitle': 'You took time before continuing.',
+        'title': 'A little breathing room',
+        'subtitle': 'A pause gave the conversation time to settle.',
       });
     }
 
     if (hasContext('conversation_recovered')) {
       memories.add({
         'emoji': '🌿',
-        'title': 'Friendship repair',
+        'title': 'A calmer conversation',
         'subtitle': 'A difficult friendship moment became calmer.',
       });
     }
@@ -16188,28 +16188,17 @@ class _JourneyScreenState extends State<JourneyScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 22),
+      padding: const EdgeInsets.symmetric(
+        horizontal: NatterChildTheme.screenHorizontalPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Journey Memories',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-            ),
+          const NatterChildSectionHeader(
+            title: 'Journey Memories',
+            subtitle: 'Little moments worth remembering.',
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Little moments worth remembering.',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.68),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: NatterChildTheme.spaceLg),
           ...memories.take(4).map((memory) {
             return _memoryTile(
               memory['emoji']!,
@@ -16223,58 +16212,46 @@ class _JourneyScreenState extends State<JourneyScreen> {
   }
 
   Widget _memoryTile(String emoji, String title, String subtitle) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0D223B),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: NatterChildTheme.grow.withValues(alpha: 0.16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceMd),
+      child: NatterChildSurface(
+        style: NatterChildSurfaceStyle.quiet,
+        padding: const EdgeInsets.all(NatterChildTheme.spaceLg),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: NatterChildTheme.grow.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(
+                  NatterChildTheme.radiusSmall,
+                ),
+              ),
+              child: Text(emoji, style: const TextStyle(fontSize: 23)),
+            ),
+            const SizedBox(width: NatterChildTheme.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: NatterChildTheme.cardTitle),
+                  const SizedBox(height: NatterChildTheme.spaceXs),
+                  Text(
+                    subtitle,
+                    style: NatterChildTheme.body.copyWith(fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: NatterChildTheme.grow.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Text(emoji, style: const TextStyle(fontSize: 23)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.68),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
+
 }
 
 class CeremonyScreen extends StatefulWidget {
