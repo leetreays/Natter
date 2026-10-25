@@ -23132,6 +23132,21 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            // Preview only: remove this development shortcut before merging.
+            if (kDebugMode)
+              actions: [
+                IconButton(
+                  tooltip: 'Preview friendship moment',
+                  icon: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: NatterChildTheme.grow,
+                  ),
+                  onPressed: () => _showFriendshipStageCelebration(
+                    'seedling',
+                    'growing',
+                  ),
+                ),
+              ],
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: state.conversationDocStream(widget.conversationId),
               builder: (context, snapshot) {
