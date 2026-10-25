@@ -17980,48 +17980,76 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: NatterChildTheme.spaceLg),
             NatterChildSurface(
               style: NatterChildSurfaceStyle.quiet,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    friendCode,
-                    style: NatterChildTheme.heroTitle.copyWith(
-                      color: NatterChildTheme.connect,
-                      letterSpacing: 1.0,
-                    ),
+              padding: EdgeInsets.zero,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(
+                    NatterChildTheme.radiusLarge,
                   ),
-                  const SizedBox(height: NatterChildTheme.spaceMd),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        await Clipboard.setData(
-                          ClipboardData(text: friendCode),
-                        );
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Friend code copied')),
-                        );
-                      },
-                      icon: const Icon(Icons.copy_rounded, size: 18),
-                      label: const Text('Copy my code'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: NatterChildTheme.connect,
-                        side: BorderSide(
-                          color: NatterChildTheme.connect.withValues(
-                            alpha: 0.38,
+                  onTap: () async {
+                    await Clipboard.setData(
+                      ClipboardData(text: friendCode),
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Friend code copied')),
+                    );
+                  },
+                  child: Semantics(
+                    button: true,
+                    label: 'Copy my friend code',
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: NatterChildTheme.spaceXl,
+                        vertical: NatterChildTheme.spaceLg,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  friendCode,
+                                  style: NatterChildTheme.heroTitle.copyWith(
+                                    color: NatterChildTheme.connect,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: NatterChildTheme.spaceXs,
+                                ),
+                                const Text(
+                                  'Tap to copy',
+                                  style: NatterChildTheme.caption,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            NatterChildTheme.radiusMedium,
+                          Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: NatterChildTheme.connect.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderRadius: BorderRadius.circular(
+                                NatterChildTheme.radiusSmall,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.copy_rounded,
+                              color: NatterChildTheme.connect,
+                              size: 21,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],
