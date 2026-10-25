@@ -16046,7 +16046,7 @@ class _JourneyScreenState extends State<JourneyScreen> {
                       const SizedBox(height: NatterChildTheme.spaceXs),
                       Text(
                         nourishment['text'] ??
-                            'Every journey has small moments.'
+                            'Every journey has small moments.',
                         style: NatterChildTheme.body,
                       ),
                     ],
