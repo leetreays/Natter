@@ -22908,30 +22908,30 @@ class _ChatScreenState extends State<ChatScreen> {
   String friendshipStageCelebrationText(String previousStage, String stage) {
     switch (stage) {
       case 'growing':
-        return 'You and ${widget.contactName} are getting to know each other.';
+        return 'You and ${widget.contactName} have started making memories together.';
       case 'strong':
-        return 'Your friendship is becoming stronger.';
+        return 'There have been encouraging moments in your friendship.';
       case 'trusted':
-        return 'You have built a trusted friendship.';
+        return 'Your friendship story has reached another chapter.';
       case 'flourishing':
-        return 'What a journey! This friendship is flourishing.';
+        return 'Look at the moments becoming part of your story together.';
       default:
-        return 'Your friendship has grown.';
+        return 'Every friendship has its own story.';
     }
   }
 
   String _friendshipStageTitle() {
     switch (_lastCelebratedStage) {
       case 'growing':
-        return 'GROWING FRIENDSHIP';
+        return 'Growing together';
       case 'strong':
-        return 'STRONG FRIENDSHIP';
+        return 'A growing connection';
       case 'trusted':
-        return 'TRUSTED FRIENDSHIP';
+        return 'A new chapter';
       case 'flourishing':
-        return '✨ FLOURISHING FRIENDSHIP ✨';
+        return 'So much to remember';
       default:
-        return '🌱 FRIENDSHIP GROWING';
+        return 'A friendship moment';
     }
   }
 
@@ -22944,7 +22944,7 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'trusted':
         return '🌳';
       case 'flourishing':
-        return '✨🌳✨';
+        return '✨';
       default:
         return '🌱';
     }
@@ -22952,39 +22952,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Color _friendshipStageGlowColor() {
     switch (_lastCelebratedStage) {
-      case 'growing':
-        return NatterBrand.green;
-
       case 'strong':
-        return const Color(0xFF4FD1C5);
-
+        return NatterChildTheme.connect;
       case 'trusted':
-        return const Color(0xFF63A4FF);
-
+        return NatterChildTheme.reflect;
       case 'flourishing':
-        return const Color(0xFFFFD54F);
-
+        return NatterChildTheme.grow;
       default:
-        return NatterBrand.green;
-    }
-  }
-
-  Color _friendshipStageCardColor() {
-    switch (_lastCelebratedStage) {
-      case 'growing':
-        return const Color(0xFF243F6B);
-
-      case 'strong':
-        return const Color(0xFF214C57);
-
-      case 'trusted':
-        return const Color(0xFF1E3F73);
-
-      case 'flourishing':
-        return const Color(0xFF5A4A1A);
-
-      default:
-        return const Color(0xFF243F6B);
+        return NatterChildTheme.grow;
     }
   }
 
@@ -23029,90 +23004,102 @@ class _ChatScreenState extends State<ChatScreen> {
           duration: const Duration(milliseconds: 450),
           curve: Curves.easeOut,
           child: Container(
-            color: Colors.black.withOpacity(0.52),
-            child: Center(
+            color: NatterBrand.navy.withValues(alpha: 0.68),
+            alignment: Alignment.center,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: NatterChildTheme.screenHorizontalPadding,
+                vertical: NatterChildTheme.spaceXl,
+              ),
               child: AnimatedScale(
-                scale: _friendshipStageCelebrationVisible ? 1 : 0.92,
+                scale: _friendshipStageCelebrationVisible ? 1 : 0.95,
                 duration: const Duration(milliseconds: 450),
-                curve: Curves.easeOutBack,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 28),
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: _friendshipStageCardColor(),
-                    borderRadius: BorderRadius.circular(34),
-                    border: Border.all(
-                      color: _friendshipStageGlowColor().withOpacity(0.65),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _friendshipStageGlowColor().withOpacity(0.34),
-                        blurRadius: 50,
-                        spreadRadius: 6,
+                curve: Curves.easeOutCubic,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 410),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        NatterChildTheme.radiusHero,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: NatterBrand.green.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'New Friendship Level',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
+                      child: BackdropFilter(
+                        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(26, 28, 26, 30),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF10233D,
+                            ).withValues(alpha: 0.92),
+                            borderRadius: BorderRadius.circular(
+                              NatterChildTheme.radiusHero,
+                            ),
+                            border: Border.all(
+                              color: _friendshipStageGlowColor().withValues(
+                                alpha: 0.40,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/chirp_welldone.png',
+                                height: 74,
+                              ),
+                              const SizedBox(
+                                height: NatterChildTheme.spaceMd,
+                              ),
+                              Text(
+                                _friendshipStageIcon(),
+                                style: const TextStyle(fontSize: 36),
+                              ),
+                              const SizedBox(
+                                height: NatterChildTheme.spaceLg,
+                              ),
+                              const Text(
+                                'A MOMENT IN YOUR FRIENDSHIP',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: NatterChildTheme.grow,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: NatterChildTheme.spaceSm,
+                              ),
+                              Text(
+                                _friendshipStageTitle(),
+                                textAlign: TextAlign.center,
+                                style: NatterChildTheme.screenTitle.copyWith(
+                                  fontSize: 27,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: NatterChildTheme.spaceMd,
+                              ),
+                              Text(
+                                _friendshipStageCelebration ?? '',
+                                textAlign: TextAlign.center,
+                                style: NatterChildTheme.body.copyWith(
+                                  height: 1.45,
+                                ),
+                              ),
+                              const SizedBox(
+                                height: NatterChildTheme.spaceLg,
+                              ),
+                              Text(
+                                'Part of your story with ${widget.contactName}',
+                                textAlign: TextAlign.center,
+                                style: NatterChildTheme.caption,
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Image.asset('assets/chirp_welldone.png', height: 115),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your friendship has grown!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.75),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                      Text(
-                        _friendshipStageIcon(),
-                        style: const TextStyle(fontSize: 54),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _friendshipStageTitle(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 24,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _friendshipStageCelebration ?? '',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.94),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
