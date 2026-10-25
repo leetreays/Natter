@@ -9669,19 +9669,9 @@ class StartupRouterScreen extends StatefulWidget {
 }
 
 class _StartupRouterScreenState extends State<StartupRouterScreen> {
-  double _opacity = 0;
-
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      if (!mounted) return;
-      setState(() {
-        _opacity = 1;
-      });
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _start();
     });
@@ -9724,13 +9714,61 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: const Duration(milliseconds: 700),
-      curve: Curves.easeOut,
-      child: const Scaffold(
-        backgroundColor: Color(0xFF06112E),
-        body: SizedBox.expand(),
+    return Scaffold(
+      backgroundColor: NatterBrand.navy,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: NatterChildBackground()),
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      NatterBrand.logoPath,
+                      height: 88,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: NatterBrand.blue,
+                        size: 64,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Natter',
+                      style: NatterChildTheme.screenTitle.copyWith(
+                        fontSize: 29,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Connect · Protect · Grow',
+                      textAlign: TextAlign.center,
+                      style: NatterChildTheme.screenSubtitle,
+                    ),
+                    const SizedBox(height: 28),
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: NatterChildTheme.connect,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Opening your space…',
+                      textAlign: TextAlign.center,
+                      style: NatterChildTheme.caption,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
