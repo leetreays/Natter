@@ -16094,14 +16094,14 @@ class _JourneyScreenState extends State<JourneyScreen> {
           ),
           _rootTile(
             icon: Icons.volunteer_activism_rounded,
-            accent: NatterChildTheme.protect,
+            accent: NatterChildTheme.grow,
             title: 'Friendship',
             subtitle: _friendshipMessage(friendshipStage),
             stage: friendshipStage,
           ),
           _rootTile(
             icon: Icons.nightlight_round,
-            accent: NatterChildTheme.grow,
+            accent: NatterChildTheme.protect,
             title: 'Digital Habits',
             subtitle: _habitsMessage(habitsStage),
             stage: habitsStage,
