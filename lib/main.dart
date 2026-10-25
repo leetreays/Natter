@@ -17721,6 +17721,45 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Widget _promisesCard(List<String> promises) {
+    return NatterChildSurface(
+      style: NatterChildSurfaceStyle.quiet,
+      child: promises.isEmpty
+          ? const Text(
+              'Your Natter promises will live here once they are saved.',
+              style: NatterChildTheme.body,
+            )
+          : Wrap(
+              spacing: NatterChildTheme.spaceSm,
+              runSpacing: NatterChildTheme.spaceSm,
+              children: [
+                for (final promise in promises) _promiseChip(promise),
+              ],
+            ),
+    );
+  }
+
+  Widget _savedPromises(AppState state) {
+    if (!state.hasActiveChildSession) {
+      return _promisesCard(state.lastPromises);
+    }
+
+    // Promises persist on the child profile, whereas the legacy in-memory
+    // lastPromises field is populated only when the rite is first completed.
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: state.childDocRef().snapshots(),
+      builder: (context, snapshot) {
+        final saved = snapshot.data?.data()?['promises'];
+        final storedPromises = saved is List
+            ? saved.whereType<String>().where((p) => p.trim().isNotEmpty).toList()
+            : <String>[];
+        return _promisesCard(
+          storedPromises.isNotEmpty ? storedPromises : state.lastPromises,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -17817,22 +17856,7 @@ class ProfileScreen extends StatelessWidget {
             subtitle: 'The things you chose to carry with you.',
           ),
           const SizedBox(height: NatterChildTheme.spaceLg),
-          NatterChildSurface(
-            style: NatterChildSurfaceStyle.quiet,
-            child: state.lastPromises.isEmpty
-                ? const Text(
-                    'Your Natter promises will live here once they are saved.',
-                    style: NatterChildTheme.body,
-                  )
-                : Wrap(
-                    spacing: NatterChildTheme.spaceSm,
-                    runSpacing: NatterChildTheme.spaceSm,
-                    children: [
-                      for (final promise in state.lastPromises)
-                        _promiseChip(promise),
-                    ],
-                  ),
-          ),
+          _savedPromises(state),
           const SizedBox(height: NatterChildTheme.space3Xl),
           const NatterChildSectionHeader(
             title: 'My Journey',
