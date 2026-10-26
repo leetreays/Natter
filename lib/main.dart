@@ -15,6 +15,17 @@ import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
 
+// Development diagnostics only: relative milestones, never user IDs or tokens.
+final Stopwatch _natterStartupClock = Stopwatch()..start();
+
+void _traceNatterStartup(String milestone) {
+  if (kDebugMode) {
+    debugPrint(
+      '[Natter startup] ${_natterStartupClock.elapsedMilliseconds}ms: $milestone',
+    );
+  }
+}
+
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
   final current = auth.currentUser;
@@ -25,9 +36,12 @@ Future<User> ensureSignedIn() async {
 }
 
 Future<void> main() async {
+  _traceNatterStartup('Dart main started');
   WidgetsFlutterBinding.ensureInitialized();
+  _traceNatterStartup('Flutter binding ready');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  _traceNatterStartup('Firebase Core initialised');
 
   if (kIsWeb) {
     await FirebaseAppCheck.instance.activate(
@@ -43,9 +57,12 @@ Future<void> main() async {
     );
   }
 
+  _traceNatterStartup('App Check activated');
   await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  _traceNatterStartup('App Check token refresh configured');
 
   runApp(const NatterApp());
+  _traceNatterStartup('runApp invoked');
 }
 
 Route<T> calmRoute<T>(Widget page) {
@@ -9837,6 +9854,7 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _traceNatterStartup('Flutter first router frame displayed');
       _start();
     });
   }
@@ -9847,29 +9865,37 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   Future<void> _route() async {
     final state = AppStateScope.of(context);
+    _traceNatterStartup('Looking up saved device mode');
     final mode = await state.getDeviceMode();
+    _traceNatterStartup('Device mode lookup complete');
 
     if (!mounted) return;
 
     if (mode == 'parent') {
+      _traceNatterStartup('Navigating to parent home');
       Navigator.pushReplacement(context, calmRoute(const ParentHomeScreen()));
       return;
     }
 
     if (mode == 'child') {
+      _traceNatterStartup('Hydrating remembered child session');
       await state.hydrateRememberedChildSession();
+      _traceNatterStartup('Remembered child session hydration complete');
 
       if (!mounted) return;
 
       if (!state.hasActiveChildSession) {
+        _traceNatterStartup('Navigating to child gateway');
         Navigator.pushReplacement(context, calmRoute(const GatewayScreen()));
         return;
       }
 
+      _traceNatterStartup('Navigating to child chats');
       Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
       return;
     }
 
+    _traceNatterStartup('Navigating to family welcome');
     Navigator.pushReplacement(
       context,
       calmRoute(const FamilyJourneyWelcomeScreen()),
@@ -9902,27 +9928,60 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Text(
-                      'Natter',
-                      style: TextStyle(
-                        fontSize: 38,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: -1,
-                        color: Color(0x4DEFF7FF),
-                        shadows: [
-                          Shadow(color: Color(0x0CFFFFFF), blurRadius: 14),
-                        ],
-                      ),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Text(
+                          'Natter',
+                          style: TextStyle(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -1,
+                            color: Color(0x0BEFF7FF),
+                          ),
+                        ),
+                        Text(
+                          'Natter',
+                          style: TextStyle(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -1,
+                            foreground: Paint()
+                              ..style = ui.PaintingStyle.stroke
+                              ..strokeWidth = 0.45
+                              ..color = const Color(0x3AEAF4FF),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Connect · Protect · Grow',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Color(0xABDDE8F6),
-                        fontSize: 14,
-                        letterSpacing: 0.4,
+                    const Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Connect',
+                            style: TextStyle(color: NatterBrand.blue),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Protect',
+                            style: TextStyle(color: NatterBrand.pink),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Grow',
+                            style: TextStyle(color: NatterBrand.green),
+                          ),
+                        ],
                       ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, letterSpacing: 0.4),
                     ),
                     const SizedBox(height: 34),
                     Row(
@@ -22816,6 +22875,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _stallTimer?.cancel();
     controller.dispose();
     _bannerTimer?.cancel();
+    _friendshipStageCelebrationTimer?.cancel();
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
@@ -23139,19 +23199,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  Color _friendshipStageGlowColor() {
-    switch (_lastCelebratedStage) {
-      case 'strong':
-        return NatterChildTheme.connect;
-      case 'trusted':
-        return NatterChildTheme.reflect;
-      case 'flourishing':
-        return NatterChildTheme.grow;
-      default:
-        return NatterChildTheme.grow;
-    }
-  }
-
   void _showFriendshipStageCelebration(
     String previousStage,
     String currentStage,
@@ -23183,7 +23230,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  bool _friendshipMomentPreviewUsed = false;
+  // Debug-only, one-shot across all ChatScreen instances until app restart.
+  // Remove this preview shortcut and flag before PR #11 merges.
+  static bool _debugFriendshipPreviewUsedThisSession = false;
   bool _friendshipStageCelebrationVisible = false;
 
   Widget _buildFriendshipMilestoneCard() {
@@ -23193,91 +23242,108 @@ class _ChatScreenState extends State<ChatScreen> {
           opacity: _friendshipStageCelebrationVisible ? 1 : 0,
           duration: const Duration(milliseconds: 450),
           curve: Curves.easeOut,
-          child: Container(
-            color: NatterBrand.navy.withValues(alpha: 0.68),
-            alignment: Alignment.center,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(
-                horizontal: NatterChildTheme.screenHorizontalPadding,
-                vertical: NatterChildTheme.spaceXl,
-              ),
-              child: AnimatedScale(
-                scale: _friendshipStageCelebrationVisible ? 1 : 0.95,
-                duration: const Duration(milliseconds: 450),
-                curve: Curves.easeOutCubic,
-                child: Center(
+          child: ColoredBox(
+            color: NatterBrand.navy.withValues(alpha: 0.76),
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                  vertical: NatterChildTheme.spaceXl,
+                ),
+                child: AnimatedScale(
+                  scale: _friendshipStageCelebrationVisible ? 1 : 0.96,
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 410),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        NatterChildTheme.radiusHero,
-                      ),
-                      child: BackdropFilter(
-                        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.fromLTRB(26, 28, 26, 30),
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFF10233D,
-                            ).withValues(alpha: 0.92),
-                            borderRadius: BorderRadius.circular(
-                              NatterChildTheme.radiusHero,
-                            ),
-                            border: Border.all(
-                              color: _friendshipStageGlowColor().withValues(
-                                alpha: 0.40,
-                              ),
-                            ),
-                          ),
-                          child: Column(
+                    constraints: const BoxConstraints(maxWidth: 390),
+                    child: NatterChildSurface(
+                      style: NatterChildSurfaceStyle.hero,
+                      borderRadius: NatterChildTheme.radiusHero,
+                      padding: const EdgeInsets.fromLTRB(24, 26, 24, 26),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Image.asset(
-                                'assets/chirp_welldone.png',
-                                height: 74,
-                              ),
-                              const SizedBox(height: NatterChildTheme.spaceMd),
-                              Text(
-                                _friendshipStageIcon(),
-                                style: const TextStyle(fontSize: 36),
-                              ),
-                              const SizedBox(height: NatterChildTheme.spaceLg),
+                              for (final colour in const [
+                                NatterBrand.blue,
+                                NatterBrand.pink,
+                                NatterBrand.green,
+                              ])
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  margin: const EdgeInsets.only(right: 5),
+                                  decoration: BoxDecoration(
+                                    color: colour,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
                               const Text(
-                                'A MOMENT IN YOUR FRIENDSHIP',
-                                textAlign: TextAlign.center,
+                                'A FRIENDSHIP MOMENT',
                                 style: TextStyle(
-                                  color: NatterChildTheme.grow,
+                                  color: NatterChildTheme.textMuted,
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   letterSpacing: 1.1,
                                 ),
                               ),
-                              const SizedBox(height: NatterChildTheme.spaceSm),
-                              Text(
-                                _friendshipStageTitle(),
-                                textAlign: TextAlign.center,
-                                style: NatterChildTheme.screenTitle.copyWith(
-                                  fontSize: 27,
-                                ),
-                              ),
-                              const SizedBox(height: NatterChildTheme.spaceMd),
-                              Text(
-                                _friendshipStageCelebration ?? '',
-                                textAlign: TextAlign.center,
-                                style: NatterChildTheme.body.copyWith(
-                                  height: 1.45,
-                                ),
-                              ),
-                              const SizedBox(height: NatterChildTheme.spaceLg),
-                              Text(
-                                'Part of your story with ${widget.contactName}',
-                                textAlign: TextAlign.center,
-                                style: NatterChildTheme.caption,
-                              ),
                             ],
                           ),
-                        ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 68,
+                            width: 68,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NatterChildTheme.surfaceQuiet.withValues(
+                                alpha: 0.60,
+                              ),
+                              border: Border.all(
+                                color: NatterChildTheme.borderStrong,
+                              ),
+                            ),
+                            child: Text(
+                              _friendshipStageIcon(),
+                              style: const TextStyle(fontSize: 32),
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceXl),
+                          Text(
+                            _friendshipStageTitle(),
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.heroTitle.copyWith(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceMd),
+                          Text(
+                            _friendshipStageCelebration ?? '',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.body.copyWith(
+                              color: NatterChildTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              height: 1.45,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 1,
+                            color: NatterChildTheme.borderStrong,
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceLg),
+                          Text(
+                            'Part of your story with ${widget.contactName}',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.caption.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -23313,7 +23379,7 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: () => Navigator.pop(context),
             ),
             // Debug-only one-shot visual preview; remove before merging.
-            actions: kDebugMode && !_friendshipMomentPreviewUsed
+            actions: kDebugMode && !_debugFriendshipPreviewUsedThisSession
                 ? [
                     IconButton(
                       tooltip: 'Preview friendship moment',
@@ -23325,7 +23391,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         semanticLabel: 'Natter friendship moment',
                       ),
                       onPressed: () {
-                        _friendshipMomentPreviewUsed = true;
+                        _debugFriendshipPreviewUsedThisSession = true;
                         _showFriendshipStageCelebration('seedling', 'growing');
                       },
                     ),
