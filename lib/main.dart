@@ -9661,6 +9661,140 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
   }
 }
 
+/// The holding-page atmosphere, kept in Flutter for the session-routing frame.
+/// The pre-Flutter web boot screen uses the website's original CSS night sky.
+class _NatterHoldingNightBackground extends StatelessWidget {
+  const _NatterHoldingNightBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return const RepaintBoundary(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 0.30, 0.63, 1],
+                colors: [
+                  Color(0xFF01030A),
+                  Color(0xFF020717),
+                  Color(0xFF050D25),
+                  Color(0xFF081634),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-1.05, -0.84),
+                radius: 0.86,
+                stops: [0, 0.28, 1],
+                colors: [
+                  Color(0x52FFFAEB),
+                  Color(0x26FFFAEB),
+                  Color(0x00FFFAEB),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.48, -0.64),
+                radius: 1.05,
+                colors: [Color(0x387C4EBC), Color(0x007C4EBC)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.64, -0.12),
+                radius: 1.00,
+                colors: [Color(0x21FF5DA2), Color(0x00FF5DA2)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-0.52, 0.16),
+                radius: 1.00,
+                colors: [Color(0x243DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, 1.30),
+                radius: 0.95,
+                colors: [Color(0x2E3DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          CustomPaint(painter: _NatterHoldingStarsPainter()),
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed, non-interactive stars: no shimmer or visual noise while signing in.
+class _NatterHoldingStarsPainter extends CustomPainter {
+  const _NatterHoldingStarsPainter();
+
+  static const List<Offset> _bright = [
+    Offset(.07, .16), Offset(.18, .28), Offset(.31, .09),
+    Offset(.47, .22), Offset(.63, .11), Offset(.72, .34),
+    Offset(.88, .13), Offset(.94, .41), Offset(.14, .72),
+    Offset(.39, .81), Offset(.69, .75), Offset(.91, .83),
+  ];
+
+  static const List<Offset> _distant = [
+    Offset(.04, .31), Offset(.08, .52), Offset(.11, .38),
+    Offset(.13, .61), Offset(.16, .47), Offset(.19, .21),
+    Offset(.22, .17), Offset(.24, .42), Offset(.27, .63),
+    Offset(.30, .73), Offset(.35, .31), Offset(.38, .17),
+    Offset(.41, .57), Offset(.43, .12), Offset(.46, .69),
+    Offset(.49, .35), Offset(.52, .41), Offset(.54, .26),
+    Offset(.57, .17), Offset(.59, .76), Offset(.61, .59),
+    Offset(.65, .43), Offset(.68, .25), Offset(.71, .64),
+    Offset(.76, .09), Offset(.78, .47), Offset(.79, .61),
+    Offset(.82, .19), Offset(.84, .29), Offset(.86, .53),
+    Offset(.87, .69), Offset(.90, .36), Offset(.93, .57),
+    Offset(.95, .24),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final brightPaint = Paint()..color = const Color(0x80FFFFFF);
+    final distantPaint = Paint()..color = const Color(0x30FFFFFF);
+
+    for (final star in _bright) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.9,
+        brightPaint,
+      );
+    }
+    for (final star in _distant) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.55,
+        distantPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class StartupRouterScreen extends StatefulWidget {
   const StartupRouterScreen({super.key});
 
@@ -9714,54 +9848,95 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final wordmarkSize =
+        (MediaQuery.sizeOf(context).width * 0.18).clamp(50.0, 92.0).toDouble();
+    const wordmarkWeight = FontWeight.w600;
     return Scaffold(
       backgroundColor: NatterBrand.navy,
       body: Stack(
         children: [
-          const Positioned.fill(child: NatterChildBackground()),
+          const Positioned.fill(child: _NatterHoldingNightBackground()),
           SafeArea(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      NatterBrand.logoPath,
-                      height: 88,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        color: NatterBrand.blue,
-                        size: 64,
+                    Semantics(
+                      label: 'Natter',
+                      child: ExcludeSemantics(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Text(
+                              'Natter',
+                              style: TextStyle(
+                                fontSize: wordmarkSize,
+                                fontWeight: wordmarkWeight,
+                                letterSpacing: -3.8,
+                                color: Colors.white.withValues(alpha: 0.055),
+                                shadows: const [
+                                  Shadow(
+                                    color: Color(0x15FFFFFF),
+                                    blurRadius: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'Natter',
+                              style: TextStyle(
+                                fontSize: wordmarkSize,
+                                fontWeight: wordmarkWeight,
+                                letterSpacing: -3.8,
+                                foreground: Paint()
+                                  ..style = ui.PaintingStyle.stroke
+                                  ..strokeWidth = 0.85
+                                  ..color = const Color(0x4DE7F4FF),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Natter',
-                      style: NatterChildTheme.screenTitle.copyWith(
-                        fontSize: 29,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 20),
                     const Text(
                       'Connect · Protect · Grow',
                       textAlign: TextAlign.center,
-                      style: NatterChildTheme.screenSubtitle,
-                    ),
-                    const SizedBox(height: 28),
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: NatterChildTheme.connect,
+                      style: TextStyle(
+                        color: Color(0xABDDE8F6),
+                        fontSize: 14,
+                        letterSpacing: 0.4,
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    const Text(
-                      'Opening your space…',
-                      textAlign: TextAlign.center,
-                      style: NatterChildTheme.caption,
+                    const SizedBox(height: 38),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final colour in const [
+                          NatterBrand.blue,
+                          NatterBrand.pink,
+                          NatterBrand.green,
+                        ])
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              color: colour,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        const SizedBox(width: 9),
+                        const Text(
+                          'Opening your space…',
+                          style: TextStyle(
+                            color: Color(0xFFCBD5E2),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -22994,6 +23169,7 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  bool _friendshipMomentPreviewUsed = false;
   bool _friendshipStageCelebrationVisible = false;
 
   Widget _buildFriendshipMilestoneCard() {
@@ -23132,19 +23308,50 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
-            // Preview only: remove this development shortcut before merging.
-            actions: kDebugMode
+            // Debug-only one-shot visual preview; remove before merging.
+            actions: kDebugMode && !_friendshipMomentPreviewUsed
                 ? [
                     IconButton(
                       tooltip: 'Preview friendship moment',
-                      icon: const Icon(
-                        Icons.auto_awesome_rounded,
-                        color: NatterChildTheme.grow,
+                      icon: const SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 0,
+                              left: 9,
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 15,
+                                color: NatterBrand.blue,
+                              ),
+                            ),
+                            Positioned(
+                              top: 11,
+                              right: 0,
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 12,
+                                color: NatterBrand.pink,
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              left: 1,
+                              child: Icon(
+                                Icons.star_rounded,
+                                size: 12,
+                                color: NatterBrand.green,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () => _showFriendshipStageCelebration(
-                        'seedling',
-                        'growing',
-                      ),
+                      onPressed: () {
+                        _friendshipMomentPreviewUsed = true;
+                        _showFriendshipStageCelebration('seedling', 'growing');
+                      },
                     ),
                   ]
                 : null,
