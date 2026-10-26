@@ -200,25 +200,21 @@
       margin: 0 auto 14px;
       filter: drop-shadow(0 0 12px rgba(61,166,243,.10));
     }
-    /* The wordmark is ordinary text, only faintly translucent. */
+    /* One ordinary font, rendered translucent — no duplicated outline layers. */
     .natter-boot__brand {
       margin: 0;
-      font-size: 38px;
-      font-weight: 500;
-      letter-spacing: -1px;
+      font-family: Roboto, Arial, sans-serif;
+      font-size: 34px;
+      font-weight: 400;
+      letter-spacing: -0.6px;
       line-height: 1.2;
-      color: rgba(239,247,255,.045);
-      -webkit-text-stroke: .45px rgba(234,244,255,.23);
-      text-shadow: 0 0 12px rgba(255,255,255,.035);
+      color: rgba(239,247,255,.18);
     }
     .natter-boot__strapline { margin: 10px 0 34px; font-size: 14px; letter-spacing: .4px; }
     .natter-boot__connect { color: #3da6f3; }
     .natter-boot__protect { color: #ff5da2; }
     .natter-boot__grow { color: #a4d35a; }
     .natter-boot__separator { color: rgba(240,246,255,.37); padding: 0 .3em; }
-    @supports not (-webkit-text-stroke: 1px white) {
-      .natter-boot__brand { color: rgba(239,247,255,.19); }
-    }
     .natter-boot__activity { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 13px; color: #cbd5e2; }
     .natter-boot__dots { display: flex; gap: 5px; }
     .natter-boot__dot { width: 6px; height: 6px; border-radius: 50%; animation: natter-breathe 1.65s ease-in-out infinite; }
