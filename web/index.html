@@ -207,10 +207,18 @@
       font-weight: 500;
       letter-spacing: -1px;
       line-height: 1.2;
-      color: rgba(239,247,255,.30);
-      text-shadow: 0 0 14px rgba(255,255,255,.045);
+      color: rgba(239,247,255,.045);
+      -webkit-text-stroke: .45px rgba(234,244,255,.23);
+      text-shadow: 0 0 12px rgba(255,255,255,.035);
     }
-    .natter-boot__strapline { margin: 10px 0 34px; color: rgba(240,246,255,.67); font-size: 14px; letter-spacing: .4px; }
+    .natter-boot__strapline { margin: 10px 0 34px; font-size: 14px; letter-spacing: .4px; }
+    .natter-boot__connect { color: #3da6f3; }
+    .natter-boot__protect { color: #ff5da2; }
+    .natter-boot__grow { color: #a4d35a; }
+    .natter-boot__separator { color: rgba(240,246,255,.37); padding: 0 .3em; }
+    @supports not (-webkit-text-stroke: 1px white) {
+      .natter-boot__brand { color: rgba(239,247,255,.19); }
+    }
     .natter-boot__activity { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 13px; color: #cbd5e2; }
     .natter-boot__dots { display: flex; gap: 5px; }
     .natter-boot__dot { width: 6px; height: 6px; border-radius: 50%; animation: natter-breathe 1.65s ease-in-out infinite; }
@@ -218,7 +226,18 @@
     .natter-boot__dot:nth-child(2) { background: #ff5da2; animation-delay: .22s; }
     .natter-boot__dot:nth-child(3) { background: #a4d35a; animation-delay: .44s; }
     .natter-boot__slow { margin: 28px auto 0; color: #cbd5e2; font-size: 12px; line-height: 1.6; }
-    .natter-boot__retry { display: inline-block; margin-top: 12px; padding: 9px 17px; color: #e6f3ff; background: transparent; border: 1px solid rgba(61,166,243,.45); border-radius: 999px; font: inherit; cursor: pointer; }
+    .natter-boot__retry {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-top: 12px; padding: 9px 17px; min-height: 34px;
+      color: #e6f3ff; background: transparent; border: 1px solid rgba(61,166,243,.45);
+      border-radius: 999px; font: inherit; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; outline: none;
+    }
+    .natter-boot__retry:focus-visible {
+      outline: 2px solid rgba(61,166,243,.70);
+      outline-offset: 3px;
+    }
+    .natter-boot__retry:active { background: rgba(61,166,243,.12); }
     @keyframes natter-breathe { 0%, 70%, 100% { opacity: .4; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-4px); } }
     @media (prefers-reduced-motion: reduce) {
       #natter-boot { transition: none; }
@@ -231,7 +250,7 @@
     <div class="natter-boot__content">
       <img class="natter-boot__logo" src="natter-logo.png" alt="" width="76" height="76" decoding="async">
       <h1 class="natter-boot__brand">Natter</h1>
-      <p class="natter-boot__strapline">Connect · Protect · Grow</p>
+      <p class="natter-boot__strapline"><span class="natter-boot__connect">Connect</span><span class="natter-boot__separator">·</span><span class="natter-boot__protect">Protect</span><span class="natter-boot__separator">·</span><span class="natter-boot__grow">Grow</span></p>
       <div class="natter-boot__activity" role="status" aria-live="polite">
         <span class="natter-boot__dots" aria-hidden="true">
           <span class="natter-boot__dot"></span>
@@ -250,12 +269,24 @@
     (function () {
       const boot = document.getElementById('natter-boot');
       const slow = document.getElementById('natter-boot-slow');
+      // Development-only timing: avoid collecting user/session information.
+      const measureStartup = location.hostname === 'localhost' ||
+        location.hostname.endsWith('.app.github.dev');
+      const startupStartedAt = performance.now();
+      if (measureStartup) console.info('[Natter boot] loader ready at ' +
+        Math.round(startupStartedAt) + 'ms after navigation');
       let finished = false;
       const slowTimer = window.setTimeout(function () {
-        if (!finished && slow) slow.hidden = false;
+        if (!finished && slow) {
+          slow.hidden = false;
+          if (measureStartup) console.info('[Natter boot] waiting for first Flutter frame: ' +
+            Math.round(performance.now() - startupStartedAt) + 'ms since loader');
+        }
       }, 20000);
       window.addEventListener('flutter-first-frame', function () {
         finished = true;
+        if (measureStartup) console.info('[Natter boot] flutter-first-frame received: ' +
+          Math.round(performance.now() - startupStartedAt) + 'ms since loader');
         window.clearTimeout(slowTimer);
         if (!boot) return;
         boot.classList.add('is-ready');
