@@ -9878,10 +9878,6 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wordmarkSize = (MediaQuery.sizeOf(context).width * 0.18)
-        .clamp(50.0, 92.0)
-        .toDouble();
-    const wordmarkWeight = FontWeight.w600;
     return Scaffold(
       backgroundColor: NatterBrand.navy,
       body: Stack(
@@ -9894,44 +9890,31 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Semantics(
-                      label: 'Natter',
-                      child: ExcludeSemantics(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Text(
-                              'Natter',
-                              style: TextStyle(
-                                fontSize: wordmarkSize,
-                                fontWeight: wordmarkWeight,
-                                letterSpacing: -3.8,
-                                color: Colors.white.withValues(alpha: 0.055),
-                                shadows: const [
-                                  Shadow(
-                                    color: Color(0x15FFFFFF),
-                                    blurRadius: 20,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              'Natter',
-                              style: TextStyle(
-                                fontSize: wordmarkSize,
-                                fontWeight: wordmarkWeight,
-                                letterSpacing: -3.8,
-                                foreground: Paint()
-                                  ..style = ui.PaintingStyle.stroke
-                                  ..strokeWidth = 0.85
-                                  ..color = const Color(0x4DE7F4FF),
-                              ),
-                            ),
-                          ],
-                        ),
+                    Image.asset(
+                      NatterBrand.logoPath,
+                      height: 76,
+                      width: 76,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: NatterBrand.blue,
+                        size: 60,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Natter',
+                      style: TextStyle(
+                        fontSize: 38,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: -1,
+                        color: Color(0x4DEFF7FF),
+                        shadows: [
+                          Shadow(color: Color(0x0CFFFFFF), blurRadius: 14),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     const Text(
                       'Connect · Protect · Grow',
                       textAlign: TextAlign.center,
@@ -9941,7 +9924,7 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
                         letterSpacing: 0.4,
                       ),
                     ),
-                    const SizedBox(height: 38),
+                    const SizedBox(height: 34),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -23334,40 +23317,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? [
                     IconButton(
                       tooltip: 'Preview friendship moment',
-                      icon: const SizedBox(
-                        width: 28,
-                        height: 28,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top: 0,
-                              left: 9,
-                              child: Icon(
-                                Icons.star_rounded,
-                                size: 15,
-                                color: NatterBrand.blue,
-                              ),
-                            ),
-                            Positioned(
-                              top: 11,
-                              right: 0,
-                              child: Icon(
-                                Icons.star_rounded,
-                                size: 12,
-                                color: NatterBrand.pink,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              left: 1,
-                              child: Icon(
-                                Icons.star_rounded,
-                                size: 12,
-                                color: NatterBrand.green,
-                              ),
-                            ),
-                          ],
-                        ),
+                      icon: Image.asset(
+                        'assets/natter-bubble.webp',
+                        width: 32,
+                        height: 34,
+                        filterQuality: FilterQuality.medium,
+                        semanticLabel: 'Natter friendship moment',
                       ),
                       onPressed: () {
                         _friendshipMomentPreviewUsed = true;
