@@ -9749,24 +9749,54 @@ class _NatterHoldingStarsPainter extends CustomPainter {
   const _NatterHoldingStarsPainter();
 
   static const List<Offset> _bright = [
-    Offset(.07, .16), Offset(.18, .28), Offset(.31, .09),
-    Offset(.47, .22), Offset(.63, .11), Offset(.72, .34),
-    Offset(.88, .13), Offset(.94, .41), Offset(.14, .72),
-    Offset(.39, .81), Offset(.69, .75), Offset(.91, .83),
+    Offset(.07, .16),
+    Offset(.18, .28),
+    Offset(.31, .09),
+    Offset(.47, .22),
+    Offset(.63, .11),
+    Offset(.72, .34),
+    Offset(.88, .13),
+    Offset(.94, .41),
+    Offset(.14, .72),
+    Offset(.39, .81),
+    Offset(.69, .75),
+    Offset(.91, .83),
   ];
 
   static const List<Offset> _distant = [
-    Offset(.04, .31), Offset(.08, .52), Offset(.11, .38),
-    Offset(.13, .61), Offset(.16, .47), Offset(.19, .21),
-    Offset(.22, .17), Offset(.24, .42), Offset(.27, .63),
-    Offset(.30, .73), Offset(.35, .31), Offset(.38, .17),
-    Offset(.41, .57), Offset(.43, .12), Offset(.46, .69),
-    Offset(.49, .35), Offset(.52, .41), Offset(.54, .26),
-    Offset(.57, .17), Offset(.59, .76), Offset(.61, .59),
-    Offset(.65, .43), Offset(.68, .25), Offset(.71, .64),
-    Offset(.76, .09), Offset(.78, .47), Offset(.79, .61),
-    Offset(.82, .19), Offset(.84, .29), Offset(.86, .53),
-    Offset(.87, .69), Offset(.90, .36), Offset(.93, .57),
+    Offset(.04, .31),
+    Offset(.08, .52),
+    Offset(.11, .38),
+    Offset(.13, .61),
+    Offset(.16, .47),
+    Offset(.19, .21),
+    Offset(.22, .17),
+    Offset(.24, .42),
+    Offset(.27, .63),
+    Offset(.30, .73),
+    Offset(.35, .31),
+    Offset(.38, .17),
+    Offset(.41, .57),
+    Offset(.43, .12),
+    Offset(.46, .69),
+    Offset(.49, .35),
+    Offset(.52, .41),
+    Offset(.54, .26),
+    Offset(.57, .17),
+    Offset(.59, .76),
+    Offset(.61, .59),
+    Offset(.65, .43),
+    Offset(.68, .25),
+    Offset(.71, .64),
+    Offset(.76, .09),
+    Offset(.78, .47),
+    Offset(.79, .61),
+    Offset(.82, .19),
+    Offset(.84, .29),
+    Offset(.86, .53),
+    Offset(.87, .69),
+    Offset(.90, .36),
+    Offset(.93, .57),
     Offset(.95, .24),
   ];
 
@@ -9848,8 +9878,9 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final wordmarkSize =
-        (MediaQuery.sizeOf(context).width * 0.18).clamp(50.0, 92.0).toDouble();
+    final wordmarkSize = (MediaQuery.sizeOf(context).width * 0.18)
+        .clamp(50.0, 92.0)
+        .toDouble();
     const wordmarkWeight = FontWeight.w600;
     return Scaffold(
       backgroundColor: NatterBrand.navy,
@@ -23223,16 +23254,12 @@ class _ChatScreenState extends State<ChatScreen> {
                                 'assets/chirp_welldone.png',
                                 height: 74,
                               ),
-                              const SizedBox(
-                                height: NatterChildTheme.spaceMd,
-                              ),
+                              const SizedBox(height: NatterChildTheme.spaceMd),
                               Text(
                                 _friendshipStageIcon(),
                                 style: const TextStyle(fontSize: 36),
                               ),
-                              const SizedBox(
-                                height: NatterChildTheme.spaceLg,
-                              ),
+                              const SizedBox(height: NatterChildTheme.spaceLg),
                               const Text(
                                 'A MOMENT IN YOUR FRIENDSHIP',
                                 textAlign: TextAlign.center,
@@ -23243,9 +23270,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   letterSpacing: 1.1,
                                 ),
                               ),
-                              const SizedBox(
-                                height: NatterChildTheme.spaceSm,
-                              ),
+                              const SizedBox(height: NatterChildTheme.spaceSm),
                               Text(
                                 _friendshipStageTitle(),
                                 textAlign: TextAlign.center,
@@ -23253,9 +23278,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   fontSize: 27,
                                 ),
                               ),
-                              const SizedBox(
-                                height: NatterChildTheme.spaceMd,
-                              ),
+                              const SizedBox(height: NatterChildTheme.spaceMd),
                               Text(
                                 _friendshipStageCelebration ?? '',
                                 textAlign: TextAlign.center,
@@ -23263,9 +23286,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   height: 1.45,
                                 ),
                               ),
-                              const SizedBox(
-                                height: NatterChildTheme.spaceLg,
-                              ),
+                              const SizedBox(height: NatterChildTheme.spaceLg),
                               Text(
                                 'Part of your story with ${widget.contactName}',
                                 textAlign: TextAlign.center,
