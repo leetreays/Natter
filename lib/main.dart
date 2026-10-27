@@ -14,15 +14,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
+import 'utils/startup_probe_stub.dart'
+    if (dart.library.js_interop) 'utils/startup_probe_web.dart'
+    as startup_probe;
 
 // Development diagnostics only: relative milestones, never user IDs or tokens.
 final Stopwatch _natterStartupClock = Stopwatch()..start();
 
 void _traceNatterStartup(String milestone) {
   if (kDebugMode) {
-    debugPrint(
-      '[Natter startup] ${_natterStartupClock.elapsedMilliseconds}ms: $milestone',
-    );
+    final entry = '${_natterStartupClock.elapsedMilliseconds}ms: $milestone';
+    debugPrint('[Natter startup] $entry');
+    startup_probe.reportStartupMilestone(entry);
   }
 }
 
