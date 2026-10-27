@@ -14,6 +14,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
+import 'utils/startup_probe_stub.dart'
+    if (dart.library.js_interop) 'utils/startup_probe_web.dart'
+    as startup_probe;
+
+// Development diagnostics only: relative milestones, never user IDs or tokens.
+final Stopwatch _natterStartupClock = Stopwatch()..start();
+
+void _traceNatterStartup(String milestone) {
+  // Temporary diagnostics for debug and profile builds only, never release.
+  if (kDebugMode || kProfileMode) {
+    final entry = '${_natterStartupClock.elapsedMilliseconds}ms: $milestone';
+    debugPrint('[Natter startup] $entry');
+    startup_probe.reportStartupMilestone(entry);
+  }
+}
+
+// Stream builders may rebuild frequently. Capture each safe state only once.
+final Set<String> _natterChatMilestonesSeen = <String>{};
+
+void _traceNatterChatOnce(String milestone) {
+  if ((kDebugMode || kProfileMode) &&
+      _natterChatMilestonesSeen.add(milestone)) {
+    _traceNatterStartup(milestone);
+  }
+}
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -25,9 +50,12 @@ Future<User> ensureSignedIn() async {
 }
 
 Future<void> main() async {
+  _traceNatterStartup('Dart main started');
   WidgetsFlutterBinding.ensureInitialized();
+  _traceNatterStartup('Flutter binding ready');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  _traceNatterStartup('Firebase Core initialised');
 
   if (kIsWeb) {
     await FirebaseAppCheck.instance.activate(
@@ -43,9 +71,12 @@ Future<void> main() async {
     );
   }
 
+  _traceNatterStartup('App Check activated');
   await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  _traceNatterStartup('App Check token refresh configured');
 
   runApp(const NatterApp());
+  _traceNatterStartup('runApp invoked');
 }
 
 Route<T> calmRoute<T>(Widget page) {
@@ -9661,6 +9692,170 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
   }
 }
 
+/// The holding-page atmosphere, kept in Flutter for the session-routing frame.
+/// The pre-Flutter web boot screen uses the website's original CSS night sky.
+class _NatterHoldingNightBackground extends StatelessWidget {
+  const _NatterHoldingNightBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return const RepaintBoundary(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 0.30, 0.63, 1],
+                colors: [
+                  Color(0xFF01030A),
+                  Color(0xFF020717),
+                  Color(0xFF050D25),
+                  Color(0xFF081634),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-1.05, -0.84),
+                radius: 0.86,
+                stops: [0, 0.28, 1],
+                colors: [
+                  Color(0x52FFFAEB),
+                  Color(0x26FFFAEB),
+                  Color(0x00FFFAEB),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.48, -0.64),
+                radius: 1.05,
+                colors: [Color(0x387C4EBC), Color(0x007C4EBC)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.64, -0.12),
+                radius: 1.00,
+                colors: [Color(0x21FF5DA2), Color(0x00FF5DA2)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-0.52, 0.16),
+                radius: 1.00,
+                colors: [Color(0x243DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, 1.30),
+                radius: 0.95,
+                colors: [Color(0x2E3DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          CustomPaint(painter: _NatterHoldingStarsPainter()),
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed, non-interactive stars: no shimmer or visual noise while signing in.
+class _NatterHoldingStarsPainter extends CustomPainter {
+  const _NatterHoldingStarsPainter();
+
+  static const List<Offset> _bright = [
+    Offset(.07, .16),
+    Offset(.18, .28),
+    Offset(.31, .09),
+    Offset(.47, .22),
+    Offset(.63, .11),
+    Offset(.72, .34),
+    Offset(.88, .13),
+    Offset(.94, .41),
+    Offset(.14, .72),
+    Offset(.39, .81),
+    Offset(.69, .75),
+    Offset(.91, .83),
+  ];
+
+  static const List<Offset> _distant = [
+    Offset(.04, .31),
+    Offset(.08, .52),
+    Offset(.11, .38),
+    Offset(.13, .61),
+    Offset(.16, .47),
+    Offset(.19, .21),
+    Offset(.22, .17),
+    Offset(.24, .42),
+    Offset(.27, .63),
+    Offset(.30, .73),
+    Offset(.35, .31),
+    Offset(.38, .17),
+    Offset(.41, .57),
+    Offset(.43, .12),
+    Offset(.46, .69),
+    Offset(.49, .35),
+    Offset(.52, .41),
+    Offset(.54, .26),
+    Offset(.57, .17),
+    Offset(.59, .76),
+    Offset(.61, .59),
+    Offset(.65, .43),
+    Offset(.68, .25),
+    Offset(.71, .64),
+    Offset(.76, .09),
+    Offset(.78, .47),
+    Offset(.79, .61),
+    Offset(.82, .19),
+    Offset(.84, .29),
+    Offset(.86, .53),
+    Offset(.87, .69),
+    Offset(.90, .36),
+    Offset(.93, .57),
+    Offset(.95, .24),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final brightPaint = Paint()..color = const Color(0x80FFFFFF);
+    final distantPaint = Paint()..color = const Color(0x30FFFFFF);
+
+    for (final star in _bright) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.9,
+        brightPaint,
+      );
+    }
+    for (final star in _distant) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.55,
+        distantPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class StartupRouterScreen extends StatefulWidget {
   const StartupRouterScreen({super.key});
 
@@ -9669,20 +9864,11 @@ class StartupRouterScreen extends StatefulWidget {
 }
 
 class _StartupRouterScreenState extends State<StartupRouterScreen> {
-  double _opacity = 0;
-
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      if (!mounted) return;
-      setState(() {
-        _opacity = 1;
-      });
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _traceNatterStartup('Flutter first router frame displayed');
       _start();
     });
   }
@@ -9693,29 +9879,37 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   Future<void> _route() async {
     final state = AppStateScope.of(context);
+    _traceNatterStartup('Looking up saved device mode');
     final mode = await state.getDeviceMode();
+    _traceNatterStartup('Device mode lookup complete');
 
     if (!mounted) return;
 
     if (mode == 'parent') {
+      _traceNatterStartup('Navigating to parent home');
       Navigator.pushReplacement(context, calmRoute(const ParentHomeScreen()));
       return;
     }
 
     if (mode == 'child') {
+      _traceNatterStartup('Hydrating remembered child session');
       await state.hydrateRememberedChildSession();
+      _traceNatterStartup('Remembered child session hydration complete');
 
       if (!mounted) return;
 
       if (!state.hasActiveChildSession) {
+        _traceNatterStartup('Navigating to child gateway');
         Navigator.pushReplacement(context, calmRoute(const GatewayScreen()));
         return;
       }
 
+      _traceNatterStartup('Navigating to child chats');
       Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
       return;
     }
 
+    _traceNatterStartup('Navigating to family welcome');
     Navigator.pushReplacement(
       context,
       calmRoute(const FamilyJourneyWelcomeScreen()),
@@ -9724,13 +9918,118 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: const Duration(milliseconds: 700),
-      curve: Curves.easeOut,
-      child: const Scaffold(
-        backgroundColor: Color(0xFF06112E),
-        body: SizedBox.expand(),
+    return Scaffold(
+      backgroundColor: NatterBrand.navy,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: _NatterHoldingNightBackground()),
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      NatterBrand.logoPath,
+                      height: 76,
+                      width: 76,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: NatterBrand.blue,
+                        size: 60,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (bounds) => const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        stops: [0, 0.40, 0.73, 1],
+                        colors: [
+                          Color(0x423DA6F3),
+                          Color(0x2B9C6BFF),
+                          Color(0x38FF5DA2),
+                          Color(0x2B3DA6F3),
+                        ],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'Natter',
+                        style: TextStyle(
+                          fontFamily: 'NatterNunito',
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.45,
+                          height: 1.2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Connect',
+                            style: TextStyle(color: NatterBrand.blue),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Protect',
+                            style: TextStyle(color: NatterBrand.pink),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Grow',
+                            style: TextStyle(color: NatterBrand.green),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, letterSpacing: 0.4),
+                    ),
+                    const SizedBox(height: 34),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final colour in const [
+                          NatterBrand.blue,
+                          NatterBrand.pink,
+                          NatterBrand.green,
+                        ])
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              color: colour,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        const SizedBox(width: 9),
+                        const Text(
+                          'Opening your space…',
+                          style: TextStyle(
+                            color: Color(0xFFCBD5E2),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -20618,6 +20917,12 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    _traceNatterChatOnce('Chats screen built');
+    _traceNatterChatOnce(
+      FirebaseAuth.instance.currentUser == null
+          ? 'Chats auth not present'
+          : 'Chats auth present',
+    );
     final schoolFriends = state.sameSchoolFriends;
     final yearFriends = state.sameYearFriends;
     final realApprovedContacts = state.approvedContacts.where((f) {
@@ -20730,12 +21035,20 @@ class ChatsScreen extends StatelessWidget {
                           childId: state.activeChildId!,
                         ),
                         builder: (context, outgoingSnapshot) {
+                          _traceNatterChatOnce('Outgoing stream subscribed');
                           if (outgoingSnapshot.hasError) {
+                            _traceNatterChatOnce('Outgoing stream error');
                             return _smallErrorCard(
                               'Could not load outgoing requests: ${outgoingSnapshot.error}',
                             );
                           }
 
+                          if (outgoingSnapshot.hasData) {
+                            _traceNatterChatOnce('Outgoing stream data received');
+                          } else if (outgoingSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            _traceNatterChatOnce('Outgoing stream waiting');
+                          }
                           final outgoing = outgoingSnapshot.data ?? [];
 
                           return StreamBuilder<List<ChildContactRequest>>(
@@ -20744,12 +21057,20 @@ class ChatsScreen extends StatelessWidget {
                               childId: state.activeChildId!,
                             ),
                             builder: (context, incomingSnapshot) {
+                              _traceNatterChatOnce('Incoming stream subscribed');
                               if (incomingSnapshot.hasError) {
+                                _traceNatterChatOnce('Incoming stream error');
                                 return _smallErrorCard(
                                   'Could not load incoming requests: ${incomingSnapshot.error}',
                                 );
                               }
 
+                              if (incomingSnapshot.hasData) {
+                                _traceNatterChatOnce('Incoming stream data received');
+                              } else if (incomingSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                _traceNatterChatOnce('Incoming stream waiting');
+                              }
                               final incoming = incomingSnapshot.data ?? [];
                               final hasPending =
                                   outgoing.isNotEmpty || incoming.isNotEmpty;
@@ -20759,7 +21080,9 @@ class ChatsScreen extends StatelessWidget {
                                   childId: state.activeChildId!,
                                 ),
                                 builder: (context, conversationSnapshot) {
+                                  _traceNatterChatOnce('Conversation stream subscribed');
                                   if (conversationSnapshot.hasError) {
+                                    _traceNatterChatOnce('Conversation stream error');
                                     return _smallErrorCard(
                                       'Could not load conversations: ${conversationSnapshot.error}',
                                     );
@@ -20768,11 +21091,19 @@ class ChatsScreen extends StatelessWidget {
                                   if (conversationSnapshot.connectionState ==
                                           ConnectionState.waiting &&
                                       !conversationSnapshot.hasData) {
+                                    _traceNatterChatOnce('Conversation stream waiting');
                                     return const SizedBox.shrink();
                                   }
 
                                   final conversations =
                                       conversationSnapshot.data ?? [];
+                                  if (conversationSnapshot.hasData) {
+                                    _traceNatterChatOnce(
+                                      conversations.isEmpty
+                                          ? 'Conversation stream data empty'
+                                          : 'Conversation stream data nonempty',
+                                    );
+                                  }
 
                                   final sortedConversations =
                                       List<ConversationRecord>.from(
@@ -22589,6 +22920,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _stallTimer?.cancel();
     controller.dispose();
     _bannerTimer?.cancel();
+    _friendshipStageCelebrationTimer?.cancel();
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
@@ -22870,30 +23202,30 @@ class _ChatScreenState extends State<ChatScreen> {
   String friendshipStageCelebrationText(String previousStage, String stage) {
     switch (stage) {
       case 'growing':
-        return 'You and ${widget.contactName} are getting to know each other.';
+        return 'You and ${widget.contactName} have started making memories together.';
       case 'strong':
-        return 'Your friendship is becoming stronger.';
+        return 'There have been encouraging moments in your friendship.';
       case 'trusted':
-        return 'You have built a trusted friendship.';
+        return 'Your friendship story has reached another chapter.';
       case 'flourishing':
-        return 'What a journey! This friendship is flourishing.';
+        return 'Look at the moments becoming part of your story together.';
       default:
-        return 'Your friendship has grown.';
+        return 'Every friendship has its own story.';
     }
   }
 
   String _friendshipStageTitle() {
     switch (_lastCelebratedStage) {
       case 'growing':
-        return 'GROWING FRIENDSHIP';
+        return 'Growing together';
       case 'strong':
-        return 'STRONG FRIENDSHIP';
+        return 'A growing connection';
       case 'trusted':
-        return 'TRUSTED FRIENDSHIP';
+        return 'A new chapter';
       case 'flourishing':
-        return '✨ FLOURISHING FRIENDSHIP ✨';
+        return 'So much to remember';
       default:
-        return '🌱 FRIENDSHIP GROWING';
+        return 'A friendship moment';
     }
   }
 
@@ -22906,47 +23238,9 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'trusted':
         return '🌳';
       case 'flourishing':
-        return '✨🌳✨';
+        return '✨';
       default:
         return '🌱';
-    }
-  }
-
-  Color _friendshipStageGlowColor() {
-    switch (_lastCelebratedStage) {
-      case 'growing':
-        return NatterBrand.green;
-
-      case 'strong':
-        return const Color(0xFF4FD1C5);
-
-      case 'trusted':
-        return const Color(0xFF63A4FF);
-
-      case 'flourishing':
-        return const Color(0xFFFFD54F);
-
-      default:
-        return NatterBrand.green;
-    }
-  }
-
-  Color _friendshipStageCardColor() {
-    switch (_lastCelebratedStage) {
-      case 'growing':
-        return const Color(0xFF243F6B);
-
-      case 'strong':
-        return const Color(0xFF214C57);
-
-      case 'trusted':
-        return const Color(0xFF1E3F73);
-
-      case 'flourishing':
-        return const Color(0xFF5A4A1A);
-
-      default:
-        return const Color(0xFF243F6B);
     }
   }
 
@@ -22981,6 +23275,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // Debug-only, one-shot across all ChatScreen instances until app restart.
+  // Remove this preview shortcut and flag before PR #11 merges.
+  static bool _debugFriendshipPreviewUsedThisSession = false;
   bool _friendshipStageCelebrationVisible = false;
 
   Widget _buildFriendshipMilestoneCard() {
@@ -22990,91 +23287,110 @@ class _ChatScreenState extends State<ChatScreen> {
           opacity: _friendshipStageCelebrationVisible ? 1 : 0,
           duration: const Duration(milliseconds: 450),
           curve: Curves.easeOut,
-          child: Container(
-            color: Colors.black.withOpacity(0.52),
+          child: ColoredBox(
+            color: NatterBrand.navy.withValues(alpha: 0.76),
             child: Center(
-              child: AnimatedScale(
-                scale: _friendshipStageCelebrationVisible ? 1 : 0.92,
-                duration: const Duration(milliseconds: 450),
-                curve: Curves.easeOutBack,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 28),
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: _friendshipStageCardColor(),
-                    borderRadius: BorderRadius.circular(34),
-                    border: Border.all(
-                      color: _friendshipStageGlowColor().withOpacity(0.65),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _friendshipStageGlowColor().withOpacity(0.34),
-                        blurRadius: 50,
-                        spreadRadius: 6,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: NatterBrand.green.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'New Friendship Level',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                  vertical: NatterChildTheme.spaceXl,
+                ),
+                child: AnimatedScale(
+                  scale: _friendshipStageCelebrationVisible ? 1 : 0.96,
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 390),
+                    child: NatterChildSurface(
+                      style: NatterChildSurfaceStyle.hero,
+                      borderRadius: NatterChildTheme.radiusHero,
+                      padding: const EdgeInsets.fromLTRB(24, 26, 24, 26),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (final colour in const [
+                                NatterBrand.blue,
+                                NatterBrand.pink,
+                                NatterBrand.green,
+                              ])
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  margin: const EdgeInsets.only(right: 5),
+                                  decoration: BoxDecoration(
+                                    color: colour,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'A FRIENDSHIP MOMENT',
+                                style: TextStyle(
+                                  color: NatterChildTheme.textMuted,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 68,
+                            width: 68,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NatterChildTheme.surfaceQuiet.withValues(
+                                alpha: 0.60,
+                              ),
+                              border: Border.all(
+                                color: NatterChildTheme.borderStrong,
+                              ),
+                            ),
+                            child: Text(
+                              _friendshipStageIcon(),
+                              style: const TextStyle(fontSize: 32),
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceXl),
+                          Text(
+                            _friendshipStageTitle(),
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.heroTitle.copyWith(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceMd),
+                          Text(
+                            _friendshipStageCelebration ?? '',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.body.copyWith(
+                              color: NatterChildTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              height: 1.45,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 1,
+                            color: NatterChildTheme.borderStrong,
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceLg),
+                          Text(
+                            'Part of your story with ${widget.contactName}',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.caption.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Image.asset('assets/chirp_welldone.png', height: 115),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your friendship has grown!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.75),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                      Text(
-                        _friendshipStageIcon(),
-                        style: const TextStyle(fontSize: 54),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _friendshipStageTitle(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 24,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _friendshipStageCelebration ?? '',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.94),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -23107,6 +23423,25 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            // Debug-only one-shot visual preview; remove before merging.
+            actions: kDebugMode && !_debugFriendshipPreviewUsedThisSession
+                ? [
+                    IconButton(
+                      tooltip: 'Preview friendship moment',
+                      icon: Image.asset(
+                        'assets/natter-bubble.webp',
+                        width: 32,
+                        height: 34,
+                        filterQuality: FilterQuality.medium,
+                        semanticLabel: 'Natter friendship moment',
+                      ),
+                      onPressed: () {
+                        _debugFriendshipPreviewUsedThisSession = true;
+                        _showFriendshipStageCelebration('seedling', 'growing');
+                      },
+                    ),
+                  ]
+                : null,
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: state.conversationDocStream(widget.conversationId),
               builder: (context, snapshot) {

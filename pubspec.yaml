@@ -30,6 +30,7 @@ flutter:
     - assets/natter-logo-v2.png
     - assets/natter-logo.png
     - assets/natter-logo-transBG.png
+    - assets/natter-bubble.webp
     - assets/chirp_welcome.png
     - assets/chirp_prompt.png
     - assets/chirp_reply.png
@@ -43,6 +44,11 @@ flutter:
     - assets/seedling_1.png
     - assets/seedling_1_circle.png
     - assets/journey_seedling.png
+  fonts:
+    # Licensed under SIL OFL 1.1; see web/fonts/OFL-Nunito.txt.
+    - family: NatterNunito
+      fonts:
+        - asset: web/fonts/natter-nunito.ttf
 
 flutter_native_splash:
   color: "#06112E"
