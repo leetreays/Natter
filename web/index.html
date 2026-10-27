@@ -255,6 +255,36 @@
       outline-offset: 3px;
     }
     .natter-boot__retry:active { background: rgba(61,166,243,.12); }
+    /* Temporary Codespaces-only diagnostics, never shown in the public site. */
+    #natter-diagnostics[hidden], #natter-diagnostics-panel[hidden] { display: none !important; }
+    #natter-diagnostics {
+      position: fixed; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+      z-index: 2147483000; font-family: system-ui, sans-serif;
+    }
+    #natter-diagnostics-toggle {
+      display: block; margin-left: auto; padding: 9px 13px;
+      border: 1px solid rgba(120,185,255,.6); border-radius: 999px;
+      color: #fff; background: rgba(7,22,47,.92); font-size: 12px;
+      font-weight: 650; -webkit-tap-highlight-color: transparent;
+    }
+    #natter-diagnostics-panel {
+      width: min(88vw, 390px); max-height: 54dvh; overflow: auto;
+      box-sizing: border-box; margin-bottom: 8px; padding: 14px;
+      border: 1px solid rgba(120,185,255,.35); border-radius: 16px;
+      background: rgba(5,17,39,.98); box-shadow: 0 8px 36px rgba(0,0,0,.36);
+      color: #e4f2ff; font-size: 12px; line-height: 1.4;
+    }
+    #natter-diagnostics-panel h2 { margin: 0 0 8px; font-size: 14px; }
+    #natter-diagnostics-log {
+      white-space: pre-wrap; overflow-wrap: anywhere; margin: 0;
+      font: 11px/1.55 ui-monospace, SFMono-Regular, monospace;
+    }
+    #natter-diagnostics-panel p { margin: 0 0 10px; color: #adc1d5; }
+    #natter-diagnostics-copy {
+      border-radius: 999px; border: 1px solid #315b87;
+      color: #fff; background: #122c4d; padding: 7px 13px;
+      margin-top: 10px; -webkit-tap-highlight-color: transparent;
+    }
     @keyframes natter-breathe { 0%, 70%, 100% { opacity: .4; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-4px); } }
     @media (prefers-reduced-motion: reduce) {
       #natter-boot { transition: none; }
@@ -282,28 +312,105 @@
       </div>
     </div>
   </div>
+  <!-- Dev preview only: shown on localhost/Codespaces. No child data collected. -->
+  <div id="natter-diagnostics" hidden>
+    <section id="natter-diagnostics-panel" hidden aria-label="Startup diagnostic timings">
+      <h2>Natter startup timings</h2>
+      <p>Relative timings only. No messages, child IDs or tokens.</p>
+      <pre id="natter-diagnostics-log"></pre>
+      <button id="natter-diagnostics-copy" type="button">Copy timings</button>
+    </section>
+    <button id="natter-diagnostics-toggle" type="button" aria-expanded="false">Timings</button>
+  </div>
   <script>
     (function () {
       const boot = document.getElementById('natter-boot');
       const slow = document.getElementById('natter-boot-slow');
-      // Development-only timing: avoid collecting user/session information.
+      // Development-only diagnostics. Does not affect Firebase or navigation.
       const measureStartup = location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
         location.hostname.endsWith('.app.github.dev');
       const startupStartedAt = performance.now();
-      if (measureStartup) console.info('[Natter boot] loader ready at ' +
-        Math.round(startupStartedAt) + 'ms after navigation');
+      const diagnostics = document.getElementById('natter-diagnostics');
+      const panel = document.getElementById('natter-diagnostics-panel');
+      const toggle = document.getElementById('natter-diagnostics-toggle');
+      const report = document.getElementById('natter-diagnostics-log');
+      const copy = document.getElementById('natter-diagnostics-copy');
+      const storageKey = 'natter-debug-startup-timings-v1';
+      let previous = [];
+      const events = [];
+      const allowedMilestones = new Set([
+        'Dart main started', 'Flutter binding ready',
+        'Firebase Core initialised', 'App Check activated',
+        'App Check token refresh configured', 'runApp invoked',
+        'Flutter first router frame displayed',
+        'Looking up saved device mode', 'Device mode lookup complete',
+        'Hydrating remembered child session',
+        'Remembered child session hydration complete',
+        'Navigating to parent home', 'Navigating to child gateway',
+        'Navigating to child chats', 'Navigating to family welcome'
+      ]);
+      function renderReport() {
+        if (!report) return;
+        report.textContent = 'CURRENT LOAD\\n' + events.join('\\n') +
+          (previous.length ? '\\n\\nPREVIOUS LOAD (same tab)\\n' + previous.join('\\n') : '');
+      }
+      function addTiming(label) {
+        if (!measureStartup) return;
+        const seconds = ((performance.now() - startupStartedAt) / 1000).toFixed(1);
+        events.push('+' + seconds + 's  ' + label);
+        if (events.length > 35) events.shift();
+        renderReport();
+        try { sessionStorage.setItem(storageKey, JSON.stringify(events)); } catch (_) {}
+      }
+      // Only predefined, non-identifying milestones are accepted from Dart.
+      window.natterStartupMilestone = function (milestone) {
+        if (!measureStartup || typeof milestone !== 'string') return;
+        const match = /^(\\d+)ms: (.*)$/.exec(milestone);
+        if (!match || !allowedMilestones.has(match[2])) return;
+        addTiming('Dart: ' + match[2] + ' (Dart +' + match[1] + 'ms)');
+      };
+      if (measureStartup && diagnostics && panel && toggle && report) {
+        try {
+          const saved = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
+          if (Array.isArray(saved)) previous = saved.filter(
+            (entry) => typeof entry === 'string' && entry.length < 180
+          ).slice(-35);
+        } catch (_) {}
+        diagnostics.hidden = false;
+        toggle.addEventListener('click', function () {
+          panel.hidden = !panel.hidden;
+          toggle.setAttribute('aria-expanded', String(!panel.hidden));
+        });
+        if (copy) copy.addEventListener('click', async function () {
+          try {
+            await navigator.clipboard.writeText(report.textContent);
+            copy.textContent = 'Copied';
+          } catch (_) {
+            copy.textContent = 'Screenshot instead';
+          }
+        });
+        addTiming('HTML loader ready');
+        window.addEventListener('load', function () { addTiming('Window load event'); }, { once: true });
+      }
       let finished = false;
       const slowTimer = window.setTimeout(function () {
         if (!finished && slow) {
           slow.hidden = false;
-          if (measureStartup) console.info('[Natter boot] waiting for first Flutter frame: ' +
-            Math.round(performance.now() - startupStartedAt) + 'ms since loader');
+          if (measureStartup) {
+            addTiming('Still waiting for Flutter first frame (20s warning)');
+            console.info('[Natter boot] waiting for first Flutter frame: ' +
+              Math.round(performance.now() - startupStartedAt) + 'ms since loader');
+          }
         }
       }, 20000);
       window.addEventListener('flutter-first-frame', function () {
         finished = true;
-        if (measureStartup) console.info('[Natter boot] flutter-first-frame received: ' +
-          Math.round(performance.now() - startupStartedAt) + 'ms since loader');
+        if (measureStartup) {
+          addTiming('Flutter first-frame browser event');
+          console.info('[Natter boot] flutter-first-frame received: ' +
+            Math.round(performance.now() - startupStartedAt) + 'ms since loader');
+        }
         window.clearTimeout(slowTimer);
         if (!boot) return;
         boot.classList.add('is-ready');
