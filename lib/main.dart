@@ -22,10 +22,21 @@ import 'utils/startup_probe_stub.dart'
 final Stopwatch _natterStartupClock = Stopwatch()..start();
 
 void _traceNatterStartup(String milestone) {
-  if (kDebugMode) {
+  // Temporary diagnostics for debug and profile builds only, never release.
+  if (kDebugMode || kProfileMode) {
     final entry = '${_natterStartupClock.elapsedMilliseconds}ms: $milestone';
     debugPrint('[Natter startup] $entry');
     startup_probe.reportStartupMilestone(entry);
+  }
+}
+
+// Stream builders may rebuild frequently. Capture each safe state only once.
+final Set<String> _natterChatMilestonesSeen = <String>{};
+
+void _traceNatterChatOnce(String milestone) {
+  if ((kDebugMode || kProfileMode) &&
+      _natterChatMilestonesSeen.add(milestone)) {
+    _traceNatterStartup(milestone);
   }
 }
 
@@ -20906,6 +20917,12 @@ class ChatsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
+    _traceNatterChatOnce('Chats screen built');
+    _traceNatterChatOnce(
+      FirebaseAuth.instance.currentUser == null
+          ? 'Chats auth not present'
+          : 'Chats auth present',
+    );
     final schoolFriends = state.sameSchoolFriends;
     final yearFriends = state.sameYearFriends;
     final realApprovedContacts = state.approvedContacts.where((f) {
@@ -21018,12 +21035,20 @@ class ChatsScreen extends StatelessWidget {
                           childId: state.activeChildId!,
                         ),
                         builder: (context, outgoingSnapshot) {
+                          _traceNatterChatOnce('Outgoing stream subscribed');
                           if (outgoingSnapshot.hasError) {
+                            _traceNatterChatOnce('Outgoing stream error');
                             return _smallErrorCard(
                               'Could not load outgoing requests: ${outgoingSnapshot.error}',
                             );
                           }
 
+                          if (outgoingSnapshot.hasData) {
+                            _traceNatterChatOnce('Outgoing stream data received');
+                          } else if (outgoingSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            _traceNatterChatOnce('Outgoing stream waiting');
+                          }
                           final outgoing = outgoingSnapshot.data ?? [];
 
                           return StreamBuilder<List<ChildContactRequest>>(
@@ -21032,12 +21057,20 @@ class ChatsScreen extends StatelessWidget {
                               childId: state.activeChildId!,
                             ),
                             builder: (context, incomingSnapshot) {
+                              _traceNatterChatOnce('Incoming stream subscribed');
                               if (incomingSnapshot.hasError) {
+                                _traceNatterChatOnce('Incoming stream error');
                                 return _smallErrorCard(
                                   'Could not load incoming requests: ${incomingSnapshot.error}',
                                 );
                               }
 
+                              if (incomingSnapshot.hasData) {
+                                _traceNatterChatOnce('Incoming stream data received');
+                              } else if (incomingSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                _traceNatterChatOnce('Incoming stream waiting');
+                              }
                               final incoming = incomingSnapshot.data ?? [];
                               final hasPending =
                                   outgoing.isNotEmpty || incoming.isNotEmpty;
@@ -21047,7 +21080,9 @@ class ChatsScreen extends StatelessWidget {
                                   childId: state.activeChildId!,
                                 ),
                                 builder: (context, conversationSnapshot) {
+                                  _traceNatterChatOnce('Conversation stream subscribed');
                                   if (conversationSnapshot.hasError) {
+                                    _traceNatterChatOnce('Conversation stream error');
                                     return _smallErrorCard(
                                       'Could not load conversations: ${conversationSnapshot.error}',
                                     );
@@ -21056,11 +21091,19 @@ class ChatsScreen extends StatelessWidget {
                                   if (conversationSnapshot.connectionState ==
                                           ConnectionState.waiting &&
                                       !conversationSnapshot.hasData) {
+                                    _traceNatterChatOnce('Conversation stream waiting');
                                     return const SizedBox.shrink();
                                   }
 
                                   final conversations =
                                       conversationSnapshot.data ?? [];
+                                  if (conversationSnapshot.hasData) {
+                                    _traceNatterChatOnce(
+                                      conversations.isEmpty
+                                          ? 'Conversation stream data empty'
+                                          : 'Conversation stream data nonempty',
+                                    );
+                                  }
 
                                   final sortedConversations =
                                       List<ConversationRecord>.from(
