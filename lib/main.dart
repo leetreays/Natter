@@ -9928,15 +9928,18 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       'Natter',
                       style: TextStyle(
-                        fontFamily: 'Roboto',
-                        fontSize: 34,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: -0.6,
+                        fontFamily: 'NatterNunito',
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.45,
                         height: 1.2,
-                        color: Color(0x2EEFF7FF),
+                        foreground: Paint()
+                          ..style = ui.PaintingStyle.stroke
+                          ..strokeWidth = 0.45
+                          ..color = const Color(0x33F1F4F9),
                       ),
                     ),
                     const SizedBox(height: 10),
