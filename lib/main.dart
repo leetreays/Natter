@@ -9928,18 +9928,29 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    Text(
-                      'Natter',
-                      style: TextStyle(
-                        fontFamily: 'NatterNunito',
-                        fontSize: 32,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.45,
-                        height: 1.2,
-                        foreground: Paint()
-                          ..style = ui.PaintingStyle.stroke
-                          ..strokeWidth = 0.45
-                          ..color = const Color(0x33F1F4F9),
+                    ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (bounds) => const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        stops: [0, 0.40, 0.73, 1],
+                        colors: [
+                          Color(0x423DA6F3),
+                          Color(0x2B9C6BFF),
+                          Color(0x38FF5DA2),
+                          Color(0x2B3DA6F3),
+                        ],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'Natter',
+                        style: TextStyle(
+                          fontFamily: 'NatterNunito',
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.45,
+                          height: 1.2,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
