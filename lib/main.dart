@@ -19326,8 +19326,12 @@ class _ChirpNudgeState extends State<ChirpNudge> {
 
 class _ChatsHeaderWithChirp extends StatefulWidget {
   final AppState state;
+  final Stream<List<ConversationRecord>>? conversationsStream;
 
-  const _ChatsHeaderWithChirp({required this.state});
+  const _ChatsHeaderWithChirp({
+    required this.state,
+    required this.conversationsStream,
+  });
 
   @override
   State<_ChatsHeaderWithChirp> createState() => _ChatsHeaderWithChirpState();
@@ -19399,7 +19403,7 @@ class _ChatsHeaderWithChirpState extends State<_ChatsHeaderWithChirp> {
     }
 
     return StreamBuilder<List<ConversationRecord>>(
-      stream: widget.state.conversationsForChildStream(childId: childId),
+      stream: widget.conversationsStream,
       builder: (context, snapshot) {
         final conversations = snapshot.data ?? const <ConversationRecord>[];
 
@@ -19461,6 +19465,14 @@ class _ChatsScreenState extends State<ChatsScreen> {
   Stream<List<ChildContactRequest>>? _outgoingRequestsStream;
   Stream<List<ChildContactRequest>>? _incomingRequestsStream;
   Stream<List<ConversationRecord>>? _conversationsStream;
+  StreamSubscription<List<ConversationRecord>>? _conversationSourceSubscription;
+
+  @override
+  void dispose() {
+    // Release Firestore listeners when leaving the Chats route.
+    _conversationSourceSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -19476,6 +19488,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
         childId == _streamChildId) {
       return;
     }
+
+    // Cancel the previous child's source before swapping stream identities.
+    _conversationSourceSubscription?.cancel();
+    _conversationSourceSubscription = null;
 
     _streamOwner = state;
     _streamParentId = parentId;
@@ -19496,7 +19512,19 @@ class _ChatsScreenState extends State<ChatsScreen> {
       parentId: parentId,
       childId: childId,
     );
-    _conversationsStream = state.conversationsForChildStream(childId: childId);
+    // Chirp and the conversation list observe one Firestore source.
+    // Pause when neither listens, resume on reattachment. Dispose cancels it.
+    _conversationsStream = state
+        .conversationsForChildStream(childId: childId)
+        .asBroadcastStream(
+          onListen: (subscription) {
+            _conversationSourceSubscription = subscription;
+            if (subscription.isPaused) subscription.resume();
+          },
+          onCancel: (subscription) {
+            subscription.pause();
+          },
+        );
   }
 
   Widget _smallErrorCard(String message) {
@@ -21069,7 +21097,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
                     physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
                     children: [
-                      _ChatsHeaderWithChirp(state: state),
+                      _ChatsHeaderWithChirp(
+                        state: state,
+                        conversationsStream: _conversationsStream,
+                      ),
                       if (!isNewChild)
                         BrandCard(
                           child: Column(
