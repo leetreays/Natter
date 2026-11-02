@@ -41,6 +41,58 @@ void _traceNatterChatOnce(String milestone) {
   }
 }
 
+// This is a temporary, development-only server-access probe, not a data loader.
+// It never displays document contents, IDs, paths, authentication tokens or errors.
+Future<void> _probeChatsServerAccess({
+  required String parentId,
+  required String childId,
+}) async {
+  const options = GetOptions(source: Source.server);
+  const timeout = Duration(seconds: 8);
+  final firestore = FirebaseFirestore.instance;
+  final childRef = firestore
+      .collection('parents')
+      .doc(parentId)
+      .collection('children')
+      .doc(childId);
+  final outgoingQuery = firestore
+      .collection('friend_requests')
+      .where('requesterParentId', isEqualTo: parentId)
+      .where('requesterChildId', isEqualTo: childId);
+  final projectionQuery = childRef.collection('conversation_refs');
+
+  Future<void> inspect(String label, Future<void> Function() read) async {
+    try {
+      await read().timeout(timeout);
+      _traceNatterChatOnce('$label server success');
+    } on TimeoutException {
+      _traceNatterChatOnce('$label server timeout');
+    } on FirebaseException catch (error) {
+      final category = switch (error.code) {
+        'permission-denied' => 'permission denied',
+        'unauthenticated' => 'unauthenticated',
+        'failed-precondition' => 'failed precondition',
+        _ => 'other Firebase error',
+      };
+      _traceNatterChatOnce('$label server $category');
+    } catch (_) {
+      _traceNatterChatOnce('$label server other error');
+    }
+  }
+
+  await Future.wait(<Future<void>>[
+    inspect('Linked child', () async {
+      await childRef.get(options);
+    }),
+    inspect('Outgoing requests', () async {
+      await outgoingQuery.get(options);
+    }),
+    inspect('Conversation references', () async {
+      await projectionQuery.get(options);
+    }),
+  ]);
+}
+
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
   final current = auth.currentUser;
@@ -5036,6 +5088,11 @@ class AppState extends ChangeNotifier {
         .where('recipientChildId', isEqualTo: childId)
         .snapshots()
         .map((snapshot) {
+          _traceNatterChatOnce(
+            snapshot.metadata.isFromCache
+                ? 'Incoming requests result cached'
+                : 'Incoming requests result server',
+          );
           final items = snapshot.docs
               .map((doc) => ChildContactRequest.fromDoc(doc))
               .where((request) => request.status == 'pending')
@@ -19525,6 +19582,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
             subscription.pause();
           },
         );
+
+    // Independent, read-only checks run only on a development web preview.
+    // Nothing waits on them and they never change the live subscriptions.
+    if (kIsWeb && (kDebugMode || kProfileMode)) {
+      unawaited(_probeChatsServerAccess(parentId: parentId, childId: childId));
+    }
   }
 
   Widget _smallErrorCard(String message) {
