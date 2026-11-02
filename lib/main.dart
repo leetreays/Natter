@@ -21044,7 +21044,9 @@ class ChatsScreen extends StatelessWidget {
                           }
 
                           if (outgoingSnapshot.hasData) {
-                            _traceNatterChatOnce('Outgoing stream data received');
+                            _traceNatterChatOnce(
+                              'Outgoing stream data received',
+                            );
                           } else if (outgoingSnapshot.connectionState ==
                               ConnectionState.waiting) {
                             _traceNatterChatOnce('Outgoing stream waiting');
@@ -21057,7 +21059,9 @@ class ChatsScreen extends StatelessWidget {
                               childId: state.activeChildId!,
                             ),
                             builder: (context, incomingSnapshot) {
-                              _traceNatterChatOnce('Incoming stream subscribed');
+                              _traceNatterChatOnce(
+                                'Incoming stream subscribed',
+                              );
                               if (incomingSnapshot.hasError) {
                                 _traceNatterChatOnce('Incoming stream error');
                                 return _smallErrorCard(
@@ -21066,7 +21070,9 @@ class ChatsScreen extends StatelessWidget {
                               }
 
                               if (incomingSnapshot.hasData) {
-                                _traceNatterChatOnce('Incoming stream data received');
+                                _traceNatterChatOnce(
+                                  'Incoming stream data received',
+                                );
                               } else if (incomingSnapshot.connectionState ==
                                   ConnectionState.waiting) {
                                 _traceNatterChatOnce('Incoming stream waiting');
@@ -21080,9 +21086,13 @@ class ChatsScreen extends StatelessWidget {
                                   childId: state.activeChildId!,
                                 ),
                                 builder: (context, conversationSnapshot) {
-                                  _traceNatterChatOnce('Conversation stream subscribed');
+                                  _traceNatterChatOnce(
+                                    'Conversation stream subscribed',
+                                  );
                                   if (conversationSnapshot.hasError) {
-                                    _traceNatterChatOnce('Conversation stream error');
+                                    _traceNatterChatOnce(
+                                      'Conversation stream error',
+                                    );
                                     return _smallErrorCard(
                                       'Could not load conversations: ${conversationSnapshot.error}',
                                     );
@@ -21091,7 +21101,9 @@ class ChatsScreen extends StatelessWidget {
                                   if (conversationSnapshot.connectionState ==
                                           ConnectionState.waiting &&
                                       !conversationSnapshot.hasData) {
-                                    _traceNatterChatOnce('Conversation stream waiting');
+                                    _traceNatterChatOnce(
+                                      'Conversation stream waiting',
+                                    );
                                     return const SizedBox.shrink();
                                   }
 
