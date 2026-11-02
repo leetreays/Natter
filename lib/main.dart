@@ -19446,8 +19446,58 @@ class _ChatsHeaderWithChirpState extends State<_ChatsHeaderWithChirp> {
   }
 }
 
-class ChatsScreen extends StatelessWidget {
+class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
+
+  @override
+  State<ChatsScreen> createState() => _ChatsScreenState();
+}
+
+class _ChatsScreenState extends State<ChatsScreen> {
+  AppState? _streamOwner;
+  String? _streamParentId;
+  String? _streamChildId;
+
+  Stream<List<ChildContactRequest>>? _outgoingRequestsStream;
+  Stream<List<ChildContactRequest>>? _incomingRequestsStream;
+  Stream<List<ConversationRecord>>? _conversationsStream;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppStateScope.of(context);
+    final parentId = state.activeParentId;
+    final childId = state.activeChildId;
+
+    // Flutter's StreamBuilder needs stable stream identities across rebuilds.
+    // Only recreate listeners when the AppState or active child changes.
+    if (identical(state, _streamOwner) &&
+        parentId == _streamParentId &&
+        childId == _streamChildId) {
+      return;
+    }
+
+    _streamOwner = state;
+    _streamParentId = parentId;
+    _streamChildId = childId;
+
+    if (parentId == null || childId == null) {
+      _outgoingRequestsStream = null;
+      _incomingRequestsStream = null;
+      _conversationsStream = null;
+      return;
+    }
+
+    _outgoingRequestsStream = state.outgoingFriendRequestsForChildStream(
+      parentId: parentId,
+      childId: childId,
+    );
+    _incomingRequestsStream = state.incomingFriendRequestsForChildStream(
+      parentId: parentId,
+      childId: childId,
+    );
+    _conversationsStream = state.conversationsForChildStream(childId: childId);
+  }
 
   Widget _smallErrorCard(String message) {
     return Padding(
@@ -21073,10 +21123,7 @@ class ChatsScreen extends StatelessWidget {
                       if (!isNewChild) const SizedBox(height: 12),
 
                       StreamBuilder<List<ChildContactRequest>>(
-                        stream: state.outgoingFriendRequestsForChildStream(
-                          parentId: state.activeParentId!,
-                          childId: state.activeChildId!,
-                        ),
+                        stream: _outgoingRequestsStream,
                         builder: (context, outgoingSnapshot) {
                           _traceNatterChatOnce('Outgoing stream subscribed');
                           if (outgoingSnapshot.hasError) {
@@ -21097,10 +21144,7 @@ class ChatsScreen extends StatelessWidget {
                           final outgoing = outgoingSnapshot.data ?? [];
 
                           return StreamBuilder<List<ChildContactRequest>>(
-                            stream: state.incomingFriendRequestsForChildStream(
-                              parentId: state.activeParentId!,
-                              childId: state.activeChildId!,
-                            ),
+                            stream: _incomingRequestsStream,
                             builder: (context, incomingSnapshot) {
                               _traceNatterChatOnce(
                                 'Incoming stream subscribed',
@@ -21125,9 +21169,7 @@ class ChatsScreen extends StatelessWidget {
                                   outgoing.isNotEmpty || incoming.isNotEmpty;
 
                               return StreamBuilder<List<ConversationRecord>>(
-                                stream: state.conversationsForChildStream(
-                                  childId: state.activeChildId!,
-                                ),
+                                stream: _conversationsStream,
                                 builder: (context, conversationSnapshot) {
                                   _traceNatterChatOnce(
                                     'Conversation stream subscribed',
