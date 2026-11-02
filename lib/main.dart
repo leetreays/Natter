@@ -5131,7 +5131,7 @@ class AppState extends ChangeNotifier {
       _natterConversationProjectionSubscriptions++;
       _traceNatterChatOnce('Conversation projection listener started');
       if (_natterConversationProjectionSubscriptions > 1) {
-        _traceNatterChatOnce('Conversation projection listener restarted');
+        _traceNatterChatOnce('Additional conversation source subscription');
       }
       final projectionByConversationId = <String, Map<String, dynamic>>{};
 
