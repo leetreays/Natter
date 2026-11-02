@@ -5185,75 +5185,88 @@ class AppState extends ChangeNotifier {
         controller.add(items);
       }
 
-      final projectionsSubscription = projectionRef.snapshots().listen((
-        snapshot,
-      ) async {
-        hasProjectionSnapshot = true;
-        _traceNatterChatOnce(
-          snapshot.metadata.isFromCache
-              ? 'Conversation projection snapshot cached'
-              : 'Conversation projection snapshot server',
-        );
-        _traceNatterChatOnce(
-          snapshot.docs.isEmpty
-              ? 'Conversation projection snapshot empty'
-              : 'Conversation projection snapshot nonempty',
-        );
+      final projectionsSubscription = projectionRef.snapshots().listen(
+        (snapshot) async {
+          hasProjectionSnapshot = true;
+          _traceNatterChatOnce(
+            snapshot.metadata.isFromCache
+                ? 'Conversation projection snapshot cached'
+                : 'Conversation projection snapshot server',
+          );
+          _traceNatterChatOnce(
+            snapshot.docs.isEmpty
+                ? 'Conversation projection snapshot empty'
+                : 'Conversation projection snapshot nonempty',
+          );
 
-        final nextProjections = <String, Map<String, dynamic>>{
-          for (final doc in snapshot.docs) doc.id: doc.data(),
-        };
+          final nextProjections = <String, Map<String, dynamic>>{
+            for (final doc in snapshot.docs) doc.id: doc.data(),
+          };
 
-        final nextIds = nextProjections.keys.toSet();
-        final currentIds = conversationSubscriptions.keys.toSet();
+          final nextIds = nextProjections.keys.toSet();
+          final currentIds = conversationSubscriptions.keys.toSet();
 
-        final removedIds = currentIds.difference(nextIds);
+          final removedIds = currentIds.difference(nextIds);
 
-        for (final conversationId in removedIds) {
-          final subscription = conversationSubscriptions.remove(conversationId);
+          for (final conversationId in removedIds) {
+            final subscription = conversationSubscriptions.remove(
+              conversationId,
+            );
 
-          if (subscription != null) {
-            await subscription.cancel();
+            if (subscription != null) {
+              await subscription.cancel();
+            }
+
+            conversationSnapshots.remove(conversationId);
+            loadedConversationIds.remove(conversationId);
           }
 
-          conversationSnapshots.remove(conversationId);
-          loadedConversationIds.remove(conversationId);
-        }
+          projectionByConversationId
+            ..clear()
+            ..addAll(nextProjections);
 
-        projectionByConversationId
-          ..clear()
-          ..addAll(nextProjections);
+          final addedIds = nextIds.difference(currentIds);
 
-        final addedIds = nextIds.difference(currentIds);
+          for (final conversationId in addedIds) {
+            final subscription = conversationsRef()
+                .doc(conversationId)
+                .snapshots()
+                .listen(
+                  (conversationSnapshot) {
+                    if (!projectionByConversationId.containsKey(
+                      conversationId,
+                    )) {
+                      return;
+                    }
 
-        for (final conversationId in addedIds) {
-          final subscription = conversationsRef()
-              .doc(conversationId)
-              .snapshots()
-              .listen((conversationSnapshot) {
-                if (!projectionByConversationId.containsKey(conversationId)) {
-                  return;
-                }
+                    _traceNatterChatOnce(
+                      'Conversation document snapshot received',
+                    );
+                    conversationSnapshots[conversationId] =
+                        conversationSnapshot;
 
-                _traceNatterChatOnce('Conversation document snapshot received');
-                conversationSnapshots[conversationId] = conversationSnapshot;
+                    loadedConversationIds.add(conversationId);
 
-                loadedConversationIds.add(conversationId);
+                    emitCombinedState();
+                  },
+                  onError: (Object error, StackTrace stackTrace) {
+                    _traceNatterChatOnce(
+                      'Conversation document listener error',
+                    );
+                    controller.addError(error, stackTrace);
+                  },
+                );
 
-                emitCombinedState();
-              }, onError: (Object error, StackTrace stackTrace) {
-                _traceNatterChatOnce('Conversation document listener error');
-                controller.addError(error, stackTrace);
-              });
+            conversationSubscriptions[conversationId] = subscription;
+          }
 
-          conversationSubscriptions[conversationId] = subscription;
-        }
-
-        emitCombinedState();
-      }, onError: (Object error, StackTrace stackTrace) {
-        _traceNatterChatOnce('Conversation projection listener error');
-        controller.addError(error, stackTrace);
-      });
+          emitCombinedState();
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          _traceNatterChatOnce('Conversation projection listener error');
+          controller.addError(error, stackTrace);
+        },
+      );
 
       controller.onCancel = () async {
         _traceNatterChatOnce('Conversation projection listener cancelled');
