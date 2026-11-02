@@ -32,6 +32,7 @@ void _traceNatterStartup(String milestone) {
 
 // Stream builders may rebuild frequently. Capture each safe state only once.
 final Set<String> _natterChatMilestonesSeen = <String>{};
+int _natterConversationProjectionSubscriptions = 0;
 
 void _traceNatterChatOnce(String milestone) {
   if ((kDebugMode || kProfileMode) &&
@@ -5127,6 +5128,11 @@ class AppState extends ChangeNotifier {
         .collection('conversation_refs');
 
     return Stream<List<ConversationRecord>>.multi((controller) {
+      _natterConversationProjectionSubscriptions++;
+      _traceNatterChatOnce('Conversation projection listener started');
+      if (_natterConversationProjectionSubscriptions > 1) {
+        _traceNatterChatOnce('Conversation projection listener restarted');
+      }
       final projectionByConversationId = <String, Map<String, dynamic>>{};
 
       final conversationSnapshots =
@@ -5148,6 +5154,7 @@ class AppState extends ChangeNotifier {
         final targetIds = projectionByConversationId.keys.toSet();
 
         if (!loadedConversationIds.containsAll(targetIds)) {
+          _traceNatterChatOnce('Conversation documents still pending');
           return;
         }
 
@@ -5170,6 +5177,11 @@ class AppState extends ChangeNotifier {
           }
         }
 
+        _traceNatterChatOnce(
+          items.isEmpty
+              ? 'Conversation combined state empty'
+              : 'Conversation combined state nonempty',
+        );
         controller.add(items);
       }
 
@@ -5177,6 +5189,16 @@ class AppState extends ChangeNotifier {
         snapshot,
       ) async {
         hasProjectionSnapshot = true;
+        _traceNatterChatOnce(
+          snapshot.metadata.isFromCache
+              ? 'Conversation projection snapshot cached'
+              : 'Conversation projection snapshot server',
+        );
+        _traceNatterChatOnce(
+          snapshot.docs.isEmpty
+              ? 'Conversation projection snapshot empty'
+              : 'Conversation projection snapshot nonempty',
+        );
 
         final nextProjections = <String, Map<String, dynamic>>{
           for (final doc in snapshot.docs) doc.id: doc.data(),
@@ -5213,20 +5235,28 @@ class AppState extends ChangeNotifier {
                   return;
                 }
 
+                _traceNatterChatOnce('Conversation document snapshot received');
                 conversationSnapshots[conversationId] = conversationSnapshot;
 
                 loadedConversationIds.add(conversationId);
 
                 emitCombinedState();
-              }, onError: controller.addError);
+              }, onError: (Object error, StackTrace stackTrace) {
+                _traceNatterChatOnce('Conversation document listener error');
+                controller.addError(error, stackTrace);
+              });
 
           conversationSubscriptions[conversationId] = subscription;
         }
 
         emitCombinedState();
-      }, onError: controller.addError);
+      }, onError: (Object error, StackTrace stackTrace) {
+        _traceNatterChatOnce('Conversation projection listener error');
+        controller.addError(error, stackTrace);
+      });
 
       controller.onCancel = () async {
+        _traceNatterChatOnce('Conversation projection listener cancelled');
         await projectionsSubscription.cancel();
 
         for (final subscription in conversationSubscriptions.values) {
