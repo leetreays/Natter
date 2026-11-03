@@ -23466,9 +23466,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // Debug-only, one-shot across all ChatScreen instances until app restart.
-  // Remove this preview shortcut and flag before PR #11 merges.
-  static bool _debugFriendshipPreviewUsedThisSession = false;
   bool _friendshipStageCelebrationVisible = false;
 
   Widget _buildFriendshipMilestoneCard() {
@@ -23614,25 +23611,6 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
-            // Debug-only one-shot visual preview; remove before merging.
-            actions: kDebugMode && !_debugFriendshipPreviewUsedThisSession
-                ? [
-                    IconButton(
-                      tooltip: 'Preview friendship moment',
-                      icon: Image.asset(
-                        'assets/natter-bubble.webp',
-                        width: 32,
-                        height: 34,
-                        filterQuality: FilterQuality.medium,
-                        semanticLabel: 'Natter friendship moment',
-                      ),
-                      onPressed: () {
-                        _debugFriendshipPreviewUsedThisSession = true;
-                        _showFriendshipStageCelebration('seedling', 'growing');
-                      },
-                    ),
-                  ]
-                : null,
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: state.conversationDocStream(widget.conversationId),
               builder: (context, snapshot) {
