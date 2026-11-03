@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
+import 'friendship_moment_notice.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -4331,6 +4332,7 @@ class ConversationRecord {
   final num friendshipHealth;
   final num repairMomentum;
   final String friendshipStage;
+  final FriendshipMomentNotice? friendshipMoment;
 
   const ConversationRecord({
     required this.id,
@@ -4348,6 +4350,7 @@ class ConversationRecord {
     required this.friendshipHealth,
     required this.repairMomentum,
     required this.friendshipStage,
+    this.friendshipMoment,
   });
 
   factory ConversationRecord.fromDoc(
@@ -4409,6 +4412,7 @@ class ConversationRecord {
       friendshipHealth: (data['friendshipHealth'] ?? 0) as num,
       repairMomentum: (data['repairMomentum'] ?? 0) as num,
       friendshipStage: (data['friendshipStage'] ?? 'seedling') as String,
+      friendshipMoment: FriendshipMomentNotice.fromConversationData(data),
     );
   }
 
@@ -5837,6 +5841,15 @@ class AppState extends ChangeNotifier {
                 : data['friendshipStageChangedAt'],
             'lastFriendshipHealthReason': reason,
             'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+            // Preserve each new growth milestone beyond later message activity.
+            if (isUpwardFriendshipStageChange(previousStage, newStage))
+              'friendshipMoment': {
+                'version': nextFriendshipMomentVersion(data),
+                'previousStage': previousStage,
+                'stage': newStage,
+                'reachedAt': FieldValue.serverTimestamp(),
+                'acknowledgedByChildIds': <String>[],
+              },
             'friendshipMomentDebug': {
               'stageChanged': stageChanged,
               'friendshipId': friendshipId,
@@ -5892,6 +5905,43 @@ class AppState extends ChangeNotifier {
     }
 
     return (result['updated'] as num).toInt();
+  }
+
+  // A child can only acknowledge the exact milestone they opened. A
+  // transaction prevents a late acknowledgement clearing a newer event.
+  Future<void> acknowledgeFriendshipMoment({
+    required String conversationId,
+    required int expectedVersion,
+  }) async {
+    final childId = activeChildId;
+    if (childId == null || childId.isEmpty) {
+      throw StateError('No active child session');
+    }
+
+    final ref = conversationsRef().doc(conversationId);
+    await FirebaseFirestore.instance.runTransaction<void>((transaction) async {
+      final snapshot = await transaction.get(ref);
+      final data = snapshot.data();
+      final notice = FriendshipMomentNotice.fromConversationData(data);
+
+      if (data == null ||
+          notice == null ||
+          notice.version != expectedVersion ||
+          !notice.isPendingFor(childId)) {
+        return;
+      }
+
+      final participantIds =
+          List<String>.from(data['participantChildIds'] ?? const <String>[]);
+      if (!participantIds.contains(childId)) {
+        throw StateError('Child is not a conversation participant');
+      }
+
+      transaction.update(ref, {
+        'friendshipMoment.acknowledgedByChildIds':
+            FieldValue.arrayUnion(<String>[childId]),
+      });
+    });
   }
 
   Future<int> adjustConversationRepairMomentum({
@@ -18658,6 +18708,7 @@ class NatterChildChatTile extends StatefulWidget {
     required this.onTap,
     this.lastMessageTime,
     this.avatar,
+    this.hasFriendshipMoment = false,
   });
 
   final String name;
@@ -18666,6 +18717,7 @@ class NatterChildChatTile extends StatefulWidget {
   final int unreadCount;
   final bool hasUnread;
   final bool isBlocked;
+  final bool hasFriendshipMoment;
   final VoidCallback onTap;
   final DateTime? lastMessageTime;
 
@@ -18714,7 +18766,9 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
         button: true,
         label: widget.isBlocked
             ? '${widget.name}, blocked friendship'
-            : '${widget.name}, ${widget.preview}',
+            : widget.hasFriendshipMoment
+                ? '${widget.name}, friendship moment ready, ${widget.preview}'
+                : '${widget.name}, ${widget.preview}',
         child: AnimatedScale(
           scale: _pressed ? 0.972 : 1.0,
           duration: const Duration(milliseconds: 90),
@@ -18926,6 +18980,14 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    if (widget.hasFriendshipMoment) ...[
+                                      Image.asset(
+                                        'assets/natter-bubble.webp',
+                                        width: 23,
+                                        height: 25,
+                                      ),
+                                      const SizedBox(width: 5),
+                                    ],
                                     if (widget.hasUnread) ...[
                                       Container(
                                         width: 25,
@@ -21199,6 +21261,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                             );
 
                                         return NatterChildChatTile(
+                                          hasFriendshipMoment: conversation
+                                                  .friendshipMoment
+                                                  ?.isPendingFor(state.activeChildId) ??
+                                              false,
                                           name: otherChildName,
                                           preview: previewText,
                                           stageEmoji: friendshipEmoji(
@@ -21880,6 +21946,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _friendshipStageCelebration;
   Timer? _friendshipStageCelebrationTimer;
   String? _lastCelebratedStage;
+  bool _openingFriendshipMoment = false;
   bool _burstCoachVisible = false;
   DateTime? _lastBurstCoachShownAt;
   Timer? _burstCoachHideTimer;
@@ -23258,6 +23325,31 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future<void> _openFriendshipMoment(
+    AppState state,
+    FriendshipMomentNotice notice,
+  ) async {
+    if (_openingFriendshipMoment) return;
+    _openingFriendshipMoment = true;
+    _showFriendshipStageCelebration(notice.previousStage, notice.stage);
+    try {
+      await state.acknowledgeFriendshipMoment(
+        conversationId: widget.conversationId,
+        expectedVersion: notice.version,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save this moment. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      _openingFriendshipMoment = false;
+    }
+  }
+
   void _showFriendshipStageCelebration(
     String previousStage,
     String currentStage,
@@ -23434,6 +23526,34 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: state.conversationDocStream(widget.conversationId),
+                builder: (context, snapshot) {
+                  final notice = FriendshipMomentNotice.fromConversationData(
+                    snapshot.data?.data(),
+                  );
+                  if (notice == null ||
+                      !notice.isPendingFor(state.activeChildId)) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return IconButton(
+                    key: const ValueKey('friendship-moment-invitation'),
+                    tooltip: 'Open friendship moment',
+                    icon: Image.asset(
+                      'assets/natter-bubble.webp',
+                      width: 32,
+                      height: 34,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                    onPressed: () async {
+                      await _openFriendshipMoment(state, notice);
+                    },
+                  );
+                },
+              ),
+            ],
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: state.conversationDocStream(widget.conversationId),
               builder: (context, snapshot) {
@@ -24265,39 +24385,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
-
-                        final friendshipStage =
-                            (conversationData['friendshipStage'] ?? 'seedling')
-                                .toString();
-
-                        final previousFriendshipStage =
-                            (conversationData['lastFriendshipStage'] ??
-                                    'seedling')
-                                .toString();
-
-                        final friendshipStageChanged =
-                            conversationData['friendshipStageChanged'] == true;
-
-                        if (friendshipStageChanged &&
-                            _lastCelebratedStage != friendshipStage) {
-                          WidgetsBinding.instance.addPostFrameCallback((
-                            _,
-                          ) async {
-                            if (!mounted) return;
-
-                            _showFriendshipStageCelebration(
-                              previousFriendshipStage,
-                              friendshipStage,
-                            );
-
-                            await AppStateScope.of(
-                              context,
-                            ).conversationsRef().doc(widget.conversationId).set(
-                              {'friendshipStageChanged': false},
-                              SetOptions(merge: true),
-                            );
-                          });
-                        }
 
                         final blockedByChildIds = List<String>.from(
                           conversationData['blockedByChildIds'] ?? const [],
