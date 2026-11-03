@@ -14,84 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
-import 'utils/startup_probe_stub.dart'
-    if (dart.library.js_interop) 'utils/startup_probe_web.dart'
-    as startup_probe;
-
-// Development diagnostics only: relative milestones, never user IDs or tokens.
-final Stopwatch _natterStartupClock = Stopwatch()..start();
-
-void _traceNatterStartup(String milestone) {
-  // Temporary diagnostics for debug and profile builds only, never release.
-  if (kDebugMode || kProfileMode) {
-    final entry = '${_natterStartupClock.elapsedMilliseconds}ms: $milestone';
-    debugPrint('[Natter startup] $entry');
-    startup_probe.reportStartupMilestone(entry);
-  }
-}
-
-// Stream builders may rebuild frequently. Capture each safe state only once.
-final Set<String> _natterChatMilestonesSeen = <String>{};
-int _natterConversationProjectionSubscriptions = 0;
-
-void _traceNatterChatOnce(String milestone) {
-  if ((kDebugMode || kProfileMode) &&
-      _natterChatMilestonesSeen.add(milestone)) {
-    _traceNatterStartup(milestone);
-  }
-}
-
-// This is a temporary, development-only server-access probe, not a data loader.
-// It never displays document contents, IDs, paths, authentication tokens or errors.
-Future<void> _probeChatsServerAccess({
-  required String parentId,
-  required String childId,
-}) async {
-  const options = GetOptions(source: Source.server);
-  const timeout = Duration(seconds: 8);
-  final firestore = FirebaseFirestore.instance;
-  final childRef = firestore
-      .collection('parents')
-      .doc(parentId)
-      .collection('children')
-      .doc(childId);
-  final outgoingQuery = firestore
-      .collection('friend_requests')
-      .where('requesterParentId', isEqualTo: parentId)
-      .where('requesterChildId', isEqualTo: childId);
-  final projectionQuery = childRef.collection('conversation_refs');
-
-  Future<void> inspect(String label, Future<void> Function() read) async {
-    try {
-      await read().timeout(timeout);
-      _traceNatterChatOnce('$label server success');
-    } on TimeoutException {
-      _traceNatterChatOnce('$label server timeout');
-    } on FirebaseException catch (error) {
-      final category = switch (error.code) {
-        'permission-denied' => 'permission denied',
-        'unauthenticated' => 'unauthenticated',
-        'failed-precondition' => 'failed precondition',
-        _ => 'other Firebase error',
-      };
-      _traceNatterChatOnce('$label server $category');
-    } catch (_) {
-      _traceNatterChatOnce('$label server other error');
-    }
-  }
-
-  await Future.wait(<Future<void>>[
-    inspect('Linked child', () async {
-      await childRef.get(options);
-    }),
-    inspect('Outgoing requests', () async {
-      await outgoingQuery.get(options);
-    }),
-    inspect('Conversation references', () async {
-      await projectionQuery.get(options);
-    }),
-  ]);
-}
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -103,12 +25,9 @@ Future<User> ensureSignedIn() async {
 }
 
 Future<void> main() async {
-  _traceNatterStartup('Dart main started');
   WidgetsFlutterBinding.ensureInitialized();
-  _traceNatterStartup('Flutter binding ready');
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  _traceNatterStartup('Firebase Core initialised');
 
   if (kIsWeb) {
     await FirebaseAppCheck.instance.activate(
@@ -124,12 +43,9 @@ Future<void> main() async {
     );
   }
 
-  _traceNatterStartup('App Check activated');
   await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-  _traceNatterStartup('App Check token refresh configured');
 
   runApp(const NatterApp());
-  _traceNatterStartup('runApp invoked');
 }
 
 Route<T> calmRoute<T>(Widget page) {
@@ -5088,11 +5004,6 @@ class AppState extends ChangeNotifier {
         .where('recipientChildId', isEqualTo: childId)
         .snapshots()
         .map((snapshot) {
-          _traceNatterChatOnce(
-            snapshot.metadata.isFromCache
-                ? 'Incoming requests result cached'
-                : 'Incoming requests result server',
-          );
           final items = snapshot.docs
               .map((doc) => ChildContactRequest.fromDoc(doc))
               .where((request) => request.status == 'pending')
@@ -5185,11 +5096,6 @@ class AppState extends ChangeNotifier {
         .collection('conversation_refs');
 
     return Stream<List<ConversationRecord>>.multi((controller) {
-      _natterConversationProjectionSubscriptions++;
-      _traceNatterChatOnce('Conversation projection listener started');
-      if (_natterConversationProjectionSubscriptions > 1) {
-        _traceNatterChatOnce('Additional conversation source subscription');
-      }
       final projectionByConversationId = <String, Map<String, dynamic>>{};
 
       final conversationSnapshots =
@@ -5211,7 +5117,6 @@ class AppState extends ChangeNotifier {
         final targetIds = projectionByConversationId.keys.toSet();
 
         if (!loadedConversationIds.containsAll(targetIds)) {
-          _traceNatterChatOnce('Conversation documents still pending');
           return;
         }
 
@@ -5234,27 +5139,12 @@ class AppState extends ChangeNotifier {
           }
         }
 
-        _traceNatterChatOnce(
-          items.isEmpty
-              ? 'Conversation combined state empty'
-              : 'Conversation combined state nonempty',
-        );
         controller.add(items);
       }
 
       final projectionsSubscription = projectionRef.snapshots().listen(
         (snapshot) async {
           hasProjectionSnapshot = true;
-          _traceNatterChatOnce(
-            snapshot.metadata.isFromCache
-                ? 'Conversation projection snapshot cached'
-                : 'Conversation projection snapshot server',
-          );
-          _traceNatterChatOnce(
-            snapshot.docs.isEmpty
-                ? 'Conversation projection snapshot empty'
-                : 'Conversation projection snapshot nonempty',
-          );
 
           final nextProjections = <String, Map<String, dynamic>>{
             for (final doc in snapshot.docs) doc.id: doc.data(),
@@ -5296,9 +5186,6 @@ class AppState extends ChangeNotifier {
                       return;
                     }
 
-                    _traceNatterChatOnce(
-                      'Conversation document snapshot received',
-                    );
                     conversationSnapshots[conversationId] =
                         conversationSnapshot;
 
@@ -5307,9 +5194,6 @@ class AppState extends ChangeNotifier {
                     emitCombinedState();
                   },
                   onError: (Object error, StackTrace stackTrace) {
-                    _traceNatterChatOnce(
-                      'Conversation document listener error',
-                    );
                     controller.addError(error, stackTrace);
                   },
                 );
@@ -5320,13 +5204,11 @@ class AppState extends ChangeNotifier {
           emitCombinedState();
         },
         onError: (Object error, StackTrace stackTrace) {
-          _traceNatterChatOnce('Conversation projection listener error');
           controller.addError(error, stackTrace);
         },
       );
 
       controller.onCancel = () async {
-        _traceNatterChatOnce('Conversation projection listener cancelled');
         await projectionsSubscription.cancel();
 
         for (final subscription in conversationSubscriptions.values) {
@@ -9968,7 +9850,6 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _traceNatterStartup('Flutter first router frame displayed');
       _start();
     });
   }
@@ -9979,37 +9860,29 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   Future<void> _route() async {
     final state = AppStateScope.of(context);
-    _traceNatterStartup('Looking up saved device mode');
     final mode = await state.getDeviceMode();
-    _traceNatterStartup('Device mode lookup complete');
 
     if (!mounted) return;
 
     if (mode == 'parent') {
-      _traceNatterStartup('Navigating to parent home');
       Navigator.pushReplacement(context, calmRoute(const ParentHomeScreen()));
       return;
     }
 
     if (mode == 'child') {
-      _traceNatterStartup('Hydrating remembered child session');
       await state.hydrateRememberedChildSession();
-      _traceNatterStartup('Remembered child session hydration complete');
 
       if (!mounted) return;
 
       if (!state.hasActiveChildSession) {
-        _traceNatterStartup('Navigating to child gateway');
         Navigator.pushReplacement(context, calmRoute(const GatewayScreen()));
         return;
       }
 
-      _traceNatterStartup('Navigating to child chats');
       Navigator.pushReplacement(context, calmRoute(const ChatsScreen()));
       return;
     }
 
-    _traceNatterStartup('Navigating to family welcome');
     Navigator.pushReplacement(
       context,
       calmRoute(const FamilyJourneyWelcomeScreen()),
@@ -19583,11 +19456,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
           },
         );
 
-    // Independent, read-only checks run only on a development web preview.
-    // Nothing waits on them and they never change the live subscriptions.
-    if (kIsWeb && (kDebugMode || kProfileMode)) {
-      unawaited(_probeChatsServerAccess(parentId: parentId, childId: childId));
-    }
   }
 
   Widget _smallErrorCard(String message) {
@@ -21101,12 +20969,6 @@ class _ChatsScreenState extends State<ChatsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
-    _traceNatterChatOnce('Chats screen built');
-    _traceNatterChatOnce(
-      FirebaseAuth.instance.currentUser == null
-          ? 'Chats auth not present'
-          : 'Chats auth present',
-    );
     final schoolFriends = state.sameSchoolFriends;
     final yearFriends = state.sameYearFriends;
     final realApprovedContacts = state.approvedContacts.where((f) {
@@ -21219,45 +21081,23 @@ class _ChatsScreenState extends State<ChatsScreen> {
                       StreamBuilder<List<ChildContactRequest>>(
                         stream: _outgoingRequestsStream,
                         builder: (context, outgoingSnapshot) {
-                          _traceNatterChatOnce('Outgoing stream subscribed');
                           if (outgoingSnapshot.hasError) {
-                            _traceNatterChatOnce('Outgoing stream error');
                             return _smallErrorCard(
                               'Could not load outgoing requests: ${outgoingSnapshot.error}',
                             );
                           }
 
-                          if (outgoingSnapshot.hasData) {
-                            _traceNatterChatOnce(
-                              'Outgoing stream data received',
-                            );
-                          } else if (outgoingSnapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            _traceNatterChatOnce('Outgoing stream waiting');
-                          }
                           final outgoing = outgoingSnapshot.data ?? [];
 
                           return StreamBuilder<List<ChildContactRequest>>(
                             stream: _incomingRequestsStream,
                             builder: (context, incomingSnapshot) {
-                              _traceNatterChatOnce(
-                                'Incoming stream subscribed',
-                              );
                               if (incomingSnapshot.hasError) {
-                                _traceNatterChatOnce('Incoming stream error');
                                 return _smallErrorCard(
                                   'Could not load incoming requests: ${incomingSnapshot.error}',
                                 );
                               }
 
-                              if (incomingSnapshot.hasData) {
-                                _traceNatterChatOnce(
-                                  'Incoming stream data received',
-                                );
-                              } else if (incomingSnapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                _traceNatterChatOnce('Incoming stream waiting');
-                              }
                               final incoming = incomingSnapshot.data ?? [];
                               final hasPending =
                                   outgoing.isNotEmpty || incoming.isNotEmpty;
@@ -21265,13 +21105,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                               return StreamBuilder<List<ConversationRecord>>(
                                 stream: _conversationsStream,
                                 builder: (context, conversationSnapshot) {
-                                  _traceNatterChatOnce(
-                                    'Conversation stream subscribed',
-                                  );
                                   if (conversationSnapshot.hasError) {
-                                    _traceNatterChatOnce(
-                                      'Conversation stream error',
-                                    );
                                     return _smallErrorCard(
                                       'Could not load conversations: ${conversationSnapshot.error}',
                                     );
@@ -21280,22 +21114,11 @@ class _ChatsScreenState extends State<ChatsScreen> {
                                   if (conversationSnapshot.connectionState ==
                                           ConnectionState.waiting &&
                                       !conversationSnapshot.hasData) {
-                                    _traceNatterChatOnce(
-                                      'Conversation stream waiting',
-                                    );
                                     return const SizedBox.shrink();
                                   }
 
                                   final conversations =
                                       conversationSnapshot.data ?? [];
-                                  if (conversationSnapshot.hasData) {
-                                    _traceNatterChatOnce(
-                                      conversations.isEmpty
-                                          ? 'Conversation stream data empty'
-                                          : 'Conversation stream data nonempty',
-                                    );
-                                  }
-
                                   final sortedConversations =
                                       List<ConversationRecord>.from(
                                         conversations,
