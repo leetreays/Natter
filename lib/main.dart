@@ -22407,24 +22407,56 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!_canSend) return;
 
-    await state.clearTyping(conversationId: widget.conversationId);
+    // A stale typing indicator should never prevent an actual message.
+    try {
+      await state.clearTyping(conversationId: widget.conversationId);
+    } catch (error) {
+      debugPrint('Natter: could not clear typing before send: $error');
+    }
 
-    controller.clear();
-
-    final delivered = await state.sendMessageToConversation(
-      conversationId: widget.conversationId,
-      text: text,
-      isFlagged: flagged,
-      journeySendRoute: journeySendRoute,
-    );
+    // Keep the draft until the send routine confirms delivery.
+    // Profile builds expose only the Firebase error code for testing.
+    bool delivered;
+    try {
+      delivered = await state.sendMessageToConversation(
+        conversationId: widget.conversationId,
+        text: text,
+        isFlagged: flagged,
+        journeySendRoute: journeySendRoute,
+      );
+    } on FirebaseException catch (error, stackTrace) {
+      debugPrint('Natter message send failed: ${error.plugin}/${error.code}');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        feedback = kProfileMode
+            ? 'Message not sent (${error.code}). Please try again.'
+            : 'Message not sent. Please try again.';
+      });
+      return;
+    } catch (error, stackTrace) {
+      debugPrint('Natter message send failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        feedback = 'Message not sent. Please try again.';
+      });
+      return;
+    }
 
     if (!delivered) {
       if (!mounted) return;
-
       setState(() {
-        feedback = 'Message not delivered.';
+        feedback = 'Message not delivered. Please try again.';
       });
       return;
+    }
+
+    if (!mounted) return;
+
+    // Do not erase newer text entered while the network request was pending.
+    if (controller.text.trim() == text.trim()) {
+      controller.clear();
     }
 
     _journeyGuidanceSession.completeAttempt(delivered: true);
