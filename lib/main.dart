@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
+import 'friendship_moment_notice.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -4331,6 +4332,7 @@ class ConversationRecord {
   final num friendshipHealth;
   final num repairMomentum;
   final String friendshipStage;
+  final FriendshipMomentNotice? friendshipMoment;
 
   const ConversationRecord({
     required this.id,
@@ -4348,6 +4350,7 @@ class ConversationRecord {
     required this.friendshipHealth,
     required this.repairMomentum,
     required this.friendshipStage,
+    this.friendshipMoment,
   });
 
   factory ConversationRecord.fromDoc(
@@ -4409,6 +4412,7 @@ class ConversationRecord {
       friendshipHealth: (data['friendshipHealth'] ?? 0) as num,
       repairMomentum: (data['repairMomentum'] ?? 0) as num,
       friendshipStage: (data['friendshipStage'] ?? 'seedling') as String,
+      friendshipMoment: FriendshipMomentNotice.fromConversationData(data),
     );
   }
 
@@ -4522,6 +4526,18 @@ const meaningfulMomentRegistry = {
     icon: 'sprout',
     colour: 'green',
     journeyStage: 0,
+    showToParent: true,
+  ),
+
+  'friendship_growing': MeaningfulMomentDefinition(
+    title: 'Growing friendship',
+    description: 'Kind moments are helping this friendship take root.',
+    importance: 20,
+    category: 'friendship',
+    celebrate: true,
+    icon: 'sprout',
+    colour: 'green',
+    journeyStage: 1,
     showToParent: true,
   ),
 
@@ -5142,58 +5158,71 @@ class AppState extends ChangeNotifier {
         controller.add(items);
       }
 
-      final projectionsSubscription = projectionRef.snapshots().listen((
-        snapshot,
-      ) async {
-        hasProjectionSnapshot = true;
+      final projectionsSubscription = projectionRef.snapshots().listen(
+        (snapshot) async {
+          hasProjectionSnapshot = true;
 
-        final nextProjections = <String, Map<String, dynamic>>{
-          for (final doc in snapshot.docs) doc.id: doc.data(),
-        };
+          final nextProjections = <String, Map<String, dynamic>>{
+            for (final doc in snapshot.docs) doc.id: doc.data(),
+          };
 
-        final nextIds = nextProjections.keys.toSet();
-        final currentIds = conversationSubscriptions.keys.toSet();
+          final nextIds = nextProjections.keys.toSet();
+          final currentIds = conversationSubscriptions.keys.toSet();
 
-        final removedIds = currentIds.difference(nextIds);
+          final removedIds = currentIds.difference(nextIds);
 
-        for (final conversationId in removedIds) {
-          final subscription = conversationSubscriptions.remove(conversationId);
+          for (final conversationId in removedIds) {
+            final subscription = conversationSubscriptions.remove(
+              conversationId,
+            );
 
-          if (subscription != null) {
-            await subscription.cancel();
+            if (subscription != null) {
+              await subscription.cancel();
+            }
+
+            conversationSnapshots.remove(conversationId);
+            loadedConversationIds.remove(conversationId);
           }
 
-          conversationSnapshots.remove(conversationId);
-          loadedConversationIds.remove(conversationId);
-        }
+          projectionByConversationId
+            ..clear()
+            ..addAll(nextProjections);
 
-        projectionByConversationId
-          ..clear()
-          ..addAll(nextProjections);
+          final addedIds = nextIds.difference(currentIds);
 
-        final addedIds = nextIds.difference(currentIds);
+          for (final conversationId in addedIds) {
+            final subscription = conversationsRef()
+                .doc(conversationId)
+                .snapshots()
+                .listen(
+                  (conversationSnapshot) {
+                    if (!projectionByConversationId.containsKey(
+                      conversationId,
+                    )) {
+                      return;
+                    }
 
-        for (final conversationId in addedIds) {
-          final subscription = conversationsRef()
-              .doc(conversationId)
-              .snapshots()
-              .listen((conversationSnapshot) {
-                if (!projectionByConversationId.containsKey(conversationId)) {
-                  return;
-                }
+                    conversationSnapshots[conversationId] =
+                        conversationSnapshot;
 
-                conversationSnapshots[conversationId] = conversationSnapshot;
+                    loadedConversationIds.add(conversationId);
 
-                loadedConversationIds.add(conversationId);
+                    emitCombinedState();
+                  },
+                  onError: (Object error, StackTrace stackTrace) {
+                    controller.addError(error, stackTrace);
+                  },
+                );
 
-                emitCombinedState();
-              }, onError: controller.addError);
+            conversationSubscriptions[conversationId] = subscription;
+          }
 
-          conversationSubscriptions[conversationId] = subscription;
-        }
-
-        emitCombinedState();
-      }, onError: controller.addError);
+          emitCombinedState();
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          controller.addError(error, stackTrace);
+        },
+      );
 
       controller.onCancel = () async {
         await projectionsSubscription.cancel();
@@ -5770,22 +5799,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  String? meaningfulMomentTypeForFriendshipStage(String stage) {
-    switch (stage) {
-      case 'strong':
-        return 'growing_trust';
-
-      case 'trusted':
-        return 'trusted_friendship';
-
-      case 'flourishing':
-        return 'friendship_flourishing';
-
-      default:
-        return null;
-    }
-  }
-
   Future<int> adjustConversationFriendshipHealth({
     required String conversationId,
     required int amount,
@@ -5814,6 +5827,90 @@ class AppState extends ChangeNotifier {
           final stageChanged = previousStage != newStage;
           final friendshipId = (data['friendshipId'] ?? '').toString();
 
+          final stageAdvanced = isUpwardFriendshipStageChange(
+            previousStage,
+            newStage,
+          );
+          final newNoticeVersion = stageAdvanced
+              ? nextFriendshipMomentVersion(data)
+              : null;
+          final priorNotice = FriendshipMomentNotice.fromConversationData(data);
+          final repairPreviousMoment = !stageAdvanced &&
+              needsFriendshipMomentHistory(
+                priorNotice,
+                data['friendshipMomentHistoryRecordedVersion'],
+              );
+          final eventVersion = stageAdvanced
+              ? newNoticeVersion
+              : (repairPreviousMoment ? priorNotice?.version : null);
+          final eventFromStage = stageAdvanced
+              ? previousStage
+              : (repairPreviousMoment ? priorNotice?.previousStage : null);
+          final eventStage = stageAdvanced
+              ? newStage
+              : (repairPreviousMoment ? priorNotice?.stage : null);
+          final momentType = eventStage == null
+              ? null
+              : meaningfulMomentTypeForFriendshipStage(eventStage);
+          final momentDefinition = meaningfulMomentRegistry[momentType];
+
+          DocumentReference<Map<String, dynamic>>? conversationMomentRef;
+          DocumentReference<Map<String, dynamic>>? friendshipMomentRef;
+          DocumentSnapshot<Map<String, dynamic>>? existingConversationMoment;
+          DocumentSnapshot<Map<String, dynamic>>? existingFriendshipMoment;
+          Map<String, dynamic>? momentData;
+
+          if (momentType != null &&
+              momentDefinition != null &&
+              eventVersion != null) {
+            // Read before writing: this is an atomic, idempotent milestone.
+            conversationMomentRef = ref
+                .collection('meaningful_moments')
+                .doc(momentType);
+            existingConversationMoment =
+                await transaction.get(conversationMomentRef);
+
+            if (friendshipId.isNotEmpty) {
+              friendshipMomentRef = FirebaseFirestore.instance
+                  .collection('friendships')
+                  .doc(friendshipId)
+                  .collection('friendship_moments')
+                  .doc(momentType);
+              existingFriendshipMoment =
+                  await transaction.get(friendshipMomentRef);
+            }
+
+            final priorMomentData = data['friendshipMoment'];
+            final reachedAt = priorMomentData is Map
+                ? priorMomentData['reachedAt']
+                : null;
+            momentData = <String, dynamic>{
+              'type': momentType,
+              'title': momentDefinition.title,
+              'description': momentDefinition.description,
+              'importance': momentDefinition.importance,
+              'category': momentDefinition.category,
+              'journeyStage': momentDefinition.journeyStage,
+              'celebrate': momentDefinition.celebrate,
+              'showToParent': momentDefinition.showToParent,
+              'icon': momentDefinition.icon,
+              'colour': momentDefinition.colour,
+              'conversationId': conversationId,
+              'friendshipId': friendshipId,
+              'participantChildIds':
+                  List<String>.from(data['participantChildIds'] ?? const []),
+              'participantNames':
+                  List<String>.from(data['participantNames'] ?? const []),
+              'fromStage': eventFromStage,
+              'toStage': eventStage,
+              // Keep the original milestone time when repairing old history.
+              'createdAt': stageAdvanced || reachedAt is! Timestamp
+                  ? FieldValue.serverTimestamp()
+                  : reachedAt,
+            };
+          }
+
+          // Stage, invitation and history commit together.
           transaction.set(ref, {
             'friendshipHealth': updated,
             'friendshipStage': newStage,
@@ -5824,6 +5921,16 @@ class AppState extends ChangeNotifier {
                 : data['friendshipStageChangedAt'],
             'lastFriendshipHealthReason': reason,
             'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
+            if (stageAdvanced)
+              'friendshipMoment': {
+                'version': newNoticeVersion,
+                'previousStage': previousStage,
+                'stage': newStage,
+                'reachedAt': FieldValue.serverTimestamp(),
+                'acknowledgedByChildIds': <String>[],
+              },
+            if (momentData != null)
+              'friendshipMomentHistoryRecordedVersion': eventVersion,
             'friendshipMomentDebug': {
               'stageChanged': stageChanged,
               'friendshipId': friendshipId,
@@ -5832,6 +5939,16 @@ class AppState extends ChangeNotifier {
               'reason': reason,
             },
           }, SetOptions(merge: true));
+
+          if (momentData != null) {
+            if (existingConversationMoment?.exists != true) {
+              transaction.set(conversationMomentRef!, momentData);
+            }
+            if (friendshipMomentRef != null &&
+                existingFriendshipMoment?.exists != true) {
+              transaction.set(friendshipMomentRef, momentData);
+            }
+          }
 
           return {
             'friendshipId': friendshipId,
@@ -5862,23 +5979,49 @@ class AppState extends ChangeNotifier {
           'lastStageChangedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      if (result['stageChanged'] == true) {
-        final newStage = result['newStage'].toString();
-
-        final momentType = meaningfulMomentTypeForFriendshipStage(newStage);
-
-        if (momentType != null) {
-          await recordMeaningfulMoment(
-            conversationId: conversationId,
-            type: momentType,
-          );
-        }
-      }
+      // Stage milestones are already recorded in the transaction above.
     } catch (e) {
       debugPrint('Friendship mirror write failed: $e');
     }
 
     return (result['updated'] as num).toInt();
+  }
+
+  // A child can only acknowledge the exact milestone they opened. A
+  // transaction prevents a late acknowledgement clearing a newer event.
+  Future<void> acknowledgeFriendshipMoment({
+    required String conversationId,
+    required int expectedVersion,
+  }) async {
+    final childId = activeChildId;
+    if (childId == null || childId.isEmpty) {
+      throw StateError('No active child session');
+    }
+
+    final ref = conversationsRef().doc(conversationId);
+    await FirebaseFirestore.instance.runTransaction<void>((transaction) async {
+      final snapshot = await transaction.get(ref);
+      final data = snapshot.data();
+      final notice = FriendshipMomentNotice.fromConversationData(data);
+
+      if (data == null ||
+          notice == null ||
+          notice.version != expectedVersion ||
+          !notice.isPendingFor(childId)) {
+        return;
+      }
+
+      final participantIds =
+          List<String>.from(data['participantChildIds'] ?? const <String>[]);
+      if (!participantIds.contains(childId)) {
+        throw StateError('Child is not a conversation participant');
+      }
+
+      transaction.update(ref, {
+        'friendshipMoment.acknowledgedByChildIds':
+            FieldValue.arrayUnion(<String>[childId]),
+      });
+    });
   }
 
   Future<int> adjustConversationRepairMomentum({
@@ -9661,6 +9804,170 @@ class FamilyJourneyReadyScreen extends StatelessWidget {
   }
 }
 
+/// The holding-page atmosphere, kept in Flutter for the session-routing frame.
+/// The pre-Flutter web boot screen uses the website's original CSS night sky.
+class _NatterHoldingNightBackground extends StatelessWidget {
+  const _NatterHoldingNightBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return const RepaintBoundary(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 0.30, 0.63, 1],
+                colors: [
+                  Color(0xFF01030A),
+                  Color(0xFF020717),
+                  Color(0xFF050D25),
+                  Color(0xFF081634),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-1.05, -0.84),
+                radius: 0.86,
+                stops: [0, 0.28, 1],
+                colors: [
+                  Color(0x52FFFAEB),
+                  Color(0x26FFFAEB),
+                  Color(0x00FFFAEB),
+                ],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.48, -0.64),
+                radius: 1.05,
+                colors: [Color(0x387C4EBC), Color(0x007C4EBC)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0.64, -0.12),
+                radius: 1.00,
+                colors: [Color(0x21FF5DA2), Color(0x00FF5DA2)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(-0.52, 0.16),
+                radius: 1.00,
+                colors: [Color(0x243DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, 1.30),
+                radius: 0.95,
+                colors: [Color(0x2E3DA6F3), Color(0x003DA6F3)],
+              ),
+            ),
+          ),
+          CustomPaint(painter: _NatterHoldingStarsPainter()),
+        ],
+      ),
+    );
+  }
+}
+
+/// Fixed, non-interactive stars: no shimmer or visual noise while signing in.
+class _NatterHoldingStarsPainter extends CustomPainter {
+  const _NatterHoldingStarsPainter();
+
+  static const List<Offset> _bright = [
+    Offset(.07, .16),
+    Offset(.18, .28),
+    Offset(.31, .09),
+    Offset(.47, .22),
+    Offset(.63, .11),
+    Offset(.72, .34),
+    Offset(.88, .13),
+    Offset(.94, .41),
+    Offset(.14, .72),
+    Offset(.39, .81),
+    Offset(.69, .75),
+    Offset(.91, .83),
+  ];
+
+  static const List<Offset> _distant = [
+    Offset(.04, .31),
+    Offset(.08, .52),
+    Offset(.11, .38),
+    Offset(.13, .61),
+    Offset(.16, .47),
+    Offset(.19, .21),
+    Offset(.22, .17),
+    Offset(.24, .42),
+    Offset(.27, .63),
+    Offset(.30, .73),
+    Offset(.35, .31),
+    Offset(.38, .17),
+    Offset(.41, .57),
+    Offset(.43, .12),
+    Offset(.46, .69),
+    Offset(.49, .35),
+    Offset(.52, .41),
+    Offset(.54, .26),
+    Offset(.57, .17),
+    Offset(.59, .76),
+    Offset(.61, .59),
+    Offset(.65, .43),
+    Offset(.68, .25),
+    Offset(.71, .64),
+    Offset(.76, .09),
+    Offset(.78, .47),
+    Offset(.79, .61),
+    Offset(.82, .19),
+    Offset(.84, .29),
+    Offset(.86, .53),
+    Offset(.87, .69),
+    Offset(.90, .36),
+    Offset(.93, .57),
+    Offset(.95, .24),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final brightPaint = Paint()..color = const Color(0x80FFFFFF);
+    final distantPaint = Paint()..color = const Color(0x30FFFFFF);
+
+    for (final star in _bright) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.9,
+        brightPaint,
+      );
+    }
+    for (final star in _distant) {
+      canvas.drawCircle(
+        Offset(star.dx * size.width, star.dy * size.height),
+        0.55,
+        distantPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class StartupRouterScreen extends StatefulWidget {
   const StartupRouterScreen({super.key});
 
@@ -9669,19 +9976,9 @@ class StartupRouterScreen extends StatefulWidget {
 }
 
 class _StartupRouterScreenState extends State<StartupRouterScreen> {
-  double _opacity = 0;
-
   @override
   void initState() {
     super.initState();
-
-    Future.microtask(() {
-      if (!mounted) return;
-      setState(() {
-        _opacity = 1;
-      });
-    });
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _start();
     });
@@ -9724,13 +10021,118 @@ class _StartupRouterScreenState extends State<StartupRouterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: const Duration(milliseconds: 700),
-      curve: Curves.easeOut,
-      child: const Scaffold(
-        backgroundColor: Color(0xFF06112E),
-        body: SizedBox.expand(),
+    return Scaffold(
+      backgroundColor: NatterBrand.navy,
+      body: Stack(
+        children: [
+          const Positioned.fill(child: _NatterHoldingNightBackground()),
+          SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      NatterBrand.logoPath,
+                      height: 76,
+                      width: 76,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        color: NatterBrand.blue,
+                        size: 60,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    ShaderMask(
+                      blendMode: BlendMode.srcIn,
+                      shaderCallback: (bounds) => const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        stops: [0, 0.40, 0.73, 1],
+                        colors: [
+                          Color(0x423DA6F3),
+                          Color(0x2B9C6BFF),
+                          Color(0x38FF5DA2),
+                          Color(0x2B3DA6F3),
+                        ],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'Natter',
+                        style: TextStyle(
+                          fontFamily: 'NatterNunito',
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.45,
+                          height: 1.2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Connect',
+                            style: TextStyle(color: NatterBrand.blue),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Protect',
+                            style: TextStyle(color: NatterBrand.pink),
+                          ),
+                          TextSpan(
+                            text: ' · ',
+                            style: TextStyle(color: Color(0x66F0F6FF)),
+                          ),
+                          TextSpan(
+                            text: 'Grow',
+                            style: TextStyle(color: NatterBrand.green),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, letterSpacing: 0.4),
+                    ),
+                    const SizedBox(height: 34),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final colour in const [
+                          NatterBrand.blue,
+                          NatterBrand.pink,
+                          NatterBrand.green,
+                        ])
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              color: colour,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        const SizedBox(width: 9),
+                        const Text(
+                          'Opening your space…',
+                          style: TextStyle(
+                            color: Color(0xFFCBD5E2),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -13471,6 +13873,9 @@ class _ParentFriendshipJourneyScreenState
       case 'reconnected_friendship':
         return Icons.link_rounded;
 
+      case 'friendship_growing':
+        return Icons.eco_rounded;
+
       case 'one_month_together':
         return Icons.calendar_month_rounded;
 
@@ -13538,6 +13943,7 @@ class _ParentFriendshipJourneyScreenState
         return NatterBrand.yellow;
 
       // GROW
+      case 'friendship_growing':
       case 'growing_trust':
       case 'consistent_kindness':
       case 'friendship_flourishing':
@@ -18386,6 +18792,7 @@ class NatterChildChatTile extends StatefulWidget {
     required this.onTap,
     this.lastMessageTime,
     this.avatar,
+    this.hasFriendshipMoment = false,
   });
 
   final String name;
@@ -18394,6 +18801,7 @@ class NatterChildChatTile extends StatefulWidget {
   final int unreadCount;
   final bool hasUnread;
   final bool isBlocked;
+  final bool hasFriendshipMoment;
   final VoidCallback onTap;
   final DateTime? lastMessageTime;
 
@@ -18442,7 +18850,9 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
         button: true,
         label: widget.isBlocked
             ? '${widget.name}, blocked friendship'
-            : '${widget.name}, ${widget.preview}',
+            : widget.hasFriendshipMoment
+                ? '${widget.name}, friendship moment ready, ${widget.preview}'
+                : '${widget.name}, ${widget.preview}',
         child: AnimatedScale(
           scale: _pressed ? 0.972 : 1.0,
           duration: const Duration(milliseconds: 90),
@@ -18654,6 +19064,14 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    if (widget.hasFriendshipMoment) ...[
+                                      Image.asset(
+                                        'assets/natter-bubble.webp',
+                                        width: 23,
+                                        height: 25,
+                                      ),
+                                      const SizedBox(width: 5),
+                                    ],
                                     if (widget.hasUnread) ...[
                                       Container(
                                         width: 25,
@@ -18984,8 +19402,12 @@ class _ChirpNudgeState extends State<ChirpNudge> {
 
 class _ChatsHeaderWithChirp extends StatefulWidget {
   final AppState state;
+  final Stream<List<ConversationRecord>>? conversationsStream;
 
-  const _ChatsHeaderWithChirp({required this.state});
+  const _ChatsHeaderWithChirp({
+    required this.state,
+    required this.conversationsStream,
+  });
 
   @override
   State<_ChatsHeaderWithChirp> createState() => _ChatsHeaderWithChirpState();
@@ -19057,7 +19479,7 @@ class _ChatsHeaderWithChirpState extends State<_ChatsHeaderWithChirp> {
     }
 
     return StreamBuilder<List<ConversationRecord>>(
-      stream: widget.state.conversationsForChildStream(childId: childId),
+      stream: widget.conversationsStream,
       builder: (context, snapshot) {
         final conversations = snapshot.data ?? const <ConversationRecord>[];
 
@@ -19104,8 +19526,83 @@ class _ChatsHeaderWithChirpState extends State<_ChatsHeaderWithChirp> {
   }
 }
 
-class ChatsScreen extends StatelessWidget {
+class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
+
+  @override
+  State<ChatsScreen> createState() => _ChatsScreenState();
+}
+
+class _ChatsScreenState extends State<ChatsScreen> {
+  AppState? _streamOwner;
+  String? _streamParentId;
+  String? _streamChildId;
+
+  Stream<List<ChildContactRequest>>? _outgoingRequestsStream;
+  Stream<List<ChildContactRequest>>? _incomingRequestsStream;
+  Stream<List<ConversationRecord>>? _conversationsStream;
+  StreamSubscription<List<ConversationRecord>>? _conversationSourceSubscription;
+
+  @override
+  void dispose() {
+    // Release Firestore listeners when leaving the Chats route.
+    _conversationSourceSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final state = AppStateScope.of(context);
+    final parentId = state.activeParentId;
+    final childId = state.activeChildId;
+
+    // Flutter's StreamBuilder needs stable stream identities across rebuilds.
+    // Only recreate listeners when the AppState or active child changes.
+    if (identical(state, _streamOwner) &&
+        parentId == _streamParentId &&
+        childId == _streamChildId) {
+      return;
+    }
+
+    // Cancel the previous child's source before swapping stream identities.
+    _conversationSourceSubscription?.cancel();
+    _conversationSourceSubscription = null;
+
+    _streamOwner = state;
+    _streamParentId = parentId;
+    _streamChildId = childId;
+
+    if (parentId == null || childId == null) {
+      _outgoingRequestsStream = null;
+      _incomingRequestsStream = null;
+      _conversationsStream = null;
+      return;
+    }
+
+    _outgoingRequestsStream = state.outgoingFriendRequestsForChildStream(
+      parentId: parentId,
+      childId: childId,
+    );
+    _incomingRequestsStream = state.incomingFriendRequestsForChildStream(
+      parentId: parentId,
+      childId: childId,
+    );
+    // Chirp and the conversation list observe one Firestore source.
+    // Pause when neither listens, resume on reattachment. Dispose cancels it.
+    _conversationsStream = state
+        .conversationsForChildStream(childId: childId)
+        .asBroadcastStream(
+          onListen: (subscription) {
+            _conversationSourceSubscription = subscription;
+            if (subscription.isPaused) subscription.resume();
+          },
+          onCancel: (subscription) {
+            subscription.pause();
+          },
+        );
+
+  }
 
   Widget _smallErrorCard(String message) {
     return Padding(
@@ -20671,7 +21168,10 @@ class ChatsScreen extends StatelessWidget {
                     physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 90),
                     children: [
-                      _ChatsHeaderWithChirp(state: state),
+                      _ChatsHeaderWithChirp(
+                        state: state,
+                        conversationsStream: _conversationsStream,
+                      ),
                       if (!isNewChild)
                         BrandCard(
                           child: Column(
@@ -20725,10 +21225,7 @@ class ChatsScreen extends StatelessWidget {
                       if (!isNewChild) const SizedBox(height: 12),
 
                       StreamBuilder<List<ChildContactRequest>>(
-                        stream: state.outgoingFriendRequestsForChildStream(
-                          parentId: state.activeParentId!,
-                          childId: state.activeChildId!,
-                        ),
+                        stream: _outgoingRequestsStream,
                         builder: (context, outgoingSnapshot) {
                           if (outgoingSnapshot.hasError) {
                             return _smallErrorCard(
@@ -20739,10 +21236,7 @@ class ChatsScreen extends StatelessWidget {
                           final outgoing = outgoingSnapshot.data ?? [];
 
                           return StreamBuilder<List<ChildContactRequest>>(
-                            stream: state.incomingFriendRequestsForChildStream(
-                              parentId: state.activeParentId!,
-                              childId: state.activeChildId!,
-                            ),
+                            stream: _incomingRequestsStream,
                             builder: (context, incomingSnapshot) {
                               if (incomingSnapshot.hasError) {
                                 return _smallErrorCard(
@@ -20755,9 +21249,7 @@ class ChatsScreen extends StatelessWidget {
                                   outgoing.isNotEmpty || incoming.isNotEmpty;
 
                               return StreamBuilder<List<ConversationRecord>>(
-                                stream: state.conversationsForChildStream(
-                                  childId: state.activeChildId!,
-                                ),
+                                stream: _conversationsStream,
                                 builder: (context, conversationSnapshot) {
                                   if (conversationSnapshot.hasError) {
                                     return _smallErrorCard(
@@ -20773,7 +21265,6 @@ class ChatsScreen extends StatelessWidget {
 
                                   final conversations =
                                       conversationSnapshot.data ?? [];
-
                                   final sortedConversations =
                                       List<ConversationRecord>.from(
                                         conversations,
@@ -20854,6 +21345,10 @@ class ChatsScreen extends StatelessWidget {
                                             );
 
                                         return NatterChildChatTile(
+                                          hasFriendshipMoment: conversation
+                                                  .friendshipMoment
+                                                  ?.isPendingFor(state.activeChildId) ??
+                                              false,
                                           name: otherChildName,
                                           preview: previewText,
                                           stageEmoji: friendshipEmoji(
@@ -21535,6 +22030,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _friendshipStageCelebration;
   Timer? _friendshipStageCelebrationTimer;
   String? _lastCelebratedStage;
+  bool _openingFriendshipMoment = false;
   bool _burstCoachVisible = false;
   DateTime? _lastBurstCoachShownAt;
   Timer? _burstCoachHideTimer;
@@ -21995,24 +22491,56 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!_canSend) return;
 
-    await state.clearTyping(conversationId: widget.conversationId);
+    // A stale typing indicator should never prevent an actual message.
+    try {
+      await state.clearTyping(conversationId: widget.conversationId);
+    } catch (error) {
+      debugPrint('Natter: could not clear typing before send: $error');
+    }
 
-    controller.clear();
-
-    final delivered = await state.sendMessageToConversation(
-      conversationId: widget.conversationId,
-      text: text,
-      isFlagged: flagged,
-      journeySendRoute: journeySendRoute,
-    );
+    // Keep the draft until the send routine confirms delivery.
+    // Profile builds expose only the Firebase error code for testing.
+    bool delivered;
+    try {
+      delivered = await state.sendMessageToConversation(
+        conversationId: widget.conversationId,
+        text: text,
+        isFlagged: flagged,
+        journeySendRoute: journeySendRoute,
+      );
+    } on FirebaseException catch (error, stackTrace) {
+      debugPrint('Natter message send failed: ${error.plugin}/${error.code}');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        feedback = kProfileMode
+            ? 'Message not sent (${error.code}). Please try again.'
+            : 'Message not sent. Please try again.';
+      });
+      return;
+    } catch (error, stackTrace) {
+      debugPrint('Natter message send failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        feedback = 'Message not sent. Please try again.';
+      });
+      return;
+    }
 
     if (!delivered) {
       if (!mounted) return;
-
       setState(() {
-        feedback = 'Message not delivered.';
+        feedback = 'Message not delivered. Please try again.';
       });
       return;
+    }
+
+    if (!mounted) return;
+
+    // Do not erase newer text entered while the network request was pending.
+    if (controller.text.trim() == text.trim()) {
+      controller.clear();
     }
 
     _journeyGuidanceSession.completeAttempt(delivered: true);
@@ -22589,6 +23117,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _stallTimer?.cancel();
     controller.dispose();
     _bannerTimer?.cancel();
+    _friendshipStageCelebrationTimer?.cancel();
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
@@ -22870,30 +23399,30 @@ class _ChatScreenState extends State<ChatScreen> {
   String friendshipStageCelebrationText(String previousStage, String stage) {
     switch (stage) {
       case 'growing':
-        return 'You and ${widget.contactName} are getting to know each other.';
+        return 'You and ${widget.contactName} have started making memories together.';
       case 'strong':
-        return 'Your friendship is becoming stronger.';
+        return 'There have been encouraging moments in your friendship.';
       case 'trusted':
-        return 'You have built a trusted friendship.';
+        return 'Your friendship story has reached another chapter.';
       case 'flourishing':
-        return 'What a journey! This friendship is flourishing.';
+        return 'Look at the moments becoming part of your story together.';
       default:
-        return 'Your friendship has grown.';
+        return 'Every friendship has its own story.';
     }
   }
 
   String _friendshipStageTitle() {
     switch (_lastCelebratedStage) {
       case 'growing':
-        return 'GROWING FRIENDSHIP';
+        return 'Growing together';
       case 'strong':
-        return 'STRONG FRIENDSHIP';
+        return 'A growing connection';
       case 'trusted':
-        return 'TRUSTED FRIENDSHIP';
+        return 'A new chapter';
       case 'flourishing':
-        return '✨ FLOURISHING FRIENDSHIP ✨';
+        return 'So much to remember';
       default:
-        return '🌱 FRIENDSHIP GROWING';
+        return 'A friendship moment';
     }
   }
 
@@ -22906,47 +23435,34 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'trusted':
         return '🌳';
       case 'flourishing':
-        return '✨🌳✨';
+        return '✨';
       default:
         return '🌱';
     }
   }
 
-  Color _friendshipStageGlowColor() {
-    switch (_lastCelebratedStage) {
-      case 'growing':
-        return NatterBrand.green;
-
-      case 'strong':
-        return const Color(0xFF4FD1C5);
-
-      case 'trusted':
-        return const Color(0xFF63A4FF);
-
-      case 'flourishing':
-        return const Color(0xFFFFD54F);
-
-      default:
-        return NatterBrand.green;
-    }
-  }
-
-  Color _friendshipStageCardColor() {
-    switch (_lastCelebratedStage) {
-      case 'growing':
-        return const Color(0xFF243F6B);
-
-      case 'strong':
-        return const Color(0xFF214C57);
-
-      case 'trusted':
-        return const Color(0xFF1E3F73);
-
-      case 'flourishing':
-        return const Color(0xFF5A4A1A);
-
-      default:
-        return const Color(0xFF243F6B);
+  Future<void> _openFriendshipMoment(
+    AppState state,
+    FriendshipMomentNotice notice,
+  ) async {
+    if (_openingFriendshipMoment) return;
+    _openingFriendshipMoment = true;
+    _showFriendshipStageCelebration(notice.previousStage, notice.stage);
+    try {
+      await state.acknowledgeFriendshipMoment(
+        conversationId: widget.conversationId,
+        expectedVersion: notice.version,
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save this moment. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      _openingFriendshipMoment = false;
     }
   }
 
@@ -22990,91 +23506,110 @@ class _ChatScreenState extends State<ChatScreen> {
           opacity: _friendshipStageCelebrationVisible ? 1 : 0,
           duration: const Duration(milliseconds: 450),
           curve: Curves.easeOut,
-          child: Container(
-            color: Colors.black.withOpacity(0.52),
+          child: ColoredBox(
+            color: NatterBrand.navy.withValues(alpha: 0.76),
             child: Center(
-              child: AnimatedScale(
-                scale: _friendshipStageCelebrationVisible ? 1 : 0.92,
-                duration: const Duration(milliseconds: 450),
-                curve: Curves.easeOutBack,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 28),
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: _friendshipStageCardColor(),
-                    borderRadius: BorderRadius.circular(34),
-                    border: Border.all(
-                      color: _friendshipStageGlowColor().withOpacity(0.65),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _friendshipStageGlowColor().withOpacity(0.34),
-                        blurRadius: 50,
-                        spreadRadius: 6,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: NatterBrand.green.withOpacity(0.18),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'New Friendship Level',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: NatterChildTheme.screenHorizontalPadding,
+                  vertical: NatterChildTheme.spaceXl,
+                ),
+                child: AnimatedScale(
+                  scale: _friendshipStageCelebrationVisible ? 1 : 0.96,
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 390),
+                    child: NatterChildSurface(
+                      style: NatterChildSurfaceStyle.hero,
+                      borderRadius: NatterChildTheme.radiusHero,
+                      padding: const EdgeInsets.fromLTRB(24, 26, 24, 26),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              for (final colour in const [
+                                NatterBrand.blue,
+                                NatterBrand.pink,
+                                NatterBrand.green,
+                              ])
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  margin: const EdgeInsets.only(right: 5),
+                                  decoration: BoxDecoration(
+                                    color: colour,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'A FRIENDSHIP MOMENT',
+                                style: TextStyle(
+                                  color: NatterChildTheme.textMuted,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 68,
+                            width: 68,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: NatterChildTheme.surfaceQuiet.withValues(
+                                alpha: 0.60,
+                              ),
+                              border: Border.all(
+                                color: NatterChildTheme.borderStrong,
+                              ),
+                            ),
+                            child: Text(
+                              _friendshipStageIcon(),
+                              style: const TextStyle(fontSize: 32),
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceXl),
+                          Text(
+                            _friendshipStageTitle(),
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.heroTitle.copyWith(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceMd),
+                          Text(
+                            _friendshipStageCelebration ?? '',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.body.copyWith(
+                              color: NatterChildTheme.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              height: 1.45,
+                            ),
+                          ),
+                          const SizedBox(height: NatterChildTheme.space2Xl),
+                          Container(
+                            height: 1,
+                            color: NatterChildTheme.borderStrong,
+                          ),
+                          const SizedBox(height: NatterChildTheme.spaceLg),
+                          Text(
+                            'Part of your story with ${widget.contactName}',
+                            textAlign: TextAlign.center,
+                            style: NatterChildTheme.caption.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Image.asset('assets/chirp_welldone.png', height: 115),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your friendship has grown!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.75),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
-                        ),
-                      ),
-                      Text(
-                        _friendshipStageIcon(),
-                        style: const TextStyle(fontSize: 54),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _friendshipStageTitle(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 24,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _friendshipStageCelebration ?? '',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.94),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -23107,6 +23642,34 @@ class _ChatScreenState extends State<ChatScreen> {
               icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: state.conversationDocStream(widget.conversationId),
+                builder: (context, snapshot) {
+                  final notice = FriendshipMomentNotice.fromConversationData(
+                    snapshot.data?.data(),
+                  );
+                  if (notice == null ||
+                      !notice.isPendingFor(state.activeChildId)) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return IconButton(
+                    key: const ValueKey('friendship-moment-invitation'),
+                    tooltip: 'Open friendship moment',
+                    icon: Image.asset(
+                      'assets/natter-bubble.webp',
+                      width: 32,
+                      height: 34,
+                      filterQuality: FilterQuality.medium,
+                    ),
+                    onPressed: () async {
+                      await _openFriendshipMoment(state, notice);
+                    },
+                  );
+                },
+              ),
+            ],
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
               stream: state.conversationDocStream(widget.conversationId),
               builder: (context, snapshot) {
@@ -23938,39 +24501,6 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
-
-                        final friendshipStage =
-                            (conversationData['friendshipStage'] ?? 'seedling')
-                                .toString();
-
-                        final previousFriendshipStage =
-                            (conversationData['lastFriendshipStage'] ??
-                                    'seedling')
-                                .toString();
-
-                        final friendshipStageChanged =
-                            conversationData['friendshipStageChanged'] == true;
-
-                        if (friendshipStageChanged &&
-                            _lastCelebratedStage != friendshipStage) {
-                          WidgetsBinding.instance.addPostFrameCallback((
-                            _,
-                          ) async {
-                            if (!mounted) return;
-
-                            _showFriendshipStageCelebration(
-                              previousFriendshipStage,
-                              friendshipStage,
-                            );
-
-                            await AppStateScope.of(
-                              context,
-                            ).conversationsRef().doc(widget.conversationId).set(
-                              {'friendshipStageChanged': false},
-                              SetOptions(merge: true),
-                            );
-                          });
-                        }
 
                         final blockedByChildIds = List<String>.from(
                           conversationData['blockedByChildIds'] ?? const [],
