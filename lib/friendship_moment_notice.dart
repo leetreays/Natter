@@ -69,3 +69,27 @@ class FriendshipMomentNotice {
     );
   }
 }
+
+/// Stable record identifiers used in both journey views.
+String? meaningfulMomentTypeForFriendshipStage(String stage) {
+  switch (stage) {
+    case 'growing':
+      return 'friendship_growing';
+    case 'strong':
+      return 'growing_trust';
+    case 'trusted':
+      return 'trusted_friendship';
+    case 'flourishing':
+      return 'friendship_flourishing';
+    default:
+      return null;
+  }
+}
+
+/// The invitation remains evidence after the child acknowledges it.
+bool needsFriendshipMomentHistory(
+  FriendshipMomentNotice? notice,
+  Object? recordedVersion,
+) =>
+    notice != null &&
+    (recordedVersion is! int || recordedVersion < notice.version);

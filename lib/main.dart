@@ -4529,6 +4529,18 @@ const meaningfulMomentRegistry = {
     showToParent: true,
   ),
 
+  'friendship_growing': MeaningfulMomentDefinition(
+    title: 'Growing friendship',
+    description: 'Kind moments are helping this friendship take root.',
+    importance: 20,
+    category: 'friendship',
+    celebrate: true,
+    icon: 'sprout',
+    colour: 'green',
+    journeyStage: 1,
+    showToParent: true,
+  ),
+
   'reconnected_friendship': MeaningfulMomentDefinition(
     title: 'Friendship reconnected',
     description:
@@ -5787,22 +5799,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  String? meaningfulMomentTypeForFriendshipStage(String stage) {
-    switch (stage) {
-      case 'strong':
-        return 'growing_trust';
-
-      case 'trusted':
-        return 'trusted_friendship';
-
-      case 'flourishing':
-        return 'friendship_flourishing';
-
-      default:
-        return null;
-    }
-  }
-
   Future<int> adjustConversationFriendshipHealth({
     required String conversationId,
     required int amount,
@@ -5831,6 +5827,90 @@ class AppState extends ChangeNotifier {
           final stageChanged = previousStage != newStage;
           final friendshipId = (data['friendshipId'] ?? '').toString();
 
+          final stageAdvanced = isUpwardFriendshipStageChange(
+            previousStage,
+            newStage,
+          );
+          final newNoticeVersion = stageAdvanced
+              ? nextFriendshipMomentVersion(data)
+              : null;
+          final priorNotice = FriendshipMomentNotice.fromConversationData(data);
+          final repairPreviousMoment = !stageAdvanced &&
+              needsFriendshipMomentHistory(
+                priorNotice,
+                data['friendshipMomentHistoryRecordedVersion'],
+              );
+          final eventVersion = stageAdvanced
+              ? newNoticeVersion
+              : (repairPreviousMoment ? priorNotice?.version : null);
+          final eventFromStage = stageAdvanced
+              ? previousStage
+              : (repairPreviousMoment ? priorNotice?.previousStage : null);
+          final eventStage = stageAdvanced
+              ? newStage
+              : (repairPreviousMoment ? priorNotice?.stage : null);
+          final momentType = eventStage == null
+              ? null
+              : meaningfulMomentTypeForFriendshipStage(eventStage);
+          final momentDefinition = meaningfulMomentRegistry[momentType];
+
+          DocumentReference<Map<String, dynamic>>? conversationMomentRef;
+          DocumentReference<Map<String, dynamic>>? friendshipMomentRef;
+          DocumentSnapshot<Map<String, dynamic>>? existingConversationMoment;
+          DocumentSnapshot<Map<String, dynamic>>? existingFriendshipMoment;
+          Map<String, dynamic>? momentData;
+
+          if (momentType != null &&
+              momentDefinition != null &&
+              eventVersion != null) {
+            // Read before writing: this is an atomic, idempotent milestone.
+            conversationMomentRef = ref
+                .collection('meaningful_moments')
+                .doc(momentType);
+            existingConversationMoment =
+                await transaction.get(conversationMomentRef);
+
+            if (friendshipId.isNotEmpty) {
+              friendshipMomentRef = FirebaseFirestore.instance
+                  .collection('friendships')
+                  .doc(friendshipId)
+                  .collection('friendship_moments')
+                  .doc(momentType);
+              existingFriendshipMoment =
+                  await transaction.get(friendshipMomentRef);
+            }
+
+            final priorMomentData = data['friendshipMoment'];
+            final reachedAt = priorMomentData is Map
+                ? priorMomentData['reachedAt']
+                : null;
+            momentData = <String, dynamic>{
+              'type': momentType,
+              'title': momentDefinition.title,
+              'description': momentDefinition.description,
+              'importance': momentDefinition.importance,
+              'category': momentDefinition.category,
+              'journeyStage': momentDefinition.journeyStage,
+              'celebrate': momentDefinition.celebrate,
+              'showToParent': momentDefinition.showToParent,
+              'icon': momentDefinition.icon,
+              'colour': momentDefinition.colour,
+              'conversationId': conversationId,
+              'friendshipId': friendshipId,
+              'participantChildIds':
+                  List<String>.from(data['participantChildIds'] ?? const []),
+              'participantNames':
+                  List<String>.from(data['participantNames'] ?? const []),
+              'fromStage': eventFromStage,
+              'toStage': eventStage,
+              // Keep the original milestone time when repairing old history.
+              'createdAt': stageAdvanced || reachedAt is! Timestamp
+                  ? FieldValue.serverTimestamp()
+                  : reachedAt,
+            };
+          }
+
+          // Stage, invitation and history commit together.
           transaction.set(ref, {
             'friendshipHealth': updated,
             'friendshipStage': newStage,
@@ -5841,15 +5921,16 @@ class AppState extends ChangeNotifier {
                 : data['friendshipStageChangedAt'],
             'lastFriendshipHealthReason': reason,
             'lastFriendshipHealthAt': FieldValue.serverTimestamp(),
-            // Preserve each new growth milestone beyond later message activity.
-            if (isUpwardFriendshipStageChange(previousStage, newStage))
+            if (stageAdvanced)
               'friendshipMoment': {
-                'version': nextFriendshipMomentVersion(data),
+                'version': newNoticeVersion,
                 'previousStage': previousStage,
                 'stage': newStage,
                 'reachedAt': FieldValue.serverTimestamp(),
                 'acknowledgedByChildIds': <String>[],
               },
+            if (momentData != null)
+              'friendshipMomentHistoryRecordedVersion': eventVersion,
             'friendshipMomentDebug': {
               'stageChanged': stageChanged,
               'friendshipId': friendshipId,
@@ -5858,6 +5939,16 @@ class AppState extends ChangeNotifier {
               'reason': reason,
             },
           }, SetOptions(merge: true));
+
+          if (momentData != null) {
+            if (existingConversationMoment?.exists != true) {
+              transaction.set(conversationMomentRef!, momentData);
+            }
+            if (friendshipMomentRef != null &&
+                existingFriendshipMoment?.exists != true) {
+              transaction.set(friendshipMomentRef, momentData);
+            }
+          }
 
           return {
             'friendshipId': friendshipId,
@@ -5888,18 +5979,7 @@ class AppState extends ChangeNotifier {
           'lastStageChangedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-      if (result['stageChanged'] == true) {
-        final newStage = result['newStage'].toString();
-
-        final momentType = meaningfulMomentTypeForFriendshipStage(newStage);
-
-        if (momentType != null) {
-          await recordMeaningfulMoment(
-            conversationId: conversationId,
-            type: momentType,
-          );
-        }
-      }
+      // Stage milestones are already recorded in the transaction above.
     } catch (e) {
       debugPrint('Friendship mirror write failed: $e');
     }
@@ -13793,6 +13873,9 @@ class _ParentFriendshipJourneyScreenState
       case 'reconnected_friendship':
         return Icons.link_rounded;
 
+      case 'friendship_growing':
+        return Icons.eco_rounded;
+
       case 'one_month_together':
         return Icons.calendar_month_rounded;
 
@@ -13860,6 +13943,7 @@ class _ParentFriendshipJourneyScreenState
         return NatterBrand.yellow;
 
       // GROW
+      case 'friendship_growing':
       case 'growing_trust':
       case 'consistent_kindness':
       case 'friendship_flourishing':

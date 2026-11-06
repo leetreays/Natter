@@ -44,4 +44,39 @@ void main() {
       },
     }), isNull);
   });
+
+  test('every growth milestone has a permanent journey record type', () {
+    expect(meaningfulMomentTypeForFriendshipStage('seedling'), isNull);
+    expect(
+      meaningfulMomentTypeForFriendshipStage('growing'),
+      'friendship_growing',
+    );
+    expect(meaningfulMomentTypeForFriendshipStage('strong'), 'growing_trust');
+    expect(
+      meaningfulMomentTypeForFriendshipStage('trusted'),
+      'trusted_friendship',
+    );
+    expect(
+      meaningfulMomentTypeForFriendshipStage('flourishing'),
+      'friendship_flourishing',
+    );
+  });
+
+  test('an acknowledged milestone can be repaired without a new invitation', () {
+    final notice = FriendshipMomentNotice.fromConversationData({
+      'friendshipMoment': {
+        'version': 1,
+        'previousStage': 'seedling',
+        'stage': 'growing',
+        'acknowledgedByChildIds': <String>['child-a', 'child-b'],
+      },
+    });
+    expect(notice, isNotNull);
+    expect(needsFriendshipMomentHistory(notice, null), isTrue);
+    expect(needsFriendshipMomentHistory(notice, 0), isTrue);
+    expect(needsFriendshipMomentHistory(notice, 1), isFalse);
+    expect(needsFriendshipMomentHistory(notice, 2), isFalse);
+    expect(needsFriendshipMomentHistory(null, null), isFalse);
+  });
+
 }
