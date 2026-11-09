@@ -1,6 +1,6 @@
 # Family Connections — Messaging V1
 
-**Status:** Proposed design and backend security foundation, not yet deployed.
+**Status:** Feature branch in testing. Family message and read-state rules have been published to the test Firebase project; the latest Quiet Hours exception is not yet verified in the running app. PR #14 remains a draft.
 
 ## Concept
 
@@ -12,6 +12,7 @@ Family communication is a direct connection to **home**, separate from a child's
 - House icon with a gentle warm glow against the existing navy night-sky design.
 - Primary line: **Home**. Action: **Message home**.
 - Enter a reassuring, familiar chat space using Natter's existing rounded chat language.
+- **Home messaging is always available during Quiet Hours.** Ordinary friendship messages continue to honour the child's Quiet Hours settings; the linked family thread is not an emergency service and does not guarantee an immediate response.
 - This is not an emergency contact channel, and the app should not imply continuous parental availability.
 - Parent display names and additional verified guardians are future enhancements. The first version links to the existing parent account.
 

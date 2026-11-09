@@ -26774,12 +26774,8 @@ class _FamilyConversationScreenState extends State<FamilyConversationScreen> {
     final text = _draft.text.trim();
     if (text.isEmpty) return;
 
-    if (!widget.isParent && AppStateScope.of(context).isQuietNow()) {
-      setState(() {
-        _feedback = 'Quiet Hours are on — come back to chat later 🌙';
-      });
-      return;
-    }
+    // Home remains available during Quiet Hours: children can always
+    // message their linked grown-up, independently of friendship limits.
 
     setState(() {
       _sending = true;
