@@ -109,6 +109,51 @@ test('messages cannot be edited or deleted', async () => {
   await assertFails(updateDoc(messageDoc, {text: 'Changed'}));
   await assertFails(deleteDoc(messageDoc));
 });
+
+const readPath = (role, childId = 'child-a', parentId = 'parent-a') =>
+  `parents/${parentId}/children/${childId}/family_read_state/${role}`;
+
+test('parent and child may write only their own read markers', async () => {
+  const testEnv = await ready;
+  for (const [uid, role] of [['parent-a', 'parent'], ['auth-a', 'child']]) {
+    const db = testEnv.authenticatedContext(uid).firestore();
+    await assertSucceeds(setDoc(doc(db, readPath(role)), {
+      lastReadAt: serverTimestamp(),
+    }));
+    await assertSucceeds(getDoc(doc(db, readPath(role))));
+  }
+});
+
+test('a family member cannot see or alter the other read marker', async () => {
+  const testEnv = await ready;
+  for (const [uid, otherRole] of [['parent-a', 'child'], ['auth-a', 'parent']]) {
+    const db = testEnv.authenticatedContext(uid).firestore();
+    await assertFails(getDoc(doc(db, readPath(otherRole))));
+    await assertFails(setDoc(doc(db, readPath(otherRole)), {
+      lastReadAt: serverTimestamp(),
+    }));
+  }
+  const other = testEnv.authenticatedContext('auth-sibling').firestore();
+  await assertFails(getDoc(doc(other, readPath('child'))));
+  await assertFails(setDoc(doc(other, readPath('child')), {
+    lastReadAt: serverTimestamp(),
+  }));
+});
+
+test('read marker fields, timestamps, listing and deletes are restricted', async () => {
+  const testEnv = await ready;
+  const db = testEnv.authenticatedContext('auth-a').firestore();
+  await assertFails(setDoc(doc(db, readPath('child')), {
+    lastReadAt: new Date(0),
+  }));
+  await assertFails(setDoc(doc(db, readPath('child')), {
+    lastReadAt: serverTimestamp(), extra: 'not allowed',
+  }));
+  await assertFails(getDocs(collection(db,
+    'parents/parent-a/children/child-a/family_read_state')));
+  await assertFails(deleteDoc(doc(db, readPath('child'))));
+});
+
 test('unlinked and signed-out sessions cannot access a family thread', async () => {
   const testEnv = await ready;
   const db = testEnv.unauthenticatedContext().firestore();
