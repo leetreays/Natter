@@ -15,6 +15,7 @@ import 'utils/participant_parent_mapping.dart';
 import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
 import 'friendship_moment_notice.dart';
+import 'navigation/natter_history_router.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -49,8 +50,9 @@ Future<void> main() async {
   runApp(const NatterApp());
 }
 
-Route<T> calmRoute<T>(Widget page) {
+Route<T> calmRoute<T>(Widget page, {RouteSettings? settings}) {
   return PageRouteBuilder<T>(
+    settings: settings ?? NatterRouteStore.remember(page),
     pageBuilder: (_, __, ___) => page,
     transitionDuration: const Duration(milliseconds: 420),
     reverseTransitionDuration: const Duration(milliseconds: 320),
@@ -8265,17 +8267,42 @@ class AppStateScope extends InheritedNotifier<AppState> {
   }
 }
 
-class NatterApp extends StatelessWidget {
+class NatterApp extends StatefulWidget {
   const NatterApp({super.key});
+
+  @override
+  State<NatterApp> createState() => _NatterAppState();
+}
+
+class _NatterAppState extends State<NatterApp> {
+  final AppState _appState = AppState();
+  late final NatterHistoryRouterDelegate _historyRouter =
+      NatterHistoryRouterDelegate(
+        initialPage: const StartupRouterScreen(),
+        routeBuilder: (page, settings) => calmRoute<void>(
+          page,
+          settings: settings,
+        ),
+      );
+  final RootBackButtonDispatcher _backDispatcher = RootBackButtonDispatcher();
+
+  @override
+  void dispose() {
+    _historyRouter.dispose();
+    _appState.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final base = ThemeData.light();
-    final state = AppState();
 
     return AppStateScope(
-      notifier: state,
-      child: MaterialApp(
+      notifier: _appState,
+      child: MaterialApp.router(
+        routerDelegate: _historyRouter,
+        routeInformationParser: const NatterHistoryRouteParser(),
+        backButtonDispatcher: _backDispatcher,
         title: 'Natter',
         debugShowCheckedModeBanner: false,
         theme: base.copyWith(
@@ -8344,7 +8371,6 @@ class NatterApp extends StatelessWidget {
             thickness: 1,
           ),
         ),
-        home: const StartupRouterScreen(),
       ),
     );
   }
