@@ -13,7 +13,7 @@ const {doc, setDoc, getDoc, getDocs, collection, updateDoc, deleteDoc,
   serverTimestamp} = require('firebase/firestore');
 
 const host = process.env.FIRESTORE_EMULATOR_HOST;
-if (!host || !/^(127\\.0\\.0\\.1|localhost):\\d+$/.test(host)) {
+if (!host || !/^(127\.0\.0\.1|localhost):\d+$/.test(host)) {
   throw new Error('FIRESTORE_EMULATOR_HOST must point to a local emulator');
 }
 const [emulatorHost, port] = host.split(':');
