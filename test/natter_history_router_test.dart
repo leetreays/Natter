@@ -22,7 +22,7 @@ class TestRouteProvider extends ChangeNotifier
     reports.add(information.uri.path);
   }
 
-  void browserBackTo(String path) {
+  void browserNavigateTo(String path) {
     _value = RouteInformation(uri: Uri(path: path));
     notifyListeners();
   }
@@ -100,11 +100,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('page-Journey')), findsOneWidget);
-      provider.browserBackTo(first);
+      provider.browserNavigateTo(first);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('page-Profile')), findsOneWidget);
 
-      provider.browserBackTo('/');
+      provider.browserNavigateTo('/');
       await tester.pumpAndSettle();
       expect(find.byKey(Key('page-$userType home')), findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
@@ -112,4 +112,94 @@ void main() {
       provider.dispose();
     });
   }
+
+  testWidgets('browser Forward restores screens after home replacement',
+      (tester) async {
+    final provider = TestRouteProvider();
+    final delegate = NatterHistoryRouterDelegate(
+      initialPage: const TestPage(name: 'Startup'),
+      routeBuilder: testRoute,
+    );
+    await tester.pumpWidget(MaterialApp.router(
+      routeInformationProvider: provider,
+      routeInformationParser: const NatterHistoryRouteParser(),
+      routerDelegate: delegate,
+    ));
+    await tester.pumpAndSettle();
+
+    final navigator = delegate.navigatorKey.currentState!;
+    navigator.pushReplacement(testRoute(
+      const TestPage(name: 'Chats'),
+      NatterRouteStore.remember(const TestPage(name: 'Chats')),
+    ));
+    await tester.pumpAndSettle();
+
+    final profileSettings =
+        NatterRouteStore.remember(const TestPage(name: 'Profile'));
+    navigator.push(testRoute(const TestPage(name: 'Profile'), profileSettings));
+    await tester.pumpAndSettle();
+    final profileUrl = provider.reports.last;
+
+    final journeySettings =
+        NatterRouteStore.remember(const TestPage(name: 'Journey'));
+    navigator.push(testRoute(const TestPage(name: 'Journey'), journeySettings));
+    await tester.pumpAndSettle();
+    final journeyUrl = provider.reports.last;
+
+    provider.browserNavigateTo(profileUrl);
+    await tester.pumpAndSettle();
+    provider.browserNavigateTo('/');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('page-Chats')), findsOneWidget);
+
+    provider.browserNavigateTo(profileUrl);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('page-Profile')), findsOneWidget);
+
+    provider.browserNavigateTo(journeyUrl);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('page-Journey')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    delegate.dispose();
+    provider.dispose();
+  });
+
+  testWidgets('replacement of a nested route preserves Forward ancestry',
+      (tester) async {
+    final provider = TestRouteProvider();
+    final delegate = NatterHistoryRouterDelegate(
+      initialPage: const TestPage(name: 'Chats'),
+      routeBuilder: testRoute,
+    );
+    await tester.pumpWidget(MaterialApp.router(
+      routeInformationProvider: provider,
+      routeInformationParser: const NatterHistoryRouteParser(),
+      routerDelegate: delegate,
+    ));
+    await tester.pumpAndSettle();
+    final navigator = delegate.navigatorKey.currentState!;
+    navigator.push(testRoute(
+      const TestPage(name: 'Profile'),
+      NatterRouteStore.remember(const TestPage(name: 'Profile')),
+    ));
+    await tester.pumpAndSettle();
+
+    final next = NatterRouteStore.remember(const TestPage(name: 'Journey'));
+    navigator.pushReplacement(testRoute(const TestPage(name: 'Journey'), next));
+    await tester.pumpAndSettle();
+    final journeyUrl = provider.reports.last;
+
+    provider.browserNavigateTo('/');
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('page-Chats')), findsOneWidget);
+    provider.browserNavigateTo(journeyUrl);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('page-Journey')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    delegate.dispose();
+    provider.dispose();
+  });
+
 }

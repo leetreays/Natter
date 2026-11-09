@@ -192,7 +192,10 @@ class _NatterHistoryObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     if (route is PageRoute<dynamic>) {
-      final parentId = pages.isEmpty ? '/' : pages.last.settings.name ?? '/';
+      // The first page is the app's logical root even if its route was
+      // installed through pushReplacement and has an opaque route ID.
+      final parentId =
+          pages.length <= 1 ? '/' : pages.last.settings.name ?? '/';
       final id = route.settings.name;
       if (id != null && id != '/') {
         NatterRouteStore.noteParent(id, parentId);
@@ -228,6 +231,15 @@ class _NatterHistoryObserver extends NavigatorObserver {
         if (newRoute == null) {
           _routes.removeAt(index);
         } else {
+          // A replacement deeper than the root must retain its ancestry so
+          // browser Forward can reconstruct it after a browser Back.
+          final parentId = index <= 1
+              ? '/'
+              : _routes[index - 1].settings.name ?? '/';
+          final newId = newRoute.settings.name;
+          if (newId != null && newId != '/' && index > 0) {
+            NatterRouteStore.noteParent(newId, parentId);
+          }
           _routes[index] = newRoute;
         }
       } else if (newRoute != null) {
