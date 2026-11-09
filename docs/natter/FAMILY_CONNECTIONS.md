@@ -1,6 +1,6 @@
 # Family Connections — Messaging V1
 
-**Status:** Feature branch in testing. Family message and read-state rules have been published to the test Firebase project; the latest Quiet Hours exception is not yet verified in the running app. PR #14 remains a draft.
+**Status:** Feature branch in testing. Family message and read-state rules have been published to the existing Natter Firebase project; testing uses test accounts. The latest Quiet Hours exception is not yet verified in the running app. PR #14 remains a draft.
 
 ## Concept
 
