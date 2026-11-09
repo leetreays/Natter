@@ -26664,7 +26664,8 @@ class _FamilyUnreadCountState extends State<FamilyUnreadCount> {
         return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           stream: _messageStream,
           builder: (context, messageSnapshot) {
-            if (readSnapshot.hasError || messageSnapshot.hasError) {
+            if (readSnapshot.hasError || messageSnapshot.hasError ||
+                !readSnapshot.hasData || !messageSnapshot.hasData) {
               return widget.builder(context, 0);
             }
             final items = messageSnapshot.data?.docs ?? [];

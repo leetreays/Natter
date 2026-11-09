@@ -33,6 +33,9 @@ Only the authenticated parent account `parentId` and the child whose Firebase au
 - Every created message records `text`, `senderRole`, `senderAuthUid`, `createdAt`.
 - Sender role is enforced in Firestore rules and cannot be spoofed.
 - No edits/deletes in V1. No message content is copied into friendship projections or parent insights.
+- Unread counters use `family_read_state/parent` and `family_read_state/child` beneath each child document, with `lastReadAt` written as a server timestamp by the actor only. Unread messages are counted from the latest 100 family messages and shown as 9+ above nine.
+- The sender role, not an easily changed device authentication UID, determines message alignment.
+- Both parent and child views clear only their own unread badge when the thread is open; unread state persists across app sessions.
 - Siblings, other families and unlinked or anonymous sessions without a matching child link have no access.
 - This new path must never grant parents read access to their children's separate friend-to-friend `conversations/{id}/messages`.
 - Production rules must be **explicitly deployed** after testing, before enabling the UI in an environment that writes messages.
