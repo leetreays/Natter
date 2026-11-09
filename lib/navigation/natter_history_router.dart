@@ -41,7 +41,9 @@ class NatterHistoryRouteParser extends RouteInformationParser<String> {
   @override
   Future<String> parseRouteInformation(RouteInformation information) {
     final path = information.uri.path;
-    if (path == '/' || path.startsWith('/natter-screen/')) {
+    if (path == '/' ||
+        (path.startsWith('/natter-screen/') &&
+            NatterRouteStore.screen(path) != null)) {
       return SynchronousFuture<String>(path);
     }
     return SynchronousFuture<String>('/');
@@ -156,7 +158,7 @@ class NatterHistoryRouterDelegate extends RouterDelegate<String>
       for (final id in missing.reversed) {
         final page = NatterRouteStore.screen(id);
         if (page == null) break;
-        navigator.push<void>(routeBuilder(page, RouteSettings(name: id)));
+        navigator.push<dynamic>(routeBuilder(page, RouteSettings(name: id)));
       }
     } finally {
       _externalNavigation = false;

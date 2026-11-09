@@ -62,6 +62,14 @@ class TestPage extends StatelessWidget {
 }
 
 void main() {
+  test('stale URLs cannot restore old account screens', () async {
+    const parser = NatterHistoryRouteParser();
+    final initial = await parser.parseRouteInformation(
+      RouteInformation(uri: Uri(path: '/natter-screen/no-longer-open')),
+    );
+    expect(initial, '/');
+  });
+
   for (final userType in <String>['Child', 'Parent']) {
     testWidgets('two browser back gestures navigate two $userType screens',
         (tester) async {
@@ -99,6 +107,7 @@ void main() {
       provider.browserBackTo('/');
       await tester.pumpAndSettle();
       expect(find.byKey(Key('page-$userType home')), findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
       delegate.dispose();
       provider.dispose();
     });
