@@ -55,7 +55,9 @@ class FamilyMessageRepository {
       );
 
   DocumentReference<Map<String, dynamic>> _readDocument(bool asParent) =>
-      _collection.parent.collection('family_read_state')
+      FirebaseFirestore.instance
+          .doc('parents/$parentId/children/$childId')
+          .collection('family_read_state')
           .doc(asParent ? 'parent' : 'child');
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchMessages() =>
