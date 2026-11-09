@@ -330,6 +330,57 @@ service cloud.firestore {
 
         allow delete: if isParent(parentId);
 
+        // Family messages belong only to the linked child and their parent.
+        // Never mix these with child-to-child friendship conversations.
+        match /family_messages/{messageId} {
+          allow get, list: if isParent(parentId)
+            || isLinkedChild(parentId, childId);
+
+          allow create: if signedIn()
+            && request.resource.data.keys().hasOnly([
+              'text', 'senderAuthUid', 'senderRole', 'createdAt'
+            ])
+            && request.resource.data.keys().hasAll([
+              'text', 'senderAuthUid', 'senderRole', 'createdAt'
+            ])
+            && request.resource.data.text is string
+            && request.resource.data.text.matches('.*\\S.*')
+            && request.resource.data.text.size() <= 5000
+            && request.resource.data.senderAuthUid == request.auth.uid
+            && request.resource.data.createdAt == request.time
+            && (
+              (
+                request.resource.data.senderRole == 'parent'
+                && isParent(parentId)
+              )
+              || (
+                request.resource.data.senderRole == 'child'
+                && isLinkedChild(parentId, childId)
+              )
+            );
+
+          allow update, delete: if false;
+        }
+
+        // Each family member may only read/update their own last-read marker.
+        match /family_read_state/{memberRole} {
+          allow get: if (
+            (memberRole == 'parent' && isParent(parentId))
+            || (memberRole == 'child' && isLinkedChild(parentId, childId))
+          );
+          allow list: if false;
+
+          allow create, update: if (
+            (memberRole == 'parent' && isParent(parentId))
+            || (memberRole == 'child' && isLinkedChild(parentId, childId))
+          )
+            && request.resource.data.keys().hasOnly(['lastReadAt'])
+            && request.resource.data.keys().hasAll(['lastReadAt'])
+            && request.resource.data.lastReadAt == request.time;
+
+          allow delete: if false;
+        }
+
         match /conversation_refs/{conversationId} {
           allow get, list: if isLinkedChild(parentId, childId);
           allow create, update, delete: if false;

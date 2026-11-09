@@ -1,54 +1,26 @@
 # Natter — Current Work
 
-**Last updated:** 1 September 2026
+**Last updated:** 9 November 2026
 
 ## Active task
 
-Bootstrap the **Natter Codex Project Brain** so that the product's accumulated philosophy, architecture, priorities and context live in the repository rather than only in ChatGPT conversation history.
+Family Connections V1: private parent-child in-app messaging with a Home entry point for children and familiar message actions on the existing parent child cards.
 
-## Deliverable
+## Latest completed work
 
-Add to the repository:
+- PR #11: branded loader and durable, independently acknowledged friendship celebrations.
+- PR #12: stop tracking generated Flutter build artifacts.
+- PR #13: browser-history-aware app navigation; verified repeated Android back gestures and browser Forward in both experiences.
 
-- root `AGENTS.md`;
-- `docs/natter/` knowledge base;
-- product philosophy;
-- architecture snapshot;
-- current product checkpoint;
-- roadmap;
-- decision log;
-- brand/website/legal context.
+## Current approach
 
-## First Codex task after import
+- Start from the linked parent and child identities; never make a parent a participant in friendship messaging.
+- Family messages live in their own per-child Firestore subcollection.
+- Security rules and local emulator tests are prepared on this feature branch; they must be validated and deployed separately from GitHub.
+- UI remains intentionally different by role: child sees **Home**, parent sees a normal message action by each child.
 
-Recommended:
+## Next verification
 
-1. Read `AGENTS.md`.
-2. Read all files in `docs/natter/`.
-3. Inspect the repository.
-4. Compare documented implementation facts with current code.
-5. Produce a short **documentation drift report**:
-   - confirmed current;
-   - changed;
-   - no longer present;
-   - undocumented code capabilities;
-   - fields/paths that need updating.
-6. Update factual implementation docs only where code evidence is clear.
-7. Do not rewrite core product philosophy merely because implementation differs.
-
-## Important
-
-The project-brain export is deliberately conservative.
-
-Product principles are intended to be authoritative.
-
-Implementation details marked as snapshots must be verified against the current repo.
-
-## Next maintenance rule
-
-After meaningful development work, keep this file short. It should answer:
-
-- What are we doing now?
-- What was just completed?
-- What is blocked?
-- What should happen next?
+- Run local Firestore emulator rules tests.
+- Implement family messages repository and UI.
+- Verify parent and child messaging on separate authenticated sessions, then recheck account boundaries.

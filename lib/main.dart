@@ -16,6 +16,7 @@ import 'widgets/natter_code_input.dart';
 import 'journey/journey_guidance_session.dart';
 import 'friendship_moment_notice.dart';
 import 'navigation/natter_history_router.dart';
+import 'family/family_message_repository.dart';
 
 Future<User> ensureSignedIn() async {
   final auth = FirebaseAuth.instance;
@@ -11176,7 +11177,51 @@ class ParentHomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                Builder(
+                  builder: (context) {
+                    final parentId = FirebaseAuth.instance.currentUser?.uid;
+                    if (parentId == null) return const SizedBox.shrink();
+                    return FamilyUnreadCount(
+                      key: ValueKey('family-parent-$parentId-${child.childId}'),
+                      parentId: parentId,
+                      childId: child.childId,
+                      asParent: true,
+                      builder: (context, unreadCount) => Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            tooltip: unreadCount > 0
+                                ? 'Message ${child.name}, $unreadCount unread'
+                                : 'Message ${child.name}',
+                            icon: const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: NatterBrand.blue,
+                            ),
+                            onPressed: () => Navigator.push(
+                              context,
+                              calmRoute(
+                                FamilyConversationScreen(
+                                  parentId: parentId,
+                                  childId: child.childId,
+                                  title: child.name,
+                                  isParent: true,
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              right: -3,
+                              top: -5,
+                              child: IgnorePointer(
+                                child: FamilyUnreadBadge(count: unreadCount),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
                 const Icon(Icons.chevron_right_rounded, color: Colors.white54),
               ],
             ),
@@ -18819,6 +18864,7 @@ class NatterChildChatTile extends StatefulWidget {
     this.lastMessageTime,
     this.avatar,
     this.hasFriendshipMoment = false,
+    this.isHomeConnection = false,
   });
 
   final String name;
@@ -18828,6 +18874,7 @@ class NatterChildChatTile extends StatefulWidget {
   final bool hasUnread;
   final bool isBlocked;
   final bool hasFriendshipMoment;
+  final bool isHomeConnection;
   final VoidCallback onTap;
   final DateTime? lastMessageTime;
 
@@ -18860,6 +18907,8 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
         ? NatterChildTheme.protect.withValues(alpha: 0.18)
         : widget.hasUnread
         ? NatterChildTheme.connect.withValues(alpha: 0.20)
+        : widget.isHomeConnection
+        ? NatterBrand.yellow.withValues(alpha: 0.22)
         : Colors.white.withValues(alpha: 0.07);
 
     // Keep the fill deliberately light. The atmosphere underneath
@@ -18874,7 +18923,9 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
       padding: const EdgeInsets.only(bottom: NatterChildTheme.spaceSm),
       child: Semantics(
         button: true,
-        label: widget.isBlocked
+        label: widget.isHomeConnection
+            ? 'Home, message your grown-up${widget.unreadCount > 0 ? ', ${widget.unreadCount} unread' : ''}'
+            : widget.isBlocked
             ? '${widget.name}, blocked friendship'
             : widget.hasFriendshipMoment
                 ? '${widget.name}, friendship moment ready, ${widget.preview}'
@@ -18965,13 +19016,17 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
                                   color: Colors.white.withValues(alpha: 0.045),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: NatterChildTheme.connect.withValues(
-                                      alpha: 0.24,
-                                    ),
+                                    color: widget.isHomeConnection
+                                        ? NatterBrand.yellow.withValues(alpha: 0.28)
+                                        : NatterChildTheme.connect.withValues(
+                                            alpha: 0.24,
+                                          ),
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: NatterChildTheme.connect
+                                      color: (widget.isHomeConnection
+                                              ? NatterBrand.yellow
+                                              : NatterChildTheme.connect)
                                           .withValues(alpha: 0.08),
                                       blurRadius: 12,
                                     ),
@@ -19132,7 +19187,14 @@ class _NatterChildChatTileState extends State<NatterChildChatTile> {
                                       ),
                                       const SizedBox(width: 7),
                                     ],
-                                    SizedBox(
+                                    if (widget.isHomeConnection)
+                                      const Icon(
+                                        Icons.chevron_right_rounded,
+                                        size: 25,
+                                        color: NatterChildTheme.textSecondary,
+                                      )
+                                    else
+                                      SizedBox(
                                       width: 58,
                                       child: Column(
                                         mainAxisAlignment:
@@ -21138,6 +21200,46 @@ class _ChatsScreenState extends State<ChatsScreen> {
     }
   }
 
+  Widget _homeConnectionCard(BuildContext context, AppState state) {
+    final parentId = state.activeParentId;
+    final childId = state.activeChildId;
+    if (parentId == null || childId == null) {
+      return const SizedBox.shrink();
+    }
+
+    return FamilyUnreadCount(
+      key: ValueKey('family-home-$parentId-$childId'),
+      parentId: parentId,
+      childId: childId,
+      asParent: false,
+      builder: (context, unreadCount) => NatterChildChatTile(
+        name: 'Home',
+        preview: 'Message your grown-up',
+        stageEmoji: '',
+        isHomeConnection: true,
+        avatar: const Icon(
+          Icons.home_rounded,
+          color: NatterBrand.yellow,
+          size: 26,
+        ),
+        unreadCount: unreadCount,
+        hasUnread: unreadCount > 0,
+        isBlocked: false,
+        onTap: () => Navigator.push(
+          context,
+          calmRoute(
+            FamilyConversationScreen(
+              parentId: parentId,
+              childId: childId,
+              title: 'Home',
+              isParent: false,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = AppStateScope.of(context);
@@ -21198,6 +21300,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         state: state,
                         conversationsStream: _conversationsStream,
                       ),
+                      const SizedBox(height: 12),
+                      _homeConnectionCard(context, state),
+                      const SizedBox(height: 12),
                       if (!isNewChild)
                         BrandCard(
                           child: Column(
@@ -26493,6 +26598,481 @@ class _AlertRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Private parent-child conversation. This never participates in the
+/// child-to-child friendship, journey or behavioural scoring pipelines.
+/// A compact unread counter shared by the child's Home card and the parent
+/// messaging action. The stream identities remain stable across rebuilds.
+class FamilyUnreadCount extends StatefulWidget {
+  const FamilyUnreadCount({
+    super.key,
+    required this.parentId,
+    required this.childId,
+    required this.asParent,
+    required this.builder,
+  });
+
+  final String parentId;
+  final String childId;
+  final bool asParent;
+  final Widget Function(BuildContext, int) builder;
+
+  @override
+  State<FamilyUnreadCount> createState() => _FamilyUnreadCountState();
+}
+
+class _FamilyUnreadCountState extends State<FamilyUnreadCount> {
+  late Stream<QuerySnapshot<Map<String, dynamic>>> _messageStream;
+  late Stream<DocumentSnapshot<Map<String, dynamic>>> _readStream;
+
+  void _subscribe() {
+    final repository = FamilyMessageRepository(
+      parentId: widget.parentId,
+      childId: widget.childId,
+    );
+    _messageStream = repository.watchMessages();
+    _readStream = repository.watchReadState(asParent: widget.asParent);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribe();
+  }
+
+  @override
+  void didUpdateWidget(covariant FamilyUnreadCount oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.parentId != widget.parentId ||
+        oldWidget.childId != widget.childId ||
+        oldWidget.asParent != widget.asParent) {
+      _subscribe();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: _readStream,
+      builder: (context, readSnapshot) {
+        final rawLastRead = readSnapshot.data?.data()?['lastReadAt'];
+        final lastReadAt = rawLastRead is Timestamp ? rawLastRead : null;
+
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: _messageStream,
+          builder: (context, messageSnapshot) {
+            if (readSnapshot.hasError || messageSnapshot.hasError ||
+                !readSnapshot.hasData || !messageSnapshot.hasData) {
+              return widget.builder(context, 0);
+            }
+            final items = messageSnapshot.data?.docs ?? [];
+            final unread = countUnreadFamilyMessages(
+              items.map((doc) => doc.data()),
+              asParent: widget.asParent,
+              lastReadAt: lastReadAt,
+            );
+            return widget.builder(context, unread);
+          },
+        );
+      },
+    );
+  }
+}
+
+/// Matches the blue unread bubble on existing child friendship chat tiles.
+class FamilyUnreadBadge extends StatelessWidget {
+  const FamilyUnreadBadge({super.key, required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    if (count <= 0) return const SizedBox.shrink();
+    return Container(
+      width: 25,
+      height: 25,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: NatterChildTheme.connect.withValues(alpha: 0.13),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: NatterChildTheme.connect.withValues(alpha: 0.40),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: NatterChildTheme.connect.withValues(alpha: 0.14),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Text(
+        count > 9 ? '9+' : '$count',
+        style: const TextStyle(
+          color: NatterChildTheme.textPrimary,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class FamilyConversationScreen extends StatefulWidget {
+  const FamilyConversationScreen({
+    super.key,
+    required this.parentId,
+    required this.childId,
+    required this.title,
+    required this.isParent,
+  });
+
+  final String parentId;
+  final String childId;
+  final String title;
+  final bool isParent;
+
+  @override
+  State<FamilyConversationScreen> createState() =>
+      _FamilyConversationScreenState();
+}
+
+class _FamilyConversationScreenState extends State<FamilyConversationScreen> {
+  final TextEditingController _draft = TextEditingController();
+  late final FamilyMessageRepository _messages;
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> _messageStream;
+  bool _sending = false;
+  bool _markingRead = false;
+  String? _lastMarkedIncomingId;
+  String? _feedback;
+
+  @override
+  void initState() {
+    super.initState();
+    _messages = FamilyMessageRepository(
+      parentId: widget.parentId,
+      childId: widget.childId,
+    );
+    _messageStream = _messages.watchMessages();
+    _draft.addListener(_refreshSendButton);
+  }
+
+  void _refreshSendButton() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _draft.removeListener(_refreshSendButton);
+    _draft.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    if (_sending) return;
+    final text = _draft.text.trim();
+    if (text.isEmpty) return;
+
+    // Home remains available during Quiet Hours: children can always
+    // message their linked grown-up, independently of friendship limits.
+
+    setState(() {
+      _sending = true;
+      _feedback = null;
+    });
+
+    try {
+      await _messages.sendMessage(text: text, asParent: widget.isParent);
+      if (!mounted) return;
+      if (_draft.text.trim() == text) _draft.clear();
+    } catch (error) {
+      debugPrint('Natter family message send failed: $error');
+      if (!mounted) return;
+      setState(() {
+        _feedback = 'Message not sent. Your words are still here to retry.';
+      });
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Widget _messageBubble(Map<String, dynamic> message) {
+    final isMine = familyMessageIsMine(message, asParent: widget.isParent);
+    final content = (message['text'] ?? '').toString();
+
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 320),
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isMine
+              ? const Color(0xFF1C507A)
+              : const Color(0xFF1B2E4D),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isMine ? 20 : 7),
+            bottomRight: Radius.circular(isMine ? 7 : 20),
+          ),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.11),
+          ),
+        ),
+        child: Text(
+          content,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            height: 1.35,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Mark only received messages as read, once the thread is visible. A
+  /// marker is owned by this participant and cannot clear another's unread.
+  void _scheduleReadMarker(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> items,
+  ) {
+    if (_markingRead || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+      return;
+    }
+    QueryDocumentSnapshot<Map<String, dynamic>>? latestIncoming;
+    for (final doc in items) {
+      if (!familyMessageIsMine(doc.data(), asParent: widget.isParent) &&
+          doc.data()['createdAt'] is Timestamp) {
+        latestIncoming = doc;
+        break;
+      }
+    }
+    if (latestIncoming == null ||
+        latestIncoming.id == _lastMarkedIncomingId) return;
+
+    _markingRead = true;
+    _lastMarkedIncomingId = latestIncoming.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) {
+        _markingRead = false;
+        _lastMarkedIncomingId = null;
+        return;
+      }
+      try {
+        await _messages.markRead(asParent: widget.isParent);
+      } catch (error) {
+        debugPrint('Natter family read marker failed: $error');
+      } finally {
+        _markingRead = false;
+        if (mounted) setState(() {});
+      }
+    });
+  }
+
+  Widget _thread() {
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: _messageStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'Messages could not load. Please try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          );
+        }
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        final items = snapshot.data?.docs ?? [];
+        if (items.isNotEmpty) _scheduleReadMarker(items);
+        if (items.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Text(
+                widget.isParent
+                    ? 'Say hello to ${widget.title}. Your family chat starts here.'
+                    : 'A little place to talk to your grown-up. Say hello!',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  height: 1.5,
+                ),
+              ),
+            ),
+          );
+        }
+        return ListView.builder(
+          reverse: true,
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+          itemCount: items.length,
+          itemBuilder: (context, index) => _messageBubble(items[index].data()),
+        );
+      },
+    );
+  }
+
+  Widget _composer() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF08172F).withValues(alpha: 0.94),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.09),
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_feedback != null) ...[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _feedback!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFFF2C9DB),
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _draft,
+                    minLines: 1,
+                    maxLines: 4,
+                    maxLength: 5000,
+                    textCapitalization: TextCapitalization.sentences,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _send(),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      hintText: 'Type a message',
+                      hintStyle: const TextStyle(color: Colors.white60),
+                      filled: true,
+                      fillColor: const Color(0xFF152A48),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 17,
+                        vertical: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(28),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton.filled(
+                  tooltip: 'Send family message',
+                  onPressed: _sending || _draft.text.trim().isEmpty
+                      ? null
+                      : _send,
+                  style: IconButton.styleFrom(
+                    backgroundColor: NatterBrand.green,
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor:
+                        NatterBrand.green.withValues(alpha: 0.30),
+                  ),
+                  icon: _sending
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.black87,
+                          ),
+                        )
+                      : const Icon(Icons.send_rounded),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = widget.title.trim().isEmpty
+        ? (widget.isParent ? 'Family messages' : 'Home')
+        : widget.title;
+    final body = Column(
+      children: [
+        Expanded(child: _thread()),
+        _composer(),
+      ],
+    );
+    final bar = AppBar(
+      backgroundColor: Colors.transparent,
+      centerTitle: true,
+      titleSpacing: 0,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          Text(
+            widget.isParent ? 'Family messages' : 'Your grown-up',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Icon(
+            widget.isParent
+                ? Icons.chat_bubble_outline_rounded
+                : Icons.home_rounded,
+            color: widget.isParent ? NatterBrand.blue : NatterBrand.yellow,
+          ),
+        ),
+      ],
+    );
+
+    if (widget.isParent) {
+      return ParentBrandScaffold(
+        worldStage: NatterWorldStage.parentMorning,
+        appBar: bar,
+        child: SafeArea(child: body),
+      );
+    }
+    return BrandScaffold(
+      background: const NatterChildBackground(),
+      appBar: bar,
+      child: body,
     );
   }
 }
