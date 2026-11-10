@@ -6338,6 +6338,7 @@ class AppState extends ChangeNotifier {
     bool isFlagged = false,
     String journeySendRoute = 'unverified',
     void Function(String)? onTiming,
+    void Function()? onMessageWritten,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return false;
@@ -6391,6 +6392,9 @@ class AppState extends ChangeNotifier {
       'receiverActionByChildId': null,
     });
     onTiming?.call('repository: message write acknowledged');
+    // The message has been saved; subsequent relationship updates should
+    // never keep the original draft visible in the chat composer.
+    onMessageWritten?.call();
 
     if (!isFlagged) {
       await conversationsRef().doc(conversationId).update({
@@ -22214,6 +22218,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   int _sendTraceSequence = 0;
+  bool _sendInProgress = false;
   // Temporary profile-only diagnostics. No message content or IDs.
   final ValueNotifier<String> _sendTimingReport = ValueNotifier<String>(
     'Send a normal friendship message to see timing data.',
@@ -22704,8 +22709,9 @@ class _ChatScreenState extends State<ChatScreen> {
     }());
     onTiming?.call('typing reset requested (non-blocking)');
 
-    // Keep the draft until the send routine confirms delivery.
-    // Profile builds expose only the Firebase error code for testing.
+    // Keep the draft until Firestore acknowledges the message write, but
+    // don't make the child wait for unrelated follow-up calculations.
+    bool messageWritten = false;
     bool delivered;
     try {
       delivered = await state.sendMessageToConversation(
@@ -22714,6 +22720,17 @@ class _ChatScreenState extends State<ChatScreen> {
         isFlagged: flagged,
         journeySendRoute: journeySendRoute,
         onTiming: onTiming,
+        onMessageWritten: () {
+          messageWritten = true;
+          if (!mounted) return;
+          // The stream may already display the new message. Clear its draft
+          // now, while preserving any newer text typed during the request.
+          if (controller.text.trim() == text.trim()) {
+            controller.clear();
+          }
+          onTiming?.call('input cleared after message write');
+          _journeyGuidanceSession.completeAttempt(delivered: true);
+        },
       );
       onTiming?.call('repository returned to UI');
     } on FirebaseException catch (error, stackTrace) {
@@ -22721,9 +22738,11 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() {
-        feedback = kProfileMode
-            ? 'Message not sent (${error.code}). Please try again.'
-            : 'Message not sent. Please try again.';
+        feedback = messageWritten
+            ? 'Message sent, but a follow-up update could not complete.'
+            : (kProfileMode
+                  ? 'Message not sent (${error.code}). Please try again.'
+                  : 'Message not sent. Please try again.');
       });
       return;
     } catch (error, stackTrace) {
@@ -22731,7 +22750,9 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() {
-        feedback = 'Message not sent. Please try again.';
+        feedback = messageWritten
+            ? 'Message sent, but a follow-up update could not complete.'
+            : 'Message not sent. Please try again.';
       });
       return;
     }
@@ -22746,14 +22767,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!mounted) return;
 
-    // Do not erase newer text entered while the network request was pending.
-    if (controller.text.trim() == text.trim()) {
-      controller.clear();
-    }
-    onTiming?.call('input cleared');
-
-    _journeyGuidanceSession.completeAttempt(delivered: true);
-
+    // Successful writes clear the composer in onMessageWritten, before the
+    // slower friendship and behaviour updates finish.
     if (!flagged) {
       _sendLockTimer?.cancel();
       _sendLockedUntil = null;
@@ -22808,6 +22823,11 @@ class _ChatScreenState extends State<ChatScreen> {
       JourneyGuidanceSession();
 
   void _send() async {
+    // Suppress duplicate taps while a message is being checked, written
+    // and its required follow-up updates are running.
+    if (_sendInProgress) return;
+    _sendInProgress = true;
+    try {
     final attempt = ++_sendTraceSequence;
     final clock = Stopwatch()..start();
     final timingLines = <String>[];
@@ -23335,6 +23355,9 @@ class _ChatScreenState extends State<ChatScreen> {
       onTiming: trace,
     );
     trace('send finished');
+    } finally {
+      _sendInProgress = false;
+    }
   }
 
   @override
