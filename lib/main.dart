@@ -6337,6 +6337,7 @@ class AppState extends ChangeNotifier {
     required String text,
     bool isFlagged = false,
     String journeySendRoute = 'unverified',
+    void Function(String)? onTiming,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return false;
@@ -6344,6 +6345,7 @@ class AppState extends ChangeNotifier {
 
     final conversationSnap = await conversationsRef().doc(conversationId).get();
     final conversationData = conversationSnap.data() ?? {};
+    onTiming?.call('repository: policy read');
 
     final participantChildIds = List<String>.from(
       conversationData['participantChildIds'] ?? const [],
@@ -6388,6 +6390,7 @@ class AppState extends ChangeNotifier {
       'receiverActionAt': null,
       'receiverActionByChildId': null,
     });
+    onTiming?.call('repository: message write acknowledged');
 
     if (!isFlagged) {
       await conversationsRef().doc(conversationId).update({
@@ -6475,6 +6478,7 @@ class AppState extends ChangeNotifier {
       await conversationsRef().doc(conversationId).update({'spikeHeat': 0});
     }
 
+    onTiming?.call('repository: follow-up updates complete');
     return true;
   }
 
@@ -22209,6 +22213,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  int _sendTraceSequence = 0;
   final controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? feedback;
@@ -22677,18 +22682,23 @@ class _ChatScreenState extends State<ChatScreen> {
     String text, {
     bool flagged = false,
     String journeySendRoute = 'unverified',
+    void Function(String)? onTiming,
   }) async {
     final state = AppStateScope.of(context);
     _stallTimer?.cancel();
 
     if (!_canSend) return;
 
-    // A stale typing indicator should never prevent an actual message.
-    try {
-      await state.clearTyping(conversationId: widget.conversationId);
-    } catch (error) {
-      debugPrint('Natter: could not clear typing before send: $error');
-    }
+    // Typing presence is not a send requirement: keep it updated without
+    // waiting for its network round-trip before writing the message.
+    unawaited(() async {
+      try {
+        await state.clearTyping(conversationId: widget.conversationId);
+      } catch (error) {
+        debugPrint('Natter: could not clear typing before send: $error');
+      }
+    }());
+    onTiming?.call('typing reset requested (non-blocking)');
 
     // Keep the draft until the send routine confirms delivery.
     // Profile builds expose only the Firebase error code for testing.
@@ -22699,7 +22709,9 @@ class _ChatScreenState extends State<ChatScreen> {
         text: text,
         isFlagged: flagged,
         journeySendRoute: journeySendRoute,
+        onTiming: onTiming,
       );
+      onTiming?.call('repository returned to UI');
     } on FirebaseException catch (error, stackTrace) {
       debugPrint('Natter message send failed: ${error.plugin}/${error.code}');
       debugPrintStack(stackTrace: stackTrace);
@@ -22734,6 +22746,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (controller.text.trim() == text.trim()) {
       controller.clear();
     }
+    onTiming?.call('input cleared');
 
     _journeyGuidanceSession.completeAttempt(delivered: true);
 
@@ -22791,6 +22804,14 @@ class _ChatScreenState extends State<ChatScreen> {
       JourneyGuidanceSession();
 
   void _send() async {
+    final attempt = ++_sendTraceSequence;
+    final clock = Stopwatch()..start();
+    void trace(String phase) {
+      if (kProfileMode) {
+        debugPrint('Natter child send #$attempt: $phase (+${clock.elapsedMilliseconds}ms)');
+      }
+    }
+    trace('send pressed');
     final state = AppStateScope.of(context);
 
     await _clearExpiredSendPause();
@@ -22800,6 +22821,7 @@ class _ChatScreenState extends State<ChatScreen> {
     await state.applyRepairDecay(widget.conversationId);
     await state.applyEscalationChainDecay(widget.conversationId);
     await state.clearExpiredTargetingWindow(widget.conversationId);
+    trace('pre-send decay checks complete');
 
     final conversationSnap = await state
         .conversationsRef()
@@ -22807,6 +22829,7 @@ class _ChatScreenState extends State<ChatScreen> {
         .get();
 
     final conversationData = conversationSnap.data() ?? {};
+    trace('chat policy document read');
     final escalationScore =
         (conversationData['conversationEscalationScore'] ?? 0) as num;
     final blockedByChildIds = List<String>.from(
@@ -22881,6 +22904,7 @@ class _ChatScreenState extends State<ChatScreen> {
       baseLevel: safety.level,
       conversationData: conversationData,
     );
+    trace('safety decision: ${adjustedLevel.name}');
 
     if (adjustedLevel == SafetyLevel.block) {
       _journeyGuidanceSession.recordGuidance();
@@ -23094,7 +23118,7 @@ class _ChatScreenState extends State<ChatScreen> {
           outcome: 'protected_delivery',
         );
 
-        await _sendMessageNow(text, flagged: true);
+        await _sendMessageNow(text, flagged: true, onTiming: trace);
       } else {
         state.recordKindRewrite();
         _showRepairAcknowledgement('💛 That message helped calm things down.');
@@ -23253,7 +23277,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         }
 
-        await _sendMessageNow(text, flagged: true);
+        await _sendMessageNow(text, flagged: true, onTiming: trace);
       } else {
         state.recordKindRewrite();
 
@@ -23299,7 +23323,9 @@ class _ChatScreenState extends State<ChatScreen> {
       journeySendRoute: _journeyGuidanceSession.routeForAttempt(
         protectedDelivery: false,
       ),
+      onTiming: trace,
     );
+    trace('send finished');
   }
 
   @override
