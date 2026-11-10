@@ -22214,6 +22214,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   int _sendTraceSequence = 0;
+  // Temporary profile-only diagnostics. No message content or IDs.
+  final ValueNotifier<String> _sendTimingReport = ValueNotifier<String>(
+    'Send a normal friendship message to see timing data.',
+  );
   final controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? feedback;
@@ -22806,9 +22810,14 @@ class _ChatScreenState extends State<ChatScreen> {
   void _send() async {
     final attempt = ++_sendTraceSequence;
     final clock = Stopwatch()..start();
+    final timingLines = <String>[];
     void trace(String phase) {
-      if (kProfileMode) {
-        debugPrint('Natter child send #$attempt: $phase (+${clock.elapsedMilliseconds}ms)');
+      if (!kProfileMode) return;
+      final line = '${clock.elapsedMilliseconds}ms  $phase';
+      debugPrint('Natter child send #$attempt: $line');
+      timingLines.add(line);
+      if (mounted && attempt == _sendTraceSequence) {
+        _sendTimingReport.value = timingLines.join('\n');
       }
     }
     trace('send pressed');
@@ -23336,6 +23345,7 @@ class _ChatScreenState extends State<ChatScreen> {
     controller.dispose();
     _bannerTimer?.cancel();
     _friendshipStageCelebrationTimer?.cancel();
+    _sendTimingReport.dispose();
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
@@ -24115,6 +24125,54 @@ class _ChatScreenState extends State<ChatScreen> {
                               ],
                             ),
                           ],
+                        ),
+                      ),
+                    // Temporary on-screen send timings for profile builds.
+                    if (kProfileMode)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 3, 12, 8),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0A1D35),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: NatterBrand.blue.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: ValueListenableBuilder<String>(
+                            valueListenable: _sendTimingReport,
+                            builder: (context, report, _) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'SEND TIMINGS · TEST BUILD',
+                                  style: TextStyle(
+                                    color: NatterBrand.blue,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxHeight: 160),
+                                  child: SingleChildScrollView(
+                                    child: Text(
+                                      report,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 10,
+                                        fontFamily: 'monospace',
+                                        height: 1.25,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     if (feedback != null)
