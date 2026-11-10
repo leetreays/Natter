@@ -11267,8 +11267,8 @@ class ParentHomeScreen extends StatelessWidget {
                                   ),
                                   if (unreadCount > 0)
                                     Positioned(
-                                      right: -3,
-                                      top: -5,
+                                      right: -7,
+                                      top: -12,
                                       child: IgnorePointer(
                                         child: FamilyUnreadBadge(
                                           count: unreadCount,
@@ -26743,7 +26743,7 @@ class _FamilyUnreadCountState extends State<FamilyUnreadCount> {
   }
 }
 
-/// Matches the blue unread bubble on existing child friendship chat tiles.
+/// Solid, legible badge for unread family messages on the parent card.
 class FamilyUnreadBadge extends StatelessWidget {
   const FamilyUnreadBadge({super.key, required this.count});
   final int count;
@@ -26756,22 +26756,24 @@ class FamilyUnreadBadge extends StatelessWidget {
       height: 25,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: NatterChildTheme.connect.withValues(alpha: 0.13),
+        // An opaque fill keeps the message button border from showing through.
+        color: const Color(0xFF276AA5),
         shape: BoxShape.circle,
         border: Border.all(
-          color: NatterChildTheme.connect.withValues(alpha: 0.40),
+          color: const Color(0xFF162C4B),
+          width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: NatterChildTheme.connect.withValues(alpha: 0.14),
-            blurRadius: 10,
+            color: NatterChildTheme.connect.withValues(alpha: 0.24),
+            blurRadius: 8,
           ),
         ],
       ),
       child: Text(
         count > 9 ? '9+' : '$count',
         style: const TextStyle(
-          color: NatterChildTheme.textPrimary,
+          color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.w900,
         ),
