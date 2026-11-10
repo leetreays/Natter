@@ -6337,7 +6337,6 @@ class AppState extends ChangeNotifier {
     required String text,
     bool isFlagged = false,
     String journeySendRoute = 'unverified',
-    void Function(String)? onTiming,
     void Function()? onMessageWritten,
   }) async {
     final trimmed = text.trim();
@@ -6346,7 +6345,6 @@ class AppState extends ChangeNotifier {
 
     final conversationSnap = await conversationsRef().doc(conversationId).get();
     final conversationData = conversationSnap.data() ?? {};
-    onTiming?.call('repository: policy read');
 
     final participantChildIds = List<String>.from(
       conversationData['participantChildIds'] ?? const [],
@@ -6391,7 +6389,6 @@ class AppState extends ChangeNotifier {
       'receiverActionAt': null,
       'receiverActionByChildId': null,
     });
-    onTiming?.call('repository: message write acknowledged');
     // The message has been saved; subsequent relationship updates should
     // never keep the original draft visible in the chat composer.
     onMessageWritten?.call();
@@ -6482,7 +6479,6 @@ class AppState extends ChangeNotifier {
       await conversationsRef().doc(conversationId).update({'spikeHeat': 0});
     }
 
-    onTiming?.call('repository: follow-up updates complete');
     return true;
   }
 
@@ -22217,12 +22213,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  int _sendTraceSequence = 0;
   bool _sendInProgress = false;
-  // Temporary profile-only diagnostics. No message content or IDs.
-  final ValueNotifier<String> _sendTimingReport = ValueNotifier<String>(
-    'Send a normal friendship message to see timing data.',
-  );
   final controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? feedback;
@@ -22726,7 +22717,6 @@ class _ChatScreenState extends State<ChatScreen> {
     String text, {
     bool flagged = false,
     String journeySendRoute = 'unverified',
-    void Function(String)? onTiming,
   }) async {
     final state = AppStateScope.of(context);
     _stallTimer?.cancel();
@@ -22742,7 +22732,6 @@ class _ChatScreenState extends State<ChatScreen> {
         debugPrint('Natter: could not clear typing before send: $error');
       }
     }());
-    onTiming?.call('typing reset requested (non-blocking)');
 
     // Keep the draft until Firestore acknowledges the message write, but
     // don't make the child wait for unrelated follow-up calculations.
@@ -22754,7 +22743,6 @@ class _ChatScreenState extends State<ChatScreen> {
         text: text,
         isFlagged: flagged,
         journeySendRoute: journeySendRoute,
-        onTiming: onTiming,
         onMessageWritten: () {
           messageWritten = true;
           if (!mounted) return;
@@ -22763,11 +22751,9 @@ class _ChatScreenState extends State<ChatScreen> {
           if (controller.text.trim() == text.trim()) {
             controller.clear();
           }
-          onTiming?.call('input cleared after message write');
           _journeyGuidanceSession.completeAttempt(delivered: true);
         },
       );
-      onTiming?.call('repository returned to UI');
     } on FirebaseException catch (error, stackTrace) {
       debugPrint('Natter message send failed: ${error.plugin}/${error.code}');
       debugPrintStack(stackTrace: stackTrace);
@@ -22861,19 +22847,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendCheckedMessage() async {
-    final attempt = ++_sendTraceSequence;
-    final clock = Stopwatch()..start();
-    final timingLines = <String>[];
-    void trace(String phase) {
-      if (!kProfileMode) return;
-      final line = '${clock.elapsedMilliseconds}ms  $phase';
-      debugPrint('Natter child send #$attempt: $line');
-      timingLines.add(line);
-      if (mounted && attempt == _sendTraceSequence) {
-        _sendTimingReport.value = timingLines.join('\n');
-      }
-    }
-    trace('send pressed');
     final state = AppStateScope.of(context);
 
     await _clearExpiredSendPause();
@@ -22883,7 +22856,6 @@ class _ChatScreenState extends State<ChatScreen> {
     await state.applyRepairDecay(widget.conversationId);
     await state.applyEscalationChainDecay(widget.conversationId);
     await state.clearExpiredTargetingWindow(widget.conversationId);
-    trace('pre-send decay checks complete');
 
     final conversationSnap = await state
         .conversationsRef()
@@ -22891,7 +22863,6 @@ class _ChatScreenState extends State<ChatScreen> {
         .get();
 
     final conversationData = conversationSnap.data() ?? {};
-    trace('chat policy document read');
     final escalationScore =
         (conversationData['conversationEscalationScore'] ?? 0) as num;
     final blockedByChildIds = List<String>.from(
@@ -22966,7 +22937,6 @@ class _ChatScreenState extends State<ChatScreen> {
       baseLevel: safety.level,
       conversationData: conversationData,
     );
-    trace('safety decision: ${adjustedLevel.name}');
 
     if (adjustedLevel == SafetyLevel.block) {
       _journeyGuidanceSession.recordGuidance();
@@ -23180,7 +23150,7 @@ class _ChatScreenState extends State<ChatScreen> {
           outcome: 'protected_delivery',
         );
 
-        await _sendMessageNow(text, flagged: true, onTiming: trace);
+        await _sendMessageNow(text, flagged: true);
       } else {
         state.recordKindRewrite();
         _showRepairAcknowledgement('💛 That message helped calm things down.');
@@ -23339,7 +23309,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         }
 
-        await _sendMessageNow(text, flagged: true, onTiming: trace);
+        await _sendMessageNow(text, flagged: true);
       } else {
         state.recordKindRewrite();
 
@@ -23385,9 +23355,7 @@ class _ChatScreenState extends State<ChatScreen> {
       journeySendRoute: _journeyGuidanceSession.routeForAttempt(
         protectedDelivery: false,
       ),
-      onTiming: trace,
     );
-    trace('send finished');
   }
 
   @override
@@ -23398,7 +23366,6 @@ class _ChatScreenState extends State<ChatScreen> {
     controller.dispose();
     _bannerTimer?.cancel();
     _friendshipStageCelebrationTimer?.cancel();
-    _sendTimingReport.dispose();
     super.dispose();
     _burstCoachHideTimer?.cancel();
     _targetingCoachHideTimer?.cancel();
@@ -24178,53 +24145,6 @@ class _ChatScreenState extends State<ChatScreen> {
                               ],
                             ),
                           ],
-                        ),
-                      ),
-                    // Temporary on-screen send timings for profile builds.
-                    if (kProfileMode)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 3, 12, 8),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0A1D35),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: NatterBrand.blue.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: ValueListenableBuilder<String>(
-                            valueListenable: _sendTimingReport,
-                            builder: (context, report, _) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'SEND TIMINGS · TEST BUILD',
-                                  style: TextStyle(
-                                    color: NatterBrand.blue,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                SizedBox(
-                                  height: 160,
-                                  child: SingleChildScrollView(
-                                    child: Text(
-                                      report,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 10,
-                                        fontFamily: 'monospace',
-                                        height: 1.25,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
                       ),
                     if (feedback != null)
