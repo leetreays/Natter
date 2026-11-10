@@ -22823,11 +22823,17 @@ class _ChatScreenState extends State<ChatScreen> {
       JourneyGuidanceSession();
 
   void _send() async {
-    // Suppress duplicate taps while a message is being checked, written
-    // and its required follow-up updates are running.
+    // Prevent duplicate taps while checks, delivery and updates are running.
     if (_sendInProgress) return;
     _sendInProgress = true;
     try {
+      await _sendCheckedMessage();
+    } finally {
+      _sendInProgress = false;
+    }
+  }
+
+  Future<void> _sendCheckedMessage() async {
     final attempt = ++_sendTraceSequence;
     final clock = Stopwatch()..start();
     final timingLines = <String>[];
@@ -23355,9 +23361,6 @@ class _ChatScreenState extends State<ChatScreen> {
       onTiming: trace,
     );
     trace('send finished');
-    } finally {
-      _sendInProgress = false;
-    }
   }
 
   @override
