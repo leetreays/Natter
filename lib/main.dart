@@ -11101,128 +11101,189 @@ class ParentHomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: NatterBrand.blue.withOpacity(0.09),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: NatterBrand.blue.withOpacity(0.16),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    _avatarIcon(child.avatar),
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              child.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: child.linkedDevice
-                                  ? NatterBrand.green.withOpacity(0.15)
-                                  : Colors.white.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              child.linkedDevice
-                                  ? 'Connected'
-                                  : 'Not connected',
-                              style: TextStyle(
-                                color: child.linkedDevice
-                                    ? NatterBrand.green
-                                    : Colors.white.withOpacity(0.58),
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Natter code  ·  ${child.accessCode}',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.56),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
+                // Give the child's name the full available text width.
+                // Connection status and the message action sit below it.
+                Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: NatterBrand.blue.withOpacity(0.09),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: NatterBrand.blue.withOpacity(0.16),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                Builder(
-                  builder: (context) {
-                    final parentId = FirebaseAuth.instance.currentUser?.uid;
-                    if (parentId == null) return const SizedBox.shrink();
-                    return FamilyUnreadCount(
-                      key: ValueKey('family-parent-$parentId-${child.childId}'),
-                      parentId: parentId,
-                      childId: child.childId,
-                      asParent: true,
-                      builder: (context, unreadCount) => Stack(
-                        clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        _avatarIcon(child.avatar),
+                        color: Colors.white,
+                        size: 25,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            tooltip: unreadCount > 0
-                                ? 'Message ${child.name}, $unreadCount unread'
-                                : 'Message ${child.name}',
-                            icon: const Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              color: NatterBrand.blue,
-                            ),
-                            onPressed: () => Navigator.push(
-                              context,
-                              calmRoute(
-                                FamilyConversationScreen(
-                                  parentId: parentId,
-                                  childId: child.childId,
-                                  title: child.name,
-                                  isParent: true,
-                                ),
-                              ),
+                          Text(
+                            child.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 17,
                             ),
                           ),
-                          if (unreadCount > 0)
-                            Positioned(
-                              right: -3,
-                              top: -5,
-                              child: IgnorePointer(
-                                child: FamilyUnreadBadge(count: unreadCount),
-                              ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Natter code  ·  ${child.accessCode}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.56),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
                             ),
+                          ),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.white54,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 11),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Keep a compact icon-only action on particularly narrow
+                    // devices; on wider cards there is room for "Message".
+                    final showMessageLabel = constraints.maxWidth >=
+                        (child.linkedDevice ? 230 : 250);
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: child.linkedDevice
+                                ? NatterBrand.green.withOpacity(0.15)
+                                : Colors.white.withOpacity(0.07),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            child.linkedDevice ? 'Connected' : 'Not connected',
+                            style: TextStyle(
+                              color: child.linkedDevice
+                                  ? NatterBrand.green
+                                  : Colors.white.withOpacity(0.58),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final parentId =
+                                FirebaseAuth.instance.currentUser?.uid;
+                            if (parentId == null) {
+                              return const SizedBox.shrink();
+                            }
+                            return FamilyUnreadCount(
+                              key: ValueKey(
+                                'family-parent-$parentId-${child.childId}',
+                              ),
+                              parentId: parentId,
+                              childId: child.childId,
+                              asParent: true,
+                              builder: (context, unreadCount) => Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Tooltip(
+                                    message: unreadCount > 0
+                                        ? 'Message ${child.name}, $unreadCount unread'
+                                        : 'Message ${child.name}',
+                                    child: TextButton(
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        calmRoute(
+                                          FamilyConversationScreen(
+                                            parentId: parentId,
+                                            childId: child.childId,
+                                            title: child.name,
+                                            isParent: true,
+                                          ),
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: NatterBrand.blue,
+                                        backgroundColor:
+                                            NatterBrand.blue.withOpacity(0.12),
+                                        minimumSize: const Size(48, 44),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                          side: BorderSide(
+                                            color: NatterBrand.blue
+                                                .withOpacity(0.28),
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.chat_bubble_outline_rounded,
+                                            size: 21,
+                                          ),
+                                          if (showMessageLabel) ...[
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'Message',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (unreadCount > 0)
+                                    Positioned(
+                                      right: -7,
+                                      top: -12,
+                                      child: IgnorePointer(
+                                        child: FamilyUnreadBadge(
+                                          count: unreadCount,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     );
                   },
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Colors.white54),
               ],
             ),
           ),
@@ -26682,7 +26743,7 @@ class _FamilyUnreadCountState extends State<FamilyUnreadCount> {
   }
 }
 
-/// Matches the blue unread bubble on existing child friendship chat tiles.
+/// Solid, legible badge for unread family messages on the parent card.
 class FamilyUnreadBadge extends StatelessWidget {
   const FamilyUnreadBadge({super.key, required this.count});
   final int count;
@@ -26695,22 +26756,24 @@ class FamilyUnreadBadge extends StatelessWidget {
       height: 25,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: NatterChildTheme.connect.withValues(alpha: 0.13),
+        // An opaque fill keeps the message button border from showing through.
+        color: const Color(0xFF276AA5),
         shape: BoxShape.circle,
         border: Border.all(
-          color: NatterChildTheme.connect.withValues(alpha: 0.40),
+          color: const Color(0xFF162C4B),
+          width: 1.3,
         ),
         boxShadow: [
           BoxShadow(
-            color: NatterChildTheme.connect.withValues(alpha: 0.14),
-            blurRadius: 10,
+            color: NatterChildTheme.connect.withValues(alpha: 0.24),
+            blurRadius: 8,
           ),
         ],
       ),
       child: Text(
         count > 9 ? '9+' : '$count',
         style: const TextStyle(
-          color: NatterChildTheme.textPrimary,
+          color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.w900,
         ),
