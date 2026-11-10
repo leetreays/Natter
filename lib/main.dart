@@ -22687,6 +22687,41 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // Reuse subscriptions when AppState notifications rebuild the chat screen.
+  AppState? _chatStreamOwner;
+  late Stream<DocumentSnapshot<Map<String, dynamic>>> _conversationStream;
+  late Stream<List<Map<String, dynamic>>> _chatMessagesStream;
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? _typingPresenceStream;
+  String? _typingPresenceChildId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final owner = AppStateScope.of(context);
+    if (identical(_chatStreamOwner, owner)) return;
+    _chatStreamOwner = owner;
+    _conversationStream = owner.conversationDocStream(widget.conversationId);
+    _chatMessagesStream = owner.conversationMessagesStream(
+      widget.conversationId,
+    );
+    _typingPresenceStream = null;
+    _typingPresenceChildId = null;
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> _typingPresenceFor(
+    String otherChildId,
+  ) {
+    if (_typingPresenceStream == null ||
+        _typingPresenceChildId != otherChildId) {
+      _typingPresenceChildId = otherChildId;
+      _typingPresenceStream = _chatStreamOwner!.conversationTypingPresenceStream(
+        conversationId: widget.conversationId,
+        childId: otherChildId,
+      );
+    }
+    return _typingPresenceStream!;
+  }
+
   Future<void> _sendMessageNow(
     String text, {
     bool flagged = false,
@@ -22774,20 +22809,12 @@ class _ChatScreenState extends State<ChatScreen> {
       _sendLockedUntil = null;
     }
 
+    // No artificial 700ms send-button flash. _sendInProgress already
+    // prevents overlapping operations while follow-up work finishes.
     if (!mounted) return;
-
-    setState(() {
-      _canSend = false;
-    });
-
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-
-      setState(() {
-        _canSend = true;
-        feedback = null;
-      });
-    });
+    if (feedback != null) {
+      setState(() => feedback = null);
+    }
 
     if (!flagged && !state.hasCompletedQuest) {
       state.hasCompletedQuest = true;
@@ -23898,7 +23925,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             actions: [
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: state.conversationDocStream(widget.conversationId),
+                stream: _conversationStream,
                 builder: (context, snapshot) {
                   final notice = FriendshipMomentNotice.fromConversationData(
                     snapshot.data?.data(),
@@ -23925,7 +23952,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: state.conversationDocStream(widget.conversationId),
+              stream: _conversationStream,
               builder: (context, snapshot) {
                 final data = snapshot.data?.data() ?? {};
 
@@ -24181,9 +24208,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxHeight: 160),
+                                SizedBox(
+                                  height: 160,
                                   child: SingleChildScrollView(
                                     child: Text(
                                       report,
@@ -24275,9 +24301,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
 
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                      stream: state.conversationDocStream(
-                        widget.conversationId,
-                      ),
+                      stream: _conversationStream,
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
@@ -24630,9 +24654,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                     Expanded(
                       child: StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: AppStateScope.of(
-                          context,
-                        ).conversationMessagesStream(widget.conversationId),
+                        stream: _chatMessagesStream,
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
                             return Center(
@@ -24797,9 +24819,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
 
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                      stream: state.conversationDocStream(
-                        widget.conversationId,
-                      ),
+                      stream: _conversationStream,
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
@@ -25127,11 +25147,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 StreamBuilder<
                                   DocumentSnapshot<Map<String, dynamic>>
                                 >(
-                                  stream: state
-                                      .conversationTypingPresenceStream(
-                                        conversationId: widget.conversationId,
-                                        childId: otherChildId,
-                                      ),
+                                  stream: _typingPresenceFor(otherChildId),
                                   builder: (context, typingSnapshot) {
                                     if (!typingSnapshot.hasData ||
                                         typingSnapshot.data?.exists != true) {
