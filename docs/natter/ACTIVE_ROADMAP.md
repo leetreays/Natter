@@ -4,6 +4,31 @@
 
 This is a prioritisation document, not a release commitment.
 
+## Current delivery sequence — 11 November 2026
+
+**Recently completed:** Family Connections V1 and parent family-card polish (PRs #14–15); smoother child messaging and stable chat rendering (PR #16).
+
+### Now — Child-owned avatars (design and implementation)
+
+Build an identity feature introduced early in the child's welcome/Promise journey, not an engagement reward. The child should be able to choose and subsequently update a distinctive, inclusive avatar, displayed consistently on:
+- their own Chats/profile areas;
+- friendship chat-list identity circles for approved friends;
+- the linked parent's **Your family** card.
+
+Decide avatar visual language, customisation boundaries, onboarding placement, persistence and privacy model *before* writing the full feature. Maintain backward compatibility with existing `avatar` icon strings; the old `AvatarBuilderScreen` / in-memory `AvatarData` are a starting point to inspect, **not** an approved final design. Never require messaging volume, streaks, levels, or payment to change an avatar. Do not expose child account records or profile details to other families merely to show an avatar.
+
+### Queued next — Offline / pending message status
+
+**Tracked:** [Issue #17 — Messaging: clearly show pending/offline delivery status in child chats](https://github.com/leetreays/Natter/issues/17).
+
+The PR #16 offline test showed that while disconnected, Firestore can show a locally pending bubble before server acknowledgement; the draft stays in the composer until reconnection. The recipient later received the message exactly once, but the duplicate-looking draft/bubble is confusing.
+
+**Requirement:** Provide discreet, reliable delivery-state feedback (pending/waiting; acknowledged; genuine failure) without misleading children, losing drafts, duplicating messages, introducing flicker or weakening security. Determine pending status from Firestore write metadata rather than assuming a locally rendered bubble has reached the server. Test reconnection, receiver delivery, rejected writes and recovery. This is a **separate follow-up after avatars**, not part of the already merged performance PR.
+
+### Later child development priorities
+
+Continue kindness-engine nuance/reliability, consistent non-gamified friendship journeys, and meaningful readiness/graduation criteria. These features should recognise demonstrated communication growth, not message volume or time spent in the app.
+
 ## 1. Kindness Engine evolution
 
 ### v1.5
