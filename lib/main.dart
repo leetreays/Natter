@@ -6337,6 +6337,7 @@ class AppState extends ChangeNotifier {
     required String text,
     bool isFlagged = false,
     String journeySendRoute = 'unverified',
+    void Function()? onMessageWritten,
   }) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return false;
@@ -6388,6 +6389,9 @@ class AppState extends ChangeNotifier {
       'receiverActionAt': null,
       'receiverActionByChildId': null,
     });
+    // The message has been saved; subsequent relationship updates should
+    // never keep the original draft visible in the chat composer.
+    onMessageWritten?.call();
 
     if (!isFlagged) {
       await conversationsRef().doc(conversationId).update({
@@ -22209,6 +22213,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  bool _sendInProgress = false;
   final controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? feedback;
@@ -22673,6 +22678,41 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  // Reuse subscriptions when AppState notifications rebuild the chat screen.
+  AppState? _chatStreamOwner;
+  late Stream<DocumentSnapshot<Map<String, dynamic>>> _conversationStream;
+  late Stream<List<Map<String, dynamic>>> _chatMessagesStream;
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? _typingPresenceStream;
+  String? _typingPresenceChildId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final owner = AppStateScope.of(context);
+    if (identical(_chatStreamOwner, owner)) return;
+    _chatStreamOwner = owner;
+    _conversationStream = owner.conversationDocStream(widget.conversationId);
+    _chatMessagesStream = owner.conversationMessagesStream(
+      widget.conversationId,
+    );
+    _typingPresenceStream = null;
+    _typingPresenceChildId = null;
+  }
+
+  Stream<DocumentSnapshot<Map<String, dynamic>>> _typingPresenceFor(
+    String otherChildId,
+  ) {
+    if (_typingPresenceStream == null ||
+        _typingPresenceChildId != otherChildId) {
+      _typingPresenceChildId = otherChildId;
+      _typingPresenceStream = _chatStreamOwner!.conversationTypingPresenceStream(
+        conversationId: widget.conversationId,
+        childId: otherChildId,
+      );
+    }
+    return _typingPresenceStream!;
+  }
+
   Future<void> _sendMessageNow(
     String text, {
     bool flagged = false,
@@ -22683,15 +22723,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!_canSend) return;
 
-    // A stale typing indicator should never prevent an actual message.
-    try {
-      await state.clearTyping(conversationId: widget.conversationId);
-    } catch (error) {
-      debugPrint('Natter: could not clear typing before send: $error');
-    }
+    // Typing presence is not a send requirement: keep it updated without
+    // waiting for its network round-trip before writing the message.
+    unawaited(() async {
+      try {
+        await state.clearTyping(conversationId: widget.conversationId);
+      } catch (error) {
+        debugPrint('Natter: could not clear typing before send: $error');
+      }
+    }());
 
-    // Keep the draft until the send routine confirms delivery.
-    // Profile builds expose only the Firebase error code for testing.
+    // Keep the draft until Firestore acknowledges the message write, but
+    // don't make the child wait for unrelated follow-up calculations.
+    bool messageWritten = false;
     bool delivered;
     try {
       delivered = await state.sendMessageToConversation(
@@ -22699,15 +22743,27 @@ class _ChatScreenState extends State<ChatScreen> {
         text: text,
         isFlagged: flagged,
         journeySendRoute: journeySendRoute,
+        onMessageWritten: () {
+          messageWritten = true;
+          if (!mounted) return;
+          // The stream may already display the new message. Clear its draft
+          // now, while preserving any newer text typed during the request.
+          if (controller.text.trim() == text.trim()) {
+            controller.clear();
+          }
+          _journeyGuidanceSession.completeAttempt(delivered: true);
+        },
       );
     } on FirebaseException catch (error, stackTrace) {
       debugPrint('Natter message send failed: ${error.plugin}/${error.code}');
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() {
-        feedback = kProfileMode
-            ? 'Message not sent (${error.code}). Please try again.'
-            : 'Message not sent. Please try again.';
+        feedback = messageWritten
+            ? 'Message sent, but a follow-up update could not complete.'
+            : (kProfileMode
+                  ? 'Message not sent (${error.code}). Please try again.'
+                  : 'Message not sent. Please try again.');
       });
       return;
     } catch (error, stackTrace) {
@@ -22715,7 +22771,9 @@ class _ChatScreenState extends State<ChatScreen> {
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() {
-        feedback = 'Message not sent. Please try again.';
+        feedback = messageWritten
+            ? 'Message sent, but a follow-up update could not complete.'
+            : 'Message not sent. Please try again.';
       });
       return;
     }
@@ -22730,32 +22788,19 @@ class _ChatScreenState extends State<ChatScreen> {
 
     if (!mounted) return;
 
-    // Do not erase newer text entered while the network request was pending.
-    if (controller.text.trim() == text.trim()) {
-      controller.clear();
-    }
-
-    _journeyGuidanceSession.completeAttempt(delivered: true);
-
+    // Successful writes clear the composer in onMessageWritten, before the
+    // slower friendship and behaviour updates finish.
     if (!flagged) {
       _sendLockTimer?.cancel();
       _sendLockedUntil = null;
     }
 
+    // No artificial 700ms send-button flash. _sendInProgress already
+    // prevents overlapping operations while follow-up work finishes.
     if (!mounted) return;
-
-    setState(() {
-      _canSend = false;
-    });
-
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-
-      setState(() {
-        _canSend = true;
-        feedback = null;
-      });
-    });
+    if (feedback != null) {
+      setState(() => feedback = null);
+    }
 
     if (!flagged && !state.hasCompletedQuest) {
       state.hasCompletedQuest = true;
@@ -22791,6 +22836,17 @@ class _ChatScreenState extends State<ChatScreen> {
       JourneyGuidanceSession();
 
   void _send() async {
+    // Prevent duplicate taps while checks, delivery and updates are running.
+    if (_sendInProgress) return;
+    _sendInProgress = true;
+    try {
+      await _sendCheckedMessage();
+    } finally {
+      _sendInProgress = false;
+    }
+  }
+
+  Future<void> _sendCheckedMessage() async {
     final state = AppStateScope.of(context);
 
     await _clearExpiredSendPause();
@@ -23836,7 +23892,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             actions: [
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                stream: state.conversationDocStream(widget.conversationId),
+                stream: _conversationStream,
                 builder: (context, snapshot) {
                   final notice = FriendshipMomentNotice.fromConversationData(
                     snapshot.data?.data(),
@@ -23863,7 +23919,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ],
             title: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-              stream: state.conversationDocStream(widget.conversationId),
+              stream: _conversationStream,
               builder: (context, snapshot) {
                 final data = snapshot.data?.data() ?? {};
 
@@ -24165,9 +24221,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
 
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                      stream: state.conversationDocStream(
-                        widget.conversationId,
-                      ),
+                      stream: _conversationStream,
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
@@ -24520,9 +24574,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                     Expanded(
                       child: StreamBuilder<List<Map<String, dynamic>>>(
-                        stream: AppStateScope.of(
-                          context,
-                        ).conversationMessagesStream(widget.conversationId),
+                        stream: _chatMessagesStream,
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
                             return Center(
@@ -24687,9 +24739,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
 
                     StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                      stream: state.conversationDocStream(
-                        widget.conversationId,
-                      ),
+                      stream: _conversationStream,
                       builder: (context, conversationSnapshot) {
                         final conversationData =
                             conversationSnapshot.data?.data() ?? {};
@@ -25017,11 +25067,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                 StreamBuilder<
                                   DocumentSnapshot<Map<String, dynamic>>
                                 >(
-                                  stream: state
-                                      .conversationTypingPresenceStream(
-                                        conversationId: widget.conversationId,
-                                        childId: otherChildId,
-                                      ),
+                                  stream: _typingPresenceFor(otherChildId),
                                   builder: (context, typingSnapshot) {
                                     if (!typingSnapshot.hasData ||
                                         typingSnapshot.data?.exists != true) {
