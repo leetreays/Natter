@@ -53,6 +53,28 @@ The user emphasised that the creation process itself should encourage healthy on
 - Avatar builder depth: curated templates with a few meaningful choices versus many individual components.
 - Precise placement alongside the existing promises and sealing ceremony.
 
+## Recommended V1 prototype — 12 November 2026
+
+**Creative proposal (not yet final artwork):** Start with **five or six original Natter creatures**, each with a distinct, easy-to-recognise silhouette at 48px, but some familiar animal-like warmth (ears, tails, whiskers, wings). Use a common illustration language rather than separately styled stock emoji. This resolves the B-versus-C tension by giving the child imaginative freedom without asking them to reproduce a real-world identity.
+
+**Suggested first customisation set:** creature shape; a curated body colour; one pattern/detail; one optional accessory; and a gentle expression choice. No labels assigning moral values, gender, abilities or personality to shapes. All options available from the start, and all reversible.
+
+**Intended rite sequence:** child name → choose and customise creature → short “who can see me?” preview → existing promises/seal → welcome. For existing children, offer an optional character-creation entry from Profile, without blocking their chats.
+
+**Short educational message (draft copy):**
+> “This character helps your friends recognise you. Behind every character is a real person. Your words matter more than how your character looks.”
+
+The message is a one-off gentle reflection, not a question with right/wrong answers or a repeated tutorial. The privacy preview must describe *actual implemented access*, not aspirational visibility before the necessary friend-safe projection and rules are complete.
+
+**Proposed implementation checkpoints:**
+1. Review six cohesive character concepts at large and chat-list scale; verify appeal, readability and contrast on navy before coding.
+2. Add a standalone deterministic avatar renderer/configuration model and a local builder behind the feature branch.
+3. Add safe child-owned persistence and editability, with legacy icon fallbacks and device-relink coverage.
+4. Add the approved-friend avatar-only projection and parent-card integration; security-test access.
+5. Integrate onboarding and test across child, friend and parent accounts before merging.
+
+**Success criteria:** Children can create an identity without disclosing personal appearance, understand who sees it, change it without rewards or loss, and see the same character consistently across the authorised experiences. No new engagement loops or behaviour-driven avatar changes.
+
 ## Questions for design decision
 
 1. Visual language: illustrated human characters, fictional creatures/mascots, or a hybrid choice?
