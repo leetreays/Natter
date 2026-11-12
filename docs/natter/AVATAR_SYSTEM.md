@@ -84,6 +84,21 @@ The message is a one-off gentle reflection, not a question with right/wrong answ
 
 No choice above is final without review.
 
+## Feasibility and quality gate — 12 November 2026
+
+**Founder concern:** The concept illustrations have polished painterly/3D lighting. Simply placing flat transparent PNG accessories over a finished creature image will create cheap-looking attachments with incorrect occlusion, contours, shadows and highlights. Avoid committing to six fully customisable creatures before proving an art/rigging pipeline.
+
+**Technical distinction:** Finished generated concept images are *references*, not animation-ready, layered, edit-ready character files. A clean Flutter `Stack` is insufficient to recreate the illustration quality. Modular artwork can avoid a separate exported image for every combination, but each creature/accessory combination still needs carefully designed geometry, front/back layers, masking, lighting and edge work; a common asset rarely fits every silhouette.
+
+**Possible production approaches:**
+- **Curated complete variants:** each chosen look is finished and art-directed as a whole. Highest consistency and minimal runtime complexity, but fewer choices and higher asset count.
+- **Professionally layered/rigged 2D:** per-creature modular source artwork with specific anchor points, masking, shadows and accessory variants; potentially Rive or equivalent for Flutter integration. Fewer complete renders, but significant illustrator/rigging effort and 3D-painterly look may be difficult to reproduce from vectors.
+- **Hybrid:** finished creature variants for major silhouette changes plus a *small* number of creature-specific, fitted, high-quality modular customisations; colour options where artwork supports clean recolouring. Potential compromise.
+
+**Required proof before scaling:** one creature only, original source art with editable layers, two fitted accessories (one should cross in front of and behind the body, such as a scarf), two palettes and one expression change; demonstrate in Flutter at both hero and 48px chat-tile sizes. Inspect edge quality, shading, perspective, clipping, reload/persistence and web performance. If the result is visibly inferior to the original concept, *stop* and reconsider the product scope instead of multiplying assets across six characters.
+
+No application work on six-creature customisation, bulk asset production, backend sharing or onboarding integration until this quality gate has been reviewed. No claim that static AI-generated character concepts already constitute editable production assets.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
