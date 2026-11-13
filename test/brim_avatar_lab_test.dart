@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:natter/avatar/brim_lab_main.dart';
+
+void main() {
+  testWidgets('Brim lab opens using Natter child UI with safe default choice', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const BrimPrototypeApp());
+
+    expect(find.text('Make Brim your own'), findsOneWidget);
+    expect(find.byKey(const Key('brim-hero')), findsOneWidget);
+    expect(find.byKey(const Key('brim-chat-preview')), findsOneWidget);
+    expect(find.text('brim_v1_violet_gentle_none'), findsOneWidget);
+    expect(find.text('Prototype status — no avatar is saved'), findsOneWidget);
+  });
+
+  testWidgets('child can switch colour, expression, and accessory', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const BrimPrototypeApp());
+
+    await tester.ensureVisible(find.byKey(const Key('colour-blue')));
+    await tester.tap(find.byKey(const Key('colour-blue')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('expression-delighted')));
+    await tester.tap(find.byKey(const Key('expression-delighted')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('accessory-scarf')));
+    await tester.tap(find.byKey(const Key('accessory-scarf')));
+    await tester.pump();
+
+    expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
+  });
+
+  testWidgets('prototype action explicitly does not save account state', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const BrimPrototypeApp());
+
+    await tester.ensureVisible(find.text('Try this look'));
+    await tester.tap(find.text('Try this look'));
+    await tester.pump();
+
+    expect(
+      find.text('Prototype only — your Natter avatar has not changed.'),
+      findsOneWidget,
+    );
+  });
+}
