@@ -246,6 +246,7 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                 ),
                 const SizedBox(height: 16),
                 NatterChildPrimaryButton(
+                  key: const Key('brim-preview-action'),
                   label: _showPreviewOnlyFeedback
                       ? 'Preview only — not saved'
                       : 'Try this look',
