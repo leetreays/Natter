@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../main.dart'
     show
@@ -51,6 +53,29 @@ class BrimAvatarLabScreen extends StatefulWidget {
 class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
   BrimAvatarSelection _selection = const BrimAvatarSelection();
   bool _showPreviewOnlyFeedback = false;
+  bool _candidateArtPrecacheStarted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_candidateArtPrecacheStarted) return;
+    _candidateArtPrecacheStarted = true;
+
+    // Pre-decode the only TWO candidate illustrations currently installed.
+    // Without this, the first switch can briefly show an empty preview.
+    // Do not attempt to fetch the 16 unfinished combinations.
+    for (final accessory in const ['none', 'scarf']) {
+      unawaited(
+        precacheImage(
+          AssetImage('assets/avatar_prototype/brim_v1_violet_gentle_$accessory.webp'),
+          context,
+          // Early lab runs do not necessarily have the binary art installed.
+          // In that case the existing placeholder remains the source of truth.
+          onError: (Object error, StackTrace? trace) {},
+        ),
+      );
+    }
+  }
 
   static const _colourNames = {
     BrimColourway.violet: 'Violet',
@@ -370,11 +395,14 @@ class BrimArtPreview extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Transform.scale(
-          scale: 1.9,
-          alignment: const Alignment(0, -0.42),
+          scale: 1.7,
+          // Brim's head sits right of centre in the full-body art.
+          // Re-anchor the crop to keep eyes AND snout inside the circle.
+          alignment: const Alignment(0.7, -0.4),
           child: Image.asset(
             assetPath,
-            key: ValueKey(selection.artworkKey),
+            // Preserve the Image element when artwork changes: this lets
+            // gaplessPlayback keep the old frame until the new one is ready.
             width: dimension,
             height: dimension,
             fit: BoxFit.contain,
