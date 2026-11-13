@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:natter/avatar/brim_lab_main.dart';
+import 'package:natter/main.dart' show NatterChildPrimaryButton;
 
 void main() {
   testWidgets('Brim lab opens using Natter child UI with safe default choice', (
@@ -46,9 +47,20 @@ void main() {
   ) async {
     await tester.pumpWidget(const BrimPrototypeApp());
 
-    await tester.scrollUntilVisible(find.text('Try this look'), 180);
+    final action = find.byKey(const Key('brim-preview-action'));
+    await tester.scrollUntilVisible(action, 180);
+    // The button sits at the end of a scrollable screen. Align it well
+    // within the viewport rather than tapping text at the viewport edge.
+    await Scrollable.ensureVisible(
+      tester.element(action),
+      alignment: 0.5,
+      duration: Duration.zero,
+    );
+    await tester.pump();
+
     expect(find.text('Preview only — not saved'), findsNothing);
-    await tester.tap(find.text('Try this look'));
+    expect(tester.widget<NatterChildPrimaryButton>(action).enabled, isTrue);
+    await tester.tap(action);
     await tester.pump();
 
     // The feedback belongs to the existing button rather than an ephemeral
