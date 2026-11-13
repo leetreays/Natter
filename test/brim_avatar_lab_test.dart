@@ -41,22 +41,19 @@ void main() {
     expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
   });
 
-  testWidgets('prototype action explicitly does not save account state', (
+  testWidgets('prototype action gives persistent no-save feedback', (
     tester,
   ) async {
     await tester.pumpWidget(const BrimPrototypeApp());
 
     await tester.scrollUntilVisible(find.text('Try this look'), 180);
+    expect(find.text('Preview only — not saved'), findsNothing);
     await tester.tap(find.text('Try this look'));
-    // SnackBars are enqueued on tap and animate into the Scaffold.
-    // One pump can happen before their content is inserted/visible.
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
 
-    expect(find.byType(SnackBar), findsOneWidget);
-    expect(
-      find.text('Prototype only — your Natter avatar has not changed.'),
-      findsOneWidget,
-    );
+    // The feedback belongs to the existing button rather than an ephemeral
+    // SnackBar; the lab has no Firestore/account persistence to trigger.
+    expect(find.text('Try this look'), findsNothing);
+    expect(find.text('Preview only — not saved'), findsOneWidget);
   });
 }
