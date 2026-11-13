@@ -50,6 +50,7 @@ class BrimAvatarLabScreen extends StatefulWidget {
 
 class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
   BrimAvatarSelection _selection = const BrimAvatarSelection();
+  bool _showPreviewOnlyFeedback = false;
 
   static const _colourNames = {
     BrimColourway.violet: 'Violet',
@@ -245,16 +246,16 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                 ),
                 const SizedBox(height: 16),
                 NatterChildPrimaryButton(
-                  label: 'Try this look',
-                  icon: Icons.check_rounded,
+                  label: _showPreviewOnlyFeedback
+                      ? 'Preview only — not saved'
+                      : 'Try this look',
+                  icon: _showPreviewOnlyFeedback
+                      ? Icons.info_outline_rounded
+                      : Icons.check_rounded,
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Prototype only — your Natter avatar has not changed.',
-                        ),
-                      ),
-                    );
+                    // Keep feedback on the button itself, where the child taps.
+                    // This isolated lab never saves to an account.
+                    setState(() => _showPreviewOnlyFeedback = true);
                   },
                 ),
               ],
