@@ -109,6 +109,30 @@ The isolated `lib/avatar/brim_avatar_selection.dart` selection model and `test/b
 
 **Then:** Add a feature-branch-only Flutter Avatar Creator using the existing Natter child components, fast asset swapping, and a 48px preview. Keep first-run onboarding, Firestore, parent/friend sharing and main-branch deployment untouched until the quality gate passes.
 
+## First real Flutter artwork review — 13 November 2026
+
+The founder uploaded live Codespaces screenshots of the isolated Brim Lab on port 8080 after installing the two violet/gentle candidate complete WebP renders (None and Scarf).
+
+### What is now supported by actual app evidence
+
+- The child theme and interaction controls render correctly on a mobile screen.
+- `Violet + Gentle + None` and `Violet + Gentle + Scarf` each resolve to a real complete Brim illustration.
+- The scarf illustration visibly integrates around the neck with plausible folds, occlusion and shading, rather than being drawn as a generic top-level overlay.
+- Character identity and overall composition are convincingly similar for this demonstration. This is an **initial curated-variant art pass**, not a production asset sign-off or proof that automatic accessory layering works.
+- The chat-preview image rendered but the original full-body fit made Brim too small to read comfortably at 48px. A feature-branch refinement now crops/scales the same illustration into a face-oriented circular portrait. It **needs a fresh visual check**.
+- The initial prototype status text incorrectly implied that no artwork existed; feature-branch text now accurately refers to two test illustrations and placeholders for other combinations.
+
+### Remaining feasibility gaps / no-go until addressed
+
+1. Confirm the cropped 48px portrait is recognisable and well-framed in both scarf/no-scarf variants, including edge halos, clipping and readability.
+2. Test the art swapping experience in-person for jank/flicker and visual continuity; screenshots alone cannot verify smoothness.
+3. We have only **2 finished combinations of 18** for Brim. The hybrid selection model does not avoid the need to create/verify additional complete variants or invest in professionally fitted layer source art. **Do not treat this trial as evidence that 18 variants × six creatures (108 complete renders) can be generated consistently or affordably**.
+4. Test a **second colourway** in the same pose and ideally one changed expression to evaluate whether the image-production process scales without geometry drift.
+5. Finish full test suite and release-profile build before any merge. No Firebase/auth or production profile integration yet.
+6. Review candidate licence, transparency/edge cleanup and accessibility for the eventual production pipeline.
+
+**Current verdict:** A credible proof of *curated complete-artwork switching* with integrated visual styling; the broader reusable hybrid system remains unproven. Scope further work to visual quality/production-pipeline gates rather than multiplying variants prematurely.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
