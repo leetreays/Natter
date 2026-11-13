@@ -48,8 +48,12 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Try this look'), 180);
     await tester.tap(find.text('Try this look'));
+    // SnackBars are enqueued on tap and animate into the Scaffold.
+    // One pump can happen before their content is inserted/visible.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
 
+    expect(find.byType(SnackBar), findsOneWidget);
     expect(
       find.text('Prototype only — your Natter avatar has not changed.'),
       findsOneWidget,
