@@ -230,9 +230,9 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Selections work now. The finished Brim images are '
-                        'not yet available as approved app assets; missing '
-                        'artwork is shown honestly rather than layered badly.',
+                        'Violet + Gentle has two test illustrations: None '
+                        'and Scarf. Other combinations still need artwork. '
+                        'These previews are not saved to your account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
@@ -353,11 +353,49 @@ class BrimArtPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimension = compact ? 48.0 : 220.0;
+    final assetPath = 'assets/avatar_prototype/${selection.artworkKey}.webp';
+
+    if (compact) {
+      // A chat icon needs a recognisable face rather than a tiny full body.
+      // Crop the SAME complete artwork: no loose scarf/accessory overlays.
+      return Container(
+        width: dimension,
+        height: dimension,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: NatterChildTheme.surfaceQuiet,
+          border: Border.all(
+            color: NatterChildTheme.connect.withValues(alpha: 0.35),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Transform.scale(
+          scale: 1.9,
+          alignment: const Alignment(0, -0.42),
+          child: Image.asset(
+            assetPath,
+            key: ValueKey(selection.artworkKey),
+            width: dimension,
+            height: dimension,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+            errorBuilder: (context, error, stackTrace) => const Center(
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: NatterChildTheme.connect,
+                size: 12,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return SizedBox(
-      width: compact ? dimension : double.infinity,
+      width: double.infinity,
       height: dimension,
       child: Image.asset(
-        'assets/avatar_prototype/${selection.artworkKey}.webp',
+        assetPath,
         key: ValueKey(selection.artworkKey),
         width: dimension,
         height: dimension,
@@ -367,34 +405,27 @@ class BrimArtPreview extends StatelessWidget {
           width: dimension,
           height: dimension,
           decoration: BoxDecoration(
-            shape: compact ? BoxShape.circle : BoxShape.rectangle,
-            borderRadius: compact ? null : BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
             color: NatterChildTheme.surfaceQuiet.withValues(alpha: 0.55),
             border: Border.all(color: NatterChildTheme.borderStrong),
           ),
           alignment: Alignment.center,
-          child: compact
-              ? const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: NatterChildTheme.connect,
-                  size: 22,
-                )
-              : const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.image_outlined,
-                      color: NatterChildTheme.connect,
-                      size: 44,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      'Approved Brim artwork pending',
-                      style: NatterChildTheme.bodyStrong,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_outlined,
+                color: NatterChildTheme.connect,
+                size: 44,
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Approved Brim artwork pending',
+                style: NatterChildTheme.bodyStrong,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
