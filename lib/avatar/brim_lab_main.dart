@@ -397,8 +397,9 @@ class BrimArtPreview extends StatelessWidget {
         child: Transform.scale(
           scale: 1.7,
           // Brim's head sits right of centre in the full-body art.
-          // Re-anchor the crop to keep eyes AND snout inside the circle.
-          alignment: const Alignment(0.7, -0.4),
+          // Keep the face centred, moving the portrait down slightly to
+          // leave breathing room above the forehead and horns.
+          alignment: const Alignment(0.7, -0.72),
           child: Image.asset(
             assetPath,
             // Preserve the Image element when artwork changes: this lets
