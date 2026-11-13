@@ -133,6 +133,20 @@ The founder uploaded live Codespaces screenshots of the isolated Brim Lab on por
 
 **Current verdict:** A credible proof of *curated complete-artwork switching* with integrated visual styling; the broader reusable hybrid system remains unproven. Scope further work to visual quality/production-pipeline gates rather than multiplying variants prematurely.
 
+## Chat-icon visual gate — accepted for the feasibility lab (13 November 2026)
+
+The founder supplied phone screenshots of both complete-artwork variants (Violet/Gentle/None and Violet/Gentle/Scarf) after reducing the face crop to 1.55×. The face is now recognisable, adequately framed and the scarf is still legible in the circular 48px preview. **Accept the current crop for the lab; do not keep making micro-adjustments.** The first-switch flicker was separately reported resolved after preloading and gapless playback.
+
+**This is a *visual and interaction pass for two curated full-image variants*, not proof that modular layering, generated variants, or all other avatar combinations will work.** No artwork is yet committed in PR #18; two review assets remain local to Codespaces. Full eight-test suite, profile build, and actual asset packaging remain outstanding.
+
+### Next decisive feasibility experiment: second colourway
+
+- Start from the *same* Violet/Gentle/None and Violet/Gentle/Scarf master art. Prefer selective body/wing recolouring with preserved shading and exact outlines over independently redrawing Brim with generative image tools.
+- Produce Blue/Gentle/None and Blue/Gentle/Scarf as two matched, transparent, same-canvas candidates with equal pose, proportions and scarf occlusion. Do not apply a flat tint to every pixel, including the cream belly, horns, eyes and scarf.
+- Check that alternating Violet ↔ Blue on mobile feels continuous: the body, snout, wings, horns, eyes, tail and overall scale must not jump or morph. Verify 48px portrait and first-switch performance.
+- If colour variations cannot be art-directed consistently without expensive manual re-rendering, narrow V1 customisation rather than manufacturing dozens of low-quality variants.
+- Keep the portrait accepted and the live child app untouched; continue on feature branch in draft PR #18.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
