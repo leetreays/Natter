@@ -99,6 +99,16 @@ No choice above is final without review.
 
 No application work on six-creature customisation, bulk asset production, backend sharing or onboarding integration until this quality gate has been reviewed. No claim that static AI-generated character concepts already constitute editable production assets.
 
+## Development checkpoint — 13 November 2026
+
+The founder has accepted the Brim Avatar Creator layout direction and asked that we **stop refining illustrative mockups**; actual Flutter UI must reuse the established `NatterChildBackground`, `NatterChildTheme`, `NatterChildSurface`, navigation and brand button palette in `main.dart`.
+
+The isolated `lib/avatar/brim_avatar_selection.dart` selection model and `test/brim_avatar_selection_test.dart` are now committed on the feature branch; they describe three colourways, two expressions and three accessory choices, with stable choices, safe fallbacks and no Firebase or app-screen integration. Tests must still be run in Codespaces.
+
+**Next gate (real artwork, not more boards):** Produce an isolated, transparent, common-canvas Brim master with a genuinely fitted scarf demonstration. The Brim concept board PNGs are flattened compositions and **must not** be mistaken for detachable accessories or production-ready sprites. Check the unchanged body/pose geometry, clean edges, correct front/back occlusion, coordinated lighting/shading and the hero-versus-48px portrait before scaling the system. Prefer one fully finished scarf/no-scarf comparison and one palette change initially; if professional layered source artwork is unavailable, use deliberately curated *complete* character variants instead of fake overlays.
+
+**Then:** Add a feature-branch-only Flutter Avatar Creator using the existing Natter child components, fast asset swapping, and a 48px preview. Keep first-run onboarding, Firestore, parent/friend sharing and main-branch deployment untouched until the quality gate passes.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
