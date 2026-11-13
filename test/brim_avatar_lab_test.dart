@@ -11,6 +11,10 @@ void main() {
     expect(find.text('Make Brim your own'), findsOneWidget);
     expect(find.byKey(const Key('brim-hero')), findsOneWidget);
     expect(find.byKey(const Key('brim-chat-preview')), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('brim-state-key')),
+      180,
+    );
     expect(find.text('brim_v1_violet_gentle_none'), findsOneWidget);
     expect(find.text('Prototype status — no avatar is saved'), findsOneWidget);
   });
@@ -30,6 +34,10 @@ void main() {
     await tester.tap(find.byKey(const Key('accessory-scarf')));
     await tester.pump();
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('brim-state-key')),
+      150,
+    );
     expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
   });
 
@@ -38,7 +46,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const BrimPrototypeApp());
 
-    await tester.ensureVisible(find.text('Try this look'));
+    await tester.scrollUntilVisible(find.text('Try this look'), 180);
     await tester.tap(find.text('Try this look'));
     await tester.pump();
 
