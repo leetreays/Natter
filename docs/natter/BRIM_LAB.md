@@ -56,7 +56,23 @@ Before evaluating visual quality, produce **at least two approved, complete Brim
 
 They must share the same canvas, scale, anatomy and pose; the scarf variant must have credible front/back occlusion and matching shadows and highlights. Export with transparent backgrounds and without in-image titles, scenic panels or borders.
 
-An approved complete variant has the path `assets/avatar_prototype/{selection.artworkKey}.webp`. Register the folder as an asset directory in `pubspec.yaml` **when the first real art files are added**. Incomplete combinations will continue to show the pending state until created; do not fabricate the missing variants with arbitrary overlays.
+An approved complete variant has the path `assets/avatar_prototype/{selection.artworkKey}.webp`. Incomplete combinations will continue to show the pending state until created; do not fabricate the missing variants with arbitrary overlays.
+
+### Installing the two review candidates
+
+A separate downloadable `brim_prototype_asset_pack.zip` was prepared for the quality trial; it is **not committed to GitHub** because GitHub's text-file editing workflow does not upload binary assets. It contains the two violet/gentle variants above and is **candidate artwork, not final approved art**.
+
+After transferring the ZIP into the **repository root in Codespaces**, run:
+
+```bash
+python3 tools/install_brim_prototype_art.py brim_prototype_asset_pack.zip
+flutter pub get
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+The installer validates the file names and WebP headers, copies the exact candidates to their expected directories and idempotently registers the asset directory in `pubspec.yaml`. The resulting `assets/` and `pubspec.yaml` changes are local until explicitly committed. No production release should be done before quality and tests pass.
+
+For this trial only **Violet + Gentle + None/Scarf** has candidate art. All other selections will continue to display an honest placeholder. Review geometry/edge quality and 48px clarity first.
 
 After the scarf pair passes the large and 48px test, add the additional colourways/expressions or consider an intentionally curated smaller set. The lack of cross-character reusable geometry must be accounted for in production estimates.
 
