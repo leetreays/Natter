@@ -24,13 +24,13 @@ void main() {
   ) async {
     await tester.pumpWidget(const BrimPrototypeApp());
 
-    await tester.ensureVisible(find.byKey(const Key('colour-blue')));
+    await tester.scrollUntilVisible(find.byKey(const Key('colour-blue')), 140);
     await tester.tap(find.byKey(const Key('colour-blue')));
     await tester.pump();
-    await tester.ensureVisible(find.byKey(const Key('expression-delighted')));
+    await tester.scrollUntilVisible(find.byKey(const Key('expression-delighted')), 140);
     await tester.tap(find.byKey(const Key('expression-delighted')));
     await tester.pump();
-    await tester.ensureVisible(find.byKey(const Key('accessory-scarf')));
+    await tester.scrollUntilVisible(find.byKey(const Key('accessory-scarf')), 140);
     await tester.tap(find.byKey(const Key('accessory-scarf')));
     await tester.pump();
 
