@@ -395,10 +395,10 @@ class BrimArtPreview extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Transform.scale(
-          scale: 1.7,
-          // Brim's head sits right of centre in the full-body art.
-          // Keep the face centred, moving the portrait down slightly to
-          // leave breathing room above the forehead and horns.
+          // At 48px, prioritise recognition of the face while allowing
+          // a little room for the horns and the scarf. Keep the same
+          // anchor for the accessory/no-accessory illustrations.
+          scale: 1.55,
           alignment: const Alignment(0.7, -0.72),
           child: Image.asset(
             assetPath,
