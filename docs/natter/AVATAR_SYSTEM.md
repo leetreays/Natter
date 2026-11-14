@@ -159,6 +159,21 @@ A replacement Blue review pack, `Natter_Brim_Blue_Pixel_Locked_Test_Pack.zip`, h
 
 **Production implication:** Pixel-locked recolouring is promising for *palette changes* from a single approved pose; it does not solve the hard problems of adding new expressions, wings, body markings or accessories from flattened illustrations. A professional modular art pipeline or restrained set of curated complete appearances is still needed to scale.
 
+## Controlled Blue colourway — founder acceptance (14 November 2026)
+
+**Founder review: PASSED for the current two-variant, colourway-only feasibility trial.** On a real mobile Flutter preview, the controlled pixel-recoloured Blue/Gentle/None and Blue/Gentle/Scarf illustrations appeared consistent with the approved Violet versions, with no obvious changes of scale, anatomy or accessory integration. This directly resolves the earlier founder-rejected independently regenerated Blue pair. The 48px chat portraits are also present in the screenshots.
+
+**Technical evidence:** In the corrected Blue files, matching Violet/Blue accessory states share identical image dimensions, alpha masks and pixel locations. This is why colour switching no longer causes character-geometry drift. The founder's judgement is visual, not a pixel-level proof of perfect colour, subtle edge cleanup, or future variants.
+
+**What is accepted:** whole-image switching, existing fitted scarf appearance, small-icon portrait framing, first-switch no-flicker interaction, and *controlled colour recolouring* as a plausible pathway for palettes. This is **not a pass** for automatically composited accessories, facial-expression replacement, other mythical creatures, or a scalable production-art pipeline.
+
+### Next production gate
+
+1. Make the approved recolouring operation **reproducible and parameterised** from the original Violet masters, with material masks/colour safeguards and image QA for alpha, dimensions and alignment. Avoid relying on unrelated independently generated renders or different ad-hoc colour transformations for each variant.
+2. As a short repeatability check, assess a third palette (Mint) **only if the same process** can recolour the matching existing Violet source files cleanly. Avoid a long cycle of hand-correcting artefacts.
+3. **Higher-risk next gate:** determine whether a second expression can be constructed without pose/face drift. Changing mouth/eyes on flattened artwork is not equivalent to palette recolouring and may need professional layered, separately art-directed source files.
+4. Keep all changes inside Draft PR #18; the local review images are not yet committed assets in GitHub, and full-suite/build verification plus user/private-profile integration still remain undone. Do not merge or claim production readiness.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
