@@ -95,6 +95,24 @@ With `Gentle` selected, compare Violet ↔ Blue for **None** and **Scarf**. Insp
 
 **Production gate:** If the blue look seems to morph into a different dragon, that does *not* pass the consistency test. Prefer artist-controlled recolouring of approved identical geometry or restrict the number of variants. Don't begin producing six creatures × 18 combinations based on this trial.
 
+### Replacement Blue artwork test — after failed independent redraw
+
+**The independently generated Blue/None and Blue/Scarf pair failed the on-device continuity test.** Do not continue evaluating or reusing that pair as evidence of a viable avatar pipeline. They appeared to change Brim's size and geometry, and their blue tones differed.
+
+A new replacement pair was created by carefully recolouring each of the already-approved Violet source illustrations. For each exact accessory state, the Blue output has the **same dimensions, transparent silhouette and pixel-position layout** as its corresponding Violet source. Both share a controlled colour mapping. A QA comparison preview accompanies the pack.
+
+Download `Natter_Brim_Blue_Pixel_Locked_Test_Pack.zip`, upload the ZIP into Codespaces `assets/`, then, with the Brim Lab stopped:
+
+```bash
+python3 tools/install_brim_prototype_art.py assets/Natter_Brim_Blue_Pixel_Locked_Test_Pack.zip
+flutter pub get
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+This deliberately **overwrites only** the existing Blue/None and Blue/Scarf test artwork, leaving both Violet source files intact. The lab code need not change. For a consistent comparison, select Gentle, then switch Violet ↔ Blue for None, and repeat for Scarf.
+
+**Important limits:** This fixes size and anatomy *across colour changes* because the transparent masks are identical. It cannot correct slight differences between the existing Violet None and Scarf masters, and selective recolouring can create minor colour-edge artefacts. The replacement is another **candidate**, not approved production art. If it still fails visual scrutiny, stop expanding palettes and consider professionally layered artwork.
+
 ## No-impact guarantee
 
 Production `lib/main.dart`, navigation, child onboarding, Firestore permissions, family messaging, and the GitHub Pages deployment workflow are **unchanged** by the lab. This branch is not ready for merge. The separate offline delivery-state issue is [#17](https://github.com/leetreays/Natter/issues/17).
