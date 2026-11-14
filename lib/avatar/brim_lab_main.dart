@@ -61,19 +61,22 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     if (_candidateArtPrecacheStarted) return;
     _candidateArtPrecacheStarted = true;
 
-    // Pre-decode the only TWO candidate illustrations currently installed.
-    // Without this, the first switch can briefly show an empty preview.
-    // Do not attempt to fetch the 16 unfinished combinations.
-    for (final accessory in const ['none', 'scarf']) {
-      unawaited(
-        precacheImage(
-          AssetImage('assets/avatar_prototype/brim_v1_violet_gentle_$accessory.webp'),
-          context,
-          // Early lab runs do not necessarily have the binary art installed.
-          // In that case the existing placeholder remains the source of truth.
-          onError: (Object error, StackTrace? trace) {},
-        ),
-      );
+    // Warm up only the four Violet/Blue + Gentle candidate assets.
+    // This prevents first-switch flicker for the installed test pairs.
+    // Unfinished Mint/Delighted/Satchel combinations still use placeholders.
+    for (final colour in const ['violet', 'blue']) {
+      for (final accessory in const ['none', 'scarf']) {
+        unawaited(
+          precacheImage(
+            AssetImage(
+              'assets/avatar_prototype/brim_v1_${colour}_gentle_$accessory.webp',
+            ),
+            context,
+            // An image may not have been installed in this local checkout.
+            onError: (Object error, StackTrace? trace) {},
+          ),
+        );
+      }
     }
   }
 
@@ -255,9 +258,10 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Violet + Gentle has two test illustrations: None '
-                        'and Scarf. Other combinations still need artwork. '
-                        'These previews are not saved to your account.',
+                        'Violet and Blue + Gentle each have None and '
+                        'Scarf test illustrations when installed. Mint, '
+                        'Delighted and Satchel still need artwork. '
+                        'No avatar is saved to your account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
