@@ -76,6 +76,25 @@ For this trial only **Violet + Gentle + None/Scarf** has candidate art. All othe
 
 After the scarf pair passes the large and 48px test, add the additional colourways/expressions or consider an intentionally curated smaller set. The lack of cross-character reusable geometry must be accounted for in production estimates.
 
+
+### Second colourway trial — Blue Brim (14 November 2026)
+
+The founder agreed to trial two separately generated complete Blue + Gentle illustrations, one without an accessory and one with the scarf. They were resized to fit a common 512×512 transparent canvas; **the colourway remains experimental**. Comparing with Violet shows differences in facial geometry, eye expression, and feather/scale details, so this is deliberately an *honest consistency test*, not proof of a single pixel-identical character merely recoloured.
+
+Use the separately provided `Natter_Brim_Blue_Artwork_Test_Pack.zip`. Upload it into your Codespaces repository's `assets/` folder as with the Violet ZIP, then run from the Natter repository root:
+
+```bash
+python3 tools/install_brim_prototype_art.py assets/Natter_Brim_Blue_Artwork_Test_Pack.zip
+flutter pub get
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+The same installer now accepts either a complete Violet pair or a complete Blue pair. It refuses half-pairs, validates WebP containers, preserves the previously installed colourway, and only changes local asset files and (if needed) the asset declaration. Don't commit or merge the downloaded ZIP.
+
+With `Gentle` selected, compare Violet ↔ Blue for **None** and **Scarf**. Inspect face size, anatomy, pose, wing contours, scarf fit and 48px portraits, including first-switch smoothness. Mint, Delighted and Satchel will remain intentionally unillustrated.
+
+**Production gate:** If the blue look seems to morph into a different dragon, that does *not* pass the consistency test. Prefer artist-controlled recolouring of approved identical geometry or restrict the number of variants. Don't begin producing six creatures × 18 combinations based on this trial.
+
 ## No-impact guarantee
 
 Production `lib/main.dart`, navigation, child onboarding, Firestore permissions, family messaging, and the GitHub Pages deployment workflow are **unchanged** by the lab. This branch is not ready for merge. The separate offline delivery-state issue is [#17](https://github.com/leetreays/Natter/issues/17).
