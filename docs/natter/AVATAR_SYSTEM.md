@@ -147,6 +147,18 @@ The founder supplied phone screenshots of both complete-artwork variants (Violet
 - If colour variations cannot be art-directed consistently without expensive manual re-rendering, narrow V1 customisation rather than manufacturing dozens of low-quality variants.
 - Keep the portrait accepted and the live child app untouched; continue on feature branch in draft PR #18.
 
+## Blue colourway failure and controlled-colour correction — 14 November 2026
+
+**Real-device verdict on the independently generated Blue pair: FAIL (not suitable for production).** The founder reported visible shape/size shifts between Violet and Blue and **between Blue/None and Blue/Scarf**, plus inconsistent Blue hue. Screenshots unnecessary; this failed the previously defined visual continuity criteria. Do not repeat independent generated redraws for supposedly identical avatar customisations.
+
+**Corrective experiment:** Recolour existing accepted Violet/Gentle/None and Violet/Gentle/Scarf source images directly in pixel space, changing only selected purple/blue material colours while preserving each source image's original RGBA alpha mask, 512×512 canvas, bounding box, and per-pixel coordinate grid. Preserve cream horns, belly plates and claws as far as practicable, and preserve existing scarf construction; use the **same recolouring parameters** on both accessory variants.
+
+A replacement Blue review pack, `Natter_Brim_Blue_Pixel_Locked_Test_Pack.zip`, has been produced separately. Automated image comparisons confirmed the output for **each matching Violet → Blue accessory state** has identical canvas dimensions, alpha mask and bounding box; the ZIP was integrity checked. This proves no geometric drift *across colour switch*. It **does not** remove any subtle framing differences already present in the two original Violet/None and Violet/Scarf master images, nor guarantee perfect art direction along mixed-material colour boundaries.
+
+**Retest:** Install the replacement pack in the local Brim Lab, overriding the earlier Blue candidates, then compare Violet ↔ Blue at fixed accessory (None and Scarf), Blue/None ↔ Blue/Scarf, the 48px portrait and first-switch smoothness. Look specifically for colour spill at the cream/pink-to-blue transitions, horns and scarf trim. Reject if quality feels patchy or if accessory changes still jump. Do not merge PR #18 or expand the variant matrix until this is accepted.
+
+**Production implication:** Pixel-locked recolouring is promising for *palette changes* from a single approved pose; it does not solve the hard problems of adding new expressions, wings, body markings or accessories from flattened illustrations. A professional modular art pipeline or restrained set of curated complete appearances is still needed to scale.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
