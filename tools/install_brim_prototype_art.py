@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the two Brim feasibility images from the review ZIP.
+"""Install a matching Brim colourway pair from its review ZIP.
 
 Run from the Natter repository root:
     python3 tools/install_brim_prototype_art.py brim_prototype_asset_pack.zip
@@ -14,10 +14,15 @@ import zipfile
 from pathlib import Path
 
 
-ASSETS = (
-    "assets/avatar_prototype/brim_v1_violet_gentle_none.webp",
-    "assets/avatar_prototype/brim_v1_violet_gentle_scarf.webp",
-)
+# Only known, fully rendered pairs are accepted. A ZIP may contain
+# either colourway or both; a partial pair is rejected before any files change.
+ASSET_PAIRS = {
+    colour: tuple(
+        f"assets/avatar_prototype/brim_v1_{colour}_gentle_{accessory}.webp"
+        for accessory in ("none", "scarf")
+    )
+    for colour in ("violet", "blue")
+}
 ASSET_DIRECTIVE = "    - assets/avatar_prototype/\n"
 ASSET_ANCHOR = "    - assets/journey_seedling.png\n"
 
@@ -41,19 +46,33 @@ def main() -> int:
         return 2
 
     with zipfile.ZipFile(archive) as z:
-        missing = set(ASSETS) - set(z.namelist())
-        if missing:
-            print("Missing approved candidate image(s):", ", ".join(sorted(missing)))
+        names = set(z.namelist())
+        selected_pairs = [
+            (colour, pair)
+            for colour, pair in ASSET_PAIRS.items()
+            if names.intersection(pair)
+        ]
+        if not selected_pairs:
+            print("No recognised Brim Violet/Blue artwork pair in the ZIP.")
             return 2
-
-        # Validate bytes before changing any local files.
-        selected = {}
-        for name in ASSETS:
-            data = z.read(name)
-            if not (data.startswith(b"RIFF") and data[8:12] == b"WEBP"):
-                print(f"Not a valid WebP container: {name}")
+        for colour, pair in selected_pairs:
+            missing = set(pair) - names
+            if missing:
+                print(
+                    f"Incomplete {colour} pair:",
+                    ", ".join(sorted(missing)),
+                )
                 return 2
-            selected[name] = data
+
+        # Validate every intended file BEFORE writing any local assets.
+        selected = {}
+        for colour, pair in selected_pairs:
+            for name in pair:
+                data = z.read(name)
+                if not (data.startswith(b"RIFF") and data[8:12] == b"WEBP"):
+                    print(f"Not a valid WebP container: {name}")
+                    return 2
+                selected[name] = data
 
     for name, data in selected.items():
         destination = repo_root / name
