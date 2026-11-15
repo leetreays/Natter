@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:natter/avatar/brim_lab_main.dart';
+import 'package:natter/avatar/brim_avatar_selection.dart';
 import 'package:natter/main.dart' show NatterChildPrimaryButton;
 
 void main() {
@@ -40,6 +41,26 @@ void main() {
       150,
     );
     expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
+    // "Cheerful" is the truthful user-facing label for the subtle wider
+    // smile. Internal asset IDs remain 'delighted' during this lab.
+    expect(find.text('Cheerful'), findsOneWidget);
+    expect(find.byType(AnimatedSwitcher), findsNWidgets(2));
+    final hero = find.descendant(
+      of: find.byKey(const Key('brim-hero')),
+      matching: find.byType(AnimatedSwitcher),
+    );
+    final iconPreview = find.descendant(
+      of: find.byKey(const Key('brim-chat-preview')),
+      matching: find.byType(AnimatedSwitcher),
+    );
+    expect(tester.widget<AnimatedSwitcher>(hero).duration,
+        const Duration(milliseconds: 280));
+    expect(tester.widget<AnimatedSwitcher>(iconPreview).duration,
+        const Duration(milliseconds: 280));
+    expect(
+      find.byKey(const ValueKey(BrimExpression.delighted)),
+      findsNWidgets(2),
+    );
   });
 
   testWidgets('prototype action gives persistent no-save feedback', (
