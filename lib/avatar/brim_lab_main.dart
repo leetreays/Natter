@@ -260,10 +260,10 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Violet, Blue and Mint + Gentle have None and '
-                        'Scarf test illustrations when installed. '
-                        'Delighted and Satchel still need artwork. '
-                        'No avatar is saved to your account.',
+                        'All three colours now have Gentle and Delighted '
+                        'test illustrations for None and Scarf when installed. '
+                        'Satchel still needs artwork. These are preview-only '
+                        'choices and are not saved to your account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
