@@ -61,10 +61,10 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     if (_candidateArtPrecacheStarted) return;
     _candidateArtPrecacheStarted = true;
 
-    // Warm up only the four Violet/Blue + Gentle candidate assets.
+    // Warm up only the six Violet/Blue/Mint + Gentle candidate assets.
     // This prevents first-switch flicker for the installed test pairs.
-    // Unfinished Mint/Delighted/Satchel combinations still use placeholders.
-    for (final colour in const ['violet', 'blue']) {
+    // Unfinished Delighted/Satchel combinations still use placeholders.
+    for (final colour in const ['violet', 'blue', 'mint']) {
       for (final accessory in const ['none', 'scarf']) {
         unawaited(
           precacheImage(
@@ -258,8 +258,8 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Violet and Blue + Gentle each have None and '
-                        'Scarf test illustrations when installed. Mint, '
+                        'Violet, Blue and Mint + Gentle have None and '
+                        'Scarf test illustrations when installed. '
                         'Delighted and Satchel still need artwork. '
                         'No avatar is saved to your account.',
                         style: NatterChildTheme.caption,
