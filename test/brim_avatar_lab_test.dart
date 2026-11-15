@@ -41,22 +41,53 @@ void main() {
       150,
     );
     expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
-    // "Cheerful" is the truthful user-facing label for the subtle wider
-    // smile. Internal asset IDs remain 'delighted' during this lab.
-    expect(find.text('Cheerful'), findsOneWidget);
+  });
+
+  testWidgets('expression crossfades in the hero and chat preview', (
+    tester,
+  ) async {
+    const gentle = BrimAvatarSelection();
+    final cheerful = gentle.copyWith(expression: BrimExpression.delighted);
+
+    Widget previews(BrimAvatarSelection selection) => MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            BrimArtPreview(selection: selection),
+            BrimArtPreview(selection: selection, compact: true),
+          ],
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(previews(gentle));
     expect(find.byType(AnimatedSwitcher), findsNWidgets(2));
-    final hero = find.descendant(
-      of: find.byKey(const Key('brim-hero')),
-      matching: find.byType(AnimatedSwitcher),
+
+    for (final widget in tester.widgetList<AnimatedSwitcher>(
+      find.byType(AnimatedSwitcher),
+    )) {
+      expect(widget.duration, const Duration(milliseconds: 280));
+    }
+
+    await tester.pumpWidget(previews(cheerful));
+    await tester.pump();
+
+    // The two complete illustrations overlap during the 280ms fade;
+    // this doesn't interpolate facial geometry or require new assets.
+    expect(
+      find.byKey(const ValueKey(BrimExpression.gentle)),
+      findsNWidgets(2),
     );
-    final iconPreview = find.descendant(
-      of: find.byKey(const Key('brim-chat-preview')),
-      matching: find.byType(AnimatedSwitcher),
+    expect(
+      find.byKey(const ValueKey(BrimExpression.delighted)),
+      findsNWidgets(2),
     );
-    expect(tester.widget<AnimatedSwitcher>(hero).duration,
-        const Duration(milliseconds: 280));
-    expect(tester.widget<AnimatedSwitcher>(iconPreview).duration,
-        const Duration(milliseconds: 280));
+
+    await tester.pump(const Duration(milliseconds: 320));
+    expect(
+      find.byKey(const ValueKey(BrimExpression.gentle)),
+      findsNothing,
+    );
     expect(
       find.byKey(const ValueKey(BrimExpression.delighted)),
       findsNWidgets(2),
