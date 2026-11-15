@@ -184,6 +184,18 @@ This is a reproducible **Blue → Mint** pipeline, **not a claim** that every pa
 
 **Quality gate:** Ask the founder to compare Violet/Blue/Mint at the same pose and accessory state in Flutter, check the 48px chat portrait and colour spill around horns/belly/scarf, then explicitly accept or reject. Do not expand to other creatures, add Firestore integration, or merge Draft PR #18 prematurely.
 
+## Mint acceptance and multi-tone refinement gate — 15 November 2026
+
+The founder reviewed Mint/Gentle/None and Mint/Gentle/Scarf in the isolated Flutter lab (mobile screenshots). **PASS for pose, sizing, alignment, scarf continuity and colourway-only switching.** No observable shape change between colour variants. The 48px portrait is present and remains recognisable.
+
+**Art-direction feedback:** Violet has beautiful secondary cool-blue iridescent details across wings/scales, whereas the current Blue and Mint renders are more monochromatic. This is not a rejection of the feasibility pipeline, but a **quality/polish gate** before production sign-off. Avoid merely adding saturation everywhere or assigning a crude flat secondary hue. Maintain deliberate body and wing contrast, painted lighting and warm cream horns/belly.
+
+A reversible **accent-rich palette trial** has been prepared in `tools/refine_brim_accents.py` with developer-only QA `tools/test_refine_brim_accents.py`. This uses the untouched Violet source as a guide to identify where cooler highlights originally occur, and applies coordinated cyan accents to Blue and cooler sky-blue highlights to Mint. It reads the accepted Blue/Mint candidates; exports new review assets to a **separate** directory without overwriting accepted artwork; refuses mismatched source alpha masks, and preserves each variant's original image dimensions and opacity.
+
+A review comparison showing Violet reference, proposed Blue and proposed Mint (both None and Scarf) is ready for founder aesthetic review. **Not yet accepted or installed**; do not replace the existing approved colourway images until visual direction is agreed.
+
+**Next step:** Review the subtle two-tone samples, then assess any approved candidates in actual Flutter at large and 48px sizes. If successful, formalise primary/accent/warm-neutral palettes and material masks as an art-direction specification reusable across characters. The harder expression and new-accessory feasibility gates remain open. PR #18 stays Draft; artwork is still held locally.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
