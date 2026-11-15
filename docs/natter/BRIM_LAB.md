@@ -113,6 +113,30 @@ This deliberately **overwrites only** the existing Blue/None and Blue/Scarf test
 
 **Important limits:** This fixes size and anatomy *across colour changes* because the transparent masks are identical. It cannot correct slight differences between the existing Violet None and Scarf masters, and selective recolouring can create minor colour-edge artefacts. The replacement is another **candidate**, not approved production art. If it still fails visual scrutiny, stop expanding palettes and consider professionally layered artwork.
 
+### Third colourway — repeatable Mint trial (15 November 2026)
+
+**Mint artwork candidates prepared and locally checked; founder's on-device visual review is still pending.** The generator is committed as `tools/recolour_brim_palette.py`.
+
+Rather than asking an image model to redraw Brim, the generator applies **one identical selective recolour algorithm** to the accepted Blue/Gentle/None and Blue/Gentle/Scarf files. It maps clearly blue/cyan material to a seafoam/mint shade and protects cream horns, belly plates, teeth and warm highlights. It changes RGB values only; the source canvas, alpha and silhouette remain exactly the same for each accessory state.
+
+**Pack for easy phone upload:** `Natter_Brim_Mint_Artwork_Test_Pack.zip`. Upload the ZIP to the Codespaces repository's `assets/` folder, stop the prior Flutter process and run:
+
+```bash
+git pull --ff-only origin feature/child-avatar-identity
+python3 tools/install_brim_prototype_art.py assets/Natter_Brim_Mint_Artwork_Test_Pack.zip
+flutter pub get
+flutter test test/brim_avatar_selection_test.dart test/brim_avatar_lab_test.dart
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+The installer now accepts **Violet, Blue or Mint complete pairs**, rejecting incomplete ZIPs without modifying installed assets. The app lab preloads all six test images (3 colours × 2 accessories) for smoother first switches.
+
+**Repeatable developer path (optional):** Once the accepted Blue/Gentle pair is installed, `python3 -m pip install Pillow` (development environment only), then `python3 tools/recolour_brim_palette.py`. This recreates Mint assets in-place without relying on the ZIP. Pillow is **not** a Flutter app dependency. This script does *not* recreate the earlier Blue-from-Violet algorithm, which was an experimental separately prepared master; fully repeatable production palette sourcing still needs formalisation.
+
+**Acceptance test:** Switch between Violet, Blue and Mint with Gentle selected, first None then Scarf. Look for colour spill into cream details, imperfect edges, different shades between accessory states, jumps in pose/scale, 48px recognisability and first-switch flicker. Retain prior acceptance of Violet/Blue only; don't accept Mint until the founder reviews the actual app.
+
+**Limits:** The 2 accessory master images have existing small framing differences. Controlled recolouring cannot fix that. Mint does not demonstrate editing an expression or fitting new accessories. No merge of Draft PR #18 yet.
+
 ## No-impact guarantee
 
 Production `lib/main.dart`, navigation, child onboarding, Firestore permissions, family messaging, and the GitHub Pages deployment workflow are **unchanged** by the lab. This branch is not ready for merge. The separate offline delivery-state issue is [#17](https://github.com/leetreays/Natter/issues/17).
