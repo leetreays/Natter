@@ -174,6 +174,16 @@ A replacement Blue review pack, `Natter_Brim_Blue_Pixel_Locked_Test_Pack.zip`, h
 3. **Higher-risk next gate:** determine whether a second expression can be constructed without pose/face drift. Changing mouth/eyes on flattened artwork is not equivalent to palette recolouring and may need professional layered, separately art-directed source files.
 4. Keep all changes inside Draft PR #18; the local review images are not yet committed assets in GitHub, and full-suite/build verification plus user/private-profile integration still remain undone. Do not merge or claim production readiness.
 
+## Mint palette repeatability — 15 November 2026
+
+A third colourway, Mint, is ready for **on-device visual review**, not yet accepted. It is derived deterministically from the previously founder-accepted Blue/Gentle/None and Blue/Gentle/Scarf sources using one developer-side Python/Pillow script: `tools/recolour_brim_palette.py`.
+
+The tool transforms only clearly blue/cyan pixels toward mint, protecting warm/cream detail where possible, while preserving RGBA alpha, canvas and transparent bounds exactly. The supplied `Natter_Brim_Mint_Artwork_Test_Pack.zip` contains both complete Mint variants and is deliberately not committed as a production art asset. A local image comparison and ZIP verification passed; see `docs/natter/BRIM_LAB.md` for mobile installation/testing instructions.
+
+This is a reproducible **Blue → Mint** pipeline, **not a claim** that every palette (including the original Violet → Blue experiments) is yet generated from a single approved multi-layer master. It still relies on two pre-existing complete accessory illustrations. Changing expressions or adding new fitted accessories remains an unproven, significantly harder artwork problem.
+
+**Quality gate:** Ask the founder to compare Violet/Blue/Mint at the same pose and accessory state in Flutter, check the 48px chat portrait and colour spill around horns/belly/scarf, then explicitly accept or reject. Do not expand to other creatures, add Firestore integration, or merge Draft PR #18 prematurely.
+
 ## Proposed implementation sequence (after direction is approved)
 
 1. Define a compact, versioned avatar configuration with reliable defaults and backwards-compatible migration from the legacy icon strings.
