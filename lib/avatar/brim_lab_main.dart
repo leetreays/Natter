@@ -388,6 +388,10 @@ class BrimArtPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final dimension = compact ? 48.0 : 220.0;
     final assetPath = 'assets/avatar_prototype/${selection.artworkKey}.webp';
+    // Honour the user's reduced-motion accessibility preference.
+    final fadeDuration = MediaQuery.maybeOf(context)?.disableAnimations == true
+        ? Duration.zero
+        : const Duration(milliseconds: 280);
 
     if (compact) {
       // A chat icon needs a recognisable face rather than a tiny full body.
@@ -410,7 +414,7 @@ class BrimArtPreview extends StatelessWidget {
           scale: 1.55,
           alignment: const Alignment(0.7, -0.72),
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 280),
+            duration: fadeDuration,
             switchInCurve: Curves.easeInOut,
             switchOutCurve: Curves.easeInOut,
             // The expression alone controls the animation. Changing colour
@@ -439,7 +443,7 @@ class BrimArtPreview extends StatelessWidget {
       width: double.infinity,
       height: dimension,
       child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 280),
+        duration: fadeDuration,
         switchInCurve: Curves.easeInOut,
         switchOutCurve: Curves.easeInOut,
         child: Image.asset(
