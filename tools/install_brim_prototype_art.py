@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a matching Brim colourway pair from its review ZIP.
+"""Install one or more matching Brim artwork pairs from a review ZIP.
 
 Run from the Natter repository root:
     python3 tools/install_brim_prototype_art.py brim_prototype_asset_pack.zip
@@ -14,14 +14,15 @@ import zipfile
 from pathlib import Path
 
 
-# Only known, fully rendered pairs are accepted. A ZIP may contain
-# any complete colourway pair; a partial pair is rejected before any writes.
+# A pack may contain any complete colour/expression pair (None + Scarf).
+# A missing half-pair is rejected BEFORE any file is written.
 ASSET_PAIRS = {
-    colour: tuple(
-        f"assets/avatar_prototype/brim_v1_{colour}_gentle_{accessory}.webp"
+    f"{colour}/{expression}": tuple(
+        f"assets/avatar_prototype/brim_v1_{colour}_{expression}_{accessory}.webp"
         for accessory in ("none", "scarf")
     )
     for colour in ("violet", "blue", "mint")
+    for expression in ("gentle", "delighted")
 }
 ASSET_DIRECTIVE = "    - assets/avatar_prototype/\n"
 ASSET_ANCHOR = "    - assets/journey_seedling.png\n"
@@ -53,7 +54,7 @@ def main() -> int:
             if names.intersection(pair)
         ]
         if not selected_pairs:
-            print("No recognised Brim Violet/Blue/Mint artwork pair in the ZIP.")
+            print("No recognised complete Brim colour/expression pair in the ZIP.")
             return 2
         for colour, pair in selected_pairs:
             missing = set(pair) - names
