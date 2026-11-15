@@ -15,13 +15,13 @@ from pathlib import Path
 
 
 # Only known, fully rendered pairs are accepted. A ZIP may contain
-# either colourway or both; a partial pair is rejected before any files change.
+# any complete colourway pair; a partial pair is rejected before any writes.
 ASSET_PAIRS = {
     colour: tuple(
         f"assets/avatar_prototype/brim_v1_{colour}_gentle_{accessory}.webp"
         for accessory in ("none", "scarf")
     )
-    for colour in ("violet", "blue")
+    for colour in ("violet", "blue", "mint")
 }
 ASSET_DIRECTIVE = "    - assets/avatar_prototype/\n"
 ASSET_ANCHOR = "    - assets/journey_seedling.png\n"
@@ -53,7 +53,7 @@ def main() -> int:
             if names.intersection(pair)
         ]
         if not selected_pairs:
-            print("No recognised Brim Violet/Blue artwork pair in the ZIP.")
+            print("No recognised Brim Violet/Blue/Mint artwork pair in the ZIP.")
             return 2
         for colour, pair in selected_pairs:
             missing = set(pair) - names
