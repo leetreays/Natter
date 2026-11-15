@@ -159,6 +159,28 @@ The installer now accepts an entire `None + Scarf` pair for **either Gentle or D
 
 Candidates remain solely in the local Codespaces checkout until explicitly committed; PR #18 stays Draft. Do not merge these images or onboarding changes as part of this evaluation.
 
+### Expression review — Cheerful + subtle crossfade (15 November 2026)
+
+The founder tested the localised Gentle → Delighted facial artwork. Its slightly widened smile is not expressive enough to justify the name **Delighted**. No new expression artwork has been approved.
+
+To test the founder's animation suggestion without generating another mismatched creature:
+
+- The **visible label** in the isolated Brim Lab is now **Cheerful** (a more accurate description of the small extra smile).
+- The **internal key remains `delighted`** in the selection enum and asset filenames. This avoids invalidating the six already installed proof-of-concept WebPs; any eventual production rename must include deliberate data/asset migration.
+- Both the 220px hero and 48px circular portrait now use a **280ms opacity crossfade** via Flutter `AnimatedSwitcher` when changing **expression**. Colour or accessory changes retain their previous gapless image-swap behaviour; the animation never changes Brim's pixel geometry.
+- A reduced-motion device preference disables the transition. The crossfade is not a facial rig or frame-by-frame animation: it blends the two already-fitted complete illustrations, which might appear to smile modestly.
+- A new widget test covers the outgoing/incoming preview frames. **Flutter tests and actual on-device transition smoothness are still pending verification** following these edits.
+
+**Codespaces trial:** Stop Flutter with `q`, then:
+
+```bash
+git pull --ff-only origin feature/child-avatar-identity
+flutter test test/brim_avatar_selection_test.dart test/brim_avatar_lab_test.dart
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+The six installed `*_delighted_*.webp` candidate assets remain in Codespaces; **no new ZIP/upload required**. Keep one colour and accessory selected, toggle Gentle ↔ Cheerful repeatedly and observe both the hero and 48px icon. Confirm whether the fade looks like a natural growing/relaxing smile, whether there's ghosting/jumping, and whether the expression feels meaningfully different. If it's still too subtle, stop changing labels/transition timing and revisit proper layered facial artwork (eyes, cheeks, mouth).
+
 ## No-impact guarantee
 
 Production `lib/main.dart`, navigation, child onboarding, Firestore permissions, family messaging, and the GitHub Pages deployment workflow are **unchanged** by the lab. This branch is not ready for merge. The separate offline delivery-state issue is [#17](https://github.com/leetreays/Natter/issues/17).
