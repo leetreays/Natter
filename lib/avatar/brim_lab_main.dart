@@ -61,21 +61,23 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     if (_candidateArtPrecacheStarted) return;
     _candidateArtPrecacheStarted = true;
 
-    // Warm up only the six Violet/Blue/Mint + Gentle candidate assets.
-    // This prevents first-switch flicker for the installed test pairs.
-    // Unfinished Delighted/Satchel combinations still use placeholders.
+    // Warm up only the 12 installed/candidate colour-expression images
+    // (three colours, Gentle/Delighted, None/Scarf). The six Satchel
+    // combinations are still intentionally unfinished.
     for (final colour in const ['violet', 'blue', 'mint']) {
-      for (final accessory in const ['none', 'scarf']) {
-        unawaited(
-          precacheImage(
-            AssetImage(
-              'assets/avatar_prototype/brim_v1_${colour}_gentle_$accessory.webp',
+      for (final expression in const ['gentle', 'delighted']) {
+        for (final accessory in const ['none', 'scarf']) {
+          unawaited(
+            precacheImage(
+              AssetImage(
+                'assets/avatar_prototype/brim_v1_${colour}_${expression}_$accessory.webp',
+              ),
+              context,
+              // Candidate images might not have been installed locally yet.
+              onError: (Object error, StackTrace? trace) {},
             ),
-            context,
-            // An image may not have been installed in this local checkout.
-            onError: (Object error, StackTrace? trace) {},
-          ),
-        );
+          );
+        }
       }
     }
   }
