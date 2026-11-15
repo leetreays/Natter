@@ -30,6 +30,8 @@ void main() {
     await tester.tap(find.byKey(const Key('colour-blue')));
     await tester.pump();
     await tester.scrollUntilVisible(find.byKey(const Key('expression-delighted')), 140);
+    // Preserve the existing artwork ID, but show a more accurate name.
+    expect(find.text('Cheerful'), findsOneWidget);
     await tester.tap(find.byKey(const Key('expression-delighted')));
     await tester.pump();
     await tester.scrollUntilVisible(find.byKey(const Key('accessory-scarf')), 140);
