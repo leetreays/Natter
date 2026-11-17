@@ -45,7 +45,7 @@ void main() {
     expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
   });
 
-  testWidgets('expression crossfades in the hero and chat preview', (
+  testWidgets('expression switches instantly in both previews', (
     tester,
   ) async {
     const gentle = BrimAvatarSelection();
@@ -63,35 +63,20 @@ void main() {
     );
 
     await tester.pumpWidget(previews(gentle));
-    expect(find.byType(AnimatedSwitcher), findsNWidgets(2));
-
-    for (final widget in tester.widgetList<AnimatedSwitcher>(
-      find.byType(AnimatedSwitcher),
-    )) {
-      expect(widget.duration, const Duration(milliseconds: 280));
-    }
+    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(const ValueKey('brim_v1_violet_gentle_none')),
+      findsNWidgets(2),
+    );
 
     await tester.pumpWidget(previews(cheerful));
-    await tester.pump();
-
-    // The two complete illustrations overlap during the 280ms fade;
-    // this doesn't interpolate facial geometry or require new assets.
+    expect(find.byType(AnimatedSwitcher), findsNothing);
     expect(
-      find.byKey(const ValueKey(BrimExpression.gentle)),
-      findsNWidgets(2),
-    );
-    expect(
-      find.byKey(const ValueKey(BrimExpression.delighted)),
-      findsNWidgets(2),
-    );
-
-    await tester.pump(const Duration(milliseconds: 320));
-    expect(
-      find.byKey(const ValueKey(BrimExpression.gentle)),
+      find.byKey(const ValueKey('brim_v1_violet_gentle_none')),
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey(BrimExpression.delighted)),
+      find.byKey(const ValueKey('brim_v1_violet_delighted_none')),
       findsNWidgets(2),
     );
   });
