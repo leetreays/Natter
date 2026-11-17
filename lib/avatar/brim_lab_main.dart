@@ -93,7 +93,7 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     BrimColourway.mint: Color(0xFF64D9BB),
   };
   static const _expressionNames = {
-    BrimExpression.gentle: 'Gentle',
+    BrimExpression.gentle: 'Friendly',
     // The current second illustration is a subtly wider smile, not a
     // dramatic new emotion. Keep the existing 'delighted' asset IDs until
     // the production expression system is settled.
@@ -388,14 +388,9 @@ class BrimArtPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final dimension = compact ? 48.0 : 220.0;
     final assetPath = 'assets/avatar_prototype/${selection.artworkKey}.webp';
-    // Honour the user's reduced-motion accessibility preference.
-    final fadeDuration = MediaQuery.maybeOf(context)?.disableAnimations == true
-        ? Duration.zero
-        : const Duration(milliseconds: 280);
 
     if (compact) {
-      // A chat icon needs a recognisable face rather than a tiny full body.
-      // Crop the SAME complete artwork: no loose scarf/accessory overlays.
+      // Crop the same complete artwork to prioritise facial recognition at 48px.
       return Container(
         width: dimension,
         height: dimension,
@@ -408,30 +403,19 @@ class BrimArtPreview extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: Transform.scale(
-          // At 48px, prioritise recognition of the face while allowing
-          // a little room for the horns and the scarf. Keep the same
-          // anchor for the accessory/no-accessory illustrations.
           scale: 1.55,
           alignment: const Alignment(0.7, -0.72),
-          child: AnimatedSwitcher(
-            duration: fadeDuration,
-            switchInCurve: Curves.easeInOut,
-            switchOutCurve: Curves.easeInOut,
-            // The expression alone controls the animation. Changing colour
-            // or accessory still swaps the already-cached art immediately.
-            child: Image.asset(
-              assetPath,
-              key: ValueKey(selection.expression),
-              width: dimension,
-              height: dimension,
-              fit: BoxFit.contain,
-              gaplessPlayback: true,
-              errorBuilder: (context, error, stackTrace) => const Center(
-                child: Icon(
-                  Icons.auto_awesome_rounded,
-                  color: NatterChildTheme.connect,
-                  size: 12,
-                ),
+          child: Image.asset(
+            assetPath,
+            key: ValueKey(selection.artworkKey),
+            width: dimension,
+            height: dimension,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const Center(
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: NatterChildTheme.connect,
+                size: 12,
               ),
             ),
           ),
@@ -442,44 +426,36 @@ class BrimArtPreview extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: dimension,
-      child: AnimatedSwitcher(
-        duration: fadeDuration,
-        switchInCurve: Curves.easeInOut,
-        switchOutCurve: Curves.easeInOut,
-        child: Image.asset(
-          assetPath,
-          // Restrict fading to expression changes. Preserve the Image element
-          // when the child switches colours/accessories to avoid ghosting.
-          key: ValueKey(selection.expression),
+      child: Image.asset(
+        assetPath,
+        key: ValueKey(selection.artworkKey),
+        width: dimension,
+        height: dimension,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => Container(
           width: dimension,
           height: dimension,
-          fit: BoxFit.contain,
-          gaplessPlayback: true,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: dimension,
-            height: dimension,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: NatterChildTheme.surfaceQuiet.withValues(alpha: 0.55),
-              border: Border.all(color: NatterChildTheme.borderStrong),
-            ),
-            alignment: Alignment.center,
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.image_outlined,
-                  color: NatterChildTheme.connect,
-                  size: 44,
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Approved Brim artwork pending',
-                  style: NatterChildTheme.bodyStrong,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            color: NatterChildTheme.surfaceQuiet.withValues(alpha: 0.55),
+            border: Border.all(color: NatterChildTheme.borderStrong),
+          ),
+          alignment: Alignment.center,
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_outlined,
+                color: NatterChildTheme.connect,
+                size: 44,
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Approved Brim artwork pending',
+                style: NatterChildTheme.bodyStrong,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
