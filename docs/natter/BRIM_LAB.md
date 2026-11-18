@@ -184,3 +184,26 @@ The six installed `*_delighted_*.webp` candidate assets remain in Codespaces; **
 ## No-impact guarantee
 
 Production `lib/main.dart`, navigation, child onboarding, Firestore permissions, family messaging, and the GitHub Pages deployment workflow are **unchanged** by the lab. This branch is not ready for merge. The separate offline delivery-state issue is [#17](https://github.com/leetreays/Natter/issues/17).
+
+
+### Violet / Friendly / Satchel — bounded composite trial (18 November 2026)
+
+The founder approved the **instant-switching visual comparison** of a new Violet satchel review candidate. This is an approval to test it inside the app, **not** final production art approval.
+
+- Source of truth: the existing 512×512 Violet/Gentle/None artwork. The lab now displays the friendly expression label as **Friendly**, while retaining the internal `gentle` artwork ID until the complete expression migration.
+- The satchel and strap were composited from the candidate into a bounded area of the established Brim master. The finished WebP preserves the original alpha channel, canvas and silhouette, with visible pixels outside the accessory mask untouched.
+- The review ZIP is named `Natter_Brim_Violet_Satchel_Trial_Pack.zip`; its single asset is `assets/avatar_prototype/brim_v1_violet_gentle_satchel.webp`. **This binary ZIP is not stored in GitHub**; transfer the separately supplied pack into the Codespaces `assets/` folder.
+- The installer now accepts a standalone Satchel asset, while continuing to require complete None/Scarf pairs for those existing expressions. It validates the ZIP's WebP headers before writing assets and doesn't remove previous variants.
+- The standalone Brim Lab already exposes Satchel as a selection. Its missing-art state will be replaced by this asset when installed. No production child profile or Firestore data is changed.
+
+From the feature branch in Codespaces, with local candidate artwork preserved:
+
+```bash
+git pull --ff-only
+python3 tools/test_install_brim_prototype_art.py
+python3 tools/install_brim_prototype_art.py assets/Natter_Brim_Violet_Satchel_Trial_Pack.zip
+flutter test test/brim_avatar_selection_test.dart test/brim_avatar_lab_test.dart
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+**Acceptance:** switch Violet/Friendly between None, Scarf and Satchel at hero and 48px sizes. Look for scale jumps, flicker, strap clipping, unintended pixels and good legibility. Blue/Mint Satchel assets remain pending; Playful and Cheeky remain artwork work-in-progress. Do not merge the avatar prototype into `main` until the full artwork quality gate and cross-role identity rules are reviewed.
