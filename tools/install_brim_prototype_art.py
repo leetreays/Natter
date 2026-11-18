@@ -24,6 +24,12 @@ ASSET_PAIRS = {
     for colour in ("violet", "blue", "mint")
     for expression in ("gentle", "delighted")
 }
+# Satchels can be reviewed independently: None/Scarf pairs must still be complete.
+SATCHEL_ASSETS = {
+    f"assets/avatar_prototype/brim_v1_{colour}_{expression}_satchel.webp"
+    for colour in ("violet", "blue", "mint")
+    for expression in ("gentle", "delighted")
+}
 ASSET_DIRECTIVE = "    - assets/avatar_prototype/\n"
 ASSET_ANCHOR = "    - assets/journey_seedling.png\n"
 
@@ -53,8 +59,9 @@ def main() -> int:
             for colour, pair in ASSET_PAIRS.items()
             if names.intersection(pair)
         ]
-        if not selected_pairs:
-            print("No recognised complete Brim colour/expression pair in the ZIP.")
+        selected_satchels = sorted(names.intersection(SATCHEL_ASSETS))
+        if not selected_pairs and not selected_satchels:
+            print("No recognised Brim artwork in the ZIP.")
             return 2
         for colour, pair in selected_pairs:
             missing = set(pair) - names
@@ -67,13 +74,17 @@ def main() -> int:
 
         # Validate every intended file BEFORE writing any local assets.
         selected = {}
-        for colour, pair in selected_pairs:
-            for name in pair:
-                data = z.read(name)
-                if not (data.startswith(b"RIFF") and data[8:12] == b"WEBP"):
-                    print(f"Not a valid WebP container: {name}")
-                    return 2
-                selected[name] = data
+        selected_names = [
+            name
+            for _, pair in selected_pairs
+            for name in pair
+        ] + selected_satchels
+        for name in selected_names:
+            data = z.read(name)
+            if not (data.startswith(b"RIFF") and data[8:12] == b"WEBP"):
+                print(f"Not a valid WebP container: {name}")
+                return 2
+            selected[name] = data
 
     for name, data in selected.items():
         destination = repo_root / name
