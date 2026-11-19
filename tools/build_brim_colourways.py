@@ -181,7 +181,7 @@ def main() -> int:
                     f"{colour} {accessory}"
                 )
         report = []
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(prefix=".brim-trial-", dir=assets) as temp:
             temporary = Path(temp)
             for colour in COLOURS:
                 palette = Palette([
