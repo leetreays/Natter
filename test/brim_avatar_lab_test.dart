@@ -29,10 +29,9 @@ void main() {
     await tester.scrollUntilVisible(find.byKey(const Key('colour-blue')), 140);
     await tester.tap(find.byKey(const Key('colour-blue')));
     await tester.pump();
-    await tester.scrollUntilVisible(find.byKey(const Key('expression-delighted')), 140);
-    // Preserve the existing artwork ID, but show a more accurate name.
-    expect(find.text('Cheerful'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('expression-delighted')));
+    await tester.scrollUntilVisible(find.byKey(const Key('expression-playful')), 140);
+    expect(find.text('Playful'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('expression-playful')));
     await tester.pump();
     await tester.scrollUntilVisible(find.byKey(const Key('accessory-scarf')), 140);
     await tester.tap(find.byKey(const Key('accessory-scarf')));
@@ -42,14 +41,15 @@ void main() {
       find.byKey(const Key('brim-state-key')),
       150,
     );
-    expect(find.text('brim_v1_blue_delighted_scarf'), findsOneWidget);
+    expect(find.text('brim_v1_blue_playful_scarf'), findsOneWidget);
   });
 
   testWidgets('expression switches instantly in both previews', (
     tester,
   ) async {
     const gentle = BrimAvatarSelection();
-    final cheerful = gentle.copyWith(expression: BrimExpression.delighted);
+    final playful = gentle.copyWith(expression: BrimExpression.playful);
+    final cheeky = gentle.copyWith(expression: BrimExpression.cheeky);
 
     Widget previews(BrimAvatarSelection selection) => MaterialApp(
       home: Scaffold(
@@ -69,14 +69,25 @@ void main() {
       findsNWidgets(2),
     );
 
-    await tester.pumpWidget(previews(cheerful));
+    await tester.pumpWidget(previews(playful));
     expect(find.byType(AnimatedSwitcher), findsNothing);
     expect(
       find.byKey(const ValueKey('brim_v1_violet_gentle_none')),
       findsNothing,
     );
     expect(
-      find.byKey(const ValueKey('brim_v1_violet_delighted_none')),
+      find.byKey(const ValueKey('brim_v1_violet_playful_none')),
+      findsNWidgets(2),
+    );
+
+    await tester.pumpWidget(previews(cheeky));
+    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(const ValueKey('brim_v1_violet_playful_none')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('brim_v1_violet_cheeky_none')),
       findsNWidgets(2),
     );
   });
