@@ -61,24 +61,25 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     if (_candidateArtPrecacheStarted) return;
     _candidateArtPrecacheStarted = true;
 
-    // Warm up only the 12 installed/candidate colour-expression images
-    // (three colours, Gentle/Delighted, None/Scarf). The six Satchel
-    // combinations are still intentionally unfinished.
-    for (final colour in const ['violet', 'blue', 'mint']) {
-      for (final expression in const ['gentle', 'delighted']) {
-        for (final accessory in const ['none', 'scarf']) {
-          unawaited(
-            precacheImage(
-              AssetImage(
-                'assets/avatar_prototype/brim_v1_${colour}_${expression}_$accessory.webp',
-              ),
-              context,
-              // Candidate images might not have been installed locally yet.
-              onError: (Object error, StackTrace? trace) {},
-            ),
-          );
-        }
-      }
+    // Warm only candidate files we have actually prepared. Do not try to
+    // precache combinations that remain deliberately unillustrated.
+    final candidateArtwork = <String>[
+      for (final colour in const ['violet', 'blue', 'mint'])
+        for (final accessory in const ['none', 'scarf'])
+          'brim_v1_${colour}_gentle_$accessory',
+      'brim_v1_violet_gentle_satchel',
+      'brim_v1_violet_playful_none',
+      'brim_v1_violet_cheeky_none',
+    ];
+
+    for (final artworkKey in candidateArtwork) {
+      unawaited(
+        precacheImage(
+          AssetImage('assets/avatar_prototype/$artworkKey.webp'),
+          context,
+          onError: (Object error, StackTrace? trace) {},
+        ),
+      );
     }
   }
 
@@ -94,10 +95,8 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
   };
   static const _expressionNames = {
     BrimExpression.gentle: 'Friendly',
-    // The current second illustration is a subtly wider smile, not a
-    // dramatic new emotion. Keep the existing 'delighted' asset IDs until
-    // the production expression system is settled.
-    BrimExpression.delighted: 'Cheerful',
+    BrimExpression.playful: 'Playful',
+    BrimExpression.cheeky: 'Cheeky',
   };
   static const _accessoryNames = {
     BrimAccessory.none: 'None',
@@ -217,9 +216,13 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       key: Key('expression-${expression.id}'),
                       selected: _selection.expression == expression,
                       label: _expressionNames[expression]!,
-                      icon: expression == BrimExpression.gentle
-                          ? Icons.sentiment_satisfied_rounded
-                          : Icons.sentiment_very_satisfied_rounded,
+                      icon: switch (expression) {
+                        BrimExpression.gentle =>
+                          Icons.sentiment_satisfied_rounded,
+                        BrimExpression.playful =>
+                          Icons.sentiment_very_satisfied_rounded,
+                        BrimExpression.cheeky => Icons.mood_rounded,
+                      },
                       iconColor: NatterChildTheme.textPrimary,
                       onTap: () => setState(() {
                         _selection = _selection.copyWith(
@@ -263,10 +266,11 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'All three colours now have Gentle and Delighted '
-                        'test illustrations for None and Scarf when installed. '
-                        'Satchel still needs artwork. These are preview-only '
-                        'choices and are not saved to your account.',
+                        'Violet has Friendly, Playful and Cheeky trial artwork '
+                        'without accessories. Friendly can also wear a scarf '
+                        'or satchel in Violet. Blue and Mint currently have '
+                        'Friendly artwork for None and Scarf. Remaining looks '
+                        'are being prepared. Nothing is saved to your account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
