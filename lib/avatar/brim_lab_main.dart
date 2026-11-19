@@ -68,8 +68,9 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
         for (final accessory in const ['none', 'scarf'])
           'brim_v1_${colour}_gentle_$accessory',
       'brim_v1_violet_gentle_satchel',
-      'brim_v1_violet_playful_none',
-      'brim_v1_violet_cheeky_none',
+      for (final expression in const ['playful', 'cheeky'])
+        for (final accessory in const ['none', 'scarf', 'satchel'])
+          'brim_v1_violet_${expression}_$accessory',
     ];
 
     for (final artworkKey in candidateArtwork) {
@@ -267,10 +268,10 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       const SizedBox(height: 4),
                       const Text(
                         'Violet has Friendly, Playful and Cheeky trial artwork '
-                        'without accessories. Friendly can also wear a scarf '
-                        'or satchel in Violet. Blue and Mint currently have '
-                        'Friendly artwork for None and Scarf. Remaining looks '
-                        'are being prepared. Nothing is saved to your account.',
+                        'with None, Scarf and Satchel. Blue and Mint currently '
+                        'have Friendly artwork for None and Scarf. Remaining '
+                        'looks are being prepared. Nothing is saved to your '
+                        'account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
