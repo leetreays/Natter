@@ -207,3 +207,32 @@ flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostn
 ```
 
 **Acceptance:** switch Violet/Friendly between None, Scarf and Satchel at hero and 48px sizes. Look for scale jumps, flicker, strap clipping, unintended pixels and good legibility. Blue/Mint Satchel assets remain pending; Playful and Cheeky remain artwork work-in-progress. Do not merge the avatar prototype into `main` until the full artwork quality gate and cross-role identity rules are reviewed.
+
+
+### Playful / Cheeky trial — Violet / None (19 November 2026)
+
+Two **localised expression edits**, not separate whole-dragon redraws, were created using the original Violet/Gentle/None master as the fixed source. Each remains 512×512 with the same alpha, silhouette, pose and unchanged nonfacial visible pixels.
+
+- Playful: distinctive left-eye wink, without a tongue
+- Cheeky: open-eyed grin with a pink tongue; **subtle at 48px**, not yet approved
+- The `Friendly` visible choice still uses internal `gentle` artwork and preserves existing installed assets; `delighted` is no longer selectable, but old files remain untouched
+- Only Violet/None has Playful and Cheeky images so far. Other combinations can legitimately show pending artwork rather than fabricated substitutions
+
+The review pack `Natter_Brim_Violet_Playful_Cheeky_Trial_Pack.zip` is **not committed to GitHub**; download it separately and upload into Codespaces `assets/`. It contains only these two files:
+
+```
+assets/avatar_prototype/brim_v1_violet_playful_none.webp
+assets/avatar_prototype/brim_v1_violet_cheeky_none.webp
+```
+
+Codespaces verification:
+
+```bash
+git pull --ff-only
+python3 tools/test_install_brim_prototype_art.py
+python3 tools/install_brim_prototype_art.py assets/*Playful_Cheeky*.zip
+flutter test test/brim_avatar*
+flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostname 0.0.0.0 --web-port 8080
+```
+
+Test `Violet → None`, toggle Friendly/Playful/Cheeky with **instant switching**. Compare the hero illustration and face-centred 48px portrait; check for seam artefacts and whether Cheeky is sufficiently distinct. Do **not** approve the remaining accessory or colour combinations based on this trial alone. Preserve local modified `pubspec.yaml`, installed candidate WebP files, and earlier ZIPs.
