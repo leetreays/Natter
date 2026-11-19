@@ -45,6 +45,7 @@ flutter:
     - assets/seedling_1.png
     - assets/seedling_1_circle.png
     - assets/journey_seedling.png
+    - assets/avatar_prototype/
   fonts:
     # Licensed under SIL OFL 1.1; see web/fonts/OFL-Nunito.txt.
     - family: NatterNunito
