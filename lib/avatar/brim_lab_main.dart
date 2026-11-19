@@ -61,16 +61,13 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
     if (_candidateArtPrecacheStarted) return;
     _candidateArtPrecacheStarted = true;
 
-    // Warm only candidate files we have actually prepared. Do not try to
-    // precache combinations that remain deliberately unillustrated.
+    // All 27 candidates are present after local artwork generation. Before
+    // installation, unavailable assets still use the lab's honest placeholder.
     final candidateArtwork = <String>[
       for (final colour in const ['violet', 'blue', 'mint'])
-        for (final accessory in const ['none', 'scarf'])
-          'brim_v1_${colour}_gentle_$accessory',
-      'brim_v1_violet_gentle_satchel',
-      for (final expression in const ['playful', 'cheeky'])
-        for (final accessory in const ['none', 'scarf', 'satchel'])
-          'brim_v1_violet_${expression}_$accessory',
+        for (final expression in const ['gentle', 'playful', 'cheeky'])
+          for (final accessory in const ['none', 'scarf', 'satchel'])
+            'brim_v1_${colour}_${expression}_$accessory',
     ];
 
     for (final artworkKey in candidateArtwork) {
@@ -267,11 +264,10 @@ class _BrimAvatarLabScreenState extends State<BrimAvatarLabScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Violet has Friendly, Playful and Cheeky trial artwork '
-                        'with None, Scarf and Satchel. Blue and Mint currently '
-                        'have Friendly artwork for None and Scarf. Remaining '
-                        'looks are being prepared. Nothing is saved to your '
-                        'account.',
+                        'Violet has nine reviewed combinations. Blue and Mint '
+                        'are reference-based artwork trials, pending your visual '
+                        'review of all expressions and accessories. Nothing is '
+                        'saved to your account.',
                         style: NatterChildTheme.caption,
                       ),
                       const SizedBox(height: 6),
