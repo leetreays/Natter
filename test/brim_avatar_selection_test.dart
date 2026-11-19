@@ -23,7 +23,7 @@ void main() {
         }
       }
     }
-    expect(keys, hasLength(18));
+    expect(keys, hasLength(27));
   });
 
   test('editing a choice preserves the other selections', () {
@@ -33,17 +33,17 @@ void main() {
       accessory: BrimAccessory.scarf,
     );
 
-    final changed = initial.copyWith(expression: BrimExpression.delighted);
+    final changed = initial.copyWith(expression: BrimExpression.playful);
     expect(changed.colourway, BrimColourway.mint);
     expect(changed.accessory, BrimAccessory.scarf);
-    expect(changed.expression, BrimExpression.delighted);
+    expect(changed.expression, BrimExpression.playful);
     expect(initial.expression, BrimExpression.gentle);
   });
 
   test('choice serialises and restores without losing customisation', () {
     const initial = BrimAvatarSelection(
       colourway: BrimColourway.blue,
-      expression: BrimExpression.delighted,
+      expression: BrimExpression.cheeky,
       accessory: BrimAccessory.satchel,
     );
     expect(BrimAvatarSelection.fromMap(initial.toMap()), initial);
@@ -66,9 +66,19 @@ void main() {
         'expression': 'delighted',
         'accessory': 'invalid',
       }),
-      const BrimAvatarSelection(
-        expression: BrimExpression.delighted,
-      ),
+      const BrimAvatarSelection(),
     );
+  });
+
+  test('legacy delighted ID resolves to Friendly without breaking an avatar', () {
+    final legacy = BrimAvatarSelection.fromMap({
+      'character': 'brim',
+      'version': 1,
+      'colourway': 'blue',
+      'expression': 'delighted',
+      'accessory': 'scarf',
+    });
+    expect(legacy.expression, BrimExpression.gentle);
+    expect(legacy.artworkKey, 'brim_v1_blue_gentle_scarf');
   });
 }
