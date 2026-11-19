@@ -265,3 +265,28 @@ flutter run --profile \
 ```
 
 Verify Violet's three expressions under None, Scarf and Satchel, looking particularly for neckline/strap seams, stationary anatomy, consistent size, and 48px face clarity. Candidate artwork and ZIP files remain local to Codespaces, not committed; the branch must not be merged until the full 27-image art and identity/privacy gates pass.
+
+
+### Blue and Mint — derive remaining 14 variants from approved references (19 November 2026)
+
+**Source assets remain local in Codespaces.** The nine Violet combinations have passed founder inspection, including the V2 Cheeky/Satchel strap correction. The approved Blue and Mint Friendly/None and Friendly/Scarf assets also remain installed locally. Together, these provide 13 source/reference assets. We now need seven more per colour, **not nine new files**.
+
+`tools/build_brim_colourways.py` derives the 14 missing candidates locally. For each changed Violet pixel, it uses learned Blue/Mint pixel colour correspondences, while using approved Blue/Mint reference pixels unchanged in positions where the Violet art matches its original geometry. Warm accessories, cream and pink tongue are protected. It checks matching 512×512 canvases and alpha, refuses overwrites, and writes outputs only after all are validated.
+
+Requirements: Pillow, same as existing developer image tools. Do not run a fresh image generator to redraw Brim. In the Codespaces checkout on `feature/child-avatar-identity`:
+
+```bash
+git pull --ff-only
+python3 tools/test_build_brim_colourways.py
+python3 tools/build_brim_colourways.py
+flutter test test/brim_avatar*
+flutter run --profile \
+  -t lib/avatar/brim_lab_main.dart \
+  -d web-server \
+  --web-hostname 0.0.0.0 \
+  --web-port 8080
+```
+
+The generator uses exact expected names under `assets/avatar_prototype/` (e.g. `brim_v1_violet_gentle_scarf.webp`). Any missing reference, misaligned alpha or existing output causes a **nonzero stop**; do not delete assets to force it to pass without reviewing the reason. The original four Blue/Mint Friendly reference assets and nine Violet source assets are never overwritten.
+
+**Acceptance test:** inspect every Blue and Mint expression/accessory combination at 220px and 48px; compare with Violet and the already-approved Friendly reference. Check Blue/Mint shade continuity, tongue shape, facial masking, leather colour, scarf/strap fidelity, alpha edging, scale jumps and switching. This first output is candidate art; it is *not* approved or automatically committed to GitHub. Brim's full 27 matrix and cross-role profile integration remain future gates.
