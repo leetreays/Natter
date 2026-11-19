@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install one or more matching Brim artwork pairs from a review ZIP.
+"""Install validated Brim artwork review candidates from a ZIP.
 
 Run from the Natter repository root:
     python3 tools/install_brim_prototype_art.py brim_prototype_asset_pack.zip
@@ -29,6 +29,14 @@ SATCHEL_ASSETS = {
     f"assets/avatar_prototype/brim_v1_{colour}_{expression}_satchel.webp"
     for colour in ("violet", "blue", "mint")
     for expression in ("gentle", "delighted")
+}
+# Trial expressions are made incrementally. Support standalone Playful/Cheeky
+# images for each colour and accessory. Legacy None/Scarf pairs remain complete.
+EXPRESSION_TRIAL_ASSETS = {
+    f"assets/avatar_prototype/brim_v1_{colour}_{expression}_{accessory}.webp"
+    for colour in ("violet", "blue", "mint")
+    for expression in ("playful", "cheeky")
+    for accessory in ("none", "scarf", "satchel")
 }
 ASSET_DIRECTIVE = "    - assets/avatar_prototype/\n"
 ASSET_ANCHOR = "    - assets/journey_seedling.png\n"
@@ -60,7 +68,8 @@ def main() -> int:
             if names.intersection(pair)
         ]
         selected_satchels = sorted(names.intersection(SATCHEL_ASSETS))
-        if not selected_pairs and not selected_satchels:
+        selected_expressions = sorted(names.intersection(EXPRESSION_TRIAL_ASSETS))
+        if not selected_pairs and not selected_satchels and not selected_expressions:
             print("No recognised Brim artwork in the ZIP.")
             return 2
         for colour, pair in selected_pairs:
@@ -78,7 +87,7 @@ def main() -> int:
             name
             for _, pair in selected_pairs
             for name in pair
-        ] + selected_satchels
+        ] + selected_satchels + selected_expressions
         for name in selected_names:
             data = z.read(name)
             if not (data.startswith(b"RIFF") and data[8:12] == b"WEBP"):
