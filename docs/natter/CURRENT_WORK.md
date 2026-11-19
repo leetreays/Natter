@@ -63,3 +63,12 @@ See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical b
 - Verified a continuous strap in the local 1:1 comparison; the new asset is 512×512, has the same alpha channel and differs from the old candidate in 3,135 visible pixels restricted to x=320..398, y=227..296.
 - Expected installed asset SHA-256: `cab0c4854fe085fc8f3bd5d7a62cc9428d60e793eff4aefe489b5a5fed1cc385`.
 - **Next:** founder uploads the V2 ZIP into `assets/`, installs using exact filename, verifies SHA-256 with `sha256sum assets/avatar_prototype/brim_v1_violet_cheeky_satchel.webp`, re-runs the Flutter lab after stopping any previous server and refreshes the preview. Only then approve Violet's final nine combinations; earlier code and artwork remain untouched.
+
+
+## 19 November — Violet Brim set fully approved
+
+- The founder installed and tested the corrected `Natter_Brim_Violet_Cheeky_Satchel_Strap_Complete_V2.zip` in Codespaces and reported **“All done. And all perfect.”** The previously missing upper strap is visually resolved.
+- **All 9 Violet Brim variants now pass the founder's in-app visual check:** Friendly, Playful and Cheeky × None, Scarf and Satchel. This includes instant image switching and small 48px portrait readability. Do not reopen Violet design in the absence of a new reproducible defect.
+- Violet artwork remains local to Codespaces (not committed to GitHub). Preserve its candidate WebPs and approved V2 patch. This visual approval does **not** by itself confirm production persistence, friend-visible avatar data, release readiness, or a full 27-image test run.
+- **Next art priority:** create and test the 9 Blue and 9 Mint variants from the approved Violet masters. Reuse previously accepted palette details (Blue cyan accents; Mint with darker-blue/yellow accents; consistent pinkish tongue) and the existing pixel-locked recolouring approach. Do not regenerate Brim's anatomy. First verify the Blue/Mint Friendly references still match the approved colour direction, then apply that direction to expressions and accessories. Test the full 27-combination matrix before production integration.
+- Maintain the established workflow: assistant edits GitHub files and prepares artwork packs; founder runs only short Codespaces commands, always with the complete launch command at the end of instructions.
