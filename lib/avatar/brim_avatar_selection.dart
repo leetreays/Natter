@@ -12,8 +12,11 @@ enum BrimColourway {
 }
 
 enum BrimExpression {
+  // Keep the established Friendly master artwork key as 'gentle' during the
+  // isolated trial. The visible child-facing label is 'Friendly'.
   gentle('gentle'),
-  delighted('delighted');
+  playful('playful'),
+  cheeky('cheeky');
 
   const BrimExpression(this.id);
   final String id;
@@ -98,7 +101,7 @@ class BrimAvatarSelection {
         BrimColourway.violet,
       ),
       expression: readChoice(
-        map['expression'],
+        map['expression'] == 'delighted' ? 'gentle' : map['expression'],
         BrimExpression.values,
         (v) => v.id,
         BrimExpression.gentle,
