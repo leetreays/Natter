@@ -19,16 +19,19 @@ Brim V1 avatar feasibility and artwork-quality validation on `feature/child-avat
 ## Current approach
 
 - Prefer careful local compositing onto a fixed Brim master, reusing geometry and transparency. Do not independently redraw entire Brim illustrations for each selection, which caused visible jumps.
-- **Next:** prepare Violet Playful (wink, no tongue) and Cheeky (tongue out) as pixel-locked facial edits to the approved Violet/Friendly/None master. Keep face recognisable at 48px. Then apply the same approved facial treatments to existing Scarf and Satchel variants, and extend to Blue/Mint using controlled palette operations. Don't create unrelated whole-character redraws.
+- **Current trial:** Violet/Playful/None (wink, no tongue) and Violet/Cheeky/None (tongue-out) are now prepared as localised edits of the original Friendly master with the same canvas, alpha and unchanged body/silhouette. The Cheeky tongue is subtle at 48px; founder's on-device review is required before approval or replication to other accessories.
+- The isolated Brim Lab now offers three visible options: Friendly (still internally `gentle` for compatibility), Playful and Cheeky. The old Cheerful/`delighted` choice is no longer shown, but older installed files are untouched. This is a trial: some colour/expression/accessory choices intentionally lack artwork and show an honest placeholder.
+- The installer accepts standalone Playful/Cheeky candidate images, keeping earlier safety checks for complete Gentle/Delighted None+Scarf pairs. A `Natter_Brim_Violet_Playful_Cheeky_Trial_Pack.zip` has been prepared outside GitHub for the founder to upload. Automated installer and Flutter changes need to be tested in Codespaces.
+- Next after in-app approval: apply the approved facial treatments to existing Scarf and Satchel variants, extend to Blue/Mint with controlled palette operations. Do not independently regenerate the full dragon.
 - Keep candidate WebP images in the local Codespaces checkout until approved; untracked artwork ZIPs and locally modified `pubspec.yaml` must not be discarded. Avoid broad changes to `main.dart`.
 - The GitHub integration workflow is direct code commits by the assistant, followed by short `git pull`, test and launch commands for the founder.
 
 ## Next verification
 
-1. Prepare two distinctly different **Violet/None** facial expressions: Playful = wink without tongue; Cheeky = tongue-out grin. Verify both preserve the existing body/pose/silhouette.
-2. Assess both expression changes at hero and 48px preview sizes before expanding to Scarf and Satchel.
-3. Update the asset installer, lab expression model, existing test expectations and code directly in GitHub only when the candidate expression pack is ready; founder runs short pull/test commands.
-4. Extend expressions to Scarf and Satchel, then to Blue/Mint; verify the complete 27-image matrix and artwork package before merging.
+1. Upload `Natter_Brim_Violet_Playful_Cheeky_Trial_Pack.zip` into Codespaces `assets/`, then `git pull --ff-only`.
+2. Run `python3 tools/test_install_brim_prototype_art.py`, install the ZIP with `python3 tools/install_brim_prototype_art.py assets/*Playful_Cheeky*.zip`, and run `flutter test test/brim_avatar*`.
+3. Launch the isolated Avatar Lab and compare Violet + None: Friendly ↔ Playful ↔ Cheeky at hero and 48px. Inspect facial seams and whether the tongue is visible enough, with no changes to the body when switching.
+4. Only if both expressions pass, propagate these edits to Scarf/Satchel, then Blue/Mint; finish all 27 combinations.
 5. Do not merge the avatar branch or add shared avatar persistence until full artwork and security/visibility gates pass.
 
 See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical background.
