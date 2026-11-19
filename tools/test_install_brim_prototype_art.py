@@ -16,6 +16,8 @@ ASSET_PREFIX = "assets/avatar_prototype/"
 VIOLET_SATCHEL = ASSET_PREFIX + "brim_v1_violet_gentle_satchel.webp"
 VIOLET_NONE = ASSET_PREFIX + "brim_v1_violet_gentle_none.webp"
 VIOLET_SCARF = ASSET_PREFIX + "brim_v1_violet_gentle_scarf.webp"
+VIOLET_PLAYFUL = ASSET_PREFIX + "brim_v1_violet_playful_none.webp"
+VIOLET_CHEEKY = ASSET_PREFIX + "brim_v1_violet_cheeky_none.webp"
 
 
 class BrimAssetInstallerTests(unittest.TestCase):
@@ -63,6 +65,28 @@ class BrimAssetInstallerTests(unittest.TestCase):
         self.assertEqual(
             self.pubspec.read_text().count("    - assets/avatar_prototype/\n"), 1
         )
+
+    def test_two_standalone_expression_assets_install_safely(self):
+        existing = self.repo / VIOLET_NONE
+        existing.parent.mkdir(parents=True)
+        existing.write_bytes(b"approved friendly master")
+        response = self.install({
+            VIOLET_PLAYFUL: MINIMAL_WEBP,
+            VIOLET_CHEEKY: MINIMAL_WEBP,
+        })
+        self.assertEqual(response.returncode, 0, response.stdout + response.stderr)
+        self.assertEqual(existing.read_bytes(), b"approved friendly master")
+        self.assertEqual((self.repo / VIOLET_PLAYFUL).read_bytes(), MINIMAL_WEBP)
+        self.assertEqual((self.repo / VIOLET_CHEEKY).read_bytes(), MINIMAL_WEBP)
+
+    def test_invalid_expression_does_not_partially_install(self):
+        response = self.install({
+            VIOLET_PLAYFUL: MINIMAL_WEBP,
+            VIOLET_CHEEKY: b"not valid webp",
+        })
+        self.assertEqual(response.returncode, 2)
+        self.assertFalse((self.repo / VIOLET_PLAYFUL).exists())
+        self.assertFalse((self.repo / VIOLET_CHEEKY).exists())
 
     def test_incomplete_none_scarf_pair_rejected_without_writes(self):
         original = self.pubspec.read_bytes()
