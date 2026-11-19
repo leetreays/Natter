@@ -236,3 +236,32 @@ flutter run --profile -t lib/avatar/brim_lab_main.dart -d web-server --web-hostn
 ```
 
 Test `Violet → None`, toggle Friendly/Playful/Cheeky with **instant switching**. Compare the hero illustration and face-centred 48px portrait; check for seam artefacts and whether Cheeky is sufficiently distinct. Do **not** approve the remaining accessory or colour combinations based on this trial alone. Preserve local modified `pubspec.yaml`, installed candidate WebP files, and earlier ZIPs.
+
+
+### Violet nine-combination trial — scarf and satchel expressions (19 November 2026)
+
+The founder confirmed all three Violet/None expressions (Friendly, Playful and Cheeky) switch seamlessly in the real Avatar Lab. A new 4-image trial pack, `Natter_Brim_Violet_Expression_Accessories_Trial_Pack.zip`, extends the approved expression edits to the existing Violet scarf and satchel masters:
+
+```text
+assets/avatar_prototype/brim_v1_violet_playful_scarf.webp
+assets/avatar_prototype/brim_v1_violet_cheeky_scarf.webp
+assets/avatar_prototype/brim_v1_violet_playful_satchel.webp
+assets/avatar_prototype/brim_v1_violet_cheeky_satchel.webp
+```
+
+The composite uses accessory-specific masters, preserves their full alpha channels and visible pixels outside the edited face, and protects the scarf from the cheeky tongue overlay. The source masters have slightly different framing; no attempt is made to morph scarf geometry to the unaccessorised version. **These four candidates require in-app founder visual approval**.
+
+After uploading the review ZIP into Codespaces `assets/`:
+
+```bash
+git pull --ff-only
+python3 tools/install_brim_prototype_art.py assets/*Expression_Accessories*.zip
+flutter test test/brim_avatar*
+flutter run --profile \
+  -t lib/avatar/brim_lab_main.dart \
+  -d web-server \
+  --web-hostname 0.0.0.0 \
+  --web-port 8080
+```
+
+Verify Violet's three expressions under None, Scarf and Satchel, looking particularly for neckline/strap seams, stationary anatomy, consistent size, and 48px face clarity. Candidate artwork and ZIP files remain local to Codespaces, not committed; the branch must not be merged until the full 27-image art and identity/privacy gates pass.
