@@ -53,3 +53,13 @@ See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical b
 - The fixed 512×512 image has unchanged alpha, canvas, and silhouette. Exactly 1,024 visible pixels differ from the previous Cheeky/Satchel candidate, all inside the local repair rectangle x=336..374, y=253..296; visible pixels outside remain unchanged.
 - Delivered as `Natter_Brim_Violet_Cheeky_Satchel_Strap_Fix.zip` with exactly `assets/avatar_prototype/brim_v1_violet_cheeky_satchel.webp`. This ZIP is a local conversation artifact, not committed to GitHub. The existing standalone expression installer supports it without a new code change.
 - **Next:** upload the ZIP into Codespaces `assets/`, install via `python3 tools/install_brim_prototype_art.py assets/*Cheeky_Satchel_Strap_Fix.zip`, run `flutter test test/brim_avatar*`, and relaunch the isolated Brim Lab. Check Violet → Cheeky → Satchel and switch to Playful → Satchel. If the strap stays intact and the portraits look right, approve the full Violet nine and proceed to Blue/Mint derivation.
+
+
+## 19 November — second Cheeky/Satchel strap correction (V2, pending phone verification)
+
+- The founder reported the original strap gap was still visible after the first repair ZIP. This was traced to a **faulty repair mask**, not a confirmed Flutter rendering bug: the first correction restored lower leather pixels at y≈253–296 but missed the upper shoulder section around y≈227–263.
+- Re-inspected the original Violet/Friendly/Satchel and Cheeky/Satchel 512×512 WebPs and compared the shoulder at matching pixel coordinates. A new local composite restores the **entire upper strap** from the approved Friendly/Satchel master while retaining the Cheeky tongue and original transparency.
+- The new pack is `Natter_Brim_Violet_Cheeky_Satchel_Strap_Complete_V2.zip` with one `assets/avatar_prototype/brim_v1_violet_cheeky_satchel.webp` asset. It is a separate downloadable ZIP, **not in GitHub**. It should replace only the affected local asset.
+- Verified a continuous strap in the local 1:1 comparison; the new asset is 512×512, has the same alpha channel and differs from the old candidate in 3,135 visible pixels restricted to x=320..398, y=227..296.
+- Expected installed asset SHA-256: `cab0c4854fe085fc8f3bd5d7a62cc9428d60e793eff4aefe489b5a5fed1cc385`.
+- **Next:** founder uploads the V2 ZIP into `assets/`, installs using exact filename, verifies SHA-256 with `sha256sum assets/avatar_prototype/brim_v1_violet_cheeky_satchel.webp`, re-runs the Flutter lab after stopping any previous server and refreshes the preview. Only then approve Violet's final nine combinations; earlier code and artwork remain untouched.
