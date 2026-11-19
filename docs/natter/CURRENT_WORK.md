@@ -35,3 +35,12 @@ Brim V1 avatar feasibility and artwork-quality validation on `feature/child-avat
 5. Do not merge the avatar branch or add shared avatar persistence until full artwork and security/visibility gates pass.
 
 See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical background.
+
+## 19 November — Violet expression and accessory milestone
+
+- Founder tested Violet / None in Avatar Lab using Friendly, Playful and Cheeky, reporting **all three render and switch seamlessly**, with no visible image jumping. Their screenshots confirm the three expressions are distinctive at full size and recognisable at 48px. This is visual acceptance of the Violet/None trio; do not infer tests for other combinations.
+- Four new **Violet accessory-expression trial images** have been prepared by compositing the approved facial edits onto the existing Scarf and Satchel artwork (Playful/Scarf, Cheeky/Scarf, Playful/Satchel, Cheeky/Satchel). The scarf needs foreground occlusion at the cheek/tongue edge; mask was refined before packaging. Canvas and each accessory master's transparency/visible silhouette are unchanged, and pixels outside the facial mask remain untouched.
+- Review ZIP prepared separately as `Natter_Brim_Violet_Expression_Accessories_Trial_Pack.zip`, containing only these four WebPs. It is **not** committed to GitHub and requires founder installation in Codespaces.
+- `lib/avatar/brim_lab_main.dart` now precaches all nine Violet candidate combinations and the candidate-status text reflects this coverage; Blue/Mint expansion has not begun. Installer already supports standalone Playful and Cheeky trial assets.
+- **Next verification:** upload the four-asset pack to Codespaces `assets/`, pull branch, install using `python3 tools/install_brim_prototype_art.py assets/*Expression_Accessories*.zip`, run `flutter test test/brim_avatar*`, launch isolated lab and test Violet across three expressions × three accessories at full and 48px. Verify scarf/tongue overlap and absence of morphing before approving Violet nine.
+- **After Violet passes:** derive the Blue and Mint variants from approved corresponding Violet source artwork using controlled recolouring (18 remaining combinations), not independent whole-character generation. Keep product avatar persistence/permissions separate from the art trial.
