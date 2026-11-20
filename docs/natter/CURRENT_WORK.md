@@ -113,3 +113,13 @@ See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical b
 - This does **not** mean Natter's end-to-end avatar identity feature is shipped: child-owned save/edit, onboarding/profile adoption, authorised parent views, friend-visible avatar-only projection, backward compatibility and recovery are separate release gates.
 - **Next focus agreed:** discuss an efficient, consistent method for making the other five distinct avatar character types, comparing complete flattened artwork sets with carefully layered/parametric assets. Preserve Brim as the immutable visual quality reference; avoid replicating the lab's eager 27-image preload across six characters.
 - No more Codespaces commands are needed for Brim itself. PR #18 remains draft until the broader identity and release checks are ready.
+
+
+## 20 November — Zeev character production initiated (master approval pending)
+
+- The founder supplied the original **six-character Natter concept sheet** and requested momentum rather than repeating Brim's many separate edit/test loops. Existing roster is Lumo, Brim, Pixl, Miri, Croft, Zeev; **Zeev is character two**.
+- Zeev's concept: playful/energetic water-dragon, saturated blue body, ivory muzzle/belly, cyan glowing fin-like wings, ornamented swirling patterns, curling water-wave tail and gold accents. Do not substitute a second generic Brim dragon or unrelated creature.
+- A standalone **Blue / Friendly / None** Zeev master image has been prepared as a 512×512 transparent WebP (`zeev_v1_blue_friendly_none.webp`, about 189 KB) with an original-concept comparison and 48px face-crop preview. This is a **candidate**, not founder-approved; PNG/ZIP review artifacts are conversation downloads, not committed to the GitHub feature branch.
+- Two broad image-concept boards were generated for creative reference only. Their grids and any labels implying 27 approved Zeev assets are **not actual production artwork**. Only one full-size Zeev candidate exists so far.
+- Key technical learning: Zeev faces to the viewer's left, whereas Brim's 48px avatar crop targets a face farther right. **Do not blindly reuse Brim's portrait alignment**; define a character-specific face focus while sharing the 512px image contract.
+- Streamlined next steps: founder approves/revises a single isolated Zeev master; produce three distinct pixel-controlled expressions for the same body, then apply fixed scarf and satchel placements to those expressions; derive two alternate colourways from approved colour masters; package the 27-variant batch; conduct one automated inventory/silhouette QA and one focused phone-lab review before committing. No production `main.dart`, Firestore or child profile edits yet.
