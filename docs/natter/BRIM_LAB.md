@@ -290,3 +290,41 @@ flutter run --profile \
 The generator uses exact expected names under `assets/avatar_prototype/` (e.g. `brim_v1_violet_gentle_scarf.webp`). Any missing reference, misaligned alpha or existing output causes a **nonzero stop**; do not delete assets to force it to pass without reviewing the reason. The original four Blue/Mint Friendly reference assets and nine Violet source assets are never overwritten.
 
 **Acceptance test:** inspect every Blue and Mint expression/accessory combination at 220px and 48px; compare with Violet and the already-approved Friendly reference. Check Blue/Mint shade continuity, tongue shape, facial masking, leather colour, scarf/strap fidelity, alpha edging, scale jumps and switching. This first output is candidate art; it is *not* approved or automatically committed to GitHub. Brim's full 27 matrix and cross-role profile integration remain future gates.
+
+
+### Final Brim V1 snapshot verification — 20 November 2026
+
+All **27 Brim combinations** have passed the founder's on-phone visual review and
+the complete set has been committed to the feature branch. This historical
+lab log includes earlier trial instructions; the **authoritative V1 character
+contract** is now `docs/natter/BRIM_V1_SPEC.md`.
+
+The reusable `BrimArtPreview` has been extracted to
+`lib/avatar/brim_art_preview.dart` with unchanged rendering behaviour. For
+the final technical gate, avoid relying on the Codespaces local collection of
+untracked discarded trial images. Use a clean archive of the committed branch:
+
+```bash
+git pull --ff-only
+bash tools/verify_brim_clean_build.sh
+```
+
+The verification script checks the 27 committed images, compiles the Flutter
+asset inventory and widget tests, and performs a profile web build of the
+isolated Avatar Lab. It requires the already installed Pillow developer
+dependency but makes no deployments. A successful run closes Brim's
+**character-art / reusable-widget technical gate**; it does not implement or
+approve child profile saving or cross-family avatar visibility.
+
+Manual phone lab command (run only after stopping the previous instance):
+
+```bash
+flutter run --profile \
+  -t lib/avatar/brim_lab_main.dart \
+  -d web-server \
+  --web-hostname 0.0.0.0 \
+  --web-port 8080
+```
+
+For the five remaining creatures, use the same catalogue/quality requirements,
+but do not preload all six complete asset sets during app startup.
