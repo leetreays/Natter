@@ -103,3 +103,13 @@ See `docs/natter/BRIM_LAB.md` and `docs/natter/AVATAR_SYSTEM.md` for technical b
 - Froze visual/asset engineering requirements in `docs/natter/BRIM_V1_SPEC.md`. The 27 files together decode to roughly 27 MiB of RGBA if all cached; the current lab preloads everything, which must **not** be copied blindly into a six-character production identity picker.
 - **Next:** founder pulls branch and runs `bash tools/verify_brim_clean_build.sh` in Codespaces. Requires installed Pillow and Flutter. Report final pass or exact failure. A successful build completes Brim's **character-art + reusable-widget engineering gate**, not production profile persistence or cross-family security integration.
 - After this handoff we will discuss the remaining five distinctive character designs and a sustainable multi-character rendering/palette/accessory workflow before adding full child-owned onboarding, profile, parent and friend visibility.
+
+
+## 20 November — Brim V1 technical and visual sign-off COMPLETE
+
+- Founder ran `bash tools/verify_brim_clean_build.sh` in Codespaces on `feature/child-avatar-identity`; screenshot explicitly showed `BRIM V1 CLEAN BUILD VERIFIED: 27 assets, tests, profile web build.` The script reported source commit `3604cb6`; no deployment or Firebase change was made.
+- Founder also confirmed a final visual pass remained correct. **Brim V1 is closed as an approved 27-combination character-art and standalone reusable-component deliverable.**
+- The committed source includes 27 WebPs, the asset registration, `BrimAvatarSelection`, the extracted `BrimArtPreview`, audited artwork and tests. Keep the no-crossfade switching and 48px face-biased crop.
+- This does **not** mean Natter's end-to-end avatar identity feature is shipped: child-owned save/edit, onboarding/profile adoption, authorised parent views, friend-visible avatar-only projection, backward compatibility and recovery are separate release gates.
+- **Next focus agreed:** discuss an efficient, consistent method for making the other five distinct avatar character types, comparing complete flattened artwork sets with carefully layered/parametric assets. Preserve Brim as the immutable visual quality reference; avoid replicating the lab's eager 27-image preload across six characters.
+- No more Codespaces commands are needed for Brim itself. PR #18 remains draft until the broader identity and release checks are ready.
