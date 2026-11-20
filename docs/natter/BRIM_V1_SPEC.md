@@ -93,9 +93,11 @@ Under the hood, the individual gates are:
 5. Open the isolated lab on a phone and confirm selection, 48px readability,
    no image jumps and acceptable loading behaviour.
 
-Previous on-device review passed all 27 visual choices. The new
-build/asset-audit checks must still be run in Codespaces before marking the
-engineering handoff passed.
+**Verified 20 November 2026:** The founder ran the clean-checkout verifier in
+Codespaces. The screenshot showed `BRIM V1 CLEAN BUILD VERIFIED: 27 assets,
+tests, profile web build.` (reported source `3604cb6`). A final phone visual
+pass also remained good. Brim V1's **character-art and standalone-component
+technical gate is complete**; production child-profile integration is not.
 
 ## Runtime budget and scaling warning
 
