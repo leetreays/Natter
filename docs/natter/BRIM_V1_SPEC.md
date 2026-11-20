@@ -69,6 +69,19 @@ assets. Do not delete approved versions merely to make regeneration succeed.
 
 ## Verification before treating Brim as implementation-ready
 
+From the feature branch, the recommended one-command verification is:
+
+```bash
+bash tools/verify_brim_clean_build.sh
+```
+
+It verifies an archive of **tracked files at HEAD** in a temporary
+directory; untracked old ZIPs and abandoned local artwork are ignored.
+The script audits, tests and builds the isolated lab, then removes the
+temporary snapshot without deploying anything.
+
+Under the hood, the individual gates are:
+
 1. `python3 tools/audit_brim_assets.py` — decodes 27 WebPs using Pillow,
    checks 512×512 dimensions, transparency and pixel-locked alpha across
    all colours/expressions for each accessory.
