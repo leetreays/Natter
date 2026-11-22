@@ -45,12 +45,8 @@ void main() {
     expect(find.text('zeev_v1_blue_playful_scarf'), findsOneWidget);
     expect(find.byType(AnimatedSwitcher), findsNothing);
 
-    // The complete image changes in both hero and chat portrait together.
-    expect(
-      find.byKey(const ValueKey('zeev_v1_blue_playful_scarf')),
-      findsNWidgets(2),
-    );
-
+    // The live state key is the reliable assertion while the scrollable
+    // preview may be offscreen and lazily removed from the widget tree.
     final cheeky = find.byKey(const Key('zeev-expression-cheeky'));
     await tester.scrollUntilVisible(cheeky, 150);
     await tester.tap(cheeky);
@@ -65,6 +61,34 @@ void main() {
       150,
     );
     expect(find.text('zeev_v1_blue_cheeky_satchel'), findsOneWidget);
+  });
+
+  testWidgets('both Zeev artwork previews switch as complete images', (
+    tester,
+  ) async {
+    Widget previews(String artworkKey) => MaterialApp(
+      home: Scaffold(
+        body: Column(
+          children: [
+            ZeevArtPreview(artworkKey: artworkKey),
+            ZeevArtPreview(artworkKey: artworkKey, compact: true),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpWidget(previews('zeev_v1_blue_friendly_none'));
+    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(const ValueKey('zeev_v1_blue_friendly_none')),
+      findsNWidgets(2),
+    );
+
+    await tester.pumpWidget(previews('zeev_v1_blue_cheeky_satchel'));
+    expect(find.byType(AnimatedSwitcher), findsNothing);
+    expect(
+      find.byKey(const ValueKey('zeev_v1_blue_friendly_none')),
+      findsNothing,
+    );
     expect(
       find.byKey(const ValueKey('zeev_v1_blue_cheeky_satchel')),
       findsNWidgets(2),
