@@ -1,0 +1,53 @@
+name: Avatar branch verification (no deployment)
+
+# Codespaces-independent checks for the avatar feature branch.
+# Deliberately separate from deploy.yml, which publishes main to Pages.
+on:
+  push:
+    branches:
+      - feature/child-avatar-identity
+    paths:
+      - .github/workflows/avatar-branch-check.yml
+      - lib/avatar/**
+      - test/brim_*.dart
+      - test/zeev_*.dart
+      - assets/avatar_prototype/**
+      - pubspec.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  avatar-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Run committed Brim regression checks
+        run: flutter test test/brim_avatar_selection_test.dart test/brim_avatar_lab_test.dart test/brim_asset_inventory_test.dart
+
+      # Zeev's artwork is still a local trial ZIP, not yet committed.
+      # Compile its isolated entry point without requiring the nine WebPs
+      # to exist at build time. Run Zeev asset-bundle tests after the ZIP is
+      # reviewed and those nine files have been committed.
+      - name: Compile isolated Zeev Lab (no deployment)
+        run: flutter build web --profile -t lib/avatar/zeev_lab_main.dart
+
+      - name: Save preview build as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeev-lab-build
+          path: build/web
+          if-no-files-found: error
+          retention-days: 7
